@@ -1,12 +1,27 @@
 package main
 
 import (
+	"context"
 	"net/http"
 
+	"github.com/fnatte/pizza-mouse/cmd/api/ws"
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 )
+
+type wsHandler struct{}
+
+func (h *wsHandler) HandleMessage(ctx context.Context, m []byte, c *ws.Client) {
+	log.Info().Str("userId", c.UserId()).Msg("Received message")
+}
+func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
+	log.Info().Str("userId", c.UserId()).Msg("Client connected")
+	go (func() {
+		c.Send([]byte("{ \"resources\": { \"coins\": 1, \"pizzas\": 1 } }"))
+	})()
+	return nil
+}
 
 func main() {
 	log.Info().Msg("Starting Api")
@@ -17,28 +32,16 @@ func main() {
 		DB:       0,  // use default DB
 	})
 
+	handler := wsHandler{}
 	auth := NewAuthService(rdb)
+	wsHub := ws.NewHub()
+	wsEndpoint := ws.NewEndpoint(auth.Authorize, wsHub, &handler)
 
 	r := mux.NewRouter()
 	r.PathPrefix("/auth").Handler(http.StripPrefix("/auth", auth.Router()))
-	r.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
-		err := auth.Authorize(r)
-		if err != nil {
-			log.Error().Err(err).Msg("Auth error")
-			http.Error(w, "Auth error", http.StatusUnauthorized)
-			return
-		}
+	r.Handle("/ws", wsEndpoint)
 
-		userId, ok := r.Context().Value("userId").(string)
-		if !ok {
-			log.Error().Msg("Failed to get userId")
-			http.Error(w, "Ops. An error occured.", http.StatusInternalServerError)
-			return
-		}
-
-		log.Info().Str("userId", userId).Msg("Hello from test")
-		w.Write([]byte(userId))
-	})
+	go wsHub.Run()
 
 	err := http.ListenAndServe(":8080", r)
 	if err != nil {

@@ -212,5 +212,19 @@ func (a *AuthService) Router() http.Handler {
 		w.Write([]byte("{}"))
 	})
 
+	r.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
+		http.SetCookie(w, &http.Cookie{
+			Name:     "token",
+			Value:    "",
+			HttpOnly: true,
+			Path:     "/",
+			MaxAge:   -1,
+			SameSite: http.SameSiteStrictMode,
+		})
+
+		w.WriteHeader(200)
+		w.Write([]byte("{}"))
+	})
+
 	return r
 }

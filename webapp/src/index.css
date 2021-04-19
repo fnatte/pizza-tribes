@@ -1,0 +1,18 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+@font-face {
+  font-family: "Grandstander";
+  src: url("../fonts/Grandstander-VariableFont_wght.ttf") format("truetype");
+}
+
+@layer base {
+  html {
+    @apply bg-green-100;
+  }
+
+  input[type=text], input[type=password] {
+    @apply p-1;
+  }
+}
