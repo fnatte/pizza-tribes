@@ -61,9 +61,9 @@ you join the dirty game yourself and send thieves on your competitors!
 ### Overview
 
 ```
-           +---------+
-           | Web App |
-           +---------+
+          +---------+
+          | Web App |
+          +---------+
                |
                | (Web Socket / HTTPS)
                |
