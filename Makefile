@@ -1,10 +1,10 @@
 GO_MODULE := github.com/fnatte/pizza-mouse
 
-PROTOS := $(wildcard proto/*.proto)
-PBGO := $(patsubst proto/%.proto,internal/%.pb.go,$(PROTOS))
+PROTOS := $(wildcard protos/*.proto)
+PBGO := $(patsubst protos/%.proto,internal/%.pb.go,$(PROTOS))
 
-internal/%.pb.go: proto/%.proto
-	protoc -I=proto/ --go_out=./ --go_opt=module=$(GO_MODULE) $?
+internal/%.pb.go: protos/%.proto
+	protoc -I=protos/ --go_out=./ --go_opt=module=$(GO_MODULE) $?
 
 .PHONY: build-api
 build-api: $(PBGO)
