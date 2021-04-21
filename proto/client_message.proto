@@ -1,0 +1,57 @@
+syntax = "proto3";
+package pizzamouse;
+
+option go_package = "github.com/fnatte/pizza-mouse/internal";
+
+/*
+#### Client Messages
+
+| Id  |  Type                 |  Payload           |
+|-----|-----------------------|--------------------|
+| ... |  "TAP"                |   amount?          |
+| ... |  "CONSTRUCT_BUILDING" | placeId, building  |
+| ... |  "UPGRADE_BUILDING"   | placeId            |
+| ... |  "TRAIN"              | education, amount  |
+| ... |  "EXPAND"             |                    |
+| ... |  "STEAL"              | amount, x, y       |
+*/
+
+message ClientMessage {
+  message Tap {
+    int32 amount = 1;
+  }
+
+  message ConstructBuilding {
+    string placeId = 1;
+    string building = 2;
+  }
+
+  message UpgradeBuilding {
+    string placeId = 1;
+  }
+
+  message Train {
+    string education = 1;
+    int32 amount = 2;
+  }
+
+  message Expand {
+  }
+
+  message Steal {
+    int32 amount = 1;
+    int32 x = 2;
+    int32 y = 3;
+  }
+
+  string id = 1;
+  oneof type {
+    Tap tap = 2;
+    ConstructBuilding constructBuilding = 3;
+    UpgradeBuilding upgradeBuilding = 4;
+    Train train = 5;
+    Expand expand = 6;
+    Steal steal = 7;
+  }
+}
+

@@ -12,7 +12,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type wsHandler struct{
+type wsHandler struct {
 	rdb *redis.Client
 }
 
@@ -20,7 +20,7 @@ func (h *wsHandler) HandleMessage(ctx context.Context, m []byte, c *ws.Client) {
 	log.Debug().Str("userId", c.UserId()).Msg("Received message")
 	err := h.rdb.RPush(ctx, "wsin", &internal.IncomingMessage{
 		SenderId: c.UserId(),
-		Body: string(m),
+		Body:     string(m),
 	}).Err()
 	if err != nil {
 		log.Error().Err(err).Msg("Error when pushing incoming message to redis")
@@ -65,6 +65,20 @@ func (p *poller) run(ctx context.Context) {
 }
 
 func main() {
+	/*
+		msg := internal.ClientMessage{
+			Id: "test-123",
+			Type: &internal.ClientMessage_Tap_{
+				Tap: &internal.ClientMessage_Tap{
+					Amount: 32,
+				},
+			},
+		}
+
+		val, err := protojson.Marshal(&msg)
+		log.Info().Msg(string(val))
+	*/
+
 	log.Info().Msg("Starting Api")
 
 	ctx := context.Background()
@@ -75,11 +89,11 @@ func main() {
 		DB:       0,  // use default DB
 	})
 
-	handler := wsHandler{ rdb: rdb }
+	handler := wsHandler{rdb: rdb}
 	auth := NewAuthService(rdb)
 	wsHub := ws.NewHub()
 	wsEndpoint := ws.NewEndpoint(auth.Authorize, wsHub, &handler)
-	poller := poller{rdb:rdb, hub: wsHub}
+	poller := poller{rdb: rdb, hub: wsHub}
 
 	r := mux.NewRouter()
 	r.PathPrefix("/auth").Handler(http.StripPrefix("/auth", auth.Router()))
