@@ -7,14 +7,14 @@ type Message struct {
 
 type Hub struct {
 	clients    map[*Client]bool
-	message    chan *Message
+	messages   chan *Message
 	register   chan *Client
 	unregister chan *Client
 }
 
 func NewHub() *Hub {
 	return &Hub{
-		message:    make(chan *Message),
+		messages:    make(chan *Message),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
 		clients:    make(map[*Client]bool),
@@ -29,6 +29,10 @@ func (h *Hub) userIds() map[string]bool {
 	return accIds
 }
 
+func (h *Hub) SendTo(recipient string, body []byte) {
+	h.messages <- &Message{Recipient: recipient, Body: body}
+}
+
 func (h *Hub) Run() {
 	for {
 		select {
@@ -39,7 +43,7 @@ func (h *Hub) Run() {
 				delete(h.clients, client)
 				close(client.send)
 			}
-		case msg := <-h.message:
+		case msg := <-h.messages:
 			for client := range h.clients {
 				if client.userId == msg.Recipient {
 					select {

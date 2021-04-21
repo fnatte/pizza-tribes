@@ -23,6 +23,9 @@ function Welcome() {
 
 function Game() {
   const logout = useStore(state => state.logout);
+  const tap = useStore(state => state.tap);
+  const { pizzas, coins } = useStore(state => state.gameState.resources);
+
   return (
     <div>
       <button
@@ -37,6 +40,23 @@ function Game() {
       >
         Logout
       </button>
+      <button
+        className={classnames(
+          "my-2",
+          "py-2",
+          "px-8",
+          "text-white",
+          "bg-green-600",
+        )}
+        onClick={() => tap()}
+      >
+        Tap
+      </button>
+      <div>
+        <span>Coins: {coins}</span>
+        <span> | </span>
+        <span>Pizzas: {pizzas}</span>
+      </div>
     </div>
   );
 }

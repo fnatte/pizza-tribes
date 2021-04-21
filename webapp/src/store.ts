@@ -26,6 +26,7 @@ type State = {
   setGameState: (gameState: GameState) => void;
   start: () => void;
   logout: () => Promise<void>;
+  tap: () => void;
 };
 
 export const useStore = create<State>((set, get) => ({
@@ -44,6 +45,13 @@ export const useStore = create<State>((set, get) => ({
       set((state) => ({ ...state, connection: null, user: null }));
     }
   },
+  tap: () => {
+    get().connection?.send(
+      JSON.stringify({
+        type: "TAP",
+      })
+    );
+  },
   start: () => {
     const connection = connect((msg) => {
       unstable_batchedUpdates(() => {
@@ -59,4 +67,3 @@ export const useStore = create<State>((set, get) => ({
 }));
 
 useStore.subscribe(console.log);
-
