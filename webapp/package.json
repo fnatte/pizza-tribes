@@ -8,10 +8,15 @@
     "serve": "vite preview"
   },
   "dependencies": {
+    "@hookform/resolvers": "^2.4.0",
     "@protobuf-ts/plugin": "^1.0.13",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "react-hook-form": "^7.2.2",
+    "react-router": "^6.0.0-beta.0",
+    "react-router-dom": "^6.0.0-beta.0",
     "tailwindcss-classnames": "^2.1.0",
+    "yup": "^0.32.9",
     "zustand": "^3.4.1"
   },
   "devDependencies": {
