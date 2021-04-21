@@ -183,13 +183,27 @@ func (a *AuthService) Router() http.Handler {
 		req := loginRequest{}
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			log.Error().Err(err).Msg("Failed to parse login request")
+			http.Error(w, "Invalid login request", http.StatusBadRequest)
 			return
 		}
 
 		userId, err := a.Login(r.Context(), req.Username, req.Password)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			if err == redis.Nil {
+				log.Info().Msg("Bad credentials: no such user")
+				http.Error(w, "Bad credentials", http.StatusForbidden)
+				return
+			}
+
+			if err == bcrypt.ErrMismatchedHashAndPassword {
+				log.Info().Msg("Bad credentials: password mismatch")
+				http.Error(w, "Bad credentials", http.StatusForbidden)
+				return
+			}
+
+			log.Error().Err(err).Msg("Login failed")
+			http.Error(w, "Login failed", http.StatusInternalServerError)
 			return
 		}
 
