@@ -53,9 +53,9 @@ function Game() {
         Tap
       </button>
       <div>
-        <span>Coins: {coins}</span>
+        <span>Coins: {coins.toString()}</span>
         <span> | </span>
-        <span>Pizzas: {pizzas}</span>
+        <span>Pizzas: {pizzas.toString()}</span>
       </div>
     </div>
   );

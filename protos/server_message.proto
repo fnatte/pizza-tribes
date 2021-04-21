@@ -1,0 +1,35 @@
+syntax = "proto3";
+package pizzamouse;
+
+option go_package = "github.com/fnatte/pizza-mouse/internal";
+
+/*
+|  Type                 |  Payload           |
+|-----------------------|--------------------|
+|  "STATE_CHANGE"       | ...game_state      |
+|  "RESPONSE"           | request_id, result |
+*/
+
+
+message ServerMessage {
+  message ResourcesPatch {
+    optional int64 coins = 1;
+    optional int64 pizzas = 2;
+  }
+
+  message StateChange {
+    optional ResourcesPatch resources = 1;
+  }
+
+  message Response {
+    string requestId = 1;
+    bool result = 2;
+  }
+
+  string id = 1;
+  oneof payload {
+    StateChange stateChange = 2;
+    Response response = 3;
+  }
+}
+

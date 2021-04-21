@@ -139,7 +139,7 @@ sorted set.
 
 |  Type                 |  Payload           |
 |-----------------------|--------------------|
-|  "STATE_CHANGE"       | game_state         |
+|  "STATE_CHANGE"       | ...game_state      |
 |  "RESPONSE"           | request_id, result |
 
 ## Tech Stack

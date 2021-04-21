@@ -1,17 +1,12 @@
 import { unstable_batchedUpdates } from "react-dom";
-import create, {
-  GetState,
-  SetState,
-  StateCreator,
-  StoreApi,
-  UseStore,
-} from "zustand";
+import create from "zustand";
 import connect, { Connection } from "./connect";
+import { ClientMessage } from "./generated/client_message";
 
 type GameState = {
   resources: {
-    pizzas: number;
-    coins: number;
+    pizzas: bigint;
+    coins: bigint;
   };
 };
 
@@ -32,8 +27,8 @@ type State = {
 export const useStore = create<State>((set, get) => ({
   gameState: {
     resources: {
-      pizzas: 0,
-      coins: 0,
+      pizzas: BigInt(0),
+      coins: BigInt(0),
     },
   },
   user: null,
@@ -46,20 +41,34 @@ export const useStore = create<State>((set, get) => ({
     }
   },
   tap: () => {
-    get().connection?.send(
-      JSON.stringify({
-        type: "TAP",
-      })
-    );
+    const msg = ClientMessage.create({
+      id: "test-123",
+      type: {
+        oneofKind: "tap",
+        tap: {
+          amount: 10,
+        },
+      },
+    });
+    get().connection?.send(msg);
   },
   start: () => {
     const connection = connect((msg) => {
-      unstable_batchedUpdates(() => {
-        set((state) => ({
-          ...state,
-          gameState: { ...state.gameState, ...msg },
-        }));
-      });
+      if (msg.payload.oneofKind === "stateChange") {
+        const stateChange = msg.payload.stateChange;
+        unstable_batchedUpdates(() => {
+          set((state) => ({
+            ...state,
+            gameState: {
+              ...state.gameState,
+              resources: {
+                ...state.gameState.resources,
+                ...stateChange.resources,
+              },
+            },
+          }));
+        });
+      }
     });
     set((state) => ({ ...state, user: { username: "" }, connection }));
   },
