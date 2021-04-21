@@ -7,6 +7,7 @@ import (
 	"github.com/fnatte/pizza-mouse/internal"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/zerolog/log"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func main() {
@@ -17,6 +18,8 @@ func main() {
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
+
+	h := &handler{ rdb: rdb }
 
 	ctx := context.Background()
 
@@ -37,12 +40,15 @@ func main() {
 		msg := &internal.IncomingMessage{}
 		msg.UnmarshalBinary([]byte(res[1]))
 
-		log.Info().Str("senderId", msg.SenderId).Msg("Received message")
+		m := &internal.ClientMessage{}
+		err = protojson.Unmarshal([]byte(msg.Body), m)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to parse incoming message")
+			continue
+		}
 
-		rdb.RPush(ctx, "wsout", &internal.OutgoingMessage{
-			ReceiverId: msg.SenderId,
-			Body: "{ \"resources\": { \"coins\": 2, \"pizzas\": 2 } }",
-		})
+		h.Handle(ctx, msg.SenderId, m)
 	}
 
 }
+

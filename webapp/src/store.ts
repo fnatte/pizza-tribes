@@ -1,12 +1,7 @@
 import { unstable_batchedUpdates } from "react-dom";
-import create, {
-  GetState,
-  SetState,
-  StateCreator,
-  StoreApi,
-  UseStore,
-} from "zustand";
+import create from "zustand";
 import connect, { Connection } from "./connect";
+import {ClientMessage} from "./generated/client_message";
 
 type GameState = {
   resources: {
@@ -46,10 +41,17 @@ export const useStore = create<State>((set, get) => ({
     }
   },
   tap: () => {
+    const msg = ClientMessage.create({
+      id: "test-123",
+      type: {
+        oneofKind: "tap",
+        tap: {
+          amount: 10,
+        }
+      },
+    });
     get().connection?.send(
-      JSON.stringify({
-        type: "TAP",
-      })
+      ClientMessage.toJson(msg)
     );
   },
   start: () => {
