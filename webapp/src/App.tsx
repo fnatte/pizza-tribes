@@ -15,20 +15,18 @@ import CreateAccountPage from "./CreateAccountPage";
 import Header from "./Header";
 
 function Welcome() {
-  return (
-    <Header />
-  );
+  return <Header />;
 }
 
 function GamePage() {
   const user = useStore((state) => state.user);
-  if (user === null) {
-    return <Navigate to="/login" replace />;
-  }
-
   const logout = useStore((state) => state.logout);
   const tap = useStore((state) => state.tap);
   const { pizzas, coins } = useStore((state) => state.gameState.resources);
+
+  if (user === null) {
+    return <Navigate to="/login" replace />;
+  }
 
   return (
     <div>
@@ -73,11 +71,16 @@ function CreateAccountPromotion() {
 }
 
 function LoginPage() {
+  const navigate = useNavigate();
   const start = useStore((state) => state.start);
+  const onLogin = () => {
+    start("");
+    navigate("/");
+  };
   return (
     <div>
       <Welcome />
-      <LoginForm onLogin={() => start()} />
+      <LoginForm onLogin={onLogin} />
       <CreateAccountPromotion />
     </div>
   );

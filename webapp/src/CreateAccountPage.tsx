@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { classnames, TArg } from "tailwindcss-classnames";
 import Header from "./Header";
 import styles from "./styles";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import {RemoveIndex} from "./utils";
 
 const schema = yup.object().shape({
   username: yup.string().required(),
@@ -16,18 +17,28 @@ const schema = yup.object().shape({
     .oneOf([yup.ref("password")], "Passwords must match!"),
 });
 
-type FormFields = yup.Asserts<typeof schema>;
+type FormFields = RemoveIndex<yup.Asserts<typeof schema>>;
 
 const CreateAccountPage: React.VFC<{}> = () => {
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm<FormFields>({ resolver: yupResolver(schema) });
 
+  const navigate = useNavigate();
+
   const onSubmit = async (data: FormFields) => {
-    console.log(data);
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      console.error(`Request to register user failed. Status code was ${res.status}`);
+      return;
+    }
+
+    navigate('/login');
   };
 
   return (
