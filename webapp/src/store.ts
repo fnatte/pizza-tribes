@@ -19,7 +19,7 @@ type State = {
   user: User | null;
   connection: Connection | null;
   setGameState: (gameState: GameState) => void;
-  start: () => void;
+  start: (username: string) => void;
   logout: () => Promise<void>;
   tap: () => void;
 };
@@ -52,7 +52,7 @@ export const useStore = create<State>((set, get) => ({
     });
     get().connection?.send(msg);
   },
-  start: () => {
+  start: (username: string) => {
     const connection = connect((msg) => {
       if (msg.payload.oneofKind === "stateChange") {
         const stateChange = msg.payload.stateChange;
@@ -70,7 +70,7 @@ export const useStore = create<State>((set, get) => ({
         });
       }
     });
-    set((state) => ({ ...state, user: { username: "" }, connection }));
+    set((state) => ({ ...state, user: { username }, connection }));
   },
   setGameState: (gameState) => set((state) => ({ ...state, gameState })),
 }));

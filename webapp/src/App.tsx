@@ -2,54 +2,38 @@ import React from "react";
 import { classnames } from "tailwindcss-classnames";
 import LoginForm from "./LoginForm";
 import { useStore } from "./store";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Link,
+  useNavigate,
+  Navigate,
+} from "react-router-dom";
+import styles from "./styles";
+import CreateAccountPage from "./CreateAccountPage";
+import Header from "./Header";
 
 function Welcome() {
-  return (
-    <div
-      className={classnames(
-        "flex",
-        "justify-center",
-        "flex-col",
-        "items-center"
-      )}
-    >
-      <h1 className={classnames("flex", "justify-center", "p-8", "text-4xl")}>
-        Pizza Mouse
-      </h1>
-      <div className={classnames("text-2xl")}>🍕🍕🍕🍕</div>
-    </div>
-  );
+  return <Header />;
 }
 
-function Game() {
-  const logout = useStore(state => state.logout);
-  const tap = useStore(state => state.tap);
-  const { pizzas, coins } = useStore(state => state.gameState.resources);
+function GamePage() {
+  const user = useStore((state) => state.user);
+  const logout = useStore((state) => state.logout);
+  const tap = useStore((state) => state.tap);
+  const { pizzas, coins } = useStore((state) => state.gameState.resources);
+
+  if (user === null) {
+    return <Navigate to="/login" replace />;
+  }
 
   return (
     <div>
-      <button
-        className={classnames(
-          "my-2",
-          "py-2",
-          "px-8",
-          "text-white",
-          "bg-green-600",
-        )}
-        onClick={() => logout()}
-      >
+      <button className={classnames(styles.button)} onClick={() => logout()}>
         Logout
       </button>
-      <button
-        className={classnames(
-          "my-2",
-          "py-2",
-          "px-8",
-          "text-white",
-          "bg-green-600",
-        )}
-        onClick={() => tap()}
-      >
+      <button className={classnames(styles.button)} onClick={() => tap()}>
         Tap
       </button>
       <div>
@@ -61,21 +45,56 @@ function Game() {
   );
 }
 
-function App() {
-  const user = useStore((state) => state.user);
-  const start = useStore((state) => state.start);
+function CreateAccountPromotion() {
+  const navigate = useNavigate();
+  const onClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigate("/create-account");
+  };
 
   return (
-    <div>
-      {user ? (
-        <Game />
-      ) : (
-        <>
-          <Welcome />
-          <LoginForm onLogin={() => start()} />
-        </>
+    <div
+      className={classnames(
+        "mt-10",
+        "flex",
+        "justify-center",
+        "flex-col",
+        "items-center"
       )}
+    >
+      No account yet?
+      <button className={classnames(styles.button)} onClick={onClick}>
+        Create Account
+      </button>
     </div>
+  );
+}
+
+function LoginPage() {
+  const navigate = useNavigate();
+  const start = useStore((state) => state.start);
+  const onLogin = () => {
+    start("");
+    navigate("/");
+  };
+  return (
+    <div>
+      <Welcome />
+      <LoginForm onLogin={onLogin} />
+      <CreateAccountPromotion />
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<GamePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/create-account" element={<CreateAccountPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
