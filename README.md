@@ -128,9 +128,9 @@ sorted set.
 
 | Id  |  Type                 |  Payload           |
 |-----|-----------------------|--------------------|
-| ... |  "TAP"                |   amount?          |
-| ... |  "CONSTRUCT_BUILDING" | placeId, building  |
-| ... |  "UPGRADE_BUILDING"   | placeId            |
+| ... |  "TAP"                | amount?            |
+| ... |  "CONSTRUCT_BUILDING" | lotId, building    |
+| ... |  "UPGRADE_BUILDING"   | lotId              |
 | ... |  "TRAIN"              | education, amount  |
 | ... |  "EXPAND"             |                    |
 | ... |  "STEAL"              | amount, x, y       |

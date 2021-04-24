@@ -3,31 +3,18 @@ package pizzamouse;
 
 option go_package = "github.com/fnatte/pizza-mouse/internal";
 
-/*
-#### Client Messages
-
-| Id  |  Type                 |  Payload           |
-|-----|-----------------------|--------------------|
-| ... |  "TAP"                |   amount?          |
-| ... |  "CONSTRUCT_BUILDING" | placeId, building  |
-| ... |  "UPGRADE_BUILDING"   | placeId            |
-| ... |  "TRAIN"              | education, amount  |
-| ... |  "EXPAND"             |                    |
-| ... |  "STEAL"              | amount, x, y       |
-*/
-
 message ClientMessage {
   message Tap {
     int32 amount = 1;
   }
 
   message ConstructBuilding {
-    string placeId = 1;
+    string lotId = 1;
     string building = 2;
   }
 
   message UpgradeBuilding {
-    string placeId = 1;
+    string lotId = 1;
   }
 
   message Train {
