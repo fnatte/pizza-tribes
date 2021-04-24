@@ -12,6 +12,10 @@
     @apply bg-green-100;
   }
 
+  h2 {
+    @apply text-2xl my-4;
+  }
+
   input[type=text], input[type=password] {
     @apply p-1;
   }
