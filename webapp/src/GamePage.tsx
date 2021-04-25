@@ -1,10 +1,39 @@
-import React, {} from "react";
+import React, { useEffect, useState } from "react";
 import { Link, Navigate, Route, Routes } from "react-router-dom";
 import { classnames } from "tailwindcss-classnames";
 import Town from "./Game/Town";
 import TownLot from "./Game/TownLot";
 import { useStore } from "./store";
 import styles from "./styles";
+
+type ClockState = {
+  formatted: string;
+  isRushHour: boolean;
+};
+
+const clockStateNow = () => {
+  const mt = Date.now() * 24;
+  const t = new Date(mt);
+  const h = t.getUTCHours();
+  const m = t.getUTCMinutes();
+  return {
+    formatted: `${("0" + h).substr(-2)}:${("0" + m).substr(-2)}`,
+    isRushHour: (h >= 11 && h < 13) || (h >= 18 && h < 21),
+  };
+};
+
+const useMouseClock = () => {
+  const [clock, setClock] = useState<ClockState>(clockStateNow());
+
+  useEffect(() => {
+    const handle = window.setInterval(() => {
+      setClock(clockStateNow());
+    }, 1000);
+    return () => window.clearInterval(handle);
+  }, [setClock]);
+
+  return clock;
+};
 
 function Navigation() {
   const logout = useStore((state) => state.logout);
@@ -43,16 +72,38 @@ function PizzaEmoji() {
   return <span>🍕</span>;
 }
 
+function ClockEmoji() {
+  return <span>🕓</span>;
+}
+
+function SparkleEmoji() {
+  return <span>✨</span>;
+}
+
 function ResourceBar() {
   const { pizzas, coins } = useStore((state) => state.gameState.resources);
+  const clock = useMouseClock();
 
   return (
-    <div className={classnames("flex", "justify-center", "text-2xl", "mt-2")}>
-      <span className={classnames("px-6")}>
+    <div className={classnames("flex", "justify-center", "flex-wrap", "text-xl", "sm:text-2xl", "mt-2")}>
+      <span className={classnames("px-6", "mb-2")}>
         <CoinEmoji /> {coins.toString()}
       </span>
-      <span className={classnames("px-6")}>
+      <span className={classnames("px-6", "mb-2")}>
         <PizzaEmoji /> {pizzas.toString()}
+      </span>
+      <span className={classnames("px-6", "mb-2")}>
+        <span className={classnames("px-2")}>
+          <ClockEmoji />{" "}
+          <span style={{ minWidth: 60, display: "inline-block" }}>
+            {clock.formatted}
+          </span>
+        </span>
+        {clock.isRushHour && (
+          <span className={classnames("px-2")}>
+            <SparkleEmoji /> Rush Hour!
+          </span>
+        )}
       </span>
     </div>
   );

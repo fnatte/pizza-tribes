@@ -21,7 +21,6 @@ const connect = (onMessage: MessageHandler): Connection => {
   };
 
   conn.onmessage = (e) => {
-    console.log(e.data);
     const message = ServerMessage.fromJson(JSON.parse(e.data))
     onMessage(message);
   };

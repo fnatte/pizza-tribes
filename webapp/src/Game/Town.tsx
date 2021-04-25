@@ -1,15 +1,16 @@
 import React from "react";
 import { useEffect, useRef } from "react";
-import {useNavigate} from "react-router-dom";
-import { classnames } from "tailwindcss-classnames";
-import {useStore} from "../store";
+import { useNavigate } from "react-router-dom";
+import { classnames, TArg } from "tailwindcss-classnames";
+import { useStore } from "../store";
+import Population from "./Population";
 import classes from "./town.module.css";
 import TownSvg from "./TownSvg";
 
 function Town() {
   const ref = useRef<SVGSVGElement>(null);
   const navigate = useNavigate();
-  const lots = useStore(state => state.gameState.lots);
+  const lots = useStore((state) => state.gameState.lots);
 
   const onLotClick = (lotId: string) => {
     navigate(`/town/${lotId.replace("lot", "")}`);
@@ -47,7 +48,22 @@ function Town() {
       )}
     >
       <h2>Town</h2>
-        <TownSvg ref={ref} className={classes.svg} lots={lots} />
+      <div
+        className={classnames(
+          "relative",
+          "lg:w-9/12",
+          "w-11/12",
+          "max-w-screen-lg"
+        )}
+      >
+        <TownSvg
+          ref={ref}
+          className={classnames("w-full", classes.svg as TArg)}
+          lots={lots}
+          height={undefined}
+        />
+        <Population className={classnames("absolute", "top-0", "right-0")} />
+      </div>
     </div>
   );
 }

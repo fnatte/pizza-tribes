@@ -2,7 +2,7 @@ import { unstable_batchedUpdates } from "react-dom";
 import create from "zustand";
 import connect, { Connection } from "./connect";
 import { ClientMessage } from "./generated/client_message";
-import {GameStatePatch_LotPatch} from "./generated/gamestate";
+import {GameStatePatch_LotPatch, GameState_Population} from "./generated/gamestate";
 
 export type Lot = {
   building: string
@@ -14,6 +14,7 @@ export type GameState = {
     coins: bigint;
   };
   lots: Record<string, Lot|undefined>;
+  population: GameState_Population;
 };
 
 type User = {
@@ -59,6 +60,13 @@ export const useStore = create<State>((set, get) => ({
       coins: BigInt(0),
     },
     lots: {},
+    population: {
+      unemployed: BigInt(0),
+      chefs: BigInt(0),
+      salesmice: BigInt(0),
+      guards: BigInt(0),
+      thieves: BigInt(0),
+    }
   },
   user: null,
   connection: null,
@@ -95,6 +103,7 @@ export const useStore = create<State>((set, get) => ({
                 ...stateChange.resources,
               },
               lots: mergeLots(state.gameState.lots, stateChange.lots),
+              population: { ...state.gameState.population, ...stateChange.population },
             },
           }));
         });
@@ -133,4 +142,3 @@ export const useStore = create<State>((set, get) => ({
   },
 }));
 
-useStore.subscribe(console.log);
