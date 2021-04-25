@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
+import {useNavigate} from "react-router-dom";
 import { classnames } from "tailwindcss-classnames";
 import {useStore} from "../store";
 import styles from "../styles";
@@ -64,14 +65,17 @@ const PlaceholderImage = () => (
 
 const ConstructBuilding = ({ lotId }: Props) => {
   const constructBuilding = useStore((state) => state.constructBuilding);
+  const navigate = useNavigate();
 
   const onSelectClick = (e: React.MouseEvent, building: string) => {
     e.preventDefault();
     constructBuilding(lotId, building);
+    navigate("/town");
   };
 
   return (
     <div className={classnames("container", "mx-auto", "mt-4")}>
+      <h2>Construct Building</h2>
       {buildings.map((building) => {
         return (
           <div className={classnames("flex", "mb-8")} key={building.id}>
