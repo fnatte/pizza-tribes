@@ -8,7 +8,6 @@ import styles from "./styles";
 
 function Navigation() {
   const logout = useStore((state) => state.logout);
-  const tap = useStore((state) => state.tap);
 
   return (
     <nav className={classnames("flex", "justify-center")}>
