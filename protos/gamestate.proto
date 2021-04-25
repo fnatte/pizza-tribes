@@ -13,8 +13,17 @@ message GameState {
     string building = 1;
   }
 
+  message Population {
+    int64 unemployed = 1;
+    int64 chefs = 2;
+    int64 salesmice = 3;
+    int64 guards = 4;
+    int64 theives = 5;
+  }
+
   Resources resources = 1;
   map<string, Lot> lots = 2;
+  Population population = 3;
 }
 
 message GameStatePatch {
@@ -27,7 +36,17 @@ message GameStatePatch {
     optional string building = 1;
   }
 
+  message PopulationPatch {
+    optional int64 total = 1;
+    optional int64 unemployed = 2;
+    optional int64 chefs = 3;
+    optional int64 salesmouse = 4;
+    optional int64 guards = 5;
+    optional int64 theives = 6;
+  }
+
   optional ResourcesPatch resources = 1;
   map<string, LotPatch> lots = 2;
+  optional PopulationPatch population = 3;
 }
 

@@ -3,6 +3,7 @@ import {useNavigate} from "react-router-dom";
 import { classnames } from "tailwindcss-classnames";
 import {useStore} from "../store";
 import styles from "../styles";
+import PlaceholderImage from "./PlaceholderImage";
 
 const title = classnames("text-xl", "mb-2");
 const label = classnames("text-sm", "mr-1");
@@ -38,30 +39,13 @@ const buildings: Array<BuildingInfo> = [
     cost: 200,
     buildTime: "2 work minutes",
   },
+  {
+    id: "school",
+    title: "School",
+    cost: 500,
+    buildTime: "10 work minutes",
+  },
 ];
-
-const PlaceholderImage = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="300"
-    height="150"
-    viewBox="0 0 300 150"
-  >
-    <rect fill="#ddd" width="300" height="150" />
-    <text
-      fill="rgba(0,0,0,0.5)"
-      fontFamily="sans-serif"
-      fontSize="30"
-      dy="10.5"
-      fontWeight="bold"
-      x="50%"
-      y="50%"
-      textAnchor="middle"
-    >
-      300×150
-    </text>
-  </svg>
-);
 
 const ConstructBuilding = ({ lotId }: Props) => {
   const constructBuilding = useStore((state) => state.constructBuilding);

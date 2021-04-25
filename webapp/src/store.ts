@@ -2,6 +2,7 @@ import { unstable_batchedUpdates } from "react-dom";
 import create from "zustand";
 import connect, { Connection } from "./connect";
 import { ClientMessage } from "./generated/client_message";
+import {GameStatePatch_LotPatch} from "./generated/gamestate";
 
 export type Lot = {
   building: string
@@ -28,14 +29,23 @@ type State = {
   logout: () => Promise<void>;
   tap: () => void;
   constructBuilding: (lotId: string, building: string) => void;
+  train: (education: string, amount: number) => void;
 };
 
 const mergeLots = (a: GameState["lots"], b: Record<string, GameStatePatch_LotPatch>): GameState["lots"] => {
   const res = { ...a };
 
   Object.keys(b).forEach(lotId => {
+    const lot = res[lotId];
     if (b[lotId] !== undefined) {
-      res[lotId] = b[lotId];
+      const { building } = b[lotId];
+      if (building !== undefined) {
+        if (lot === undefined) {
+          res[lotId] = { building };
+        } else {
+          lot.building = building;
+        }
+      }
     }
   });
 
@@ -102,6 +112,20 @@ export const useStore = create<State>((set, get) => ({
           constructBuilding: {
             building,
             lotId,
+          },
+        },
+      })
+    );
+  },
+  train: (education, amount) => {
+    get().connection?.send(
+      ClientMessage.create({
+        id: "test-456",
+        type: {
+          oneofKind: "train",
+          train: {
+            education: education,
+            amount,
           },
         },
       })

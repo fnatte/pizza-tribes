@@ -1,0 +1,7 @@
+{
+  "plugins": {
+      "cleanupIDs": false,
+      "collapseGroups": false,
+      "prefixIds": false
+    }
+}

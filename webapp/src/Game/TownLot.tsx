@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { classnames } from "tailwindcss-classnames";
 import { useStore } from "../store";
 import ConstructBuilding from "./ConstructBuilding";
+import School from "./School";
 
 function TownLot() {
   const { id } = useParams();
@@ -23,6 +24,7 @@ function TownLot() {
       {lot?.building === "kitchen" && <h2>Kitchen</h2>}
       {lot?.building === "house" && <h2>House</h2>}
       {lot?.building === "shop" && <h2>Shop</h2>}
+      {lot?.building === "school" && <School />}
     </div>
   );
 }

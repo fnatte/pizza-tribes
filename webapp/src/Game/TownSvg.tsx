@@ -3,6 +3,7 @@ import { Lot } from "../store";
 import { ReactComponent as SvgKitchen } from "../../images/kitchen.svg";
 import { ReactComponent as SvgHouse } from "../../images/house.svg";
 import { ReactComponent as SvgShop } from "../../images/shop.svg";
+import { ReactComponent as SvgSchool } from "../../images/school.svg";
 
 function renderBuilding(building: string | undefined) {
   switch (building) {
@@ -25,6 +26,14 @@ function renderBuilding(building: string | undefined) {
     case "shop":
       return (
         <SvgShop
+          width={20}
+          height={20}
+          transform="translate(-10, -13)"
+        />
+      );
+    case "school":
+      return (
+        <SvgSchool
           width={20}
           height={20}
           transform="translate(-10, -13)"
