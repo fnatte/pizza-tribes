@@ -19,7 +19,9 @@ func main() {
 		DB:       0,  // use default DB
 	})
 
-	h := &handler{ rdb: rdb }
+	rc := internal.NewRedisClient(rdb)
+
+	h := &handler{ rdb: rc }
 
 	ctx := context.Background()
 

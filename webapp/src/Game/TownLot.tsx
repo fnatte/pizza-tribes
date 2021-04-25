@@ -1,6 +1,7 @@
 import React from "react";
-import {useParams} from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { classnames } from "tailwindcss-classnames";
+import ConstructBuilding from "./ConstructBuilding";
 
 function TownLot() {
   const { id } = useParams();
@@ -16,6 +17,7 @@ function TownLot() {
       )}
     >
       <h2>Lot {id}</h2>
+      <ConstructBuilding lotId={id} />
     </div>
   );
 }

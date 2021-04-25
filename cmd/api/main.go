@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -10,15 +11,16 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 type wsHandler struct {
-	rdb *redis.Client
+	rc internal.RedisClient
 }
 
 func (h *wsHandler) HandleMessage(ctx context.Context, m []byte, c *ws.Client) {
 	log.Debug().Str("userId", c.UserId()).Msg("Received message")
-	err := h.rdb.RPush(ctx, "wsin", &internal.IncomingMessage{
+	err := h.rc.RPush(ctx, "wsin", &internal.IncomingMessage{
 		SenderId: c.UserId(),
 		Body:     string(m),
 	}).Err()
@@ -27,10 +29,47 @@ func (h *wsHandler) HandleMessage(ctx context.Context, m []byte, c *ws.Client) {
 	}
 }
 func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
+	gs := internal.GameState{
+		Resources: &internal.GameState_Resources{},
+		Lots: map[string]*internal.GameState_Lot{},
+	}
+
 	log.Info().Str("userId", c.UserId()).Msg("Client connected")
-	// go (func() {
-	// 	c.Send([]byte("{ \"resources\": { \"coins\": 1, \"pizzas\": 1 } }"))
-	// })()
+	gsKey := fmt.Sprintf("user:%s:gamestate", c.UserId())
+	s, err := h.rc.JsonGet(ctx, gsKey, ".").Result()
+	if err != nil {
+		if err != redis.Nil {
+			return err
+		}
+		b, err := protojson.Marshal(&gs)
+		if err != nil {
+			return err
+		}
+		err = h.rc.JsonSet(ctx, gsKey, ".", string(b)).Err()
+		if err != nil {
+			return err
+		}
+		log.Info().Msg("Initilized new game state for user")
+	} else {
+		err = protojson.Unmarshal([]byte(s), &gs)
+		if err != nil {
+			return err
+		}
+		log.Info().Interface("gameState", &gs).Msg("Got game state")
+	}
+
+	go (func() {
+		msg := gs.ToStateChangeMessage()
+		b, err := protojson.Marshal(msg)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to send init game state patch")
+			return
+		}
+
+		c.Send(b)
+		log.Info().Msg("Sent init game state")
+	})()
+
 	return nil
 }
 
@@ -65,20 +104,6 @@ func (p *poller) run(ctx context.Context) {
 }
 
 func main() {
-	/*
-		msg := internal.ClientMessage{
-			Id: "test-123",
-			Type: &internal.ClientMessage_Tap_{
-				Tap: &internal.ClientMessage_Tap{
-					Amount: 32,
-				},
-			},
-		}
-
-		val, err := protojson.Marshal(&msg)
-		log.Info().Msg(string(val))
-	*/
-
 	log.Info().Msg("Starting Api")
 
 	ctx := context.Background()
@@ -89,7 +114,9 @@ func main() {
 		DB:       0,  // use default DB
 	})
 
-	handler := wsHandler{rdb: rdb}
+	rc := internal.NewRedisClient(rdb)
+
+	handler := wsHandler{rc: rc}
 	auth := NewAuthService(rdb)
 	wsHub := ws.NewHub()
 	wsEndpoint := ws.NewEndpoint(auth.Authorize, wsHub, &handler)

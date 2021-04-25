@@ -85,7 +85,7 @@ func (e *WsEndpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		hub:    e.hub,
 		ws:     ws,
 		userId: userId,
-		send:   make(chan []byte, 256),
+		send:   make(chan []byte, 512),
 	}
 	client.hub.register <- client
 

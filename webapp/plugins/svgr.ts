@@ -13,7 +13,14 @@ export default function svgrPlugin(): Plugin {
         const svg = await fs.promises.readFile(id, "utf8");
 
         const componentCode = (
-          await svgr(svg, { ref: true }, { componentName: "ReactComponent" })
+          await svgr(
+            svg,
+            {
+              ref: true,
+              plugins: ["@svgr/plugin-svgo", "@svgr/plugin-jsx"],
+            },
+            { componentName: "ReactComponent" }
+          )
         ).replace(
           "export default ForwardRef;",
           "export { ForwardRef as ReactComponent };"

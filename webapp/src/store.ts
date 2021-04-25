@@ -3,11 +3,16 @@ import create from "zustand";
 import connect, { Connection } from "./connect";
 import { ClientMessage } from "./generated/client_message";
 
-type GameState = {
+export type Lot = {
+  building: string
+}
+
+export type GameState = {
   resources: {
     pizzas: bigint;
     coins: bigint;
   };
+  lots: Record<string, Lot|undefined>;
 };
 
 type User = {
@@ -22,7 +27,20 @@ type State = {
   start: (username: string) => void;
   logout: () => Promise<void>;
   tap: () => void;
+  constructBuilding: (lotId: string, building: string) => void;
 };
+
+const mergeLots = (a: GameState["lots"], b: Record<string, GameStatePatch_LotPatch>): GameState["lots"] => {
+  const res = { ...a };
+
+  Object.keys(b).forEach(lotId => {
+    if (b[lotId] !== undefined) {
+      res[lotId] = b[lotId];
+    }
+  });
+
+  return res;
+}
 
 export const useStore = create<State>((set, get) => ({
   gameState: {
@@ -30,6 +48,7 @@ export const useStore = create<State>((set, get) => ({
       pizzas: BigInt(0),
       coins: BigInt(0),
     },
+    lots: {},
   },
   user: null,
   connection: null,
@@ -65,6 +84,7 @@ export const useStore = create<State>((set, get) => ({
                 ...state.gameState.resources,
                 ...stateChange.resources,
               },
+              lots: mergeLots(state.gameState.lots, stateChange.lots),
             },
           }));
         });
@@ -73,6 +93,20 @@ export const useStore = create<State>((set, get) => ({
     set((state) => ({ ...state, user: { username }, connection }));
   },
   setGameState: (gameState) => set((state) => ({ ...state, gameState })),
+  constructBuilding: (lotId, building) => {
+    get().connection?.send(
+      ClientMessage.create({
+        id: "test-456",
+        type: {
+          oneofKind: "constructBuilding",
+          constructBuilding: {
+            building,
+            lotId,
+          },
+        },
+      })
+    );
+  },
 }));
 
 useStore.subscribe(console.log);

@@ -104,11 +104,11 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.4142136"
-     inkscape:cx="362.15361"
-     inkscape:cy="727.36312"
+     inkscape:zoom="1"
+     inkscape:cx="341.35865"
+     inkscape:cy="723.52501"
      inkscape:document-units="px"
-     inkscape:current-layer="layer2"
+     inkscape:current-layer="layer4"
      inkscape:document-rotation="0"
      showgrid="false"
      fit-margin-top="0"
@@ -249,9 +249,9 @@
          id="path1034" />
       <path
          style="font-variation-settings:normal;vector-effect:none;fill:none;fill-opacity:1;stroke:#94831d;stroke-width:0.79375;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:1.5875, 0.79375;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000"
-         d="m 140.0182,208.82682 c 2.41177,1.50879 1.06886,2.66346 1.32292,3.96875"
+         d="m 132.45644,230.71575 c -0.18627,0.56882 -2.47249,2.75845 0.96018,5.21376 4.98132,4.43514 -1.6216,4.26136 -1.26349,6.57935"
          id="path942-5"
-         sodipodi:nodetypes="cc" />
+         sodipodi:nodetypes="ccc" />
       <path
          style="font-variation-settings:normal;opacity:1;vector-effect:none;fill:none;fill-opacity:1;stroke:#94831d;stroke-width:0.79375;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:1.5875, 0.79375;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000;stop-opacity:1"
          d="m 137.37236,203.53515 1.32292,3.96875"
@@ -285,118 +285,162 @@
      id="layer2"
      inkscape:label="lots"
      style="display:inline">
-    <ellipse
-       style="fill:#87c43b;fill-opacity:1;stroke-width:0.379362"
-       id="lot1"
-       cx="144.46866"
-       cy="187.16484"
-       rx="16.495483"
-       ry="9.5773678"
-       inkscape:label="lot1"
-       data-type="lot" />
-    <ellipse
-       style="fill:#87c43b;fill-opacity:1;stroke-width:0.379362"
+    <g
        id="lot11"
-       cx="188.70099"
-       cy="191.34061"
-       rx="16.495483"
-       ry="9.5773678"
        inkscape:label="lot11"
-       data-type="lot" />
-    <ellipse
-       style="fill:#87c43b;fill-opacity:1;stroke-width:0.379362"
+       transform="translate(188.53374,194.81916)">
+      <ellipse
+         style="fill:#87c43b;fill-opacity:1;stroke-width:0.379362"
+         id="lot11ellipse"
+         cx="0"
+         cy="0"
+         rx="16.495483"
+         ry="9.5773678"
+         data-type="lot" />
+    </g>
+    <g
        id="lot10"
-       cx="137.8835"
-       cy="153.54668"
-       rx="16.495483"
-       ry="9.5773678"
        inkscape:label="lot10"
-       data-type="lot" />
-    <ellipse
-       style="fill:#87c43b;fill-opacity:1;stroke-width:0.379362"
+       transform="translate(138.19418,153.78764)">
+      <ellipse
+         style="fill:#87c43b;fill-opacity:1;stroke-width:0.379362"
+         id="lot10ellipse"
+         cx="0"
+         cy="0"
+         rx="16.495483"
+         ry="9.5773678"
+         data-type="lot" />
+    </g>
+    <g
        id="lot9"
-       cx="89.910316"
-       cy="150.39093"
-       rx="16.495483"
-       ry="9.5773678"
        inkscape:label="lot9"
-       data-type="lot" />
-    <ellipse
-       style="fill:#87c43b;fill-opacity:1;stroke-width:0.379362"
+       transform="translate(88.460602,150.47845)">
+      <ellipse
+         style="fill:#87c43b;fill-opacity:1;stroke-width:0.379362"
+         id="lot9ellipse"
+         cx="0"
+         cy="0"
+         rx="16.495483"
+         ry="9.5773678"
+         data-type="lot" />
+    </g>
+    <g
        id="lot8"
-       cx="47.464844"
-       cy="181.19292"
-       rx="16.495483"
-       ry="9.5773678"
        inkscape:label="lot8"
-       data-type="lot" />
-    <ellipse
-       style="fill:#87c43b;fill-opacity:1;stroke-width:0.379362"
+       transform="translate(48.120898,181.3318)">
+      <ellipse
+         style="fill:#87c43b;fill-opacity:1;stroke-width:0.379362"
+         id="lot8ellipse"
+         cx="0"
+         cy="0"
+         rx="16.495483"
+         ry="9.5773678"
+         data-type="lot" />
+    </g>
+    <g
        id="lot7"
-       cx="47.946171"
-       cy="222.81386"
-       rx="16.495483"
-       ry="9.5773678"
-       data-type="lot"
-       inkscape:label="lot7" />
-    <ellipse
-       style="fill:#87c43b;fill-opacity:1;stroke-width:0.379362"
+       inkscape:label="lot7"
+       transform="translate(51.474069,223.25503)">
+      <ellipse
+         style="fill:#87c43b;fill-opacity:1;stroke-width:0.379362"
+         id="lot7ellipse"
+         cx="0"
+         cy="0"
+         rx="16.495483"
+         ry="9.5773678"
+         data-type="lot" />
+    </g>
+    <g
        id="lot6"
-       cx="87.388161"
-       cy="253.49947"
-       rx="16.495483"
-       ry="9.5773678"
        inkscape:label="lot6"
-       data-type="lot" />
-    <ellipse
-       style="fill:#87c43b;fill-opacity:1;stroke-width:0.379362"
+       transform="translate(89.653035,253.08961)">
+      <ellipse
+         style="fill:#87c43b;fill-opacity:1;stroke-width:0.379362"
+         id="lot6ellipse"
+         cx="0"
+         cy="0"
+         rx="16.495483"
+         ry="9.5773678"
+         data-type="lot" />
+    </g>
+    <g
        id="lot5"
-       cx="132.6888"
-       cy="250.58292"
-       rx="16.495483"
-       ry="9.5773678"
        inkscape:label="lot5"
-       data-type="lot" />
-    <ellipse
-       style="fill:#87c43b;fill-opacity:1;stroke-width:0.379362"
+       transform="translate(132.34434,251.03355)">
+      <ellipse
+         style="fill:#87c43b;fill-opacity:1;stroke-width:0.379362"
+         id="lot5ellipse"
+         cx="0"
+         cy="0"
+         rx="16.495483"
+         ry="9.5773678"
+         data-type="lot" />
+    </g>
+    <g
        id="lot4"
-       cx="163.97806"
-       cy="223.20686"
-       rx="16.495483"
-       ry="9.5773678"
        inkscape:label="lot4"
-       data-type="lot" />
-    <ellipse
-       style="fill:#87c43b;fill-opacity:1;stroke-width:0.379362"
+       transform="translate(164.19509,222.70541)">
+      <ellipse
+         style="fill:#87c43b;fill-opacity:1;stroke-width:0.379362"
+         id="lot4ellipse"
+         cx="0"
+         cy="0"
+         rx="16.495483"
+         ry="9.5773678"
+         data-type="lot" />
+    </g>
+    <g
        id="lot3"
-       cx="104.57233"
-       cy="216.00374"
-       rx="16.495483"
-       ry="9.5773678"
        inkscape:label="lot3"
-       data-type="lot" />
-    <ellipse
-       style="fill:#87c43b;fill-opacity:1;stroke-width:0.379362"
+       transform="translate(106.18972,215.42423)">
+      <ellipse
+         style="fill:#87c43b;fill-opacity:1;stroke-width:0.379362"
+         id="lot3ellipse"
+         rx="16.495483"
+         ry="9.5773678"
+         data-type="lot"
+         cx="0"
+         cy="0" />
+    </g>
+    <g
        id="lot2"
-       cx="95.033546"
-       cy="184.28395"
-       rx="16.495483"
-       ry="9.5773678"
        inkscape:label="lot2"
-       data-type="lot" />
+       transform="translate(95.670462,182.8625)">
+      <ellipse
+         style="fill:#87c43b;fill-opacity:1;stroke-width:0.379362"
+         id="lot2ellipse"
+         cx="0"
+         cy="0"
+         rx="16.495483"
+         ry="9.5773678"
+         data-type="lot" />
+    </g>
+    <g
+       id="lot1"
+       inkscape:label="lot1"
+       transform="translate(145.66142,186.99339)">
+      <ellipse
+         style="fill:#87c43b;fill-opacity:1;stroke-width:0.379362"
+         id="lot1ellipse"
+         cx="0"
+         cy="0"
+         rx="16.495483"
+         ry="9.5773678"
+         data-type="lot" />
+    </g>
   </g>
-  <ellipse
-     style="fill:#c1d07c;fill-opacity:1;stroke-width:0.236013"
-     id="ellipse1792"
-     cx="47.171516"
-     cy="180.75279"
-     rx="10.288446"
-     ry="5.9432712"
-     inkscape:label="empty" />
   <g
      inkscape:groupmode="layer"
      id="layer4"
      inkscape:label="housing">
+    <ellipse
+       style="fill:#c1d07c;fill-opacity:1;stroke-width:0.236013"
+       id="ellipse1792"
+       cx="47.171516"
+       cy="180.75279"
+       rx="10.288446"
+       ry="5.9432712"
+       inkscape:label="empty" />
     <g
        id="g1866"
        inkscape:label="shop1">
@@ -620,7 +664,7 @@
       </g>
     </g>
     <g
-       id="g2031"
+       id="house1"
        inkscape:label="house1"
        transform="matrix(0.37347719,0,0,0.37347719,103.54983,105.67107)"
        style="display:inline">

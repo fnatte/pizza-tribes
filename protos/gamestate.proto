@@ -1,0 +1,33 @@
+syntax = "proto3";
+package pizzamouse;
+
+option go_package = "github.com/fnatte/pizza-mouse/internal";
+
+message GameState {
+  message Resources {
+    int64 coins = 1;
+    int64 pizzas = 2;
+  }
+
+  message Lot {
+    string building = 1;
+  }
+
+  Resources resources = 1;
+  map<string, Lot> lots = 2;
+}
+
+message GameStatePatch {
+  message ResourcesPatch {
+    optional int64 coins = 1;
+    optional int64 pizzas = 2;
+  }
+
+  message LotPatch {
+    optional string building = 1;
+  }
+
+  optional ResourcesPatch resources = 1;
+  map<string, LotPatch> lots = 2;
+}
+
