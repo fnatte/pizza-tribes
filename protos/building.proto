@@ -1,0 +1,11 @@
+syntax = "proto3";
+package pizzamouse;
+
+option go_package = "github.com/fnatte/pizza-mouse/internal";
+
+enum Building {
+  KITCHEN = 0;
+  SHOP = 1;
+  HOUSE = 2;
+  SCHOOL = 3;
+}

@@ -1,12 +1,13 @@
 import { unstable_batchedUpdates } from "react-dom";
 import create from "zustand";
 import connect, { Connection } from "./connect";
+import {Building} from "./generated/building";
 import { ClientMessage } from "./generated/client_message";
 import {Education} from "./generated/education";
-import {GameStatePatch_LotPatch, GameState_Population, Training} from "./generated/gamestate";
+import {Construction, GameStatePatch_LotPatch, GameState_Population, Training} from "./generated/gamestate";
 
 export type Lot = {
-  building: string
+  building: Building
 }
 
 export type GameState = {
@@ -17,6 +18,7 @@ export type GameState = {
   lots: Record<string, Lot|undefined>;
   population: GameState_Population;
   trainingQueue: Array<Training>;
+  constructionQueue: Array<Construction>;
 };
 
 type User = {
@@ -31,7 +33,7 @@ type State = {
   start: (username: string) => void;
   logout: () => Promise<void>;
   tap: () => void;
-  constructBuilding: (lotId: string, building: string) => void;
+  constructBuilding: (lotId: string, building: Building) => void;
   train: (education: Education, amount: number) => void;
 };
 
@@ -70,6 +72,7 @@ export const useStore = create<State>((set, get) => ({
       thieves: BigInt(0),
     },
     trainingQueue: [],
+    constructionQueue: [],
   },
   user: null,
   connection: null,
@@ -110,6 +113,9 @@ export const useStore = create<State>((set, get) => ({
               trainingQueue: stateChange.trainingQueuePatched
                 ? stateChange.trainingQueue
                 : state.gameState.trainingQueue,
+              constructionQueue: stateChange.constructionQueuePatched
+                ? stateChange.constructionQueue
+                : state.gameState.constructionQueue,
             },
           }));
         });

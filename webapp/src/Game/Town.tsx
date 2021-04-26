@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { classnames, TArg } from "tailwindcss-classnames";
 import { useStore } from "../store";
+import ConstructionQueue from "./ConstructionQueue";
 import Population from "./Population";
 import classes from "./town.module.css";
 import TownSvg from "./TownSvg";
@@ -63,6 +64,7 @@ function Town() {
           height={undefined}
         />
         <Population className={classnames("absolute", "top-0", "right-0")} />
+        <ConstructionQueue className={classnames("absolute", "top-0", "left-0")} />
       </div>
     </div>
   );

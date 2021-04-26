@@ -25,6 +25,8 @@ func (gs *GameState) ToStateChangeMessage() *ServerMessage {
 		},
 		TrainingQueue: gs.TrainingQueue,
 		TrainingQueuePatched: true,
+		ConstructionQueue: gs.ConstructionQueue,
+		ConstructionQueuePatched: true,
 	}
 
 	return &ServerMessage{

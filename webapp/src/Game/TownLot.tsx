@@ -1,6 +1,7 @@
 import React, { useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { classnames } from "tailwindcss-classnames";
+import {Building} from "../generated/building";
 import { useStore } from "../store";
 import ConstructBuilding from "./ConstructBuilding";
 import School from "./School";
@@ -21,10 +22,10 @@ function TownLot() {
       )}
     >
       {!lot && <ConstructBuilding lotId={id} />}
-      {lot?.building === "kitchen" && <h2>Kitchen</h2>}
-      {lot?.building === "house" && <h2>House</h2>}
-      {lot?.building === "shop" && <h2>Shop</h2>}
-      {lot?.building === "school" && <School />}
+      {lot?.building === Building.KITCHEN && <h2>Kitchen</h2>}
+      {lot?.building === Building.HOUSE && <h2>House</h2>}
+      {lot?.building === Building.SHOP && <h2>Shop</h2>}
+      {lot?.building === Building.SCHOOL && <School />}
     </div>
   );
 }

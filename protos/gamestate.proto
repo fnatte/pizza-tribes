@@ -4,11 +4,18 @@ package pizzamouse;
 option go_package = "github.com/fnatte/pizza-mouse/internal";
 
 import "education.proto";
+import "building.proto";
 
 message Training {
   int64 complete_at = 1;
   Education education = 2;
   int32 amount = 3;
+}
+
+message Construction {
+  int64 complete_at = 1;
+  string lotId = 2;
+  Building building = 3;
 }
 
 message GameState {
@@ -19,7 +26,7 @@ message GameState {
   }
 
   message Lot {
-    string building = 1;
+    Building building = 1;
   }
 
   message Population {
@@ -35,6 +42,7 @@ message GameState {
   Population population = 3;
   int64 timestamp = 4;
   repeated Training trainingQueue = 5; 
+  repeated Construction constructionQueue = 6; 
 }
 
 message GameStatePatch {
@@ -44,7 +52,7 @@ message GameStatePatch {
   }
 
   message LotPatch {
-    optional string building = 1;
+    optional Building building = 1;
   }
 
   message PopulationPatch {
@@ -61,5 +69,7 @@ message GameStatePatch {
   optional int64 timestamp = 4;
   bool trainingQueuePatched = 5;
   repeated Training trainingQueue = 6; 
+  bool constructionQueuePatched = 7;
+  repeated Construction constructionQueue = 8; 
 }
 

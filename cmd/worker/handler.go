@@ -19,6 +19,20 @@ var trainTime = map[internal.Education]int64{
 	internal.Education_THIEF: 30,
 }
 
+var buildingCost = map[internal.Building]int64{
+	internal.Building_KITCHEN: 10,
+	internal.Building_SHOP: 15,
+	internal.Building_HOUSE: 20,
+	internal.Building_SCHOOL: 30,
+}
+
+var buildingTime = map[internal.Building]int64{
+	internal.Building_KITCHEN: 10,
+	internal.Building_SHOP: 15,
+	internal.Building_HOUSE: 20,
+	internal.Building_SCHOOL: 30,
+}
+
 type handler struct {
 	rdb internal.RedisClient
 }
@@ -42,17 +56,68 @@ func (h *handler) Handle(ctx context.Context, senderId string, m *internal.Clien
 func (h *handler) handleConstructBuilding(ctx context.Context, senderId string, m *internal.ClientMessage_ConstructBuilding) {
 	log.Info().
 		Str("senderId", senderId).
-		Str("Building", m.Building).
+		Interface("Building", m.Building).
 		Str("LotId", m.LotId).
 		Msg("Received message")
-	err := h.rdb.JsonSet(
-		ctx,
-		fmt.Sprintf("user:%s:gamestate", senderId),
-		fmt.Sprintf(".lots[\"%s\"]", m.LotId),
-		fmt.Sprintf("{ \"building\": \"%s\" }", m.Building)).Err()
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to handle construct building message")
+
+	gameStateKey := fmt.Sprintf("user:%s:gamestate", senderId)
+
+	txf := func(tx *redis.Tx) error {
+		coins, err := internal.RedisJsonGet(tx, ctx, gameStateKey, ".resources.coins").Int64()
+		if err != nil && err != redis.Nil {
+			return err
+		}
+
+		cost := buildingCost[m.Building]
+		if coins < cost {
+			return errors.New("Not enough coins")
+		}
+
+		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+			_, err := internal.RedisJsonNumIncrBy(
+				pipe, ctx, gameStateKey,
+				".resources.coins",
+				int64(-cost)).Result()
+			if err != nil {
+				log.Error().Err(err).Msg("Failed to decrease coins")
+				return err
+			}
+
+			construction := internal.Construction{
+				CompleteAt: time.Now().UnixNano() + buildingTime[m.Building] * 1e9,
+				LotId: m.LotId,
+				Building: m.Building,
+			}
+
+			b, err := protojson.Marshal(&construction)
+			if err != nil {
+				log.Error().Err(err).Msg("Failed to marshal training")
+				return err
+			}
+
+			err = internal.RedisJsonArrAppend(
+				pipe,
+				ctx,
+				fmt.Sprintf("user:%s:gamestate", senderId),
+				".constructionQueue",
+				b,
+			).Err()
+			if err != nil {
+				return err
+			}
+
+			return nil
+		})
+
+		return err
 	}
+
+	err := h.rdb.Watch(ctx, txf, gameStateKey)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to place on construction queue")
+		return
+	}
+
 	h.sendFullStateUpdate(ctx, senderId)
 }
 

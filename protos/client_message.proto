@@ -4,6 +4,7 @@ package pizzamouse;
 option go_package = "github.com/fnatte/pizza-mouse/internal";
 
 import "education.proto";
+import "building.proto";
 
 message ClientMessage {
   message Tap {
@@ -12,7 +13,7 @@ message ClientMessage {
 
   message ConstructBuilding {
     string lotId = 1;
-    string building = 2;
+    Building building = 2;
   }
 
   message UpgradeBuilding {

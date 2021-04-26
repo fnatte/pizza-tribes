@@ -4,10 +4,11 @@ import { ReactComponent as SvgKitchen } from "../../images/kitchen.svg";
 import { ReactComponent as SvgHouse } from "../../images/house.svg";
 import { ReactComponent as SvgShop } from "../../images/shop.svg";
 import { ReactComponent as SvgSchool } from "../../images/school.svg";
+import {Building} from "../generated/building";
 
-function renderBuilding(building: string | undefined) {
+function renderBuilding(building: Building | undefined) {
   switch (building) {
-    case "kitchen":
+    case Building.KITCHEN:
       return (
         <SvgKitchen
           width={20}
@@ -15,7 +16,7 @@ function renderBuilding(building: string | undefined) {
           transform="translate(-10, -13)"
         />
       );
-    case "house":
+    case Building.HOUSE:
       return (
         <SvgHouse
           width={20}
@@ -23,7 +24,7 @@ function renderBuilding(building: string | undefined) {
           transform="translate(-10, -13)"
         />
       );
-    case "shop":
+    case Building.SHOP:
       return (
         <SvgShop
           width={20}
@@ -31,7 +32,7 @@ function renderBuilding(building: string | undefined) {
           transform="translate(-10, -13)"
         />
       );
-    case "school":
+    case Building.SCHOOL:
       return (
         <SvgSchool
           width={20}
