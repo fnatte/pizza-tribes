@@ -37,6 +37,24 @@ func RedisJsonNumIncrBy(c RedisProcesser, ctx context.Context, key string, path 
 	return cmd
 }
 
+func RedisJsonSet(c RedisProcesser, ctx context.Context, key string, path string, value interface{}) *redis.StatusCmd {
+	cmd := redis.NewStatusCmd(ctx, "JSON.SET", key, path, value)
+	_ = c.Process(ctx, cmd)
+	return cmd
+}
+
+func RedisJsonArrAppend(c RedisProcesser, ctx context.Context, key string, path string, value interface{}) *redis.StatusCmd {
+	cmd := redis.NewStatusCmd(ctx, "JSON.ARRAPPEND", key, path, value)
+	_ = c.Process(ctx, cmd)
+	return cmd
+}
+
+func RedisJsonArrTrim(c RedisProcesser, ctx context.Context, key string, path string, start int, end int) *redis.StatusCmd {
+	cmd := redis.NewStatusCmd(ctx, "JSON.ARRTRIM", key, path, start, end)
+	_ = c.Process(ctx, cmd)
+	return cmd
+}
+
 func (c *redisClient) JsonGet(ctx context.Context, key string, path string) *redis.StringCmd {
 	cmd := redis.NewStringCmd(ctx, "JSON.GET", key, path)
 	_ = c.Process(ctx, cmd)

@@ -3,7 +3,16 @@ package pizzamouse;
 
 option go_package = "github.com/fnatte/pizza-mouse/internal";
 
+import "education.proto";
+
+message Training {
+  int64 complete_at = 1;
+  Education education = 2;
+  int32 amount = 3;
+}
+
 message GameState {
+
   message Resources {
     int64 coins = 1;
     int64 pizzas = 2;
@@ -18,12 +27,14 @@ message GameState {
     int64 chefs = 2;
     int64 salesmice = 3;
     int64 guards = 4;
-    int64 theives = 5;
+    int64 thieves = 5;
   }
 
   Resources resources = 1;
   map<string, Lot> lots = 2;
   Population population = 3;
+  int64 timestamp = 4;
+  repeated Training trainingQueue = 5; 
 }
 
 message GameStatePatch {
@@ -37,16 +48,18 @@ message GameStatePatch {
   }
 
   message PopulationPatch {
-    optional int64 total = 1;
-    optional int64 unemployed = 2;
-    optional int64 chefs = 3;
-    optional int64 salesmouse = 4;
-    optional int64 guards = 5;
-    optional int64 theives = 6;
+    optional int64 unemployed = 1;
+    optional int64 chefs = 2;
+    optional int64 salesmice = 3;
+    optional int64 guards = 4;
+    optional int64 thieves = 5;
   }
 
   optional ResourcesPatch resources = 1;
   map<string, LotPatch> lots = 2;
   optional PopulationPatch population = 3;
+  optional int64 timestamp = 4;
+  bool trainingQueuePatched = 5;
+  repeated Training trainingQueue = 6; 
 }
 

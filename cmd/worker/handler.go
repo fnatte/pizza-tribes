@@ -4,12 +4,20 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/fnatte/pizza-mouse/internal"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/protobuf/encoding/protojson"
 )
+
+var trainTime = map[internal.Education]int64{
+	internal.Education_CHEF: 10,
+	internal.Education_SALESMOUSE: 15,
+	internal.Education_GUARD: 20,
+	internal.Education_THIEF: 30,
+}
 
 type handler struct {
 	rdb internal.RedisClient
@@ -51,24 +59,9 @@ func (h *handler) handleConstructBuilding(ctx context.Context, senderId string, 
 func (h *handler) handleTrain(ctx context.Context, senderId string, m *internal.ClientMessage_Train) {
 	log.Info().
 		Str("senderId", senderId).
-		Str("Education", m.Education).
+		Interface("Education", m.Education).
 		Int32("Amount", m.Amount).
 		Msg("Received train message")
-
-	var populationKey string
-	switch m.Education {
-	case "chef":
-		populationKey = "chefs"
-	case "salesmouse":
-		populationKey = "salesmice"
-	case "guard":
-		populationKey = "guards"
-	case "thief":
-		populationKey = "thieves"
-	default:
-		log.Error().Str("education", m.Education).Msg("Invalid education")
-		return
-	}
 
 	gameStateKey := fmt.Sprintf("user:%s:gamestate", senderId)
 
@@ -90,17 +83,29 @@ func (h *handler) handleTrain(ctx context.Context, senderId string, m *internal.
 				int64(-m.Amount)).Result()
 			if err != nil {
 				log.Error().Err(err).Msg("Failed to decrease unemployed")
+				return err
 			}
 
-			_, err = internal.RedisJsonNumIncrBy(
+			training := internal.Training{
+				CompleteAt: time.Now().UnixNano() + trainTime[m.Education] * 1e9,
+				Education: m.Education,
+				Amount: m.Amount,
+			}
+
+			b, err := protojson.Marshal(&training)
+			if err != nil {
+				log.Error().Err(err).Msg("Failed to marshal training")
+				return err
+			}
+
+			internal.RedisJsonArrAppend(
 				pipe,
 				ctx,
 				fmt.Sprintf("user:%s:gamestate", senderId),
-				fmt.Sprintf(".population.%s", populationKey),
-				int64(m.Amount)).Result()
-			if err != nil {
-				log.Error().Err(err).Msg(fmt.Sprintf("Failed to increase %s", m.Education))
-			}
+				".trainingQueue",
+				b,
+			)
+
 			return nil
 		})
 		return err

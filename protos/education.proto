@@ -1,0 +1,11 @@
+syntax = "proto3";
+package pizzamouse;
+
+option go_package = "github.com/fnatte/pizza-mouse/internal";
+
+enum Education {
+  CHEF = 0;
+  SALESMOUSE = 1;
+  GUARD = 2;
+  THIEF = 3;
+}

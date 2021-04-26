@@ -3,6 +3,8 @@ package pizzamouse;
 
 option go_package = "github.com/fnatte/pizza-mouse/internal";
 
+import "education.proto";
+
 message ClientMessage {
   message Tap {
     int32 amount = 1;
@@ -18,7 +20,7 @@ message ClientMessage {
   }
 
   message Train {
-    string education = 1;
+    Education education = 1;
     int32 amount = 2;
   }
 

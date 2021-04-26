@@ -16,6 +16,10 @@
     @apply text-2xl my-4;
   }
 
+  h3 {
+    @apply text-xl my-4;
+  }
+
   h4 {
     @apply text-base my-2 font-bold;
   }

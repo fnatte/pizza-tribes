@@ -47,8 +47,8 @@ you join the dirty game yourself and send thieves on your competitors!
 - Construct building
 - Upgrade building
 - Train
-- Expand
 - Steal
+- Expand
 
 ### Other Features
 

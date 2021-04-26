@@ -2,7 +2,8 @@ import { unstable_batchedUpdates } from "react-dom";
 import create from "zustand";
 import connect, { Connection } from "./connect";
 import { ClientMessage } from "./generated/client_message";
-import {GameStatePatch_LotPatch, GameState_Population} from "./generated/gamestate";
+import {Education} from "./generated/education";
+import {GameStatePatch_LotPatch, GameState_Population, Training} from "./generated/gamestate";
 
 export type Lot = {
   building: string
@@ -15,6 +16,7 @@ export type GameState = {
   };
   lots: Record<string, Lot|undefined>;
   population: GameState_Population;
+  trainingQueue: Array<Training>;
 };
 
 type User = {
@@ -30,7 +32,7 @@ type State = {
   logout: () => Promise<void>;
   tap: () => void;
   constructBuilding: (lotId: string, building: string) => void;
-  train: (education: string, amount: number) => void;
+  train: (education: Education, amount: number) => void;
 };
 
 const mergeLots = (a: GameState["lots"], b: Record<string, GameStatePatch_LotPatch>): GameState["lots"] => {
@@ -66,7 +68,8 @@ export const useStore = create<State>((set, get) => ({
       salesmice: BigInt(0),
       guards: BigInt(0),
       thieves: BigInt(0),
-    }
+    },
+    trainingQueue: [],
   },
   user: null,
   connection: null,
@@ -104,6 +107,9 @@ export const useStore = create<State>((set, get) => ({
               },
               lots: mergeLots(state.gameState.lots, stateChange.lots),
               population: { ...state.gameState.population, ...stateChange.population },
+              trainingQueue: stateChange.trainingQueuePatched
+                ? stateChange.trainingQueue
+                : state.gameState.trainingQueue,
             },
           }));
         });
