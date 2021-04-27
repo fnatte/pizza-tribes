@@ -5,7 +5,16 @@ option go_package = "github.com/fnatte/pizza-mouse/internal";
 
 import "building.proto";
 
+message EducationInfo {
+  string title = 1;
+  string titlePlural = 2;
+  int32 cost = 3;
+  int32 trainTime = 4;
+  optional Building employer = 5;
+}
+
 message GameData {
-  map<int32, BuildingInfo> buildingInfos = 1;
+  map<int32, BuildingInfo> buildings = 1;
+  map<int32, EducationInfo> educations = 2;
 }
 

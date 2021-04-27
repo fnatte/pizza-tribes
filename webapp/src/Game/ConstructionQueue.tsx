@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useInterval, useMedia } from "react-use";
 import { classnames, TArg, TClasses } from "tailwindcss-classnames";
 import { useStore } from "../store";
-import { buildingsByType } from "./data";
 
 const ConstructionQueue: React.FC<{ className?: string }> = ({ className }) => {
   const isMinLg = useMedia("(min-width: 1024px)", false);
+  const buildings = useStore(state => state.gameData?.buildings) ?? {};
   const constructionQueue = useStore(
     (state) => state.gameState.constructionQueue
   );
@@ -68,7 +68,7 @@ const ConstructionQueue: React.FC<{ className?: string }> = ({ className }) => {
                 }
               >
                 <td className={classnames("p-2")}>
-                  {buildingsByType[construction.building].title}
+                  {buildings[construction.building].title}
                 </td>
                 <td className={classnames("p-2")}>
                   {`in ${

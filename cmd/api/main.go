@@ -126,7 +126,9 @@ func main() {
 	r.PathPrefix("/auth").Handler(http.StripPrefix("/auth", auth.Router()))
 	r.Handle("/ws", wsEndpoint)
 	r.HandleFunc("/gamedata", func (w http.ResponseWriter, r *http.Request) {
-		b, err := protojson.Marshal(&internal.FullGameData)
+		b, err := protojson.MarshalOptions{
+			UseEnumNumbers: true,
+		}.Marshal(&internal.FullGameData)
 		if err != nil {
 			w.WriteHeader(500)
 			log.Error().Err(err).Msg("Failed to marhsla full game data")

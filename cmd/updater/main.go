@@ -241,9 +241,9 @@ func countBuildings(gs *internal.GameState) (counts map[int32]int32) {
 
 func countMaxEmployed(buildingCount map[int32]int32) (counts map[int32]int32) {
 	counts = map[int32]int32{}
-	buildingInfos := internal.FullGameData.BuildingInfos
+	buildings := internal.FullGameData.Buildings
 	for k := range internal.Building_name {
-		employer := buildingInfos[k].Employer
+		employer := buildings[k].Employer
 		if employer != nil {
 			maxWorkforce := employer.MaxWorkforce
 			counts[k] = buildingCount[k] * maxWorkforce

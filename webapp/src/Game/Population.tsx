@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useMedia } from "react-use";
 import { classnames, TArg, TClasses } from "tailwindcss-classnames";
 import { Building } from "../generated/building";
+import { Education } from "../generated/education";
+import { GameState_Population } from "../generated/gamestate";
 import { Lot, useStore } from "../store";
-import { roles } from "./data";
 
 const countBuildings = (
   lots: Record<string, Lot | undefined>
@@ -25,6 +26,20 @@ const countBuildings = (
   return counts;
 };
 
+const getPopulationKey = (id: number): keyof GameState_Population | null => {
+  switch (id) {
+    case Education.CHEF:
+      return "chefs";
+    case Education.GUARD:
+      return "guards";
+    case Education.THIEF:
+      return "thieves";
+    case Education.SALESMOUSE:
+      return "salesmice";
+  }
+  return null;
+};
+
 const Population: React.FC<{ className?: string }> = ({ className }) => {
   const isMinLg = useMedia("(min-width: 1024px)", false);
   const population = useStore((state) => state.gameState.population);
@@ -40,6 +55,9 @@ const Population: React.FC<{ className?: string }> = ({ className }) => {
   useEffect(() => setMinimized(!isMinLg), [isMinLg, setMinimized]);
 
   const buildingCount = countBuildings(lots);
+
+  const educations = gameData?.educations ?? {};
+  const buildings = gameData?.buildings ?? {};
 
   return (
     <div className={classnames("bg-white", "p-2", className as TArg)}>
@@ -73,19 +91,30 @@ const Population: React.FC<{ className?: string }> = ({ className }) => {
       {!minimized && (
         <table>
           <tbody>
-            {roles.map((role) => (
-              <tr key={role.id}>
-                <td className={classnames("p-2")}>{role.titlePlural}</td>
-                <td className={classnames("p-2")}>
-                  {role.employer !== undefined
-                    ? `${population[role.id].toString()} / ${
-                        (gameData?.buildingInfos[role.employer].employer
-                          ?.maxWorkforce ?? 0) * buildingCount[role.employer]
-                      }`
-                    : population[role.id].toString()}
-                </td>
-              </tr>
-            ))}
+            {Object.keys(educations)
+              .map(Number)
+              .map((id) => {
+                const popKey = getPopulationKey(id);
+                const pop = (popKey && population[popKey].toString()) ?? "0";
+                const education = educations[id];
+
+                return (
+                  <tr key={id}>
+                    <td className={classnames("p-2")}>
+                      {educations[id].titlePlural}
+                    </td>
+                    <td className={classnames("p-2")}>
+                      {education.employer !== undefined
+                        ? `${pop.toString()} / ${
+                            (buildings[education.employer].employer
+                              ?.maxWorkforce ?? 0) *
+                            buildingCount[education.employer]
+                          }`
+                        : pop.toString()}
+                    </td>
+                  </tr>
+                );
+              })}
           </tbody>
         </table>
       )}
