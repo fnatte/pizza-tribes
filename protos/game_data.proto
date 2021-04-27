@@ -1,0 +1,11 @@
+syntax = "proto3";
+package pizzamouse;
+
+option go_package = "github.com/fnatte/pizza-mouse/internal";
+
+import "building.proto";
+
+message GameData {
+  map<int32, BuildingInfo> buildingInfos = 1;
+}
+

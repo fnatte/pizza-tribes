@@ -17,7 +17,7 @@ func (gs *GameState) ToStateChangeMessage() *ServerMessage {
 			Pizzas: NewInt64(gs.Resources.Pizzas),
 		},
 		Population: &GameStatePatch_PopulationPatch{
-			Unemployed: NewInt64(gs.Population.Unemployed),
+			Uneducated: NewInt64(gs.Population.Uneducated),
 			Chefs:      NewInt64(gs.Population.Chefs),
 			Salesmice:  NewInt64(gs.Population.Salesmice),
 			Guards:     NewInt64(gs.Population.Guards),

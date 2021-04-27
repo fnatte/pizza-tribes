@@ -49,7 +49,7 @@ func (u *updater) update(ctx context.Context, userId string) {
 		if err != nil && err != redis.Nil {
 			return err
 		}
-		err = protojson.Unmarshal([]byte(b), &gs)
+		err = gs.LoadProtoJson([]byte(b))
 		if err != nil {
 			return err
 		}
@@ -231,21 +231,49 @@ func min(x, y int64) int64 {
 	return y
 }
 
+func countBuildings(gs *internal.GameState) (counts map[int32]int32) {
+	counts = map[int32]int32{}
+	for _, lot := range gs.Lots {
+		counts[int32(lot.Building)] = counts[int32(lot.Building)] + 1
+	}
+	return counts
+}
+
+func countMaxEmployed(buildingCount map[int32]int32) (counts map[int32]int32) {
+	counts = map[int32]int32{}
+	buildingInfos := internal.FullGameData.BuildingInfos
+	for k := range internal.Building_name {
+		employer := buildingInfos[k].Employer
+		if employer != nil {
+			maxWorkforce := employer.MaxWorkforce
+			counts[k] = buildingCount[k] * maxWorkforce
+		}
+	}
+	return counts
+}
+
 func extrapolate(gs *internal.GameState) changes {
 	now := time.Now()
 	rush, offpeak := mtime.GetRush(gs.Timestamp, now.Unix())
 	dt := float64(now.Unix() - gs.Timestamp)
 
-	pizzasProduced := int64(float64(gs.Population.Chefs) * 0.2 * dt)
+	buildingCount := countBuildings(gs)
+	maxEmployed := countMaxEmployed(buildingCount)
+
+	employedChefs := min(gs.Population.Chefs, int64(maxEmployed[int32(internal.Building_KITCHEN)]))
+	pizzasProduced := int64(float64(employedChefs) * 0.2 * dt)
 	pizzasAvailable := gs.Resources.Pizzas + pizzasProduced
 
 	demand := int64(float64(rush)*0.75 + float64(offpeak)*0.2)
-	maxSellsByMice := int64(float64(gs.Population.Salesmice) * 0.5 * dt)
+	employedSalesmice := min(gs.Population.Salesmice, int64(maxEmployed[int32(internal.Building_SHOP)]))
+	maxSellsByMice := int64(float64(employedSalesmice) * 0.5 * dt)
 	pizzasSold := min(demand, min(maxSellsByMice, pizzasAvailable))
 
 	log.Info().
 		Int64("chefs", gs.Population.Chefs).
+		Int64("employedChefs", employedChefs).
 		Int64("salesmice", gs.Population.Salesmice).
+		Int64("employedSalesmice", employedSalesmice).
 		Float64("dt", dt).
 		Int64("rush", rush).
 		Int64("offpeak", offpeak).

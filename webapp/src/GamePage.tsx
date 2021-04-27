@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Link, Navigate, Route, Routes } from "react-router-dom";
+import { useAsync } from "react-use";
 import { classnames } from "tailwindcss-classnames";
 import Town from "./Game/Town";
 import TownLot from "./Game/TownLot";
+import { GameData } from "./generated/game_data";
 import { useStore } from "./store";
 import styles from "./styles";
+import { ReactComponent as HeartsSvg } from "../images/hearts.svg";
 
 type ClockState = {
   formatted: string;
@@ -85,7 +88,16 @@ function ResourceBar() {
   const clock = useMouseClock();
 
   return (
-    <div className={classnames("flex", "justify-center", "flex-wrap", "text-xl", "sm:text-2xl", "mt-2")}>
+    <div
+      className={classnames(
+        "flex",
+        "justify-center",
+        "flex-wrap",
+        "text-xl",
+        "sm:text-2xl",
+        "mt-2"
+      )}
+    >
       <span className={classnames("px-6", "mb-2")}>
         <CoinEmoji /> {coins.toString()}
       </span>
@@ -133,9 +145,29 @@ function Map() {
 
 function GamePage() {
   const user = useStore((state) => state.user);
+  const gameData = useStore((state) => state.gameData);
+  const fetchGameData = useStore((state) => state.fetchGameData);
 
   if (user === null) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (gameData === null) {
+    fetchGameData();
+
+    return (
+      <div
+        className={classnames(
+          "fixed",
+          "left-1/2",
+          "top-1/2",
+          "-translate-y-1/2",
+          "-translate-x-1/2"
+        )}
+      >
+        <HeartsSvg />
+      </div>
+    );
   }
 
   return (

@@ -193,7 +193,7 @@ func (h *handler) sendFullStateUpdate(ctx context.Context, senderId string) {
 	}
 
 	gs := internal.GameState{}
-	err = protojson.Unmarshal([]byte(s), &gs)
+	gs.LoadProtoJson([]byte(s))
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to send full state update")
 		return

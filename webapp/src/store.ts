@@ -1,21 +1,27 @@
 import { unstable_batchedUpdates } from "react-dom";
 import create from "zustand";
 import connect, { Connection } from "./connect";
-import {Building} from "./generated/building";
+import { Building } from "./generated/building";
 import { ClientMessage } from "./generated/client_message";
-import {Education} from "./generated/education";
-import {Construction, GameStatePatch_LotPatch, GameState_Population, Training} from "./generated/gamestate";
+import { Education } from "./generated/education";
+import {
+  Construction,
+  GameStatePatch_LotPatch,
+  GameState_Population,
+  Training,
+} from "./generated/gamestate";
+import { GameData } from "./generated/game_data";
 
 export type Lot = {
-  building: Building
-}
+  building: Building;
+};
 
 export type GameState = {
   resources: {
     pizzas: bigint;
     coins: bigint;
   };
-  lots: Record<string, Lot|undefined>;
+  lots: Record<string, Lot | undefined>;
   population: GameState_Population;
   trainingQueue: Array<Training>;
   constructionQueue: Array<Construction>;
@@ -27,9 +33,11 @@ type User = {
 
 type State = {
   gameState: GameState;
+  gameData: GameData|null;
   user: User | null;
   connection: Connection | null;
   setGameState: (gameState: GameState) => void;
+  fetchGameData: () => Promise<void>;
   start: (username: string) => void;
   logout: () => Promise<void>;
   tap: () => void;
@@ -37,10 +45,13 @@ type State = {
   train: (education: Education, amount: number) => void;
 };
 
-const mergeLots = (a: GameState["lots"], b: Record<string, GameStatePatch_LotPatch>): GameState["lots"] => {
+const mergeLots = (
+  a: GameState["lots"],
+  b: Record<string, GameStatePatch_LotPatch>
+): GameState["lots"] => {
   const res = { ...a };
 
-  Object.keys(b).forEach(lotId => {
+  Object.keys(b).forEach((lotId) => {
     const lot = res[lotId];
     if (b[lotId] !== undefined) {
       const { building } = b[lotId];
@@ -55,7 +66,7 @@ const mergeLots = (a: GameState["lots"], b: Record<string, GameStatePatch_LotPat
   });
 
   return res;
-}
+};
 
 export const useStore = create<State>((set, get) => ({
   gameState: {
@@ -65,7 +76,7 @@ export const useStore = create<State>((set, get) => ({
     },
     lots: {},
     population: {
-      unemployed: BigInt(0),
+      uneducated: BigInt(0),
       chefs: BigInt(0),
       salesmice: BigInt(0),
       guards: BigInt(0),
@@ -76,6 +87,20 @@ export const useStore = create<State>((set, get) => ({
   },
   user: null,
   connection: null,
+  gameData: null,
+  fetchGameData: async () => {
+    const response = await fetch("/api/gamedata");
+    if (
+      !response.ok ||
+      response.headers.get("Content-Type") !== "application/json"
+    ) {
+      console.error("Failed to get game data");
+      return;
+    }
+    const data = await response.json();
+    const gameData = data as GameData;
+    set((state) => ({ ...state, gameData }));
+  },
   logout: async () => {
     const res = await fetch("/api/auth/logout");
     if (res.ok) {
@@ -109,7 +134,10 @@ export const useStore = create<State>((set, get) => ({
                 ...stateChange.resources,
               },
               lots: mergeLots(state.gameState.lots, stateChange.lots),
-              population: { ...state.gameState.population, ...stateChange.population },
+              population: {
+                ...state.gameState.population,
+                ...stateChange.population,
+              },
               trainingQueue: stateChange.trainingQueuePatched
                 ? stateChange.trainingQueue
                 : state.gameState.trainingQueue,
@@ -153,4 +181,3 @@ export const useStore = create<State>((set, get) => ({
     );
   },
 }));
-

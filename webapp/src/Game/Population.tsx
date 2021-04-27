@@ -1,12 +1,35 @@
 import React, { useEffect, useState } from "react";
 import { useMedia } from "react-use";
 import { classnames, TArg, TClasses } from "tailwindcss-classnames";
-import { useStore } from "../store";
+import { Building } from "../generated/building";
+import { Lot, useStore } from "../store";
 import { roles } from "./data";
+
+const countBuildings = (
+  lots: Record<string, Lot | undefined>
+): Record<Building, number> => {
+  const counts = {
+    0: 0,
+    1: 0,
+    2: 0,
+    3: 0,
+  };
+
+  Object.keys(lots).forEach((lotId) => {
+    const lot = lots[lotId];
+    if (lot) {
+      counts[lot.building]++;
+    }
+  });
+
+  return counts;
+};
 
 const Population: React.FC<{ className?: string }> = ({ className }) => {
   const isMinLg = useMedia("(min-width: 1024px)", false);
   const population = useStore((state) => state.gameState.population);
+  const lots = useStore((state) => state.gameState.lots);
+  const gameData = useStore((state) => state.gameData);
   const [minimized, setMinimized] = useState(isMinLg);
 
   const onToggleClick = (e: React.MouseEvent) => {
@@ -15,6 +38,8 @@ const Population: React.FC<{ className?: string }> = ({ className }) => {
   };
 
   useEffect(() => setMinimized(!isMinLg), [isMinLg, setMinimized]);
+
+  const buildingCount = countBuildings(lots);
 
   return (
     <div className={classnames("bg-white", "p-2", className as TArg)}>
@@ -52,7 +77,12 @@ const Population: React.FC<{ className?: string }> = ({ className }) => {
               <tr key={role.id}>
                 <td className={classnames("p-2")}>{role.titlePlural}</td>
                 <td className={classnames("p-2")}>
-                  {population[role.id].toString()}
+                  {role.employer !== undefined
+                    ? `${population[role.id].toString()} / ${
+                        (gameData?.buildingInfos[role.employer].employer
+                          ?.maxWorkforce ?? 0) * buildingCount[role.employer]
+                      }`
+                    : population[role.id].toString()}
                 </td>
               </tr>
             ))}

@@ -51,7 +51,7 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 		}
 		log.Info().Msg("Initilized new game state for user")
 	} else {
-		err = protojson.Unmarshal([]byte(s), &gs)
+		gs.LoadProtoJson([]byte(s))
 		if err != nil {
 			return err
 		}
@@ -125,6 +125,16 @@ func main() {
 	r := mux.NewRouter()
 	r.PathPrefix("/auth").Handler(http.StripPrefix("/auth", auth.Router()))
 	r.Handle("/ws", wsEndpoint)
+	r.HandleFunc("/gamedata", func (w http.ResponseWriter, r *http.Request) {
+		b, err := protojson.Marshal(&internal.FullGameData)
+		if err != nil {
+			w.WriteHeader(500)
+			log.Error().Err(err).Msg("Failed to marhsla full game data")
+			return
+		}
+		w.Header().Add("Content-Type", "application/json")
+		w.Write(b)
+	})
 
 	go wsHub.Run()
 	go poller.run(ctx)

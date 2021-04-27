@@ -19,7 +19,6 @@ message Construction {
 }
 
 message GameState {
-
   message Resources {
     int64 coins = 1;
     int64 pizzas = 2;
@@ -30,7 +29,7 @@ message GameState {
   }
 
   message Population {
-    int64 unemployed = 1;
+    int64 uneducated = 1;
     int64 chefs = 2;
     int64 salesmice = 3;
     int64 guards = 4;
@@ -56,7 +55,7 @@ message GameStatePatch {
   }
 
   message PopulationPatch {
-    optional int64 unemployed = 1;
+    optional int64 uneducated = 1;
     optional int64 chefs = 2;
     optional int64 salesmice = 3;
     optional int64 guards = 4;

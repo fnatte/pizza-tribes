@@ -9,3 +9,11 @@ enum Building {
   HOUSE = 2;
   SCHOOL = 3;
 }
+
+message Employer {
+  int32 maxWorkforce = 1;
+}
+
+message BuildingInfo {
+  optional Employer employer = 1;
+}

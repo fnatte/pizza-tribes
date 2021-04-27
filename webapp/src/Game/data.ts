@@ -5,6 +5,7 @@ export type RoleInfo = {
   id: keyof GameState_Population;
   title: string;
   titlePlural: string;
+  employer?: Building;
 };
 
 export type BuildingInfo = {
@@ -18,19 +19,21 @@ export type BuildingInfo = {
 
 export const roles: Array<RoleInfo> = [
   {
-    id: "unemployed",
-    title: "Unemployed",
-    titlePlural: "Unemployees",
+    id: "uneducated",
+    title: "Uneducated",
+    titlePlural: "Uneducated",
   },
   {
     id: "chefs",
     title: "Chef",
     titlePlural: "Chefs",
+    employer: Building.KITCHEN,
   },
   {
     id: "salesmice",
     title: "Salesmouse",
     titlePlural: "Salesmice",
+    employer: Building.SHOP,
   },
   {
     id: "guards",
