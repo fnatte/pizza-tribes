@@ -1,6 +1,6 @@
 import { unstable_batchedUpdates } from "react-dom";
 import create from "zustand";
-import connect, { Connection } from "./connect";
+import connect, { Connection, ConnectionState } from "./connect";
 import { Building } from "./generated/building";
 import { ClientMessage } from "./generated/client_message";
 import { Education } from "./generated/education";
@@ -11,6 +11,7 @@ import {
   Training,
 } from "./generated/gamestate";
 import { GameData } from "./generated/game_data";
+import { ServerMessage } from "./generated/server_message";
 
 export type Lot = {
   building: Building;
@@ -33,9 +34,10 @@ type User = {
 
 type State = {
   gameState: GameState;
-  gameData: GameData|null;
+  gameData: GameData | null;
   user: User | null;
   connection: Connection | null;
+  connectionState: ConnectionState | null;
   setGameState: (gameState: GameState) => void;
   fetchGameData: () => Promise<void>;
   start: (username: string) => void;
@@ -87,6 +89,7 @@ export const useStore = create<State>((set, get) => ({
   },
   user: null,
   connection: null,
+  connectionState: null,
   gameData: null,
   fetchGameData: async () => {
     const response = await fetch("/api/gamedata");
@@ -121,7 +124,7 @@ export const useStore = create<State>((set, get) => ({
     get().connection?.send(msg);
   },
   start: (username: string) => {
-    const connection = connect((msg) => {
+    const onMessage = (msg: ServerMessage) => {
       if (msg.payload.oneofKind === "stateChange") {
         const stateChange = msg.payload.stateChange;
         unstable_batchedUpdates(() => {
@@ -148,7 +151,12 @@ export const useStore = create<State>((set, get) => ({
           }));
         });
       }
-    });
+    };
+    const onStateChange = (connectionState: ConnectionState) => {
+      console.log(connectionState);
+      set((state) => ({ ...state, connectionState }));
+    };
+    const connection = connect(onStateChange, onMessage);
     set((state) => ({ ...state, user: { username }, connection }));
   },
   setGameState: (gameState) => set((state) => ({ ...state, gameState })),

@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Link, Navigate, Route, Routes } from "react-router-dom";
 import { useAsync } from "react-use";
-import { classnames } from "tailwindcss-classnames";
+import { classnames, TArg } from "tailwindcss-classnames";
 import Town from "./Game/Town";
 import TownLot from "./Game/TownLot";
 import { GameData } from "./generated/game_data";
 import { useStore } from "./store";
 import styles from "./styles";
 import { ReactComponent as HeartsSvg } from "../images/hearts.svg";
+import { ConnectionState } from "./connect";
 
 type ClockState = {
   formatted: string;
@@ -143,7 +144,44 @@ function Map() {
   );
 }
 
+const ConnectionPopup: React.VFC<{ connectionState: ConnectionState }> = ({
+  connectionState,
+}) => {
+  const [wasConnected, setWasConnected] = useState(connectionState.connected);
+  useEffect(() => {
+    if (!wasConnected) {
+      setWasConnected(true);
+    }
+  }, [connectionState.connected]);
+
+  return (
+    <div
+      className={classnames(
+        "fixed",
+        "top-1/2",
+        "left-1/2",
+        "transform" as TArg,
+        "-translate-x-1/2",
+        "-translate-y-1/2",
+        "p-4",
+        "bg-white"
+      )}
+    >
+      {wasConnected ? (
+        <>
+          <h2>Connection lost</h2>
+          <p>Trying to reconnect...</p>
+          <p>Reconnect attempts: {connectionState.reconnectAttempts}</p>
+        </>
+      ) : (
+        <h2>Connecting</h2>
+      )}
+    </div>
+  );
+};
+
 function GamePage() {
+  const connectionState = useStore((state) => state.connectionState);
   const user = useStore((state) => state.user);
   const gameData = useStore((state) => state.gameData);
   const fetchGameData = useStore((state) => state.fetchGameData);
@@ -161,6 +199,7 @@ function GamePage() {
           "fixed",
           "left-1/2",
           "top-1/2",
+          "transform" as TArg,
           "-translate-y-1/2",
           "-translate-x-1/2"
         )}
@@ -182,6 +221,21 @@ function GamePage() {
         <Route path="town" element={<Town />} />
         <Route path="/" element={<Navigate to="/town" replace />} />
       </Routes>
+      {connectionState?.connecting && (
+        <div
+          className={classnames(
+            "fixed",
+            "top-0",
+            "left-0",
+            "bg-gray-600",
+            "bg-opacity-50",
+            "w-full",
+            "h-full"
+          )}
+        >
+          <ConnectionPopup connectionState={connectionState} />
+        </div>
+      )}
     </div>
   );
 }

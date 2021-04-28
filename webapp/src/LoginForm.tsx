@@ -1,30 +1,41 @@
-import React, {useState} from "react";
-import {classnames, TArg} from "tailwindcss-classnames";
+import React, { useState } from "react";
+import { classnames, TArg } from "tailwindcss-classnames";
 
 type Props = {
   onLogin: () => void;
-}
+};
 
 const LoginForm: React.FC<Props> = ({ onLogin }) => {
   const [isLoading, setLoading] = useState(false);
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     setLoading(true);
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const json = JSON.stringify(Object.fromEntries(formData));
+    let response: Response;
+    try {
+      e.preventDefault();
+      const formData = new FormData(e.currentTarget);
+      const json = JSON.stringify(Object.fromEntries(formData));
 
-    const result = await fetch("/api/auth/login", {
-      method: "POST",
-      body: json,
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-    });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      response = await fetch("/api/auth/login", {
+        method: "POST",
+        body: json,
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+    } catch (e) {
+      setLoading(false);
+      throw e;
+    }
+
     setLoading(false);
-    if (result.status === 200) {
+    if (response.status === 200) {
       onLogin();
     }
   };
@@ -71,6 +82,6 @@ const LoginForm: React.FC<Props> = ({ onLogin }) => {
       </button>
     </form>
   );
-}
+};
 
 export default LoginForm;
