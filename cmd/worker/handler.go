@@ -12,27 +12,6 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-var trainTime = map[internal.Education]int64{
-	internal.Education_CHEF: 10,
-	internal.Education_SALESMOUSE: 15,
-	internal.Education_GUARD: 20,
-	internal.Education_THIEF: 30,
-}
-
-var buildingCost = map[internal.Building]int64{
-	internal.Building_KITCHEN: 10,
-	internal.Building_SHOP: 15,
-	internal.Building_HOUSE: 20,
-	internal.Building_SCHOOL: 30,
-}
-
-var buildingTime = map[internal.Building]int64{
-	internal.Building_KITCHEN: 10,
-	internal.Building_SHOP: 15,
-	internal.Building_HOUSE: 20,
-	internal.Building_SCHOOL: 30,
-}
-
 type handler struct {
 	rdb internal.RedisClient
 }
@@ -68,7 +47,9 @@ func (h *handler) handleConstructBuilding(ctx context.Context, senderId string, 
 			return err
 		}
 
-		cost := buildingCost[m.Building]
+		buildingInfo := internal.FullGameData.Buildings[int32(m.Building)]
+
+		cost := int64(buildingInfo.Cost)
 		if coins < cost {
 			return errors.New("Not enough coins")
 		}
@@ -84,7 +65,7 @@ func (h *handler) handleConstructBuilding(ctx context.Context, senderId string, 
 			}
 
 			construction := internal.Construction{
-				CompleteAt: time.Now().UnixNano() + buildingTime[m.Building] * 1e9,
+				CompleteAt: time.Now().UnixNano() + int64(buildingInfo.ConstructionTime) * 1e9,
 				LotId: m.LotId,
 				Building: m.Building,
 			}
@@ -151,8 +132,11 @@ func (h *handler) handleTrain(ctx context.Context, senderId string, m *internal.
 				return err
 			}
 
+			eduInfo := internal.FullGameData.Educations[int32(m.Education)]
+			trainTime := int64(eduInfo.TrainTime)
+
 			training := internal.Training{
-				CompleteAt: time.Now().UnixNano() + trainTime[m.Education] * 1e9,
+				CompleteAt: time.Now().UnixNano() + trainTime * 1e9,
 				Education: m.Education,
 				Amount: m.Amount,
 			}
