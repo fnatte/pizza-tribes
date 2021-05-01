@@ -18,9 +18,14 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v2
         with:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: docker.pkg.github.com
           push: true
-          tags: fnatte/pizza-tribes-api:latest
           target: api
+          registry: docker.pkg.github.com
+          repository: fnatte/pizza-tribes/api
+          tag_with_ref: true
       -
         name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
