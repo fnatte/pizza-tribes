@@ -3,6 +3,9 @@ import reactRefresh from '@vitejs/plugin-react-refresh'
 import svgr from './plugins/svgr';
 
 export default defineConfig({
+  build: {
+    target: 'es2020',
+  },
   server: {
     proxy: {
       '/api': {

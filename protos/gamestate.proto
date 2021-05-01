@@ -3,6 +3,7 @@ package pizzatribes;
 
 option go_package = "github.com/fnatte/pizza-tribes/internal";
 
+import "google/protobuf/wrappers.proto";
 import "education.proto";
 import "building.proto";
 
@@ -46,26 +47,26 @@ message GameState {
 
 message GameStatePatch {
   message ResourcesPatch {
-    optional int64 coins = 1;
-    optional int64 pizzas = 2;
+    google.protobuf.Int64Value coins = 1;
+    google.protobuf.Int64Value pizzas = 2;
   }
 
   message LotPatch {
-    optional Building building = 1;
+    Building building = 1;
   }
 
   message PopulationPatch {
-    optional int64 uneducated = 1;
-    optional int64 chefs = 2;
-    optional int64 salesmice = 3;
-    optional int64 guards = 4;
-    optional int64 thieves = 5;
+    google.protobuf.Int64Value uneducated = 1;
+    google.protobuf.Int64Value chefs = 2;
+    google.protobuf.Int64Value salesmice = 3;
+    google.protobuf.Int64Value guards = 4;
+    google.protobuf.Int64Value thieves = 5;
   }
 
-  optional ResourcesPatch resources = 1;
+  ResourcesPatch resources = 1;
   map<string, LotPatch> lots = 2;
-  optional PopulationPatch population = 3;
-  optional int64 timestamp = 4;
+  PopulationPatch population = 3;
+  google.protobuf.Int64Value timestamp = 4;
   bool trainingQueuePatched = 5;
   repeated Training trainingQueue = 6;
   bool constructionQueuePatched = 7;

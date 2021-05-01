@@ -19,5 +19,5 @@ message BuildingInfo {
   string titlePlural = 2;
   int32 cost = 3;
   int32 constructionTime = 4;
-  optional Employer employer = 5;
+  Employer employer = 5;
 }

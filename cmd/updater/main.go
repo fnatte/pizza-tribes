@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"os"
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal"
@@ -12,6 +13,7 @@ import (
 	"github.com/rs/xid"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 func getPopulationKey(edu internal.Education) (string, error) {
@@ -152,10 +154,10 @@ func (u *updater) update(ctx context.Context, userId string) {
 	// Notify
 	gsPatch := &internal.GameStatePatch{
 		Resources: &internal.GameStatePatch_ResourcesPatch{
-			Coins:  internal.NewInt64(changes.coins),
-			Pizzas: internal.NewInt64(changes.pizzas),
+			Coins:  &wrapperspb.Int64Value{ Value: changes.coins },
+			Pizzas:  &wrapperspb.Int64Value{ Value: changes.pizzas },
 		},
-		Timestamp: internal.NewInt64(changes.timestamp),
+		Timestamp:  &wrapperspb.Int64Value{ Value: changes.timestamp },
 	}
 
 	if len(completedTrainings) > 0 {
@@ -165,21 +167,21 @@ func (u *updater) update(ctx context.Context, userId string) {
 		for _, t := range completedTrainings {
 			switch t.Education {
 			case internal.Education_CHEF:
-				gsPatch.Population.Chefs = internal.NewInt64(
-					gs.Population.Chefs + int64(t.Amount),
-				)
+				gsPatch.Population.Chefs = &wrapperspb.Int64Value{
+					Value: gs.Population.Chefs + int64(t.Amount),
+				}
 			case internal.Education_SALESMOUSE:
-				gsPatch.Population.Salesmice = internal.NewInt64(
-					gs.Population.Salesmice + int64(t.Amount),
-				)
+				gsPatch.Population.Salesmice = &wrapperspb.Int64Value{
+					Value: gs.Population.Salesmice + int64(t.Amount),
+				}
 			case internal.Education_GUARD:
-				gsPatch.Population.Guards = internal.NewInt64(
-					gs.Population.Guards + int64(t.Amount),
-				)
+				gsPatch.Population.Guards = &wrapperspb.Int64Value{
+					Value: gs.Population.Guards + int64(t.Amount),
+				}
 			case internal.Education_THIEF:
-				gsPatch.Population.Thieves = internal.NewInt64(
-					gs.Population.Thieves + int64(t.Amount),
-				)
+				gsPatch.Population.Thieves = &wrapperspb.Int64Value{
+					Value: gs.Population.Thieves + int64(t.Amount),
+				}
 			}
 		}
 	}
@@ -190,7 +192,7 @@ func (u *updater) update(ctx context.Context, userId string) {
 		gsPatch.Lots = map[string]*internal.GameStatePatch_LotPatch{}
 		for _, constr := range completedConstructions {
 			gsPatch.Lots[constr.LotId] = &internal.GameStatePatch_LotPatch{
-				Building: &constr.Building,
+				Building: constr.Building,
 			}
 		}
 	}
@@ -318,12 +320,20 @@ func getCompletedConstructions(gs *internal.GameState) (res []*internal.Construc
 	return res
 }
 
+func envOrDefault(key string, defaultVal string) string{
+	val, ok := os.LookupEnv(key)
+	if ok {
+		return val
+	}
+	return defaultVal
+}
+
 func main() {
 	log.Info().Msg("Starting updater")
 
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
+		Addr:     envOrDefault("REDIS_ADDR", "localhost:6379"),
+		Password: envOrDefault("REDIS_PASSWORD", ""),
 		DB:       0,  // use default DB
 	})
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"os"
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal"
@@ -9,13 +10,20 @@ import (
 	"github.com/rs/zerolog/log"
 	"google.golang.org/protobuf/encoding/protojson"
 )
+func envOrDefault(key string, defaultVal string) string{
+	val, ok := os.LookupEnv(key)
+	if ok {
+		return val
+	}
+	return defaultVal
+}
 
 func main() {
 	log.Info().Msg("Starting worker")
 
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
+		Addr:     envOrDefault("REDIS_ADDR", "localhost:6379"),
+		Password: envOrDefault("REDIS_PASSWORD", ""),
 		DB:       0,  // use default DB
 	})
 

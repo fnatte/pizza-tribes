@@ -25,12 +25,12 @@ type WsEndpoint struct {
 	handler  WsHandler
 }
 
-func NewEndpoint(authFunc AuthFunc, hub *Hub, handler WsHandler) *WsEndpoint {
+func NewEndpoint(authFunc AuthFunc, hub *Hub, handler WsHandler, origin string) *WsEndpoint {
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
 		CheckOrigin: func(r *http.Request) bool {
-			if r.Header.Get("Origin") == "http://localhost:3000" {
+			if r.Header.Get("Origin") == origin {
 				return true
 			}
 

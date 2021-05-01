@@ -1,4 +1,5 @@
 GO_MODULE := github.com/fnatte/pizza-tribes
+GO_FLAGS := -ldflags '-s -w -extldflags "-static"'
 
 PROTOS := $(wildcard protos/*.proto)
 PBGO := $(patsubst protos/%.proto,internal/%.pb.go,$(PROTOS))
@@ -8,15 +9,15 @@ internal/%.pb.go: protos/%.proto
 
 .PHONY: build-api
 build-api: $(PBGO)
-	go build -o out/pizza-tribes-api github.com/fnatte/pizza-tribes/cmd/api
+	go build $(GO_FLAGS) -o out/pizza-tribes-api github.com/fnatte/pizza-tribes/cmd/api
 
 .PHONY: build-worker
 build-worker:
-	go build -o out/pizza-tribes-worker github.com/fnatte/pizza-tribes/cmd/worker
+	go build $(GO_FLAGS) -o out/pizza-tribes-worker github.com/fnatte/pizza-tribes/cmd/worker
 
 .PHONY: build-updater
 build-updater: $(PBGO)
-	go build -o out/pizza-tribes-updater github.com/fnatte/pizza-tribes/cmd/updater
+	go build $(GO_FLAGS) -o out/pizza-tribes-updater github.com/fnatte/pizza-tribes/cmd/updater
 
 build: build-api build-worker build-updater
 

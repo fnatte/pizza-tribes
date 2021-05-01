@@ -1,8 +1,11 @@
 #!/bin/sh
+protoc > /dev/null 2>&1 # Installs protoc
 protoc \
 	--plugin ./node_modules/.bin/protoc-gen-dump \
 	--plugin ./node_modules/.bin/protoc-gen-ts \
 	--ts_out src/generated/ \
 	--proto_path ./node_modules/@protobuf-ts/plugin \
+	--proto_path ./node_modules/@protobuf-ts/protoc/installed/*/include \
 	--proto_path ../protos/ \
-	../protos/*.proto
+	../protos/*.proto \
+	./node_modules/@protobuf-ts/protoc/installed/*/include/google/protobuf/wrappers.proto

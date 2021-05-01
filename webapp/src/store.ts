@@ -11,6 +11,7 @@ import {
   Training,
 } from "./generated/gamestate";
 import { GameData } from "./generated/game_data";
+import {Int64Value} from "./generated/google/protobuf/wrappers";
 import { ServerMessage } from "./generated/server_message";
 
 export type Lot = {
@@ -127,6 +128,15 @@ export const useStore = create<State>((set, get) => ({
     const onMessage = (msg: ServerMessage) => {
       if (msg.payload.oneofKind === "stateChange") {
         const stateChange = msg.payload.stateChange;
+
+        const resources: Partial<State['gameState']['resources']> = {};
+        if (stateChange.resources?.coins?.value) {
+          resources.coins = stateChange.resources.coins.value;
+        }
+        if (stateChange.resources?.pizzas?.value) {
+          resources.pizzas = stateChange.resources.pizzas.value;
+        }
+
         unstable_batchedUpdates(() => {
           set((state) => ({
             ...state,
@@ -134,27 +144,29 @@ export const useStore = create<State>((set, get) => ({
               ...state.gameState,
               resources: {
                 ...state.gameState.resources,
-                ...stateChange.resources,
+                ...resources,
               },
-              lots: mergeLots(state.gameState.lots, stateChange.lots),
-              population: {
-                ...state.gameState.population,
-                ...stateChange.population,
-              },
-              trainingQueue: stateChange.trainingQueuePatched
-                ? stateChange.trainingQueue
-                : state.gameState.trainingQueue,
-              constructionQueue: stateChange.constructionQueuePatched
-                ? stateChange.constructionQueue
-                : state.gameState.constructionQueue,
             },
+            lots: mergeLots(state.gameState.lots, stateChange.lots),
+            population: {
+              ...state.gameState.population,
+              ...stateChange.population,
+            },
+            trainingQueue: stateChange.trainingQueuePatched
+              ? stateChange.trainingQueue
+              : state.gameState.trainingQueue,
+            constructionQueue: stateChange.constructionQueuePatched
+              ? stateChange.constructionQueue
+              : state.gameState.constructionQueue,
           }));
         });
       }
     };
     const onStateChange = (connectionState: ConnectionState) => {
       console.log(connectionState);
-      set((state) => ({ ...state, connectionState }));
+      unstable_batchedUpdates(() => {
+        set((state) => ({ ...state, connectionState }));
+      });
     };
     const connection = connect(onStateChange, onMessage);
     set((state) => ({ ...state, user: { username }, connection }));

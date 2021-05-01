@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/fnatte/pizza-tribes/cmd/api/ws"
@@ -103,23 +105,39 @@ func (p *poller) run(ctx context.Context) {
 
 }
 
+func envOrDefault(key string, defaultVal string) string{
+	val, ok := os.LookupEnv(key)
+	if ok {
+		return val
+	}
+	return defaultVal
+}
+
 func main() {
 	log.Info().Msg("Starting Api")
+
+	port, err := strconv.Atoi(envOrDefault("PORT", "8080"))
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to parse port")
+		return
+	}
 
 	ctx := context.Background()
 
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
+		Addr:     envOrDefault("REDIS_ADDR", "localhost:6379"),
+		Password: envOrDefault("REDIS_PASSWORD", ""),
 		DB:       0,  // use default DB
 	})
 
 	rc := internal.NewRedisClient(rdb)
 
+	origin := envOrDefault("ORIGIN", "http://localhost:8080")
+
 	handler := wsHandler{rc: rc}
 	auth := NewAuthService(rdb)
 	wsHub := ws.NewHub()
-	wsEndpoint := ws.NewEndpoint(auth.Authorize, wsHub, &handler)
+	wsEndpoint := ws.NewEndpoint(auth.Authorize, wsHub, &handler, origin)
 	poller := poller{rdb: rdb, hub: wsHub}
 
 	r := mux.NewRouter()
@@ -141,7 +159,7 @@ func main() {
 	go wsHub.Run()
 	go poller.run(ctx)
 
-	err := http.ListenAndServe(":8080", r)
+	err = http.ListenAndServe(fmt.Sprintf(":%d", port), r)
 	if err != nil {
 		log.Fatal().Err(err).Msg("ListenAndServe")
 	}

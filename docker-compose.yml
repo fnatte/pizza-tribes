@@ -1,7 +1,36 @@
-version: '3'
+version: '3.4'
 services:
   redis:
     image: "redislabs/redismod"
+  api:
+    build:
+      context: .
+      target: api
+    env_file: .env
+    environment:
+      PORT: 8080
+      REDIS_ADDR: "redis:6379"
+  worker:
+    build:
+      context: .
+      target: worker
+    environment:
+      REDIS_ADDR: "redis:6379"
+  updater:
+    build:
+      context: .
+      target: "updater"
+    environment:
+      REDIS_ADDR: "redis:6379"
+  webapp:
+    build:
+      context: .
+      target: "webapp"
+  front:
+    build:
+      context: .
+      target: "front"
     ports:
-      - "6379:6379"
+      - "8080:8080"
+
 

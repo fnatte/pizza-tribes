@@ -16,6 +16,11 @@ export type ConnectionApi = {
   close: () => void;
 };
 
+const getAddr = () => {
+  const isSecure = window.location.protocol === 'https:';
+  return `${isSecure ? 'wss' : 'ws'}://${window.location.host}/api/ws`
+};
+
 const connect = (
   onStateChange: (state: ConnectionState) => void,
   onMessage: MessageHandler
@@ -75,7 +80,7 @@ const connect = (
     setState({ connecting: true });
 
     conn?.close();
-    conn = new WebSocket("ws://localhost:3000/api/ws");
+    conn = new WebSocket(getAddr());
     conn.onclose = (e) => {
       const unauthorized = e.code === 4010;
       if (unauthorized) {
