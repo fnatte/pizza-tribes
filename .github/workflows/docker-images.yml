@@ -21,10 +21,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: docker.pkg.github.com
-          push: true
-          target: api
-          registry: docker.pkg.github.com
           repository: fnatte/pizza-tribes/api
+          target: api
+          push: true
           tag_with_ref: true
       -
         name: Image digest
