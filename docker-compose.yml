@@ -19,17 +19,17 @@ services:
   updater:
     build:
       context: .
-      target: "updater"
+      target: updater
     environment:
       REDIS_ADDR: "redis:6379"
   webapp:
     build:
       context: .
-      target: "webapp"
+      target: webapp
   front:
     build:
       context: .
-      target: "front"
+      target: front
     ports:
       - "8080:8080"
 
