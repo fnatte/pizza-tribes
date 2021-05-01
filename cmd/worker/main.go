@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/fnatte/pizza-mouse/internal"
+	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/protobuf/encoding/protojson"

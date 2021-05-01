@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/fnatte/pizza-mouse/cmd/api/ws"
-	"github.com/fnatte/pizza-mouse/internal"
+	"github.com/fnatte/pizza-tribes/cmd/api/ws"
+	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"

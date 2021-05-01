@@ -1,7 +1,7 @@
 syntax = "proto3";
-package pizzamouse;
+package pizzatribes;
 
-option go_package = "github.com/fnatte/pizza-mouse/internal";
+option go_package = "github.com/fnatte/pizza-tribes/internal";
 
 import "building.proto";
 

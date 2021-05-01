@@ -1,7 +1,7 @@
 syntax = "proto3";
-package pizzamouse;
+package pizzatribes;
 
-option go_package = "github.com/fnatte/pizza-mouse/internal";
+option go_package = "github.com/fnatte/pizza-tribes/internal";
 
 import "education.proto";
 import "building.proto";
@@ -40,8 +40,8 @@ message GameState {
   map<string, Lot> lots = 2;
   Population population = 3;
   int64 timestamp = 4;
-  repeated Training trainingQueue = 5; 
-  repeated Construction constructionQueue = 6; 
+  repeated Training trainingQueue = 5;
+  repeated Construction constructionQueue = 6;
 }
 
 message GameStatePatch {
@@ -67,8 +67,8 @@ message GameStatePatch {
   optional PopulationPatch population = 3;
   optional int64 timestamp = 4;
   bool trainingQueuePatched = 5;
-  repeated Training trainingQueue = 6; 
+  repeated Training trainingQueue = 6;
   bool constructionQueuePatched = 7;
-  repeated Construction constructionQueue = 8; 
+  repeated Construction constructionQueue = 8;
 }
 

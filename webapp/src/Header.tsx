@@ -12,7 +12,7 @@ function Header() {
       )}
     >
       <h1 className={classnames("flex", "justify-center", "p-8", "text-4xl")}>
-        Pizza Mouse
+        Pizza Tribes
       </h1>
       <div className={classnames("text-2xl")}>🍕🍕🍕🍕</div>
     </div>

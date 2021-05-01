@@ -1,11 +1,11 @@
-# Pizza Mouse
+# Pizza Tribes
 
 This project is aimed to be registered for [RedisConf 2021
 Hackathon](https://hackathons.redislabs.com/hackathons/build-on-redis-hackathon).
 
 ## Project Idea
 
-Pizza Mouse is a multiplayer persistent browser-based clicker real-time
+Pizza Tribes is a multiplayer persistent browser-based clicker real-time
 strategy game. The gameplay is a combination of a clicker game
 (https://en.wikipedia.org/wiki/Incremental_game) and a real-time strategy
 game

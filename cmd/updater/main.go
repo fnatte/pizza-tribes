@@ -6,8 +6,8 @@ import (
 	"math"
 	"time"
 
-	"github.com/fnatte/pizza-mouse/internal"
-	"github.com/fnatte/pizza-mouse/internal/mtime"
+	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/mtime"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog/log"

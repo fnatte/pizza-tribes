@@ -1,4 +1,4 @@
-module github.com/fnatte/pizza-mouse
+module github.com/fnatte/pizza-tribes
 
 go 1.16
 

@@ -63,7 +63,7 @@ function Navigation() {
 function GameTitle() {
   return (
     <div className={classnames("flex", "justify-center", "text-xl", "mt-2")}>
-      Pizza Mouse
+      Pizza Tribes
     </div>
   );
 }
