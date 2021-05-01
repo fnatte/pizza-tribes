@@ -1,6 +1,6 @@
 import { unstable_batchedUpdates } from "react-dom";
 import create from "zustand";
-import connect, { Connection, ConnectionState } from "./connect";
+import connect, { ConnectionApi, ConnectionState } from "./connect";
 import { Building } from "./generated/building";
 import { ClientMessage } from "./generated/client_message";
 import { Education } from "./generated/education";
@@ -36,7 +36,7 @@ type State = {
   gameState: GameState;
   gameData: GameData | null;
   user: User | null;
-  connection: Connection | null;
+  connection: ConnectionApi | null;
   connectionState: ConnectionState | null;
   setGameState: (gameState: GameState) => void;
   fetchGameData: () => Promise<void>;
