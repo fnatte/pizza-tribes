@@ -1,4 +1,4 @@
-:8080 {
+{$HOST} {
   handle_path /api/* {
     reverse_proxy api:8080
   }

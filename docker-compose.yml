@@ -3,6 +3,7 @@ services:
   redis:
     image: "redislabs/redismod"
   api:
+    image: "ghcr.io/fnatte/pizza-tribes-api:latest"
     build:
       context: .
       target: api
@@ -11,26 +12,30 @@ services:
       PORT: 8080
       REDIS_ADDR: "redis:6379"
   worker:
+    image: "ghcr.io/fnatte/pizza-tribes-worker:latest"
     build:
       context: .
       target: worker
     environment:
       REDIS_ADDR: "redis:6379"
   updater:
+    image: "ghcr.io/fnatte/pizza-tribes-updater:latest"
     build:
       context: .
       target: updater
     environment:
       REDIS_ADDR: "redis:6379"
   webapp:
+    image: "ghcr.io/fnatte/pizza-tribes-webapp:latest"
     build:
       context: .
       target: webapp
   front:
+    image: "ghcr.io/fnatte/pizza-tribes-front:latest"
     build:
       context: .
       target: front
     ports:
-      - "8080:8080"
+      - "443:8080"
 
 
