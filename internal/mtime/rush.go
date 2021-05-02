@@ -1,7 +1,5 @@
 package mtime
 
-import "github.com/rs/zerolog/log"
-
 func IsRush(t int64) bool {
 	h, _, _ := Clock(HumanUnixToMouse(t))
 	return (h >= 11 && h < 13) || (h >= 18 && h < 21)
@@ -9,7 +7,6 @@ func IsRush(t int64) bool {
 
 func GetRush(then, now int64) (rush, offpeak int64) {
 	dt := now - then
-	log.Info().Int64("dt", dt).Msg("test")
 
 	// If extrapolating less than a minute, just check if midtime is rush
 	if dt < 60 {
