@@ -5,7 +5,7 @@ PROTOS := $(wildcard protos/*.proto)
 PBGO := $(patsubst protos/%.proto,internal/%.pb.go,$(PROTOS))
 
 internal/%.pb.go: protos/%.proto
-	protoc -I=protos/ --go_out=./ --go_opt=module=$(GO_MODULE) $?
+	protoc -I=protos/ --go_out=./ --go_opt=module=$(GO_MODULE) --experimental_allow_proto3_optional $?
 
 .PHONY: build-api
 build-api: $(PBGO)

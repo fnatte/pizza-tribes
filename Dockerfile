@@ -6,7 +6,7 @@ FROM golang:1.16-alpine3.13 AS builder
 WORKDIR /app
 
 # Install build tool dependencies
-RUN apk add protobuf make
+RUN apk add protobuf protobuf-dev make
 RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 
 # Install modules

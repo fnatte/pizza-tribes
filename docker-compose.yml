@@ -2,7 +2,10 @@ version: '3.4'
 services:
   redis:
     image: "redislabs/redismod"
+    volumes:
+      - redis_data:/data
   api:
+    image: "ghcr.io/fnatte/pizza-tribes-api:latest"
     build:
       context: .
       target: api
@@ -11,26 +14,35 @@ services:
       PORT: 8080
       REDIS_ADDR: "redis:6379"
   worker:
+    image: "ghcr.io/fnatte/pizza-tribes-worker:latest"
     build:
       context: .
       target: worker
     environment:
       REDIS_ADDR: "redis:6379"
   updater:
+    image: "ghcr.io/fnatte/pizza-tribes-updater:latest"
     build:
       context: .
-      target: "updater"
+      target: updater
     environment:
       REDIS_ADDR: "redis:6379"
   webapp:
+    image: "ghcr.io/fnatte/pizza-tribes-webapp:latest"
     build:
       context: .
-      target: "webapp"
+      target: webapp
   front:
+    image: "ghcr.io/fnatte/pizza-tribes-front:latest"
+    env_file: .env
     build:
       context: .
-      target: "front"
+      target: front
     ports:
       - "8080:8080"
+    volumes:
+      - caddy_data:/data
 
-
+volumes:
+  redis_data:
+  caddy_data:
