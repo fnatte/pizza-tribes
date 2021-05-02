@@ -126,6 +126,8 @@ func (h *handler) handleConstructBuilding(ctx context.Context, senderId string, 
 		return
 	}
 
+	internal.UpdateTimestamp(h.rdb, ctx, senderId, &gs)
+
 	h.sendFullStateUpdate(ctx, senderId)
 }
 
@@ -193,7 +195,23 @@ func (h *handler) handleTrain(ctx context.Context, senderId string, m *internal.
 		return
 	}
 
+	h.fetchAndUpdateTimestamp(ctx, senderId)
 	h.sendFullStateUpdate(ctx, senderId)
+}
+
+func (h *handler) fetchAndUpdateTimestamp(ctx context.Context, userId string) (int64, error) {
+	b, err := h.rdb.JsonGet(ctx, fmt.Sprintf("user:%s:gamestate", userId), ".").Result()
+	if err != nil {
+		return 0, err
+	}
+
+	gs := internal.GameState{}
+	gs.LoadProtoJson([]byte(b))
+	if err != nil {
+		return 0, err
+	}
+
+	return internal.UpdateTimestamp(h.rdb, ctx, userId, &gs)
 }
 
 func (h *handler) sendFullStateUpdate(ctx context.Context, senderId string) {

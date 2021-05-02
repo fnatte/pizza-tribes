@@ -29,6 +29,20 @@ func CountBuildingsUnderConstruction(gs *GameState) (counts map[int32]int32) {
 	return counts
 }
 
+func min(a, b int64) int64 {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 func GetNextUpdateTimestamp (gs *GameState) int64 {
-	return time.Now().Add(10 * time.Second).UnixNano()
+	t := time.Now().Add(10 * time.Second).UnixNano()
+	if len(gs.ConstructionQueue) > 0 {
+		t = min(t, gs.ConstructionQueue[0].CompleteAt)
+	}
+	if len(gs.TrainingQueue) > 0 {
+		t = min(t, gs.TrainingQueue[0].CompleteAt)
+	}
+	return t
 }

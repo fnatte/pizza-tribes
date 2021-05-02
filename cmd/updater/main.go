@@ -152,12 +152,6 @@ func (u *updater) update(ctx context.Context, userId string) {
 				}
 			}
 
-			// TODO: ZAdd GT ?
-			pipe.ZAdd(ctx, "user_updates", &redis.Z{
-				Score: float64(internal.GetNextUpdateTimestamp(&gs)),
-				Member: userId,
-			}).Result()
-
 			return nil
 		})
 		return err
@@ -165,8 +159,13 @@ func (u *updater) update(ctx context.Context, userId string) {
 
 	err := u.r.Watch(ctx, txf, gameStateKey)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to train")
+		log.Error().Err(err).Msg("Failed to update")
 		return
+	}
+
+	_, err = internal.UpdateTimestamp(u.r, ctx, userId, &gs)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to update timestamp")
 	}
 
 	// Notify
@@ -406,6 +405,8 @@ func main() {
 			time.Sleep(10 * time.Millisecond)
 			continue
 		}
+
+		log.Info().Msg("Updating")
 
 		u.update(ctx, userId)
 		time.Sleep(1 * time.Millisecond)

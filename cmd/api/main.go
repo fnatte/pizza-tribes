@@ -62,14 +62,10 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 		if err != nil {
 			return err
 		}
-		log.Info().Interface("gameState", &gs).Msg("Got game state")
 	}
 
 	// Make sure the user is enqueued for updates
-	_, err = h.rc.ZAddNX(ctx, "user_updates", &redis.Z{
-		Score: float64(internal.GetNextUpdateTimestamp(&gs)),
-		Member: c.UserId(),
-	}).Result()
+	_, err = internal.UpdateTimestamp(h.rc, ctx, c.UserId(), &gs)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to ensure user updates")
 		return err

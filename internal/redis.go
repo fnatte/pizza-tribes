@@ -11,6 +11,7 @@ type RedisClient interface {
 	JsonGet(ctx context.Context, key string, path string) *redis.StringCmd
 	JsonSet(ctx context.Context, key string, path string, data interface{}) *redis.StatusCmd
 	JsonNumIncrBy(ctx context.Context, key string, path string, value int64) *redis.StringCmd
+	ZAddLt(ctx context.Context, key string, members ...*redis.Z) *redis.IntCmd
 }
 
 type RedisProcesser interface {
@@ -55,6 +56,20 @@ func RedisJsonArrTrim(c RedisProcesser, ctx context.Context, key string, path st
 	return cmd
 }
 
+func RedisZAddLt(c RedisProcesser, ctx context.Context, key string, members ...*redis.Z) *redis.IntCmd {
+	const n = 3
+	a := make([]interface{}, n+2*len(members))
+	a[0], a[1], a[2] = "zadd", key, "lt"
+
+	for i, m := range members {
+		a[n+2*i] = m.Score
+		a[n+2*i+1] = m.Member
+	}
+	cmd := redis.NewIntCmd(ctx, a...)
+	_ = c.Process(ctx, cmd)
+	return cmd
+}
+
 func (c *redisClient) JsonGet(ctx context.Context, key string, path string) *redis.StringCmd {
 	cmd := redis.NewStringCmd(ctx, "JSON.GET", key, path)
 	_ = c.Process(ctx, cmd)
@@ -71,4 +86,8 @@ func (c *redisClient) JsonNumIncrBy(ctx context.Context, key string, path string
 	cmd := redis.NewStringCmd(ctx, "JSON.NUMINCRBY", key, path, value)
 	_ = c.Process(ctx, cmd)
 	return cmd
+}
+
+func (c *redisClient) ZAddLt(ctx context.Context, key string, members ...*redis.Z) *redis.IntCmd {
+	return RedisZAddLt(c, ctx, key, members...)
 }
