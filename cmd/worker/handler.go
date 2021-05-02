@@ -59,10 +59,12 @@ func (h *handler) handleConstructBuilding(ctx context.Context, senderId string, 
 		buildingConstrCount := internal.CountBuildingsUnderConstruction(&gs)
 
 		cost := buildingInfo.Cost
+		constructionTime := buildingInfo.ConstructionTime
 
-		// The first building of each type is free
+		// The first building of each type is free and built 100 times faster
 		if buildingCount[int32(m.Building)]+buildingConstrCount[int32(m.Building)] == 0 {
 			cost = 0
+			constructionTime = int32(float64(constructionTime) / 100.0) + 1
 		}
 
 		if gs.Resources.Coins < cost {
@@ -77,7 +79,7 @@ func (h *handler) handleConstructBuilding(ctx context.Context, senderId string, 
 		if n := len(gs.ConstructionQueue); n > 0 {
 			timeOffset = gs.ConstructionQueue[n-1].CompleteAt
 		}
-		completeAt := timeOffset + int64(buildingInfo.ConstructionTime)*1e9
+		completeAt := timeOffset + int64(constructionTime)*1e9
 
 		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			_, err := internal.RedisJsonNumIncrBy(

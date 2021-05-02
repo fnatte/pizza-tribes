@@ -4,7 +4,11 @@ import { classnames } from "tailwindcss-classnames";
 import { Building } from "../generated/building";
 import { useStore } from "../store";
 import styles from "../styles";
-import { countBuildings, countBuildingsUnderConstruction, isNotNull } from "../utils";
+import {
+  countBuildings,
+  countBuildingsUnderConstruction,
+  isNotNull,
+} from "../utils";
 import PlaceholderImage from "./PlaceholderImage";
 
 const title = classnames("text-xl", "mb-2");
@@ -29,11 +33,15 @@ const ConstructBuilding = ({ lotId }: Props) => {
   const buildings = useStore((state) => state.gameData?.buildings) ?? [];
   const coins = useStore((state) => state.gameState.resources.coins);
   const lots = useStore((state) => state.gameState.lots);
-  const constructionQueue = useStore((state) => state.gameState.constructionQueue);
+  const constructionQueue = useStore(
+    (state) => state.gameState.constructionQueue
+  );
   const navigate = useNavigate();
 
   const buildingCounts = countBuildings(lots);
-  const buildingConstrCounts = countBuildingsUnderConstruction(constructionQueue);
+  const buildingConstrCounts = countBuildingsUnderConstruction(
+    constructionQueue
+  );
 
   const onSelectClick = (e: React.MouseEvent, building: Building) => {
     e.preventDefault();
@@ -50,11 +58,13 @@ const ConstructBuilding = ({ lotId }: Props) => {
         .map((id) => {
           let discountText: string | null = null;
           let discountCost: number | null = null;
+          let reducedTime: number | null = null;
 
           // First construction of building type is free
           if (buildingCounts[id] + buildingConstrCounts[id] === 0) {
             discountCost = 0;
-            discountText = "First is free!";
+            discountText = "First one is free and fast!";
+            reducedTime = Math.ceil(buildings[id].constructionTime / 100);
           }
 
           const canAfford = coins >= (discountCost ?? buildings[id].cost);
@@ -88,7 +98,22 @@ const ConstructBuilding = ({ lotId }: Props) => {
                   </span>
                   <span className={label}>Build time:</span>
                   <span className={value}>
-                    {buildings[id].constructionTime}s
+                    {reducedTime !== null ? (
+                      <>
+                        <span
+                          className={classnames(
+                            "line-through",
+                            "mr-2",
+                            "text-sm"
+                          )}
+                        >
+                          {buildings[id].constructionTime}s
+                        </span>
+                        <span>{reducedTime}s</span>
+                      </>
+                    ) : (
+                      <span>{buildings[id].constructionTime}s</span>
+                    )}
                   </span>
                 </div>
                 <div className={classnames("my-2")}>
