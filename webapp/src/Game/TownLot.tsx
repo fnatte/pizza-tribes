@@ -18,7 +18,7 @@ function TownLot() {
         "flex-col",
         "items-center",
         "justify-center",
-        "mt-2"
+        "mt-2",
       )}
     >
       {!lot && <ConstructBuilding lotId={id} />}

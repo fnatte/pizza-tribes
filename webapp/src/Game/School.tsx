@@ -12,9 +12,9 @@ import { useStore } from "../store";
 import styles from "../styles";
 import PlaceholderImage from "./PlaceholderImage";
 
-const title = classnames("text-xl", "mb-2");
-const label = classnames("text-sm", "mr-1");
-const value = classnames("text-lg", "ml-1");
+const title = classnames("text-lg", "md:text-xl", "mb-2");
+const label = classnames("text-xs", "md:text-sm", "mr-1");
+const value = classnames("text-sm", "md:text-lg", "ml-1");
 
 function School() {
   const educations = useStore((state) => state.gameData?.educations) || [];
@@ -34,7 +34,7 @@ function School() {
   }, 1000);
 
   return (
-    <div>
+    <div className={classnames("max-w-full", "px-2")}>
       <h2>School</h2>
 
       {trainingQueue.length > 0 && (

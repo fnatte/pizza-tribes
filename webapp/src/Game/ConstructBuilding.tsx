@@ -11,9 +11,9 @@ import {
 } from "../utils";
 import PlaceholderImage from "./PlaceholderImage";
 
-const title = classnames("text-xl", "mb-2");
-const label = classnames("text-sm", "mr-1");
-const value = classnames("text-lg", "ml-1");
+const title = classnames("text-lg", "md:text-xl", "mb-2");
+const label = classnames("text-xs", "md:text-sm", "mr-1");
+const value = classnames("text-sm", "md:text-lg", "ml-1");
 
 type Props = {
   lotId: string;
@@ -50,7 +50,7 @@ const ConstructBuilding = ({ lotId }: Props) => {
   };
 
   return (
-    <div className={classnames("container", "mx-auto", "mt-4")}>
+    <div className={classnames("container", "mx-auto", "mt-4", "px-1")}>
       <h2>Construct Building</h2>
       {Object.keys(buildings)
         .map(toBuildingId)
