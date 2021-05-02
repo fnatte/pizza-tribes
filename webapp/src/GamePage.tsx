@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Link, Navigate, Route, Routes } from "react-router-dom";
-import { useAsync } from "react-use";
+import { Link, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import { classnames, TArg } from "tailwindcss-classnames";
 import Town from "./Game/Town";
 import TownLot from "./Game/TownLot";
-import { GameData } from "./generated/game_data";
 import { useStore } from "./store";
 import styles from "./styles";
 import { ReactComponent as HeartsSvg } from "../images/hearts.svg";
@@ -41,6 +39,11 @@ const useMouseClock = () => {
 
 function Navigation() {
   const logout = useStore((state) => state.logout);
+  const navigate = useNavigate();
+  const onClickLogout = () => {
+    logout();
+    navigate("/login");
+  }
 
   return (
     <nav className={classnames("flex", "justify-center")}>
@@ -52,7 +55,7 @@ function Navigation() {
       </Link>
       <button
         className={classnames(styles.button, "mr-2")}
-        onClick={() => logout()}
+        onClick={() => onClickLogout()}
       >
         Logout
       </button>
@@ -180,20 +183,8 @@ const ConnectionPopup: React.VFC<{ connectionState: ConnectionState }> = ({
   );
 };
 
-function GamePage() {
-  const connectionState = useStore((state) => state.connectionState);
-  const user = useStore((state) => state.user);
-  const gameData = useStore((state) => state.gameData);
-  const fetchGameData = useStore((state) => state.fetchGameData);
-
-  if (user === null) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (gameData === null) {
-    fetchGameData();
-
-    return (
+function Loading() {
+  return (
       <div
         className={classnames(
           "fixed",
@@ -206,7 +197,31 @@ function GamePage() {
       >
         <HeartsSvg />
       </div>
-    );
+  );
+}
+
+function GamePage() {
+  const connectionState = useStore((state) => state.connectionState);
+  const user = useStore((state) => state.user);
+  const gameData = useStore((state) => state.gameData);
+  const fetchGameData = useStore((state) => state.fetchGameData);
+  const start = useStore((state) => state.start);
+
+  useEffect(() => {
+    start();
+  }, []);
+
+  if (connectionState?.error === 'unauthorized') {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (gameData === null) {
+    fetchGameData();
+    return <Loading />;
+  }
+
+  if (user === null) {
+    return <Loading />;
   }
 
   return (

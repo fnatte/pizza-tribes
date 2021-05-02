@@ -1,5 +1,7 @@
 package internal
 
+const MicePerHouse = 10
+
 var FullGameData = GameData{
 	Buildings: map[int32]*BuildingInfo{
 		int32(Building_KITCHEN): {

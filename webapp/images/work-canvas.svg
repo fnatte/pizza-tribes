@@ -39,19 +39,6 @@
          offset="0"
          id="stop4192" />
     </linearGradient>
-    <filter
-       inkscape:collect="always"
-       style="color-interpolation-filters:sRGB"
-       id="filter1945"
-       x="-0.017220195"
-       width="1.0344404"
-       y="-0.012373552"
-       height="1.0247471">
-      <feGaussianBlur
-         inkscape:collect="always"
-         stdDeviation="0.016524212"
-         id="feGaussianBlur1947" />
-    </filter>
     <pattern
        patternUnits="userSpaceOnUse"
        width="1.7480737"
@@ -104,9 +91,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2"
-     inkscape:cx="200.24095"
-     inkscape:cy="585.94652"
+     inkscape:zoom="4"
+     inkscape:cx="376.45756"
+     inkscape:cy="720.65078"
      inkscape:document-units="px"
      inkscape:current-layer="layer4"
      inkscape:document-rotation="0"
@@ -123,7 +110,7 @@
      inkscape:snap-others="true"
      inkscape:snap-page="true"
      inkscape:snap-object-midpoints="false"
-     inkscape:window-width="1894"
+     inkscape:window-width="978"
      inkscape:window-height="1021"
      inkscape:window-x="12"
      inkscape:window-y="45"
@@ -561,7 +548,7 @@
          id="path1876"
          sodipodi:nodetypes="ccccc" />
       <path
-         style="fill:#dbd7be;fill-opacity:1;stroke:#49462b;stroke-width:0.0661458;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter1945)"
+         style="mix-blend-mode:normal;fill:#dbd7be;fill-opacity:1;stroke:#49462b;stroke-width:0.0661458;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          d="m 98.08165,219.36428 -0.01168,-1.53444 c 0.925683,-0.80886 1.644271,-0.10978 2.2691,1.1026 l 0.0339,1.75476 z"
          id="path1882"
          sodipodi:nodetypes="ccccc" />

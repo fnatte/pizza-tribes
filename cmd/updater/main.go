@@ -138,6 +138,17 @@ func (u *updater) update(ctx context.Context, userId string) {
 					if err != nil {
 						log.Error().Err(err).Msg("Failed to handle construct building message")
 					}
+
+					// Increase population (uneducated) if a house was completed
+					if constr.Building == internal.Building_HOUSE {
+						_, err = internal.RedisJsonNumIncrBy(
+							pipe, ctx, gameStateKey,
+							".population.uneducated",
+							internal.MicePerHouse).Result()
+						if err != nil {
+							return err
+						}
+					}
 				}
 			}
 
@@ -200,6 +211,15 @@ func (u *updater) update(ctx context.Context, userId string) {
 		for _, constr := range completedConstructions {
 			gsPatch.Lots[constr.LotId] = &internal.GameStatePatch_LotPatch{
 				Building: constr.Building,
+			}
+
+			if constr.Building == internal.Building_HOUSE {
+				if gsPatch.Population == nil {
+					gsPatch.Population = &internal.GameStatePatch_PopulationPatch{}
+				}
+				gsPatch.Population.Uneducated = &wrapperspb.Int32Value{
+					Value: gs.Population.Uneducated + internal.MicePerHouse,
+				}
 			}
 		}
 	}

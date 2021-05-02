@@ -9,6 +9,10 @@ export type RemoveIndex<T> = {
     : P]: T[P];
 };
 
+export function isNotNull<T>(v: T|null): v is T  {
+  return v !== null;
+}
+
 export const countBuildings = (
   lots: Record<string, Lot | undefined>
 ): Record<Building, number> => {

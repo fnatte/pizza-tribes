@@ -57,7 +57,6 @@ function School() {
 
   const onTrainClick = (e: React.MouseEvent, education: Education) => {
     e.preventDefault();
-    console.log("train ", education);
     train(education, 1);
     navigate("/town");
   };

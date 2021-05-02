@@ -4,7 +4,7 @@ import { classnames } from "tailwindcss-classnames";
 import { Building } from "../generated/building";
 import { useStore } from "../store";
 import styles from "../styles";
-import { countBuildings, countBuildingsUnderConstruction } from "../utils";
+import { countBuildings, countBuildingsUnderConstruction, isNotNull } from "../utils";
 import PlaceholderImage from "./PlaceholderImage";
 
 const title = classnames("text-xl", "mb-2");
@@ -14,10 +14,6 @@ const value = classnames("text-lg", "ml-1");
 type Props = {
   lotId: string;
 };
-
-function isNotNull<T>(v: T|null): v is T  {
-  return v !== null;
-}
 
 const toBuildingId = (key: string) => {
   const n = Number(key);

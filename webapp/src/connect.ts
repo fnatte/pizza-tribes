@@ -17,8 +17,8 @@ export type ConnectionApi = {
 };
 
 const getAddr = () => {
-  const isSecure = window.location.protocol === 'https:';
-  return `${isSecure ? 'wss' : 'ws'}://${window.location.host}/api/ws`
+  const isSecure = window.location.protocol === "https:";
+  return `${isSecure ? "wss" : "ws"}://${window.location.host}/api/ws`;
 };
 
 const connect = (
@@ -59,7 +59,8 @@ const connect = (
 
     const delay = Math.min(
       state.reconnectAttempts * state.reconnectAttempts * 1000,
-      5_000);
+      5_000
+    );
 
     pendingReconnectAttempt = window.setTimeout(() => {
       pendingReconnectAttempt = null;
@@ -84,7 +85,12 @@ const connect = (
     conn.onclose = (e) => {
       const unauthorized = e.code === 4010;
       if (unauthorized) {
-        setState({ error: "unauthorized" });
+        setState({
+          error: "unauthorized",
+          connecting: false,
+          connected: false,
+          reconnectAttempts: 0,
+        });
         return;
       }
 
@@ -99,7 +105,6 @@ const connect = (
     };
 
     conn.onopen = () => {
-      console.log('connected');
       setState({ connected: true, connecting: false, reconnectAttempts: 0 });
     };
 
@@ -127,7 +132,6 @@ const connect = (
       }
     },
     close: () => {
-      console.log("closing", conn);
       targetState = "disconnected";
       if (pendingReconnectAttempt !== null) {
         window.clearTimeout(pendingReconnectAttempt);

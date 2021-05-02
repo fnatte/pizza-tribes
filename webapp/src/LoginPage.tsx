@@ -38,9 +38,7 @@ function CreateAccountPromotion() {
 
 function LoginPage() {
   const navigate = useNavigate();
-  const start = useStore((state) => state.start);
   const onLogin = () => {
-    start("");
     navigate("/");
   };
   return (

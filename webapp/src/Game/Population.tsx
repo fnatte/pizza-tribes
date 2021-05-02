@@ -71,6 +71,10 @@ const Population: React.FC<{ className?: string }> = ({ className }) => {
       {!minimized && (
         <table>
           <tbody>
+            <tr>
+              <td className={classnames("p-2")}>Uneducated</td>
+              <td className={classnames("p-2")}>{population["uneducated"]}</td>
+            </tr>
             {Object.keys(educations)
               .map(Number)
               .map((id) => {

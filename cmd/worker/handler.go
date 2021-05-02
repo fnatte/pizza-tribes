@@ -137,12 +137,12 @@ func (h *handler) handleTrain(ctx context.Context, senderId string, m *internal.
 	gameStateKey := fmt.Sprintf("user:%s:gamestate", senderId)
 
 	txf := func(tx *redis.Tx) error {
-		n, err := internal.RedisJsonGet(tx, ctx, gameStateKey, ".population.unemployed").Int64()
+		n, err := internal.RedisJsonGet(tx, ctx, gameStateKey, ".population.uneducated").Int64()
 		if err != nil && err != redis.Nil {
 			return err
 		}
 		if n < int64(m.Amount) {
-			return errors.New("Too few unemployed")
+			return errors.New("Too few uneducated")
 		}
 
 		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
@@ -150,10 +150,10 @@ func (h *handler) handleTrain(ctx context.Context, senderId string, m *internal.
 				pipe,
 				ctx,
 				gameStateKey,
-				".population.unemployed",
+				".population.uneducated",
 				int64(-m.Amount)).Result()
 			if err != nil {
-				log.Error().Err(err).Msg("Failed to decrease unemployed")
+				log.Error().Err(err).Msg("Failed to decrease uneducated")
 				return err
 			}
 

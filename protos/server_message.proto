@@ -19,10 +19,15 @@ message ServerMessage {
     bool result = 2;
   }
 
+  message User {
+    string username = 1;
+  }
+
   string id = 1;
   oneof payload {
     GameStatePatch stateChange = 2;
-    Response response = 3;
+    User user = 3;
+    Response response = 4;
   }
 }
 

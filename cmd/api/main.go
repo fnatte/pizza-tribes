@@ -12,6 +12,7 @@ import (
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
+	"github.com/rs/xid"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/protobuf/encoding/protojson"
 )
@@ -32,6 +33,7 @@ func (h *wsHandler) HandleMessage(ctx context.Context, m []byte, c *ws.Client) {
 }
 func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 	gs := internal.GameState{
+		Population: &internal.GameState_Population{},
 		Resources: &internal.GameState_Resources{},
 		Lots: map[string]*internal.GameState_Lot{},
 	}
@@ -72,6 +74,32 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 		log.Error().Err(err).Msg("Failed to ensure user updates")
 		return err
 	}
+
+	// Get username
+	userKey := fmt.Sprintf("user:%s", c.UserId())
+	username, err := h.rc.HGet(ctx, userKey, "username").Result()
+	if err != nil {
+		return err
+	}
+
+	go (func() {
+		msg := &internal.ServerMessage{
+			Id: xid.New().String(),
+			Payload: &internal.ServerMessage_User_{
+				User: &internal.ServerMessage_User{
+					Username: username,
+				},
+			},
+		}
+		b, err := protojson.Marshal(msg)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to send init game state patch")
+			return
+		}
+
+		c.Send(b)
+		log.Info().Msg("Sent user message")
+	})()
 
 	go (func() {
 		msg := gs.ToStateChangeMessage()

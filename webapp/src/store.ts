@@ -6,12 +6,13 @@ import { ClientMessage } from "./generated/client_message";
 import { Education } from "./generated/education";
 import {
   Construction,
+  GameStatePatch,
   GameStatePatch_LotPatch,
   GameState_Population,
   Training,
 } from "./generated/gamestate";
 import { GameData } from "./generated/game_data";
-import { ServerMessage } from "./generated/server_message";
+import { ServerMessage, ServerMessage_User } from "./generated/server_message";
 
 export type Lot = {
   building: Building;
@@ -40,7 +41,7 @@ type State = {
   connectionState: ConnectionState | null;
   setGameState: (gameState: GameState) => void;
   fetchGameData: () => Promise<void>;
-  start: (username: string) => void;
+  start: () => void;
   logout: () => Promise<void>;
   tap: () => void;
   constructBuilding: (lotId: string, building: Building) => void;
@@ -123,71 +124,88 @@ export const useStore = create<State>((set, get) => ({
     });
     get().connection?.send(msg);
   },
-  start: (username: string) => {
+  start: () => {
     get().connection?.close();
 
-    const onMessage = (msg: ServerMessage) => {
-      if (msg.payload.oneofKind === "stateChange") {
-        const stateChange = msg.payload.stateChange;
+    const handleStateChange = (stateChange: GameStatePatch) => {
+      const resources: Partial<State["gameState"]["resources"]> = {};
+      if (stateChange.resources?.coins?.value) {
+        resources.coins = stateChange.resources.coins.value;
+      }
+      if (stateChange.resources?.pizzas?.value) {
+        resources.pizzas = stateChange.resources.pizzas.value;
+      }
 
-        const resources: Partial<State["gameState"]["resources"]> = {};
-        if (stateChange.resources?.coins?.value) {
-          resources.coins = stateChange.resources.coins.value;
-        }
-        if (stateChange.resources?.pizzas?.value) {
-          resources.pizzas = stateChange.resources.pizzas.value;
-        }
+      const population: Partial<State["gameState"]["population"]> = {};
+      if (stateChange.population?.uneducated) {
+        population.uneducated = stateChange.population.uneducated.value;
+      }
+      if (stateChange.population?.chefs) {
+        population.chefs = stateChange.population.chefs.value;
+      }
+      if (stateChange.population?.salesmice) {
+        population.salesmice = stateChange.population.salesmice.value;
+      }
+      if (stateChange.population?.guards) {
+        population.guards = stateChange.population.guards.value;
+      }
+      if (stateChange.population?.thieves) {
+        population.thieves = stateChange.population.thieves.value;
+      }
 
-        const population: Partial<State["gameState"]["population"]> = {};
-        if (stateChange.population?.uneducated) {
-          population.uneducated = stateChange.population.uneducated.value;
-        }
-        if (stateChange.population?.chefs) {
-          population.chefs = stateChange.population.chefs.value;
-        }
-        if (stateChange.population?.salesmice) {
-          population.salesmice = stateChange.population.salesmice.value;
-        }
-        if (stateChange.population?.guards) {
-          population.guards = stateChange.population.guards.value;
-        }
-        if (stateChange.population?.thieves) {
-          population.thieves = stateChange.population.thieves.value;
-        }
-
-        unstable_batchedUpdates(() => {
-          set((state) => ({
-            ...state,
-            gameState: {
-              ...state.gameState,
-              resources: {
-                ...state.gameState.resources,
-                ...resources,
-              },
-              lots: mergeLots(state.gameState.lots, stateChange.lots),
-              population: {
-                ...state.gameState.population,
-                ...population,
-              },
-              trainingQueue: stateChange.trainingQueuePatched
-                ? stateChange.trainingQueue
-                : state.gameState.trainingQueue,
-              constructionQueue: stateChange.constructionQueuePatched
-                ? stateChange.constructionQueue
-                : state.gameState.constructionQueue,
+      unstable_batchedUpdates(() => {
+        set((state) => ({
+          ...state,
+          gameState: {
+            ...state.gameState,
+            resources: {
+              ...state.gameState.resources,
+              ...resources,
             },
-          }));
-        });
+            lots: mergeLots(state.gameState.lots, stateChange.lots),
+            population: {
+              ...state.gameState.population,
+              ...population,
+            },
+            trainingQueue: stateChange.trainingQueuePatched
+              ? stateChange.trainingQueue
+              : state.gameState.trainingQueue,
+            constructionQueue: stateChange.constructionQueuePatched
+              ? stateChange.constructionQueue
+              : state.gameState.constructionQueue,
+          },
+        }));
+      });
+    };
+
+    const handleUserMessage = (msg: ServerMessage_User) => {
+      unstable_batchedUpdates(() => {
+        set((state) => ({
+          user: {
+            ...state.user,
+            username: msg.username,
+          }
+        }))
+      });
+    };
+
+    const onMessage = (msg: ServerMessage) => {
+      switch (msg.payload.oneofKind) {
+        case "stateChange":
+          handleStateChange(msg.payload.stateChange);
+          break;
+        case "user":
+          handleUserMessage(msg.payload.user);
+          break;
       }
     };
     const onStateChange = (connectionState: ConnectionState) => {
-      console.log(connectionState);
       unstable_batchedUpdates(() => {
         set((state) => ({ ...state, connectionState }));
       });
     };
     const connection = connect(onStateChange, onMessage);
-    set((state) => ({ ...state, user: { username }, connection }));
+    set((state) => ({ ...state, connection }));
   },
   setGameState: (gameState) => set((state) => ({ ...state, gameState })),
   constructBuilding: (lotId, building) => {
@@ -219,4 +237,3 @@ export const useStore = create<State>((set, get) => ({
     );
   },
 }));
-
