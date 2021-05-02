@@ -11,7 +11,6 @@ import {
   Training,
 } from "./generated/gamestate";
 import { GameData } from "./generated/game_data";
-import {Int64Value} from "./generated/google/protobuf/wrappers";
 import { ServerMessage } from "./generated/server_message";
 
 export type Lot = {
@@ -20,8 +19,8 @@ export type Lot = {
 
 export type GameState = {
   resources: {
-    pizzas: bigint;
-    coins: bigint;
+    pizzas: number;
+    coins: number;
   };
   lots: Record<string, Lot | undefined>;
   population: GameState_Population;
@@ -74,16 +73,16 @@ const mergeLots = (
 export const useStore = create<State>((set, get) => ({
   gameState: {
     resources: {
-      pizzas: BigInt(0),
-      coins: BigInt(0),
+      pizzas: 0,
+      coins: 0,
     },
     lots: {},
     population: {
-      uneducated: BigInt(0),
-      chefs: BigInt(0),
-      salesmice: BigInt(0),
-      guards: BigInt(0),
-      thieves: BigInt(0),
+      uneducated: 0,
+      chefs: 0,
+      salesmice: 0,
+      guards: 0,
+      thieves: 0,
     },
     trainingQueue: [],
     constructionQueue: [],
@@ -125,16 +124,35 @@ export const useStore = create<State>((set, get) => ({
     get().connection?.send(msg);
   },
   start: (username: string) => {
+    get().connection?.close();
+
     const onMessage = (msg: ServerMessage) => {
       if (msg.payload.oneofKind === "stateChange") {
         const stateChange = msg.payload.stateChange;
 
-        const resources: Partial<State['gameState']['resources']> = {};
+        const resources: Partial<State["gameState"]["resources"]> = {};
         if (stateChange.resources?.coins?.value) {
           resources.coins = stateChange.resources.coins.value;
         }
         if (stateChange.resources?.pizzas?.value) {
           resources.pizzas = stateChange.resources.pizzas.value;
+        }
+
+        const population: Partial<State["gameState"]["population"]> = {};
+        if (stateChange.population?.uneducated) {
+          population.uneducated = stateChange.population.uneducated.value;
+        }
+        if (stateChange.population?.chefs) {
+          population.chefs = stateChange.population.chefs.value;
+        }
+        if (stateChange.population?.salesmice) {
+          population.salesmice = stateChange.population.salesmice.value;
+        }
+        if (stateChange.population?.guards) {
+          population.guards = stateChange.population.guards.value;
+        }
+        if (stateChange.population?.thieves) {
+          population.thieves = stateChange.population.thieves.value;
         }
 
         unstable_batchedUpdates(() => {
@@ -146,18 +164,18 @@ export const useStore = create<State>((set, get) => ({
                 ...state.gameState.resources,
                 ...resources,
               },
+              lots: mergeLots(state.gameState.lots, stateChange.lots),
+              population: {
+                ...state.gameState.population,
+                ...population,
+              },
+              trainingQueue: stateChange.trainingQueuePatched
+                ? stateChange.trainingQueue
+                : state.gameState.trainingQueue,
+              constructionQueue: stateChange.constructionQueuePatched
+                ? stateChange.constructionQueue
+                : state.gameState.constructionQueue,
             },
-            lots: mergeLots(state.gameState.lots, stateChange.lots),
-            population: {
-              ...state.gameState.population,
-              ...stateChange.population,
-            },
-            trainingQueue: stateChange.trainingQueuePatched
-              ? stateChange.trainingQueue
-              : state.gameState.trainingQueue,
-            constructionQueue: stateChange.constructionQueuePatched
-              ? stateChange.constructionQueue
-              : state.gameState.constructionQueue,
           }));
         });
       }
@@ -201,3 +219,4 @@ export const useStore = create<State>((set, get) => ({
     );
   },
 }));
+

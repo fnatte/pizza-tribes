@@ -1,30 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useMedia } from "react-use";
 import { classnames, TArg, TClasses } from "tailwindcss-classnames";
-import { Building } from "../generated/building";
 import { Education } from "../generated/education";
 import { GameState_Population } from "../generated/gamestate";
-import { Lot, useStore } from "../store";
-
-const countBuildings = (
-  lots: Record<string, Lot | undefined>
-): Record<Building, number> => {
-  const counts = {
-    0: 0,
-    1: 0,
-    2: 0,
-    3: 0,
-  };
-
-  Object.keys(lots).forEach((lotId) => {
-    const lot = lots[lotId];
-    if (lot) {
-      counts[lot.building]++;
-    }
-  });
-
-  return counts;
-};
+import { useStore } from "../store";
+import { countBuildings } from "../utils";
 
 const getPopulationKey = (id: number): keyof GameState_Population | null => {
   switch (id) {

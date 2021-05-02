@@ -41,18 +41,43 @@ func (h *handler) handleConstructBuilding(ctx context.Context, senderId string, 
 
 	gameStateKey := fmt.Sprintf("user:%s:gamestate", senderId)
 
+	var gs internal.GameState
+
 	txf := func(tx *redis.Tx) error {
-		coins, err := internal.RedisJsonGet(tx, ctx, gameStateKey, ".resources.coins").Int64()
+		// Get current game state
+		b, err := internal.RedisJsonGet(tx, ctx, gameStateKey, ".").Result()
 		if err != nil && err != redis.Nil {
+			return err
+		}
+		err = gs.LoadProtoJson([]byte(b))
+		if err != nil {
 			return err
 		}
 
 		buildingInfo := internal.FullGameData.Buildings[int32(m.Building)]
+		buildingCount := internal.CountBuildings(&gs)
+		buildingConstrCount := internal.CountBuildingsUnderConstruction(&gs)
 
-		cost := int64(buildingInfo.Cost)
-		if coins < cost {
+		cost := buildingInfo.Cost
+
+		// The first building of each type is free
+		if buildingCount[int32(m.Building)]+buildingConstrCount[int32(m.Building)] == 0 {
+			cost = 0
+		}
+
+		if gs.Resources.Coins < cost {
 			return errors.New("Not enough coins")
 		}
+
+		// Calculate when this construction will be completed.
+		// If there's already already something being constructed, this building will
+		// be started at the end of previous one. If there's nothing in queue, it can
+		// be started immediately (time.Now()).
+		timeOffset := time.Now().UnixNano()
+		if n := len(gs.ConstructionQueue); n > 0 {
+			timeOffset = gs.ConstructionQueue[n-1].CompleteAt
+		}
+		completeAt := timeOffset + int64(buildingInfo.ConstructionTime)*1e9
 
 		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			_, err := internal.RedisJsonNumIncrBy(
@@ -65,9 +90,9 @@ func (h *handler) handleConstructBuilding(ctx context.Context, senderId string, 
 			}
 
 			construction := internal.Construction{
-				CompleteAt: time.Now().UnixNano() + int64(buildingInfo.ConstructionTime) * 1e9,
-				LotId: m.LotId,
-				Building: m.Building,
+				CompleteAt: completeAt,
+				LotId:      m.LotId,
+				Building:   m.Building,
 			}
 
 			b, err := protojson.Marshal(&construction)
@@ -136,9 +161,9 @@ func (h *handler) handleTrain(ctx context.Context, senderId string, m *internal.
 			trainTime := int64(eduInfo.TrainTime)
 
 			training := internal.Training{
-				CompleteAt: time.Now().UnixNano() + trainTime * 1e9,
-				Education: m.Education,
-				Amount: m.Amount,
+				CompleteAt: time.Now().UnixNano() + trainTime*1e9,
+				Education:  m.Education,
+				Amount:     m.Amount,
 			}
 
 			b, err := protojson.Marshal(&training)

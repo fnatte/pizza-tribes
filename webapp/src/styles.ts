@@ -7,6 +7,7 @@ export const button = classnames(
   "text-white",
   "bg-green-600",
   "disabled:bg-gray-600" as TArg,
+  "disabled:cursor-default" as TArg,
 );
 
 export default { button };

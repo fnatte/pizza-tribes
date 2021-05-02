@@ -99,6 +99,7 @@ const connect = (
     };
 
     conn.onopen = () => {
+      console.log('connected');
       setState({ connected: true, connecting: false, reconnectAttempts: 0 });
     };
 

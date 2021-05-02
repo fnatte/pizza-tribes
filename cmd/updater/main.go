@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 	"os"
@@ -140,6 +141,12 @@ func (u *updater) update(ctx context.Context, userId string) {
 				}
 			}
 
+			// TODO: ZAdd GT ?
+			pipe.ZAdd(ctx, "user_updates", &redis.Z{
+				Score: float64(internal.GetNextUpdateTimestamp(&gs)),
+				Member: userId,
+			}).Result()
+
 			return nil
 		})
 		return err
@@ -154,8 +161,8 @@ func (u *updater) update(ctx context.Context, userId string) {
 	// Notify
 	gsPatch := &internal.GameStatePatch{
 		Resources: &internal.GameStatePatch_ResourcesPatch{
-			Coins:  &wrapperspb.Int64Value{ Value: changes.coins },
-			Pizzas:  &wrapperspb.Int64Value{ Value: changes.pizzas },
+			Coins:  &wrapperspb.Int32Value{ Value: changes.coins },
+			Pizzas:  &wrapperspb.Int32Value{ Value: changes.pizzas },
 		},
 		Timestamp:  &wrapperspb.Int64Value{ Value: changes.timestamp },
 	}
@@ -167,20 +174,20 @@ func (u *updater) update(ctx context.Context, userId string) {
 		for _, t := range completedTrainings {
 			switch t.Education {
 			case internal.Education_CHEF:
-				gsPatch.Population.Chefs = &wrapperspb.Int64Value{
-					Value: gs.Population.Chefs + int64(t.Amount),
+				gsPatch.Population.Chefs = &wrapperspb.Int32Value{
+					Value: gs.Population.Chefs + t.Amount,
 				}
 			case internal.Education_SALESMOUSE:
-				gsPatch.Population.Salesmice = &wrapperspb.Int64Value{
-					Value: gs.Population.Salesmice + int64(t.Amount),
+				gsPatch.Population.Salesmice = &wrapperspb.Int32Value{
+					Value: gs.Population.Salesmice + t.Amount,
 				}
 			case internal.Education_GUARD:
-				gsPatch.Population.Guards = &wrapperspb.Int64Value{
-					Value: gs.Population.Guards + int64(t.Amount),
+				gsPatch.Population.Guards = &wrapperspb.Int32Value{
+					Value: gs.Population.Guards + t.Amount,
 				}
 			case internal.Education_THIEF:
-				gsPatch.Population.Thieves = &wrapperspb.Int64Value{
-					Value: gs.Population.Thieves + int64(t.Amount),
+				gsPatch.Population.Thieves = &wrapperspb.Int32Value{
+					Value: gs.Population.Thieves + t.Amount,
 				}
 			}
 		}
@@ -216,29 +223,49 @@ func (u *updater) update(ctx context.Context, userId string) {
 	})
 }
 
-func (u *updater) next(ctx context.Context) string {
-	return "c20okiv8ecspveu0v5hg"
+func (u *updater) next(ctx context.Context) (string, error) {
+	packed, err := u.r.ZRangeWithScores(ctx, "user_updates", 0, 0).Result()
+	if err != nil {
+		return "", err
+	}
+
+	if len(packed) == 0 {
+		return "", nil
+	}
+
+	timestamp := int64(packed[0].Score)
+	if timestamp > time.Now().UnixNano() {
+		return "", nil
+	}
+
+	userId, ok := packed[0].Member.(string)
+	if !ok {
+		return "", errors.New("Failed to parse user update member")
+	}
+
+	removed, err := u.r.ZRem(ctx, "user_updates", userId).Result()
+	if err != nil {
+		return "", err
+	}
+
+	if removed != 1 {
+		return "", nil
+	}
+
+	return userId, nil
 }
 
 type changes struct {
 	timestamp int64
-	coins     int64
-	pizzas    int64
+	coins     int32
+	pizzas    int32
 }
 
-func min(x, y int64) int64 {
+func min(x, y int32) int32 {
 	if x < y {
 		return x
 	}
 	return y
-}
-
-func countBuildings(gs *internal.GameState) (counts map[int32]int32) {
-	counts = map[int32]int32{}
-	for _, lot := range gs.Lots {
-		counts[int32(lot.Building)] = counts[int32(lot.Building)] + 1
-	}
-	return counts
 }
 
 func countMaxEmployed(buildingCount map[int32]int32) (counts map[int32]int32) {
@@ -255,34 +282,39 @@ func countMaxEmployed(buildingCount map[int32]int32) (counts map[int32]int32) {
 }
 
 func extrapolate(gs *internal.GameState) changes {
+	// No changes if there are no population
+	if gs.Population == nil {
+		return changes{}
+	}
+
 	now := time.Now()
 	rush, offpeak := mtime.GetRush(gs.Timestamp, now.Unix())
 	dt := float64(now.Unix() - gs.Timestamp)
 
-	buildingCount := countBuildings(gs)
+	buildingCount := internal.CountBuildings(gs)
 	maxEmployed := countMaxEmployed(buildingCount)
 
-	employedChefs := min(gs.Population.Chefs, int64(maxEmployed[int32(internal.Building_KITCHEN)]))
-	pizzasProduced := int64(float64(employedChefs) * 0.2 * dt)
+	employedChefs := min(gs.Population.Chefs, maxEmployed[int32(internal.Building_KITCHEN)])
+	pizzasProduced := int32(float64(employedChefs) * 0.2 * dt)
 	pizzasAvailable := gs.Resources.Pizzas + pizzasProduced
 
-	demand := int64(float64(rush)*0.75 + float64(offpeak)*0.2)
-	employedSalesmice := min(gs.Population.Salesmice, int64(maxEmployed[int32(internal.Building_SHOP)]))
-	maxSellsByMice := int64(float64(employedSalesmice) * 0.5 * dt)
+	demand := int32(float64(rush)*0.75 + float64(offpeak)*0.2)
+	employedSalesmice := min(gs.Population.Salesmice, maxEmployed[int32(internal.Building_SHOP)])
+	maxSellsByMice := int32(float64(employedSalesmice) * 0.5 * dt)
 	pizzasSold := min(demand, min(maxSellsByMice, pizzasAvailable))
 
 	log.Info().
-		Int64("chefs", gs.Population.Chefs).
-		Int64("employedChefs", employedChefs).
-		Int64("salesmice", gs.Population.Salesmice).
-		Int64("employedSalesmice", employedSalesmice).
+		Int32("chefs", gs.Population.Chefs).
+		Int32("employedChefs", employedChefs).
+		Int32("salesmice", gs.Population.Salesmice).
+		Int32("employedSalesmice", employedSalesmice).
 		Float64("dt", dt).
 		Int64("rush", rush).
 		Int64("offpeak", offpeak).
-		Int64("demand", demand).
-		Int64("maxSellsByMice", maxSellsByMice).
-		Int64("pizzasProduced", pizzasProduced).
-		Int64("pizzasSold", pizzasSold).
+		Int32("demand", demand).
+		Int32("maxSellsByMice", maxSellsByMice).
+		Int32("pizzasProduced", pizzasProduced).
+		Int32("pizzasSold", pizzasSold).
 		Msg("Game state update")
 
 	return changes{
@@ -343,9 +375,20 @@ func main() {
 	ctx := context.Background()
 
 	for {
-		userId := u.next(ctx)
+		userId, err := u.next(ctx)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to get next")
+			time.Sleep(1 * time.Second)
+			continue
+		}
+		if userId == "" {
+			// TODO: could be smarter about how long to sleep here
+			time.Sleep(10 * time.Millisecond)
+			continue
+		}
+
 		u.update(ctx, userId)
-		time.Sleep(5 * time.Second)
+		time.Sleep(1 * time.Millisecond)
 	}
 
 }

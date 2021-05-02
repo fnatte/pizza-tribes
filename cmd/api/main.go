@@ -43,7 +43,10 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 		if err != redis.Nil {
 			return err
 		}
-		b, err := protojson.Marshal(&gs)
+		b, err := protojson.MarshalOptions{
+			EmitUnpopulated: true,
+		}.Marshal(&gs)
+		log.Info().Msg(string(b))
 		if err != nil {
 			return err
 		}
@@ -58,6 +61,16 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 			return err
 		}
 		log.Info().Interface("gameState", &gs).Msg("Got game state")
+	}
+
+	// Make sure the user is enqueued for updates
+	_, err = h.rc.ZAddNX(ctx, "user_updates", &redis.Z{
+		Score: float64(internal.GetNextUpdateTimestamp(&gs)),
+		Member: c.UserId(),
+	}).Result()
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to ensure user updates")
+		return err
 	}
 
 	go (func() {

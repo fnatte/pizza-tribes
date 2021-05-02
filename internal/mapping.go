@@ -16,18 +16,18 @@ func (gs *GameState) ToStateChangeMessage() *ServerMessage {
 	pop := &GameStatePatch_PopulationPatch{}
 
 	if gs.Population != nil {
-		pop.Uneducated = &wrapperspb.Int64Value{ Value: gs.Population.Uneducated }
-		pop.Chefs =      &wrapperspb.Int64Value{ Value: gs.Population.Chefs }
-		pop.Salesmice =  &wrapperspb.Int64Value{ Value: gs.Population.Salesmice }
-		pop.Guards =     &wrapperspb.Int64Value{ Value: gs.Population.Guards }
-		pop.Thieves =    &wrapperspb.Int64Value{ Value: gs.Population.Thieves }
+		pop.Uneducated = &wrapperspb.Int32Value{ Value: gs.Population.Uneducated }
+		pop.Chefs =      &wrapperspb.Int32Value{ Value: gs.Population.Chefs }
+		pop.Salesmice =  &wrapperspb.Int32Value{ Value: gs.Population.Salesmice }
+		pop.Guards =     &wrapperspb.Int32Value{ Value: gs.Population.Guards }
+		pop.Thieves =    &wrapperspb.Int32Value{ Value: gs.Population.Thieves }
 	}
 
 	p := &GameStatePatch{
 		Lots: lotsPatch,
 		Resources: &GameStatePatch_ResourcesPatch{
-			Coins: &wrapperspb.Int64Value{ Value: gs.Resources.Coins },
-			Pizzas: &wrapperspb.Int64Value{ Value: gs.Resources.Pizzas },
+			Coins: &wrapperspb.Int32Value{ Value: gs.Resources.Coins },
+			Pizzas: &wrapperspb.Int32Value{ Value: gs.Resources.Pizzas },
 		},
 		Population: pop,
 		TrainingQueue: gs.TrainingQueue,

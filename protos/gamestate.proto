@@ -21,8 +21,8 @@ message Construction {
 
 message GameState {
   message Resources {
-    int64 coins = 1;
-    int64 pizzas = 2;
+    int32 coins = 1;
+    int32 pizzas = 2;
   }
 
   message Lot {
@@ -30,11 +30,11 @@ message GameState {
   }
 
   message Population {
-    int64 uneducated = 1;
-    int64 chefs = 2;
-    int64 salesmice = 3;
-    int64 guards = 4;
-    int64 thieves = 5;
+    int32 uneducated = 1;
+    int32 chefs = 2;
+    int32 salesmice = 3;
+    int32 guards = 4;
+    int32 thieves = 5;
   }
 
   Resources resources = 1;
@@ -47,8 +47,8 @@ message GameState {
 
 message GameStatePatch {
   message ResourcesPatch {
-    google.protobuf.Int64Value coins = 1;
-    google.protobuf.Int64Value pizzas = 2;
+    google.protobuf.Int32Value coins = 1;
+    google.protobuf.Int32Value pizzas = 2;
   }
 
   message LotPatch {
@@ -56,11 +56,11 @@ message GameStatePatch {
   }
 
   message PopulationPatch {
-    google.protobuf.Int64Value uneducated = 1;
-    google.protobuf.Int64Value chefs = 2;
-    google.protobuf.Int64Value salesmice = 3;
-    google.protobuf.Int64Value guards = 4;
-    google.protobuf.Int64Value thieves = 5;
+    google.protobuf.Int32Value uneducated = 1;
+    google.protobuf.Int32Value chefs = 2;
+    google.protobuf.Int32Value salesmice = 3;
+    google.protobuf.Int32Value guards = 4;
+    google.protobuf.Int32Value thieves = 5;
   }
 
   ResourcesPatch resources = 1;
