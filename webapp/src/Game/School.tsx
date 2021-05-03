@@ -15,6 +15,7 @@ import { ReactComponent as ChefSvg } from "../../images/chef.svg";
 import { ReactComponent as SalesmouseSvg } from "../../images/salesmouse.svg";
 import { ReactComponent as GuardSvg } from "../../images/guard.svg";
 import { ReactComponent as ThiefSvg } from "../../images/thief.svg";
+import {formatDurationShort} from "../utils";
 
 const title = classnames("text-lg", "md:text-xl", "mb-2");
 const label = classnames("text-xs", "md:text-sm");
@@ -29,11 +30,13 @@ const svgs: Record<number, React.VFC | undefined> = {
 
 const shortDuration = (str: string) => {
   return str
-    .replace("minutes", "m")
-    .replace("minute", "m")
-    .replace("seconds", "s")
-    .replace("second", "s");
+    .replace("minutes", "min")
+    .replace("minute", "min")
+    .replace("seconds", "sec")
+    .replace("second", "sec");
 };
+
+const numberFormat = new Intl.NumberFormat();
 
 function School() {
   const educations = useStore((state) => state.gameData?.educations) || [];
@@ -109,23 +112,27 @@ function School() {
                 <table>
                   <tbody>
                     <tr>
-                      <td className={classnames("p-2")}>
+                      <td className={classnames("px-2")}>
                         <span className={label}>Train time:</span>
                       </td>
-                      <td className={classnames("p-2")}>
+                      <td className={classnames("px-2")}>
                         <span className={value}>
-                          {shortDuration(
-                            formatDuration(
-                              intervalToDuration({
-                                start: 0,
-                                end: education.trainTime * 1000,
-                              }),
-                              { delimiter: ", " }
-                            )
-                          )}
+                          {formatDurationShort(education.trainTime * 1000)}
                         </span>
                       </td>
                     </tr>
+                    {education.cost && (
+                      <tr>
+                        <td className={classnames("px-2")}>
+                          <span className={label}>Cost:</span>
+                        </td>
+                        <td className={classnames("px-2")}>
+                          <span className={value}>
+                            {numberFormat.format(education.cost)} coins
+                          </span>
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
                 <div className={classnames("my-2")}>

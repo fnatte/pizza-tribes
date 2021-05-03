@@ -7,6 +7,7 @@ import styles from "../styles";
 import {
   countBuildings,
   countBuildingsUnderConstruction,
+  formatDurationShort,
   isNotNull,
 } from "../utils";
 import PlaceholderImage from "./PlaceholderImage";
@@ -27,6 +28,8 @@ const toBuildingId = (key: string) => {
 
   return null;
 };
+
+const numberFormat = new Intl.NumberFormat();
 
 const ConstructBuilding = ({ lotId }: Props) => {
   const constructBuilding = useStore((state) => state.constructBuilding);
@@ -74,49 +77,91 @@ const ConstructBuilding = ({ lotId }: Props) => {
               <PlaceholderImage />
               <div className={classnames("ml-4")}>
                 <div className={title}>{buildings[id].title}</div>
-                <div
-                  className={classnames("grid", "grid-cols-2", "items-center")}
-                >
-                  <span className={label}>Cost:</span>
-                  <span className={value}>
-                    {discountCost !== null ? (
-                      <>
-                        <span
-                          className={classnames(
-                            "line-through",
-                            "mr-2",
-                            "text-sm"
+                <table>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <span className={label}>Cost:</span>
+                      </td>
+                      <td>
+                        <span className={value}>
+                          {discountCost !== null ? (
+                            <>
+                              <span
+                                className={classnames(
+                                  "line-through",
+                                  "mr-2",
+                                  "text-sm"
+                                )}
+                              >
+                                {numberFormat.format(buildings[id].cost)} coins
+                              </span>
+                              <span>{discountCost} coins</span>
+                            </>
+                          ) : (
+                            <span>
+                              {numberFormat.format(buildings[id].cost)} coins
+                            </span>
                           )}
-                        >
-                          {buildings[id].cost} coins
                         </span>
-                        <span>{discountCost} coins</span>
-                      </>
-                    ) : (
-                      <span>{buildings[id].cost} coins</span>
-                    )}
-                  </span>
-                  <span className={label}>Build time:</span>
-                  <span className={value}>
-                    {reducedTime !== null ? (
-                      <>
-                        <span
-                          className={classnames(
-                            "line-through",
-                            "mr-2",
-                            "text-sm"
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <span className={label}>Build time:</span>
+                      </td>
+                      <td>
+                        <span className={value}>
+                          {reducedTime !== null ? (
+                            <>
+                              <span
+                                className={classnames(
+                                  "line-through",
+                                  "mr-2",
+                                  "text-sm"
+                                )}
+                              >
+                                {buildings[id].constructionTime}s
+                              </span>
+                              <span>{formatDurationShort(reducedTime)}</span>
+                            </>
+                          ) : (
+                            <span>
+                              {formatDurationShort(
+                                buildings[id].constructionTime
+                              )}
+                            </span>
                           )}
-                        >
-                          {buildings[id].constructionTime}s
                         </span>
-                        <span>{reducedTime}s</span>
-                      </>
-                    ) : (
-                      <span>{buildings[id].constructionTime}s</span>
-                    )}
-                  </span>
-                </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
                 <div className={classnames("my-2")}>
+                  <div>
+                    {discountText && (
+                      <span
+                        className={classnames(
+                          "mx-4",
+                          "text-sm",
+                          "text-red-800"
+                        )}
+                      >
+                        {discountText}
+                      </span>
+                    )}
+                    {!canAfford && (
+                      <span
+                        className={classnames(
+                          "mx-4",
+                          "text-sm",
+                          "text-red-800"
+                        )}
+                      >
+                        Not enough coins
+                      </span>
+                    )}
+                  </div>
                   <button
                     className={classnames(styles.button)}
                     onClick={(e) => onSelectClick(e, id)}
@@ -124,16 +169,6 @@ const ConstructBuilding = ({ lotId }: Props) => {
                   >
                     Place Building
                   </button>
-                  {discountText && (
-                    <span className={classnames("mx-4", "text-sm")}>
-                      {discountText}
-                    </span>
-                  )}
-                  {!canAfford && (
-                    <span className={classnames("mx-4", "text-sm")}>
-                      Not enough coins
-                    </span>
-                  )}
                 </div>
               </div>
             </div>

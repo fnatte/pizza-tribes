@@ -1,3 +1,4 @@
+import { formatDuration, intervalToDuration } from "date-fns";
 import { Building } from "./generated/building";
 import { GameState, Lot } from "./store";
 
@@ -9,7 +10,7 @@ export type RemoveIndex<T> = {
     : P]: T[P];
 };
 
-export function isNotNull<T>(v: T|null): v is T  {
+export function isNotNull<T>(v: T | null): v is T {
   return v !== null;
 }
 
@@ -49,3 +50,24 @@ export const countBuildingsUnderConstruction = (
     }
   );
 };
+
+const shortDuration = (str: string) => {
+  return str
+    .replace("hours", "h")
+    .replace("hour", "h")
+    .replace("minutes", "min")
+    .replace("minute", "min")
+    .replace("seconds", "sec")
+    .replace("second", "sec");
+};
+
+export const formatDurationShort = (time: number) =>
+  shortDuration(
+    formatDuration(
+      intervalToDuration({
+        start: 0,
+        end: time * 1000,
+      }),
+      { delimiter: ", " }
+    )
+  );
