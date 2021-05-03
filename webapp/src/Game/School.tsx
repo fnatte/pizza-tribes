@@ -5,7 +5,6 @@ import {
 } from "date-fns";
 import JSBI from "jsbi";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useInterval } from "react-use";
 import { classnames } from "tailwindcss-classnames";
 import { Education } from "../generated/education";
@@ -40,12 +39,11 @@ function School() {
   const educations = useStore((state) => state.gameData?.educations) || [];
   const trainingQueue = useStore((state) => state.gameState.trainingQueue);
   const train = useStore((state) => state.train);
-  const navigate = useNavigate();
 
   const onTrainClick = (e: React.MouseEvent, education: Education) => {
     e.preventDefault();
     train(education, 1);
-    navigate("/town");
+    window.scroll(0, 0);
   };
 
   const [now, setNow] = useState(Date.now());
