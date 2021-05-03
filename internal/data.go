@@ -7,7 +7,7 @@ var FullGameData = GameData{
 		int32(Building_KITCHEN): {
 			Title: "Kitchen",
 			TitlePlural: "Kitchens",
-			Cost: 250,
+			Cost: 10_000,
 			ConstructionTime: 900,
 			Employer: &Employer{
 				MaxWorkforce: 7,
@@ -16,7 +16,7 @@ var FullGameData = GameData{
 		int32(Building_SHOP): {
 			Title: "Shop",
 			TitlePlural: "Shops",
-			Cost: 750,
+			Cost: 12_500,
 			ConstructionTime: 1200,
 			Employer: &Employer{
 				MaxWorkforce: 5,
@@ -25,14 +25,14 @@ var FullGameData = GameData{
 		int32(Building_HOUSE): {
 			Title: "House",
 			TitlePlural: "Houses",
-			Cost: 1_000,
+			Cost: 17_000,
 			ConstructionTime: 450,
 			Employer: nil,
 		},
 		int32(Building_SCHOOL): {
 			Title: "School",
 			TitlePlural: "Schools",
-			Cost: 10_000,
+			Cost: 30_000,
 			ConstructionTime: 3600,
 			Employer: nil,
 		},
@@ -41,28 +41,28 @@ var FullGameData = GameData{
 		int32(Education_CHEF): {
 			Title: "Chef",
 			TitlePlural: "Chefs",
-			Cost: 100,
+			Cost: 0,
 			TrainTime: 200,
 			Employer: Building_KITCHEN.Enum(),
 		},
 		int32(Education_SALESMOUSE): {
 			Title: "Salesmouse",
 			TitlePlural: "Salesmice",
-			Cost: 150,
+			Cost: 0,
 			TrainTime: 100,
 			Employer: Building_SHOP.Enum(),
 		},
 		int32(Education_GUARD): {
 			Title: "Guard",
 			TitlePlural: "Guards",
-			Cost: 500,
+			Cost: 10_000,
 			TrainTime: 1000,
 			Employer: nil,
 		},
 		int32(Education_THIEF): {
 			Title: "Thief",
 			TitlePlural: "Thieves",
-			Cost: 1500,
+			Cost: 20_000,
 			TrainTime: 1800,
 			Employer: nil,
 		},
