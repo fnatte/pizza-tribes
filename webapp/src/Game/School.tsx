@@ -3,6 +3,7 @@ import {
   formatDuration,
   intervalToDuration,
 } from "date-fns";
+import JSBI from "jsbi";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useInterval } from "react-use";
@@ -56,7 +57,12 @@ function School() {
                   </td>
                   <td className={classnames("p-2")}>
                     {formatDistanceToNow(
-                      Number(training.completeAt / BigInt(1e6)),
+                      Number(
+                        JSBI.divide(
+                          JSBI.BigInt(training.completeAt),
+                          JSBI.BigInt(1e6)
+                        )
+                      ),
                       {
                         includeSeconds: true,
                         addSuffix: true,

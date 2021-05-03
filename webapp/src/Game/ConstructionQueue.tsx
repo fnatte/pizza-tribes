@@ -1,3 +1,4 @@
+import JSBI from "jsbi";
 import React, { useEffect, useState } from "react";
 import { useInterval, useMedia } from "react-use";
 import { classnames, TArg, TClasses } from "tailwindcss-classnames";
@@ -5,7 +6,7 @@ import { useStore } from "../store";
 
 const ConstructionQueue: React.FC<{ className?: string }> = ({ className }) => {
   const isMinLg = useMedia("(min-width: 1024px)", false);
-  const buildings = useStore(state => state.gameData?.buildings) ?? {};
+  const buildings = useStore((state) => state.gameData?.buildings) ?? {};
   const constructionQueue = useStore(
     (state) => state.gameState.constructionQueue
   );
@@ -71,10 +72,13 @@ const ConstructionQueue: React.FC<{ className?: string }> = ({ className }) => {
                   {buildings[construction.building].title}
                 </td>
                 <td className={classnames("p-2")}>
-                  {`in ${
-                    construction.completeAt / BigInt(1e9) -
-                    BigInt(now) / BigInt(1e3)
-                  }s`}
+                  {`in ${JSBI.divide(
+                    JSBI.subtract(
+                      JSBI.BigInt(construction.completeAt),
+                      JSBI.multiply(JSBI.BigInt(now), JSBI.BigInt(1e6)),
+                    ),
+                    JSBI.BigInt(1e9)
+                  )}s`}
                 </td>
               </tr>
             ))}
