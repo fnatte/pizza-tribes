@@ -64,7 +64,7 @@ func (h *handler) handleConstructBuilding(ctx context.Context, senderId string, 
 		// The first building of each type is free and built 100 times faster
 		if buildingCount[int32(m.Building)]+buildingConstrCount[int32(m.Building)] == 0 {
 			cost = 0
-			constructionTime = int32(float64(constructionTime) / 100.0) + 1
+			constructionTime = int32(float64(constructionTime)/100.0) + 1
 		}
 
 		if gs.Resources.Coins < cost {
@@ -140,13 +140,29 @@ func (h *handler) handleTrain(ctx context.Context, senderId string, m *internal.
 
 	gameStateKey := fmt.Sprintf("user:%s:gamestate", senderId)
 
+	var gs internal.GameState
+
 	txf := func(tx *redis.Tx) error {
-		n, err := internal.RedisJsonGet(tx, ctx, gameStateKey, ".population.uneducated").Int64()
+		// Get current game state
+		b, err := internal.RedisJsonGet(tx, ctx, gameStateKey, ".").Result()
 		if err != nil && err != redis.Nil {
 			return err
 		}
-		if n < int64(m.Amount) {
+		err = gs.LoadProtoJson([]byte(b))
+		if err != nil {
+			return err
+		}
+
+		eduInfo := internal.FullGameData.Educations[int32(m.Education)]
+		trainTime := int64(eduInfo.TrainTime)
+		cost := eduInfo.Cost
+
+		if gs.Population.Uneducated < m.Amount {
 			return errors.New("Too few uneducated")
+		}
+
+		if gs.Resources.Coins < cost {
+			return errors.New("Not enough coins")
 		}
 
 		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
@@ -161,8 +177,14 @@ func (h *handler) handleTrain(ctx context.Context, senderId string, m *internal.
 				return err
 			}
 
-			eduInfo := internal.FullGameData.Educations[int32(m.Education)]
-			trainTime := int64(eduInfo.TrainTime)
+			_, err = internal.RedisJsonNumIncrBy(
+				pipe, ctx, gameStateKey,
+				".resources.coins",
+				int64(-cost)).Result()
+			if err != nil {
+				log.Error().Err(err).Msg("Failed to decrease coins")
+				return err
+			}
 
 			training := internal.Training{
 				CompleteAt: time.Now().UnixNano() + trainTime*1e9,
