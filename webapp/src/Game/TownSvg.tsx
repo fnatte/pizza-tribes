@@ -4,41 +4,33 @@ import { ReactComponent as SvgKitchen } from "../../images/kitchen.svg";
 import { ReactComponent as SvgHouse } from "../../images/house.svg";
 import { ReactComponent as SvgShop } from "../../images/shop.svg";
 import { ReactComponent as SvgSchool } from "../../images/school.svg";
-import {Building} from "../generated/building";
+import { Building } from "../generated/building";
 
 function renderBuilding(building: Building | undefined) {
   switch (building) {
     case Building.KITCHEN:
       return (
-        <SvgKitchen
-          width={20}
-          height={20}
-          transform="translate(-10, -13)"
-        />
+        <g transform="translate(-10, -13)">
+          <SvgKitchen width={20} height={20} />
+        </g>
       );
     case Building.HOUSE:
       return (
-        <SvgHouse
-          width={20}
-          height={20}
-          transform="translate(-10, -13)"
-        />
+        <g transform="translate(-10, -13)">
+          <SvgHouse width={20} height={20} />
+        </g>
       );
     case Building.SHOP:
       return (
-        <SvgShop
-          width={20}
-          height={20}
-          transform="translate(-10, -13)"
-        />
+        <g transform="translate(-10, -13)">
+          <SvgShop width={20} height={20} />;
+        </g>
       );
     case Building.SCHOOL:
       return (
-        <SvgSchool
-          width={20}
-          height={20}
-          transform="translate(-10, -13)"
-        />
+        <g transform="translate(-10, -13)">
+          <SvgSchool width={20} height={20} />
+        </g>
       );
   }
 }
