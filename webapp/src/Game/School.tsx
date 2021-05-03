@@ -12,10 +12,29 @@ import { Education } from "../generated/education";
 import { useStore } from "../store";
 import styles from "../styles";
 import PlaceholderImage from "./PlaceholderImage";
+import { ReactComponent as ChefSvg } from "../../images/chef.svg";
+import { ReactComponent as SalesmouseSvg } from "../../images/salesmouse.svg";
+import { ReactComponent as GuardSvg } from "../../images/guard.svg";
+import { ReactComponent as ThiefSvg } from "../../images/thief.svg";
 
 const title = classnames("text-lg", "md:text-xl", "mb-2");
-const label = classnames("text-xs", "md:text-sm", "mr-1");
-const value = classnames("text-sm", "md:text-lg", "ml-1");
+const label = classnames("text-xs", "md:text-sm");
+const value = classnames("text-sm");
+
+const svgs: Record<number, React.VFC | undefined> = {
+  [Education.CHEF]: ChefSvg,
+  [Education.SALESMOUSE]: SalesmouseSvg,
+  [Education.GUARD]: GuardSvg,
+  [Education.THIEF]: ThiefSvg,
+};
+
+const shortDuration = (str: string) => {
+  return str
+    .replace("minutes", "m")
+    .replace("minute", "m")
+    .replace("seconds", "s")
+    .replace("second", "s");
+};
 
 function School() {
   const educations = useStore((state) => state.gameData?.educations) || [];
@@ -81,25 +100,36 @@ function School() {
         .map(Number)
         .map((eduKey) => {
           const education = educations[eduKey];
+          const SvgImage = svgs[eduKey];
           return (
             <div className={classnames("flex", "mb-8")} key={education.title}>
-              <PlaceholderImage />
+              <div style={{ width: 110 }}>
+                {SvgImage ? <SvgImage /> : <PlaceholderImage />}
+              </div>
               <div className={classnames("ml-4")}>
                 <div className={title}>{education.title}</div>
-                <div
-                  className={classnames("grid", "grid-cols-2", "items-center")}
-                >
-                  <span className={label}>Train time:</span>
-                  <span className={value}>
-                    {formatDuration(
-                      intervalToDuration({
-                        start: 0,
-                        end: education.trainTime * 1000,
-                      }),
-                      { delimiter: ", " }
-                    )}
-                  </span>
-                </div>
+                <table>
+                  <tbody>
+                    <tr>
+                      <td className={classnames("p-2")}>
+                        <span className={label}>Train time:</span>
+                      </td>
+                      <td className={classnames("p-2")}>
+                        <span className={value}>
+                          {shortDuration(
+                            formatDuration(
+                              intervalToDuration({
+                                start: 0,
+                                end: education.trainTime * 1000,
+                              }),
+                              { delimiter: ", " }
+                            )
+                          )}
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
                 <div className={classnames("my-2")}>
                   <button
                     className={classnames(styles.button)}
