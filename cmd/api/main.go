@@ -183,6 +183,7 @@ func main() {
 	wsHub := ws.NewHub()
 	wsEndpoint := ws.NewEndpoint(auth.Authorize, wsHub, &handler, origin)
 	poller := poller{rdb: rdb, hub: wsHub}
+	ts := &TimeseriesService{ r: rc, auth: auth }
 
 	r := mux.NewRouter()
 	r.PathPrefix("/auth").Handler(http.StripPrefix("/auth", auth.Router()))
@@ -199,6 +200,7 @@ func main() {
 		w.Header().Add("Content-Type", "application/json")
 		w.Write(b)
 	})
+	r.PathPrefix("/timeseries").Handler(http.StripPrefix("/timeseries", ts.Router()))
 
 	go wsHub.Run()
 	go poller.run(ctx)

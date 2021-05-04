@@ -1,0 +1,14 @@
+syntax = "proto3";
+package pizzatribes;
+
+option go_package = "github.com/fnatte/pizza-tribes/internal";
+
+message DataPoint {
+  int64 timestamp = 1;
+  double coins = 2;
+  double pizzas = 3;
+}
+
+message TimeseriesData {
+  repeated DataPoint dataPoints = 1;
+}

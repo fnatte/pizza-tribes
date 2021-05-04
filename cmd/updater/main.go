@@ -168,6 +168,19 @@ func (u *updater) update(ctx context.Context, userId string) {
 		log.Error().Err(err).Msg("Failed to update timestamp")
 	}
 
+	err = internal.EnsureTimeseries(ctx, u.r, userId)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to ensure timeseries")
+	}
+	err = internal.AddMetricCoins(ctx, u.r, userId, changes.timestamp * 1000, int64(changes.coins))
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to add coins metric")
+	}
+	err = internal.AddMetricPizzas(ctx, u.r, userId, changes.timestamp * 1000, int64(changes.pizzas))
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to add pizzas metric")
+	}
+
 	// Notify
 	gsPatch := &internal.GameStatePatch{
 		Resources: &internal.GameStatePatch_ResourcesPatch{

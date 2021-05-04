@@ -196,7 +196,6 @@ export const useStore = create<State>((set, get) => ({
     };
 
     const handleStats = (stats: Stats) => {
-      console.log(stats);
       unstable_batchedUpdates(() => {
         set((state) => ({
           ...state,
