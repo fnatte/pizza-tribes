@@ -5,14 +5,14 @@ import { useStore } from "../store";
 const StatsContent: React.FC<{}> = () => {
   const stats = useStore((state) => state.gameStats);
 
-  const rows = [
+  const rows = (stats && [
     { label: "Employed chefs", value: stats.employedChefs },
     { label: "Employed salesmice", value: stats.employedSalesmice },
     { label: "Pizzas produces", value: `${stats.pizzasProducedPerSecond}/s` },
     { label: "Max sells", value: `${stats.maxSellsByMicePerSecond}/s` },
     { label: "Pizza demand (offpeak)", value: `${stats.demandOffpeak}/s` },
     { label: "Pizza demand (rush hour)", value: `${stats.demandRushHour}/s` },
-  ];
+  ]) ?? [];
 
   return (
     <div
