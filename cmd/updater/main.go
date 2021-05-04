@@ -171,10 +171,10 @@ func (u *updater) update(ctx context.Context, userId string) {
 	// Notify
 	gsPatch := &internal.GameStatePatch{
 		Resources: &internal.GameStatePatch_ResourcesPatch{
-			Coins:  &wrapperspb.Int32Value{ Value: changes.coins },
-			Pizzas:  &wrapperspb.Int32Value{ Value: changes.pizzas },
+			Coins:  &wrapperspb.Int32Value{Value: changes.coins},
+			Pizzas: &wrapperspb.Int32Value{Value: changes.pizzas},
 		},
-		Timestamp:  &wrapperspb.Int64Value{ Value: changes.timestamp },
+		Timestamp: &wrapperspb.Int64Value{Value: changes.timestamp},
 	}
 
 	if len(completedTrainings) > 0 {
@@ -300,6 +300,18 @@ func countMaxEmployed(buildingCount map[int32]int32) (counts map[int32]int32) {
 	return counts
 }
 
+func countPopulation(gs *internal.GameState) int32 {
+	if gs.Population == nil {
+		return 0
+	}
+
+	return (gs.Population.Uneducated +
+		gs.Population.Chefs +
+		gs.Population.Salesmice +
+		gs.Population.Guards +
+		gs.Population.Thieves)
+}
+
 func extrapolate(gs *internal.GameState) changes {
 	// No changes if there are no population
 	if gs.Population == nil {
@@ -317,7 +329,8 @@ func extrapolate(gs *internal.GameState) changes {
 	pizzasProduced := int32(float64(employedChefs) * 0.2 * dt)
 	pizzasAvailable := gs.Resources.Pizzas + pizzasProduced
 
-	demand := int32(float64(rush)*0.75 + float64(offpeak)*0.2)
+	popularity := 1.0 * float64(countPopulation(gs))
+	demand := int32((float64(rush)*0.75 + float64(offpeak)*0.2) * popularity)
 	employedSalesmice := min(gs.Population.Salesmice, maxEmployed[int32(internal.Building_SHOP)])
 	maxSellsByMice := int32(float64(employedSalesmice) * 0.5 * dt)
 	pizzasSold := min(demand, min(maxSellsByMice, pizzasAvailable))
@@ -371,7 +384,7 @@ func getCompletedConstructions(gs *internal.GameState) (res []*internal.Construc
 	return res
 }
 
-func envOrDefault(key string, defaultVal string) string{
+func envOrDefault(key string, defaultVal string) string {
 	val, ok := os.LookupEnv(key)
 	if ok {
 		return val
@@ -385,7 +398,7 @@ func main() {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     envOrDefault("REDIS_ADDR", "localhost:6379"),
 		Password: envOrDefault("REDIS_PASSWORD", ""),
-		DB:       0,  // use default DB
+		DB:       0, // use default DB
 	})
 
 	rc := internal.NewRedisClient(rdb)
