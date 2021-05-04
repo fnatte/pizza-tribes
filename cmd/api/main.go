@@ -144,8 +144,6 @@ func (p *poller) run(ctx context.Context) {
 		msg := &internal.OutgoingMessage{}
 		msg.UnmarshalBinary([]byte(res[1]))
 
-		log.Info().Str("receiverId", msg.ReceiverId).Msg("OutgoingMessage")
-
 		p.hub.SendTo(msg.ReceiverId, []byte(msg.Body))
 	}
 

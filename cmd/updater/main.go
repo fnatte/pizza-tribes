@@ -297,31 +297,20 @@ func extrapolate(gs *internal.GameState) changes {
 	rush, offpeak := mtime.GetRush(gs.Timestamp, now.Unix())
 	dt := float64(now.Unix() - gs.Timestamp)
 
-	// TODO: use stats
-	buildingCount := internal.CountBuildings(gs)
-	maxEmployed := internal.CountMaxEmployed(buildingCount)
+	stats := internal.CalculateStats(gs)
 
-	employedChefs := min(gs.Population.Chefs, maxEmployed[int32(internal.Building_KITCHEN)])
-	pizzasProduced := int32(float64(employedChefs) * 0.2 * dt)
+	demand := int32(stats.DemandOffpeak * float64(offpeak) +
+		stats.DemandRushHour * float64(rush))
+
+	pizzasProduced := int32(stats.PizzasProducedPerSecond * dt)
 	pizzasAvailable := gs.Resources.Pizzas + pizzasProduced
 
-	popularity := 1.0 * float64(internal.CountPopulation(gs))
-	demand := int32((float64(rush)*0.75 + float64(offpeak)*0.2) * popularity)
-	employedSalesmice := min(gs.Population.Salesmice, maxEmployed[int32(internal.Building_SHOP)])
-	maxSellsByMice := int32(float64(employedSalesmice) * 0.5 * dt)
+	maxSellsByMice := int32(stats.MaxSellsByMicePerSecond * dt)
 	pizzasSold := min(demand, min(maxSellsByMice, pizzasAvailable))
 
-	log.Info().
-		Int32("chefs", gs.Population.Chefs).
-		Int32("employedChefs", employedChefs).
-		Int32("salesmice", gs.Population.Salesmice).
-		Int32("employedSalesmice", employedSalesmice).
-		Float64("dt", dt).
-		Int64("rush", rush).
-		Int64("offpeak", offpeak).
-		Int32("demand", demand).
-		Int32("maxSellsByMice", maxSellsByMice).
+	log.Debug().
 		Int32("pizzasProduced", pizzasProduced).
+		Int32("maxSellsByMice", maxSellsByMice).
 		Int32("pizzasSold", pizzasSold).
 		Msg("Game state update")
 
