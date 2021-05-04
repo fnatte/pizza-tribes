@@ -287,31 +287,6 @@ func min(x, y int32) int32 {
 	return y
 }
 
-func countMaxEmployed(buildingCount map[int32]int32) (counts map[int32]int32) {
-	counts = map[int32]int32{}
-	buildings := internal.FullGameData.Buildings
-	for k := range internal.Building_name {
-		employer := buildings[k].Employer
-		if employer != nil {
-			maxWorkforce := employer.MaxWorkforce
-			counts[k] = buildingCount[k] * maxWorkforce
-		}
-	}
-	return counts
-}
-
-func countPopulation(gs *internal.GameState) int32 {
-	if gs.Population == nil {
-		return 0
-	}
-
-	return (gs.Population.Uneducated +
-		gs.Population.Chefs +
-		gs.Population.Salesmice +
-		gs.Population.Guards +
-		gs.Population.Thieves)
-}
-
 func extrapolate(gs *internal.GameState) changes {
 	// No changes if there are no population
 	if gs.Population == nil {
@@ -322,14 +297,15 @@ func extrapolate(gs *internal.GameState) changes {
 	rush, offpeak := mtime.GetRush(gs.Timestamp, now.Unix())
 	dt := float64(now.Unix() - gs.Timestamp)
 
+	// TODO: use stats
 	buildingCount := internal.CountBuildings(gs)
-	maxEmployed := countMaxEmployed(buildingCount)
+	maxEmployed := internal.CountMaxEmployed(buildingCount)
 
 	employedChefs := min(gs.Population.Chefs, maxEmployed[int32(internal.Building_KITCHEN)])
 	pizzasProduced := int32(float64(employedChefs) * 0.2 * dt)
 	pizzasAvailable := gs.Resources.Pizzas + pizzasProduced
 
-	popularity := 1.0 * float64(countPopulation(gs))
+	popularity := 1.0 * float64(internal.CountPopulation(gs))
 	demand := int32((float64(rush)*0.75 + float64(offpeak)*0.2) * popularity)
 	employedSalesmice := min(gs.Population.Salesmice, maxEmployed[int32(internal.Building_SHOP)])
 	maxSellsByMice := int32(float64(employedSalesmice) * 0.5 * dt)

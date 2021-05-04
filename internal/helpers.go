@@ -36,6 +36,13 @@ func min(a, b int64) int64 {
 	return b
 }
 
+func minInt32(a, b int32) int32 {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 func GetNextUpdateTimestamp (gs *GameState) int64 {
 	t := time.Now().Add(10 * time.Second).UnixNano()
 	if len(gs.ConstructionQueue) > 0 {
@@ -45,4 +52,29 @@ func GetNextUpdateTimestamp (gs *GameState) int64 {
 		t = min(t, gs.TrainingQueue[0].CompleteAt)
 	}
 	return t
+}
+
+func CountMaxEmployed(buildingCount map[int32]int32) (counts map[int32]int32) {
+	counts = map[int32]int32{}
+	buildings := FullGameData.Buildings
+	for k := range Building_name {
+		employer := buildings[k].Employer
+		if employer != nil {
+			maxWorkforce := employer.MaxWorkforce
+			counts[k] = buildingCount[k] * maxWorkforce
+		}
+	}
+	return counts
+}
+
+func CountPopulation(gs *GameState) int32 {
+	if gs.Population == nil {
+		return 0
+	}
+
+	return (gs.Population.Uneducated +
+		gs.Population.Chefs +
+		gs.Population.Salesmice +
+		gs.Population.Guards +
+		gs.Population.Thieves)
 }

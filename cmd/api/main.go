@@ -106,7 +106,16 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 		}
 
 		c.Send(b)
-		log.Info().Msg("Sent init game state")
+
+		msg = internal.CalculateStats(&gs).ToServerMessage()
+		b, err = protojson.Marshal(msg)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to send init stats")
+			return
+		}
+		c.Send(b)
+
+		log.Info().Msg("Sent init game state and stats")
 	})()
 
 	return nil

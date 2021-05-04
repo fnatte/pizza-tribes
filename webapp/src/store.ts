@@ -13,6 +13,7 @@ import {
 } from "./generated/gamestate";
 import { GameData } from "./generated/game_data";
 import { ServerMessage, ServerMessage_User } from "./generated/server_message";
+import { Stats } from "./generated/stats";
 
 export type Lot = {
   building: Building;
@@ -35,7 +36,9 @@ type User = {
 
 type State = {
   gameState: GameState;
+  gameStats: Stats | null;
   gameData: GameData | null;
+  gameDataLoading: boolean;
   user: User | null;
   connection: ConnectionApi | null;
   connectionState: ConnectionState | null;
@@ -88,11 +91,14 @@ export const useStore = create<State>((set, get) => ({
     trainingQueue: [],
     constructionQueue: [],
   },
+  gameStats: null,
   user: null,
   connection: null,
   connectionState: null,
   gameData: null,
+  gameDataLoading: false,
   fetchGameData: async () => {
+    set((state) => ({ ...state, gameDataLoading: true }));
     const response = await fetch("/api/gamedata");
     if (
       !response.ok ||
@@ -184,8 +190,18 @@ export const useStore = create<State>((set, get) => ({
           user: {
             ...state.user,
             username: msg.username,
-          }
-        }))
+          },
+        }));
+      });
+    };
+
+    const handleStats = (stats: Stats) => {
+      console.log(stats);
+      unstable_batchedUpdates(() => {
+        set((state) => ({
+          ...state,
+          gameStats: stats,
+        }));
       });
     };
 
@@ -196,6 +212,9 @@ export const useStore = create<State>((set, get) => ({
           break;
         case "user":
           handleUserMessage(msg.payload.user);
+          break;
+        case "stats":
+          handleStats(msg.payload.stats);
           break;
       }
     };

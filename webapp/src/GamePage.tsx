@@ -7,6 +7,8 @@ import { useStore } from "./store";
 import styles from "./styles";
 import { ReactComponent as HeartsSvg } from "../images/hearts.svg";
 import { ConnectionState } from "./connect";
+import {Stats} from "./generated/stats";
+import StatsContent from "./Game/StatsContent";
 
 type ClockState = {
   formatted: string;
@@ -52,6 +54,9 @@ function Navigation() {
       </Link>
       <Link to="/town">
         <button className={classnames(styles.button, "mr-2")}>Town</button>
+      </Link>
+      <Link to="/stats">
+        <button className={classnames(styles.button, "mr-2")}>Stats</button>
       </Link>
       <button
         className={classnames(styles.button, "mr-2")}
@@ -204,6 +209,7 @@ function GamePage() {
   const connectionState = useStore((state) => state.connectionState);
   const user = useStore((state) => state.user);
   const gameData = useStore((state) => state.gameData);
+  const gameDataLoading = useStore((state) => state.gameDataLoading);
   const fetchGameData = useStore((state) => state.fetchGameData);
   const start = useStore((state) => state.start);
 
@@ -216,7 +222,9 @@ function GamePage() {
   }
 
   if (gameData === null) {
-    fetchGameData();
+    if (!gameDataLoading) {
+      fetchGameData();
+    }
     return <Loading />;
   }
 
@@ -234,6 +242,7 @@ function GamePage() {
         <Route path="map" element={<Map />} />
         <Route path="town/:id" element={<TownLot />} />
         <Route path="town" element={<Town />} />
+        <Route path="stats" element={<StatsContent />} />
         <Route path="/" element={<Navigate to="/town" replace />} />
       </Routes>
       {connectionState?.connecting && (

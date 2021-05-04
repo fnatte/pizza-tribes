@@ -253,7 +253,14 @@ func (h *handler) sendFullStateUpdate(ctx context.Context, senderId string) {
 	msg := gs.ToStateChangeMessage()
 	err = h.send(ctx, senderId, msg)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to send full state update")
+		log.Error().Err(err).Msg("Failed to send state update")
+		return
+	}
+
+	msg = internal.CalculateStats(&gs).ToServerMessage()
+	err = h.send(ctx, senderId, msg)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to send stats message")
 		return
 	}
 }

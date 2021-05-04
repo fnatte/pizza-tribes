@@ -5,7 +5,12 @@ import (
 	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 )
 
+// Deprecated: Use ToServerMessage instead.
 func (gs *GameState) ToStateChangeMessage() *ServerMessage {
+	return gs.ToServerMessage()
+}
+
+func (gs *GameState) ToServerMessage() *ServerMessage {
 	lotsPatch := map[string]*GameStatePatch_LotPatch{}
 	for lotId, lot := range gs.Lots {
 		lotsPatch[lotId] = &GameStatePatch_LotPatch{
@@ -43,3 +48,13 @@ func (gs *GameState) ToStateChangeMessage() *ServerMessage {
 		},
 	}
 }
+
+func (stats *Stats) ToServerMessage() *ServerMessage {
+	return &ServerMessage{
+		Id: xid.New().String(),
+		Payload: &ServerMessage_Stats{
+			Stats: stats,
+		},
+	}
+}
+

@@ -1,0 +1,13 @@
+syntax = "proto3";
+package pizzatribes;
+
+option go_package = "github.com/fnatte/pizza-tribes/internal";
+
+message Stats {
+  int32 employedChefs = 1;
+  int32 employedSalesmice = 2;
+  double maxSellsByMicePerSecond = 3;
+  double pizzasProducedPerSecond = 4;
+  double demandOffpeak = 5;
+  double demandRushHour = 6;
+}
