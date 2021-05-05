@@ -1,6 +1,6 @@
 import { format, fromUnixTime } from "date-fns";
-import React from "react";
-import { useAsync } from "react-use";
+import React, { useState } from "react";
+import { useAsync, useInterval, useMedia } from "react-use";
 import {
   CartesianGrid,
   Legend,
@@ -15,7 +15,13 @@ import { TimeseriesData } from "../generated/timeseries";
 import { useStore } from "../store";
 
 const StatsContent: React.FC<{}> = () => {
+  const { coins, pizzas } = useStore((state) => state.gameState.resources);
   const stats = useStore((state) => state.gameStats);
+
+  const [now, setNow] = useState(Date.now());
+  useInterval(() => {
+    setNow(Date.now());
+  }, 10000);
 
   const rows =
     (stats && [
@@ -28,7 +34,7 @@ const StatsContent: React.FC<{}> = () => {
     ]) ??
     [];
 
-  const data = useAsync(async () => {
+  const tsData = useAsync(async () => {
     const response = await fetch("/api/timeseries/data");
     if (
       !response.ok ||
@@ -40,6 +46,22 @@ const StatsContent: React.FC<{}> = () => {
     return data as TimeseriesData;
   });
 
+  const isMinLg = useMedia("(min-width: 1024px)", false);
+  const chartSize = isMinLg
+    ? {
+        width: 600,
+        height: 300,
+      }
+    : {
+        width: 300,
+        height: 150,
+      };
+
+  const dpNow = { timestamp: now, pizzas, coins };
+  const chartData = tsData.value
+    ? [...tsData.value?.dataPoints, dpNow]
+    : [dpNow];
+
   return (
     <div
       className={classnames(
@@ -47,7 +69,8 @@ const StatsContent: React.FC<{}> = () => {
         "flex-col",
         "items-center",
         "justify-center",
-        "mt-2"
+        "mt-2",
+        "px-2"
       )}
     >
       <h2>Stats</h2>
@@ -76,14 +99,19 @@ const StatsContent: React.FC<{}> = () => {
         </tbody>
       </table>
       <h3>Resource History</h3>
-      {data.value && (
-        <LineChart width={600} height={300} data={data.value.dataPoints}>
+      {chartData && (
+        <LineChart
+          width={chartSize.width}
+          height={chartSize.height}
+          data={chartData}
+        >
           <Line type="monotone" dataKey="coins" stroke="#F59E0B" />
           <Line type="monotone" dataKey="pizzas" stroke="#991B1B" />
           <CartesianGrid stroke="#ccc" />
           <XAxis
             dataKey="timestamp"
-            domain={["auto", "auto"]}
+            domain={["dataMin", "dataMax"]}
+            padding={{ left: 10, right: 10 }}
             name="Time"
             tickFormatter={(t) => format(new Date(Number(t)), "dd/MM HH:mm")}
             type="number"
