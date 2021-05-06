@@ -39,6 +39,8 @@ func (gs *GameState) ToServerMessage() *ServerMessage {
 		TrainingQueuePatched: true,
 		ConstructionQueue: gs.ConstructionQueue,
 		ConstructionQueuePatched: true,
+		TownX: &wrapperspb.Int32Value{ Value: gs.TownX },
+		TownY: &wrapperspb.Int32Value{ Value: gs.TownY },
 	}
 
 	return &ServerMessage{

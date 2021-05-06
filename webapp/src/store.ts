@@ -28,6 +28,8 @@ export type GameState = {
   population: GameState_Population;
   trainingQueue: Array<Training>;
   constructionQueue: Array<Construction>;
+  townX: number;
+  townY: number;
 };
 
 type User = {
@@ -90,6 +92,8 @@ export const useStore = create<State>((set, get) => ({
     },
     trainingQueue: [],
     constructionQueue: [],
+    townX: 0,
+    townY: 0,
   },
   gameStats: null,
   user: null,
@@ -179,6 +183,8 @@ export const useStore = create<State>((set, get) => ({
             constructionQueue: stateChange.constructionQueuePatched
               ? stateChange.constructionQueue
               : state.gameState.constructionQueue,
+            townX: stateChange.townX?.value ?? state.gameState.townX,
+            townY: stateChange.townY?.value ?? state.gameState.townY,
           },
         }));
       });
@@ -222,6 +228,8 @@ export const useStore = create<State>((set, get) => ({
         set((state) => ({ ...state, connectionState }));
       });
     };
+
+    console.log('connecting...');
     const connection = connect(onStateChange, onMessage);
     set((state) => ({ ...state, connection }));
   },

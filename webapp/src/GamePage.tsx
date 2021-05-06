@@ -7,8 +7,8 @@ import { useStore } from "./store";
 import styles from "./styles";
 import { ReactComponent as HeartsSvg } from "../images/hearts.svg";
 import { ConnectionState } from "./connect";
-import {Stats} from "./generated/stats";
 import StatsContent from "./Game/StatsContent";
+import MapView from "./Game/map/MapView";
 
 type ClockState = {
   formatted: string;
@@ -144,14 +144,6 @@ function Separator() {
   );
 }
 
-function Map() {
-  return (
-    <div className={classnames("flex", "justify-center", "mt-2")}>
-      <h2>Map</h2>
-    </div>
-  );
-}
-
 const ConnectionPopup: React.VFC<{ connectionState: ConnectionState }> = ({
   connectionState,
 }) => {
@@ -205,7 +197,7 @@ function Loading() {
   );
 }
 
-function GamePage() {
+function GamePage(): JSX.Element {
   const connectionState = useStore((state) => state.connectionState);
   const user = useStore((state) => state.user);
   const gameData = useStore((state) => state.gameData);
@@ -218,6 +210,7 @@ function GamePage() {
   }, []);
 
   if (connectionState?.error === 'unauthorized') {
+    console.log('redirect to /login');
     return <Navigate to="/login" replace />;
   }
 
@@ -239,7 +232,7 @@ function GamePage() {
       <ResourceBar />
       <Separator />
       <Routes>
-        <Route path="map" element={<Map />} />
+        <Route path="map" element={<MapView />} />
         <Route path="town/:id" element={<TownLot />} />
         <Route path="town" element={<Town />} />
         <Route path="stats" element={<StatsContent />} />

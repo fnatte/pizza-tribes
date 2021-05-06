@@ -8,7 +8,6 @@ module.exports = {
       'xs': '475px',
       ...defaultTheme.screens,
     },
-    extend: {},
     fontFamily: {
       sans: ['Grandstander', 'sans-serif'],
     },

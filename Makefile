@@ -19,7 +19,14 @@ build-worker:
 build-updater: $(PBGO)
 	go build $(GO_FLAGS) -o out/pizza-tribes-updater github.com/fnatte/pizza-tribes/cmd/updater
 
-build: build-api build-worker build-updater
+.PHONY: build-migrator
+build-migrator: $(PBGO)
+	go build $(GO_FLAGS) -o out/pizza-tribes-migrator github.com/fnatte/pizza-tribes/cmd/migrator
+
+build: build-api build-worker build-updater build-migrator
+
+start-migrator: build-migrator
+	out/pizza-tribes-migrator
 
 start-api: build-api
 	out/pizza-tribes-api
@@ -30,4 +37,4 @@ start-worker: build-worker
 start-updater: build-updater
 	out/pizza-tribes-updater
 
-start: start-api start-worker start-updater
+start: start-api start-worker start-updater start-migrator

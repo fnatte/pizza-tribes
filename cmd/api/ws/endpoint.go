@@ -34,7 +34,7 @@ func NewEndpoint(authFunc AuthFunc, hub *Hub, handler WsHandler, origin string) 
 				return true
 			}
 
-			log.Warn().Msg(r.Header.Get("Origin") + "is not allowed")
+			log.Warn().Msg(r.Header.Get("Origin") + " is not allowed")
 
 			return false
 		},

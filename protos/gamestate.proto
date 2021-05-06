@@ -43,6 +43,8 @@ message GameState {
   int64 timestamp = 4;
   repeated Training trainingQueue = 5;
   repeated Construction constructionQueue = 6;
+  int32 townX = 7;
+  int32 townY = 8;
 }
 
 message GameStatePatch {
@@ -71,5 +73,7 @@ message GameStatePatch {
   repeated Training trainingQueue = 6;
   bool constructionQueuePatched = 7;
   repeated Construction constructionQueue = 8;
+  google.protobuf.Int32Value townX = 9;
+  google.protobuf.Int32Value townY = 10;
 }
 
