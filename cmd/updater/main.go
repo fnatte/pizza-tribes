@@ -37,7 +37,7 @@ type updater struct {
 }
 
 func (u *updater) update(ctx context.Context, userId string) {
-	log.Info().Str("userId", userId).Msg("Update")
+	log.Debug().Str("userId", userId).Msg("Update")
 
 	gameStateKey := fmt.Sprintf("user:%s:gamestate", userId)
 

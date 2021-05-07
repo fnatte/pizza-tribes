@@ -10,10 +10,23 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-const WORLD_WIDTH = 100
-const WORLD_HEIGHT = 100
+const WORLD_WIDTH = 110
+const WORLD_HEIGHT = 110
 const WORLD_ZONE_WIDTH = 10
 const WORLD_ZONE_HEIGHT = 10
+
+type xy struct{ x, y int }
+
+var xyOffsets []xy = []xy{
+	{x: 1, y: -1},
+	{x: 1, y: 0},
+	{x: 1, y: 1},
+	{x: 0, y: 1},
+	{x: -1, y: 1},
+	{x: -1, y: 0},
+	{x: -1, y: -1},
+	{x: 0, y: -1},
+}
 
 func getEntryIdx(x, y int) int {
 	return y*WORLD_ZONE_WIDTH + x
@@ -33,6 +46,16 @@ func getZoneIdx(x, y int) int {
 
 func getZoneKey(idx int) string {
 	return fmt.Sprintf("world:zone:%d", idx)
+}
+
+func countTowns(z *WorldZone) int {
+	count := 0
+	for i := range z.Entries {
+		if z.Entries[i].GetTown() != nil {
+			count++
+		}
+	}
+	return count
 }
 
 type WorldService struct {
@@ -125,6 +148,28 @@ func (s *WorldService) GetZoneIdx(ctx context.Context, idx int) (*WorldZone, err
 	return z, nil
 }
 
+func (s *WorldService) tryOpenZone(ctx context.Context, zidx int, score float64) error {
+	// Check middle zone
+	zone, err := s.GetZoneIdx(ctx, zidx)
+	if err != nil {
+		return err
+	}
+
+	if zone == nil {
+		return nil
+	}
+
+	count := countTowns(zone)
+	if count == 0 {
+		s.r.ZAdd(ctx, "world:open_zones", &redis.Z{
+			Score:  score,
+			Member: zidx,
+		}).Err()
+	}
+
+	return nil
+}
+
 func (s *WorldService) Initilize(ctx context.Context) error {
 	w := WORLD_WIDTH / WORLD_ZONE_WIDTH
 	h := WORLD_HEIGHT / WORLD_ZONE_HEIGHT
@@ -144,6 +189,47 @@ func (s *WorldService) Initilize(ctx context.Context) error {
 			if s.r.JsonGet(ctx, key, ".").Err() == redis.Nil {
 				s.r.JsonSet(ctx, key, ".", b)
 			}
+		}
+	}
+
+	// Populate open zones
+	allOpenZones, err := s.r.ZRange(ctx, "world:open_zones", -1, -1).Result()
+	if err != nil {
+		return err
+	}
+	if len(allOpenZones) == 0 {
+		// Walk the edges from the center and outwards
+		// Visualized JS-version: https://codepen.io/fnatteh/pen/MWpYrKP
+		cx := WORLD_WIDTH / 2
+		cy := WORLD_HEIGHT / 2
+		dx := 10
+		dy := 0
+		x := cx - 10
+		y := cy - 10
+
+		zidx, _ := getIdx(cx, cy)
+		s.tryOpenZone(ctx, zidx, 0)
+
+		for r := 0; r < 5; r++ {
+			for side := 0; side < 4; side++ {
+				for i := 0; i < (r+1)*2; i++ {
+					zidx, _ = getIdx(x, y)
+					s.tryOpenZone(ctx, zidx, float64(r*len(xyOffsets)*i))
+
+					x = x + dx
+					y = y + dy
+				}
+
+				// turn
+				t := dx
+				dx = -dy
+				dy = t
+			}
+
+			y = y - 10
+			x = x - 10
+			dx = 10
+			dy = 0
 		}
 	}
 

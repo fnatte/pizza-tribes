@@ -29,7 +29,7 @@ function MapView() {
         [
           [x - 5, y - 5],
           [x - 5, y + 5],
-          [x + 5, y + 5],
+          [x + 5, y - 5],
           [x + 5, y + 5],
         ]
           .filter(([a, b]) => a > 0 && b > 0)

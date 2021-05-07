@@ -263,3 +263,5 @@ export const useStore = create<State>((set, get) => ({
     );
   },
 }));
+
+window.useStore = useStore;
