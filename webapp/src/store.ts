@@ -51,6 +51,7 @@ type State = {
   tap: () => void;
   constructBuilding: (lotId: string, building: Building) => void;
   train: (education: Education, amount: number) => void;
+  steal: (x: number, y: number, amount: number) => void;
 };
 
 const mergeLots = (
@@ -262,6 +263,19 @@ export const useStore = create<State>((set, get) => ({
       })
     );
   },
+  steal: (x: number, y: number, amount: number) => {
+    get().connection?.send(
+      ClientMessage.create({
+        id: "test-456",
+        type: {
+          oneofKind: "steal",
+          steal: {
+            x, y, amount
+          },
+        },
+      })
+    );
+  },
 }));
 
-window.useStore = useStore;
+(window as any).useStore = useStore;

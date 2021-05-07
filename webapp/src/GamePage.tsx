@@ -9,6 +9,7 @@ import { ReactComponent as HeartsSvg } from "../images/hearts.svg";
 import { ConnectionState } from "./connect";
 import StatsContent from "./Game/StatsContent";
 import MapView from "./Game/map/MapView";
+import WorldEntryView from "./Game/world/WorldEntryView";
 
 type ClockState = {
   formatted: string;
@@ -236,6 +237,7 @@ function GamePage(): JSX.Element {
         <Route path="town/:id" element={<TownLot />} />
         <Route path="town" element={<Town />} />
         <Route path="stats" element={<StatsContent />} />
+        <Route path="world/entry" element={<WorldEntryView />} />
         <Route path="/" element={<Navigate to="/town" replace />} />
       </Routes>
       {connectionState?.connecting && (

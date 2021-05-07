@@ -4,7 +4,7 @@ import { ReactComponent as TownSvg } from "../../../images/town.svg";
 
 import style from "./hexgrid.module.css";
 import { WorldZone } from "../../generated/world";
-import {getIdx} from "./getIdx";
+import {getIdx} from "../getIdx";
 
 type Props = {
   x: number;
@@ -12,6 +12,7 @@ type Props = {
   size: number;
   data: WorldZone[];
   onNavigate: (x: number, y: number) => void;
+  onClick: (x: number, y: number, zidx: number, eidx: number) => void;
 };
 
 const range = (from: number, to: number) => [
@@ -46,7 +47,7 @@ const Arrow: React.FC<{
   );
 };
 
-const HexGrid: React.FC<Props> = ({ data, x, y, size, onNavigate }) => {
+const HexGrid: React.FC<Props> = ({ data, x, y, size, onNavigate, onClick }) => {
   const sh2floor = Math.floor(size / 2);
   const sh2round = Math.round(size / 2);
   return (
@@ -65,6 +66,7 @@ const HexGrid: React.FC<Props> = ({ data, x, y, size, onNavigate }) => {
                   objectType && style[objectType]
                 )}
                 key={x}
+                onClick={() => onClick(x, y, zidx, eidx)}
               >
                 {objectType === "town" && (
                   <TownSvg style={{ width: "100%", height: "100%" }} />

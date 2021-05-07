@@ -5,7 +5,8 @@ import { WorldZone } from "../../generated/world";
 import HexGrid from "./HexGrid";
 import { ReactComponent as HeartsSvg } from "../../../images/hearts.svg";
 import { useStore } from "../../store";
-import {getIdx} from "./getIdx";
+import { getIdx } from "../getIdx";
+import {useNavigate} from "react-router-dom";
 
 const unique = <T extends unknown>(arr: T[]): T[] => {
   return [...new Set(arr)];
@@ -15,11 +16,13 @@ function MapView() {
   const townX = useStore((state) => state.gameState.townX);
   const townY = useStore((state) => state.gameState.townY);
   const [{ x, y }, setXY] = useState({ x: -1, y: -1 });
+  const navigate = useNavigate();
 
   useEffect(() => {
     setXY({ x: townX, y: townY });
   }, [townX, townY]);
 
+  // TODO: store zones in store
   const [zones, setZones] = useState<WorldZone[]>([]);
 
   useAsync(async () => {
@@ -63,6 +66,13 @@ function MapView() {
     setXY((p) => ({ x: p.x + x, y: p.y + y }));
   };
 
+  const onClick = (x: number, y: number, zidx: number, eidx: number) => {
+    if (zones[zidx].entries[eidx]?.object?.oneofKind === "town") {
+      navigate(`/world/entry?x=${x}&y=${y}`)
+      console.log("town clicked");
+    }
+  };
+
   return (
     <div className={classnames("flex", "items-center", "flex-col", "mt-2")}>
       <h2>Map</h2>
@@ -72,7 +82,14 @@ function MapView() {
         </div>
       )}
       {zones.length > 0 && (
-        <HexGrid x={x} y={y} size={9} data={zones} onNavigate={onNavigate} />
+        <HexGrid
+          x={x}
+          y={y}
+          size={9}
+          data={zones}
+          onNavigate={onNavigate}
+          onClick={onClick}
+        />
       )}
     </div>
   );

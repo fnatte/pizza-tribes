@@ -198,6 +198,7 @@ func main() {
 	poller := poller{rdb: rdb, hub: wsHub}
 	ts := &TimeseriesService{ r: rc, auth: auth }
 	worldController := &WorldController{ auth: auth, world: world }
+	userController := &UserController{ auth: auth, r: rc }
 
 	r := mux.NewRouter()
 	r.PathPrefix("/auth").Handler(http.StripPrefix("/auth", auth.Router()))
@@ -216,6 +217,7 @@ func main() {
 	})
 	r.PathPrefix("/timeseries").Handler(http.StripPrefix("/timeseries", ts.Router()))
 	r.PathPrefix("/world").Handler(http.StripPrefix("/world", worldController.Router()))
+	r.PathPrefix("/user").Handler(http.StripPrefix("/user", userController.Router()))
 
 	go wsHub.Run()
 	go poller.run(ctx)
