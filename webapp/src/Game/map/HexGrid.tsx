@@ -4,6 +4,7 @@ import { ReactComponent as TownSvg } from "../../../images/town.svg";
 
 import style from "./hexgrid.module.css";
 import { WorldZone } from "../../generated/world";
+import {getIdx} from "./getIdx";
 
 type Props = {
   x: number;
@@ -53,8 +54,7 @@ const HexGrid: React.FC<Props> = ({ data, x, y, size, onNavigate }) => {
       {range(y - sh2floor, y + sh2round).map((y) => (
         <div className={style.row} key={y}>
           {range(x - sh2floor, x + sh2round).map((x) => {
-            const zidx = Math.floor(y / 10) * 10 + Math.floor(x / 10);
-            const eidx = (y % 10) * 10 + (x % 10);
+            const { zidx, eidx } = getIdx(x, y);
             const entry = data[zidx]?.entries[eidx];
             const objectType = entry?.object?.oneofKind;
             return (

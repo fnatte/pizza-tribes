@@ -67,10 +67,12 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 
 	// Make sure the user has town in world
 	if gs.TownX == 0 && gs.TownY == 0 {
-		_, _, err := h.world.AcquireTown(ctx, c.UserId())
+		x, y, err := h.world.AcquireTown(ctx, c.UserId())
 		if err != nil {
 			return fmt.Errorf("failed to acquire town: %w", err)
 		}
+		gs.TownX = int32(x)
+		gs.TownY = int32(y)
 		log.Info().Msg("Town acquired")
 	}
 

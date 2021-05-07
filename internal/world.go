@@ -2,18 +2,19 @@ package internal
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"math"
 	"math/rand"
+	"strconv"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/rs/zerolog/log"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-const WORLD_WIDTH = 110
-const WORLD_HEIGHT = 110
-const WORLD_ZONE_WIDTH = 10
-const WORLD_ZONE_HEIGHT = 10
+const WORLD_SIZE = 110
+const WORLD_ZONE_SIZE = 10
+const WORLD_NUM_ZONES = (WORLD_SIZE / WORLD_ZONE_SIZE) * (WORLD_SIZE / WORLD_ZONE_SIZE)
 
 type xy struct{ x, y int }
 
@@ -29,19 +30,19 @@ var xyOffsets []xy = []xy{
 }
 
 func getEntryIdx(x, y int) int {
-	return y*WORLD_ZONE_WIDTH + x
+	return y*WORLD_ZONE_SIZE + x
 }
 
 func getIdx(x, y int) (zidx, eidx int) {
-	zy := y / WORLD_ZONE_HEIGHT
-	zx := x / WORLD_ZONE_WIDTH
-	zidx = zy*(WORLD_WIDTH/WORLD_ZONE_WIDTH) + zx
-	eidx = (y%WORLD_ZONE_HEIGHT)*WORLD_ZONE_WIDTH + (x % WORLD_ZONE_WIDTH)
+	zy := y / WORLD_ZONE_SIZE
+	zx := x / WORLD_ZONE_SIZE
+	zidx = zy*(WORLD_SIZE/WORLD_ZONE_SIZE) + zx
+	eidx = (y%WORLD_ZONE_SIZE)*WORLD_ZONE_SIZE + (x % WORLD_ZONE_SIZE)
 	return
 }
 
 func getZoneIdx(x, y int) int {
-	return (y/WORLD_ZONE_HEIGHT)*(WORLD_WIDTH/WORLD_ZONE_WIDTH) + (x / WORLD_ZONE_WIDTH)
+	return (y/WORLD_ZONE_SIZE)*(WORLD_SIZE/WORLD_ZONE_SIZE) + (x / WORLD_ZONE_SIZE)
 }
 
 func getZoneKey(idx int) string {
@@ -58,6 +59,10 @@ func countTowns(z *WorldZone) int {
 	return count
 }
 
+func isZoneOpen(z *WorldZone) bool {
+	return countTowns(z) < 8
+}
+
 type WorldService struct {
 	r RedisClient
 }
@@ -66,7 +71,7 @@ func NewWorldService(r RedisClient) *WorldService {
 	return &WorldService{r: r}
 }
 
-func (s *WorldService) SetEntryXY(ctx context.Context, x, y int, e *WorldEntry) error {
+func (s *WorldService) setEntryXY(ctx context.Context, x, y int, e *WorldEntry) error {
 	data, err := protojson.Marshal(e)
 	if err != nil {
 		return err
@@ -83,11 +88,29 @@ func (s *WorldService) AcquireTown(ctx context.Context, userId string) (x, y int
 
 	// Loop until we find a spot
 	for {
-		x = rand.Intn(WORLD_WIDTH)
-		y = rand.Intn(WORLD_HEIGHT)
-		zidx, eidx = getIdx(x, y)
+		zidxes, err := s.r.ZRange(ctx, "world:open_zones", 0, 0).Result()
+		if err != nil {
+			return 0, 0, err
+		}
+		if len(zidxes) != 1 {
+			return 0, 0, errors.New("no open zones")
+		}
+		zidx, err = strconv.Atoi(zidxes[0])
+		if err != nil {
+			return 0, 0, err
+		}
 
-		log.Info().Int("zidx", zidx).Msg("GetZoneIdx")
+		// Get random entry
+		ex := rand.Intn(WORLD_ZONE_SIZE)
+		ey := rand.Intn(WORLD_ZONE_SIZE)
+		eidx = getEntryIdx(ex, ey)
+
+		// Convert from index to x,y
+		zy := zidx / (WORLD_SIZE/WORLD_ZONE_SIZE)
+		zx := zidx % (WORLD_SIZE/WORLD_ZONE_SIZE)
+		x = zx * (WORLD_ZONE_SIZE) + ex
+		y = zy * (WORLD_ZONE_SIZE) + ey
+
 		zone, err := s.GetZoneIdx(ctx, zidx)
 		if err != nil {
 			return 0, 0, err
@@ -103,7 +126,8 @@ func (s *WorldService) AcquireTown(ctx context.Context, userId string) (x, y int
 		break
 	}
 
-	err = s.SetEntryXY(ctx, x, y, &WorldEntry{
+	// Assign a town to the world entry
+	err = s.setEntryXY(ctx, x, y, &WorldEntry{
 		Object: &WorldEntry_Town_{
 			Town: &WorldEntry_Town{
 				UserId: userId,
@@ -113,6 +137,10 @@ func (s *WorldService) AcquireTown(ctx context.Context, userId string) (x, y int
 	if err != nil {
 		return 0, 0, err
 	}
+
+	// Update the user game state with coordinates to its town.
+	// Since the user will often need the coords of its of town,
+	// we don't want to search the entire world space.
 	err = s.r.JsonSet(ctx, fmt.Sprintf("user:%s:gamestate", userId), ".townX", x).Err()
 	if err != nil {
 		return 0, 0, err
@@ -120,6 +148,15 @@ func (s *WorldService) AcquireTown(ctx context.Context, userId string) (x, y int
 	err = s.r.JsonSet(ctx, fmt.Sprintf("user:%s:gamestate", userId), ".townY", y).Err()
 	if err != nil {
 		return 0, 0, err
+	}
+
+	// Close zone if it is fully populated
+	zone, err := s.GetZoneIdx(ctx, zidx)
+	if err != nil {
+		return 0, 0, err
+	}
+	if !isZoneOpen(zone) {
+		s.closeZone(ctx, zidx)
 	}
 
 	return
@@ -148,6 +185,10 @@ func (s *WorldService) GetZoneIdx(ctx context.Context, idx int) (*WorldZone, err
 	return z, nil
 }
 
+func (s *WorldService) closeZone(ctx context.Context, zidx int) error {
+	return s.r.ZRem(ctx, fmt.Sprintf("world:zone:%d", zidx)).Err()
+}
+
 func (s *WorldService) tryOpenZone(ctx context.Context, zidx int, score float64) error {
 	// Check middle zone
 	zone, err := s.GetZoneIdx(ctx, zidx)
@@ -171,14 +212,14 @@ func (s *WorldService) tryOpenZone(ctx context.Context, zidx int, score float64)
 }
 
 func (s *WorldService) Initilize(ctx context.Context) error {
-	w := WORLD_WIDTH / WORLD_ZONE_WIDTH
-	h := WORLD_HEIGHT / WORLD_ZONE_HEIGHT
+	w := WORLD_SIZE / WORLD_ZONE_SIZE
+	h := WORLD_SIZE / WORLD_ZONE_SIZE
 
 	for x := 0; x < w; x++ {
 		for y := 0; y < h; y++ {
-			idx := y*WORLD_ZONE_WIDTH + x
+			idx := y*WORLD_ZONE_SIZE + x
 			b, err := protojson.Marshal(&WorldZone{
-				Entries: make([]*WorldEntry, WORLD_ZONE_HEIGHT*WORLD_ZONE_WIDTH),
+				Entries: make([]*WorldEntry, WORLD_ZONE_SIZE*WORLD_ZONE_SIZE),
 			})
 			if err != nil {
 				return err
@@ -192,44 +233,18 @@ func (s *WorldService) Initilize(ctx context.Context) error {
 		}
 	}
 
-	// Populate open zones
-	allOpenZones, err := s.r.ZRange(ctx, "world:open_zones", -1, -1).Result()
-	if err != nil {
-		return err
-	}
-	if len(allOpenZones) == 0 {
-		// Walk the edges from the center and outwards
-		// Visualized JS-version: https://codepen.io/fnatteh/pen/MWpYrKP
-		cx := WORLD_WIDTH / 2
-		cy := WORLD_HEIGHT / 2
-		dx := 10
-		dy := 0
-		x := cx - 10
-		y := cy - 10
-
-		zidx, _ := getIdx(cx, cy)
-		s.tryOpenZone(ctx, zidx, 0)
-
-		for r := 0; r < 5; r++ {
-			for side := 0; side < 4; side++ {
-				for i := 0; i < (r+1)*2; i++ {
-					zidx, _ = getIdx(x, y)
-					s.tryOpenZone(ctx, zidx, float64(r*len(xyOffsets)*i))
-
-					x = x + dx
-					y = y + dy
-				}
-
-				// turn
-				t := dx
-				dx = -dy
-				dy = t
-			}
-
-			y = y - 10
-			x = x - 10
-			dx = 10
-			dy = 0
+	// Populate open zones. A zone will only be opened if there are no towns in it.
+	// Loop through each zone and set its score to its distance from the center
+	// This makes the zones closest to the center to be filled first.
+	cx := WORLD_SIZE / WORLD_ZONE_SIZE / 2
+	cy := WORLD_SIZE / WORLD_ZONE_SIZE / 2
+	for x := 0; x < WORLD_SIZE / WORLD_ZONE_SIZE; x++ {
+		for y := 0; y < WORLD_SIZE / WORLD_ZONE_SIZE; y++ {
+			zidx, _ := getIdx(x * WORLD_ZONE_SIZE, y * WORLD_ZONE_SIZE)
+			dx := cx - x
+			dy := cy - y
+			d := math.Sqrt(float64(dx*dx+dy*dy))
+			s.tryOpenZone(ctx, zidx, d)
 		}
 	}
 

@@ -32,15 +32,15 @@ func TestGetZoneIdx(t *testing.T) {
 		},
 		"second zone y": {
 			input: input{ x: 0, y: 15 },
-			want: 10,
+			want: 11,
 		},
 		"both x and y": {
 			input: input{ x: 15, y: 15 },
-			want: 11,
+			want: 12,
 		},
 		"last zone": {
 			input: input{ x: 99, y: 99 },
-			want: 99,
+			want: 108,
 		},
 	}
 
@@ -77,15 +77,15 @@ func TestGetIdx(t *testing.T) {
 		},
 		"xy(0,15)": {
 			input: input{ x: 0, y: 15 },
-			want: Idx{ Zidx: 10, Eidx: 50 },
+			want: Idx{ Zidx: 11, Eidx: 50 },
 		},
 		"xy(15,15)": {
 			input: input{ x: 15, y: 15 },
-			want: Idx{ Zidx: 11, Eidx: 55 },
+			want: Idx{ Zidx: 12, Eidx: 55 },
 		},
 		"xy(99,99)": {
 			input: input{ x: 99, y: 99 },
-			want: Idx{ Zidx: 99, Eidx: 99 },
+			want: Idx{ Zidx: 108, Eidx: 99 },
 		},
 	}
 

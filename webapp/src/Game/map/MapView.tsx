@@ -5,6 +5,7 @@ import { WorldZone } from "../../generated/world";
 import HexGrid from "./HexGrid";
 import { ReactComponent as HeartsSvg } from "../../../images/hearts.svg";
 import { useStore } from "../../store";
+import {getIdx} from "./getIdx";
 
 const unique = <T extends unknown>(arr: T[]): T[] => {
   return [...new Set(arr)];
@@ -33,7 +34,7 @@ function MapView() {
           [x + 5, y + 5],
         ]
           .filter(([a, b]) => a > 0 && b > 0)
-          .map(([a, b]) => Math.floor(b / 10) * 10 + Math.floor(a / 10))
+          .map(([a, b]) => getIdx(a, b).zidx)
           .filter((idx) => zones[idx] === undefined)
       );
 
