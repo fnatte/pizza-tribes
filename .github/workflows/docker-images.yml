@@ -46,6 +46,14 @@ jobs:
           push: true
           tags: ghcr.io/fnatte/pizza-tribes-worker:latest
       -
+        name: Build and push - Migrator
+        id: docker_build_migrator
+        uses: docker/build-push-action@v2
+        with:
+          target: migrator
+          push: true
+          tags: ghcr.io/fnatte/pizza-tribes-migrator:latest
+      -
         name: Build and push - Web app
         id: docker_build_webapp
         uses: docker/build-push-action@v2
