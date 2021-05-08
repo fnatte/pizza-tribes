@@ -6,6 +6,8 @@ import { getIdx } from "../getIdx";
 import { useAsync } from "react-use";
 import { ReactComponent as HeartsSvg } from "../../../images/hearts.svg";
 import WorldTownView from "./WorldTownView";
+import { useStore } from "../../store";
+import WorldMyTownView from "./WorldMyTownView";
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -16,6 +18,9 @@ function WorldEntryView() {
   const x = parseInt(query.get("x") ?? "");
   const y = parseInt(query.get("y") ?? "");
   const { zidx, eidx } = getIdx(x, y);
+
+  const townX = useStore((state) => state.gameState.townX);
+  const townY = useStore((state) => state.gameState.townY);
 
   // TODO: store zones in store
   const [zoneData, setZoneData] = useState<{
@@ -54,7 +59,9 @@ function WorldEntryView() {
         <HeartsSvg />
       ) : (
         <div>
-          {town !== null ? (
+          {townX === x && townY === y ? (
+            <WorldMyTownView />
+          ) : town !== null ? (
             <WorldTownView town={town} x={x} y={y} />
           ) : (
             <Navigate to="/" />
