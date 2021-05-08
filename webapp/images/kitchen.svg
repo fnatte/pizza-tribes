@@ -11,11 +11,11 @@
    height="17.951937mm"
    viewBox="0 0 17.317486 17.951937"
    version="1.1"
-   id="svg7999"
+   id="svg1762"
    inkscape:version="1.0.2 (e86c870879, 2021-01-15, custom)"
    sodipodi:docname="kitchen.svg">
   <defs
-     id="defs7993" />
+     id="defs1756" />
   <sodipodi:namedview
      id="base"
      pagecolor="#ffffff"
@@ -23,9 +23,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2.8"
-     inkscape:cx="81.229685"
-     inkscape:cy="107.04149"
+     inkscape:zoom="0.35"
+     inkscape:cx="-67.274043"
+     inkscape:cy="813.92489"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      inkscape:document-rotation="0"
@@ -36,7 +36,7 @@
      inkscape:window-y="45"
      inkscape:window-maximized="0" />
   <metadata
-     id="metadata7996">
+     id="metadata1759">
     <rdf:RDF>
       <cc:Work
          rdf:about="">
@@ -51,18 +51,18 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(7.90279,-16.726415)">
+     transform="translate(-123.63292,67.184295)">
     <g
        id="g1880"
        inkscape:label="kitchen"
-       transform="translate(-104.7696,-187.41706)">
+       transform="translate(26.766114,-271.32777)">
       <path
-         style="display:inline;fill:#aaa16c;fill-opacity:1;stroke:#000000;stroke-width:0.132292;stroke-linecap:butt;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         style="display:inline;fill:#d59c6c;fill-opacity:1;stroke:#000000;stroke-width:0.132292;stroke-linecap:butt;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          d="m 107.24407,222.01186 3e-5,-5.29166 -10.311114,-5.95313 -3e-5,5.29167 z"
          id="path1868"
          sodipodi:nodetypes="ccccc" />
       <path
-         style="display:inline;fill:#c4bc8e;fill-opacity:1;stroke:#000000;stroke-width:0.132292;stroke-linecap:butt;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         style="display:inline;fill:#d59c6c;fill-opacity:1;stroke:#000000;stroke-width:0.132292;stroke-linecap:butt;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          d="m 107.2899,216.74666 6.82825,-3.99521 v 5.29166 l -6.82825,3.99521 z"
          id="path1870"
          sodipodi:nodetypes="ccccc" />

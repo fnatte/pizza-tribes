@@ -1,8 +1,4 @@
-import {
-  formatDistanceToNow,
-  formatDuration,
-  intervalToDuration,
-} from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import JSBI from "jsbi";
 import React, { useState } from "react";
 import { useInterval } from "react-use";
@@ -15,17 +11,38 @@ import { ReactComponent as ChefSvg } from "../../images/chef.svg";
 import { ReactComponent as SalesmouseSvg } from "../../images/salesmouse.svg";
 import { ReactComponent as GuardSvg } from "../../images/guard.svg";
 import { ReactComponent as ThiefSvg } from "../../images/thief.svg";
-import {formatDurationShort} from "../utils";
+import { ReactComponent as SvgSchool } from "../../images/school.svg";
+import { formatDurationShort } from "../utils";
 
 const title = classnames("text-lg", "md:text-xl", "mb-2");
 const label = classnames("text-xs", "md:text-sm");
 const value = classnames("text-sm");
+const descriptionStyle = classnames("text-sm", "text-gray-600");
 
 const svgs: Record<number, React.VFC | undefined> = {
   [Education.CHEF]: ChefSvg,
   [Education.SALESMOUSE]: SalesmouseSvg,
   [Education.GUARD]: GuardSvg,
   [Education.THIEF]: ThiefSvg,
+};
+
+const descriptions: Record<number, React.VFC | undefined> = {
+  [Education.CHEF]: () => (
+    <p className={descriptionStyle}>Chefs work in kitchens to make pizzas.</p>
+  ),
+  [Education.SALESMOUSE]: () => (
+    <p className={descriptionStyle}>Salesmice work in shops to sell pizzas.</p>
+  ),
+  [Education.GUARD]: () => (
+    <p className={descriptionStyle}>
+      Guards help protect your town against thieves.
+    </p>
+  ),
+  [Education.THIEF]: () => (
+    <p className={descriptionStyle}>
+      Thieves can be sent to other towns to steal coins.
+    </p>
+  ),
 };
 
 const numberFormat = new Intl.NumberFormat();
@@ -49,6 +66,10 @@ function School() {
   return (
     <div className={classnames("max-w-full", "px-2")}>
       <h2>School</h2>
+      <SvgSchool height={100} width={100} />
+      <p className={classnames("my-4", "text-gray-700")}>
+        Educate your mice so that they can start contributing to your town.
+      </p>
 
       {trainingQueue.length > 0 && (
         <>
@@ -94,6 +115,7 @@ function School() {
         .map((eduKey) => {
           const education = educations[eduKey];
           const SvgImage = svgs[eduKey];
+          const Description = descriptions[eduKey];
           return (
             <div className={classnames("flex", "mb-8")} key={education.title}>
               <div style={{ width: 110 }}>
@@ -101,6 +123,7 @@ function School() {
               </div>
               <div className={classnames("ml-4")}>
                 <div className={title}>{education.title}</div>
+                {Description && <Description />}
                 <table>
                   <tbody>
                     <tr>

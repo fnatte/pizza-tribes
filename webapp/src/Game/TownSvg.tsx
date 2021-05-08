@@ -16,7 +16,7 @@ function renderBuilding(building: Building | undefined) {
       );
     case Building.HOUSE:
       return (
-        <g transform="translate(-10, -13)">
+        <g transform="translate(-5, -8) scale(0.5)">
           <SvgHouse width={20} height={20} />
         </g>
       );
