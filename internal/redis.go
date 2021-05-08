@@ -68,6 +68,12 @@ func RedisJsonArrTrim(c RedisProcesser, ctx context.Context, key string, path st
 	return cmd
 }
 
+func RedisJsonArrPop(c RedisProcesser, ctx context.Context, key string, path string, index int) *redis.StringCmd {
+	cmd := redis.NewStringCmd(ctx, "JSON.ARRPOP", key, path, index)
+	_ = c.Process(ctx, cmd)
+	return cmd
+}
+
 func RedisZAddLt(c RedisProcesser, ctx context.Context, key string, members ...*redis.Z) *redis.IntCmd {
 	const n = 3
 	a := make([]interface{}, n+2*len(members))

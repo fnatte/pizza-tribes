@@ -1,0 +1,24 @@
+syntax = "proto3";
+package pizzatribes;
+
+option go_package = "github.com/fnatte/pizza-tribes/internal";
+
+message WorldEntry {
+  enum LandType {
+    GRASS = 0;
+  }
+
+  message Town {
+    string userId = 1;
+  }
+
+  LandType landType = 1;
+
+  oneof object {
+    Town town = 2;
+  }
+}
+
+message WorldZone {
+  repeated WorldEntry entries = 1;
+}

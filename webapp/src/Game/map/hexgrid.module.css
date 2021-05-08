@@ -1,0 +1,78 @@
+:root {
+  --tilesX: 9;
+  --tilesY: 9;
+}
+
+.root {
+  transform: rotateX(60deg) rotateZ(45deg);
+  transform-style: preserve-3d;
+
+  width: calc(var(--tilesX) * 5vw);
+  height: calc(var(--tilesY) * 5vw);
+}
+
+.row {
+  display: flex;
+}
+
+.tile {
+  width: 5vw;
+  height: 5vw;
+  background: #fff;
+  border: 1px solid #D9F99D;
+
+}
+
+.town {
+  cursor: pointer;
+}
+
+.grass {
+  background: #BEF264;
+}
+.grass:hover {
+    background: #A3E635;
+}
+
+.arrow {
+  padding: 10px;
+  position: absolute;
+  cursor: pointer;
+}
+
+.arrow:before {
+  display: block;
+  content: '';
+  background: #059669;
+  width: 50px;
+  height: 50px;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.arrow:hover:before {
+  background: #34D399;
+}
+
+.arrowleft {
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%) translateX(-100px) rotateZ(-90deg);
+}
+
+.arrowright {
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%) translateX(50px) rotateZ(90deg);
+}
+
+.arrowtop {
+  left: 50%;
+  top: 0%;
+  transform: translateY(-100px) translateX(-50%) rotateZ(0deg);
+}
+
+.arrowbottom {
+  left: 50%;
+  top: 100%;
+  transform: translateY(50px) translateX(-50%) rotateZ(180deg);
+}

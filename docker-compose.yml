@@ -6,6 +6,11 @@ services:
       - redis_data:/data
     ports:
       - "6379:6379"
+    command: [
+      "--loadmodule", "/usr/lib/redis/modules/redistimeseries.so",
+      "--loadmodule", "/usr/lib/redis/modules/rejson.so",
+      "--appendonly yes",
+      "--dir /data"]
   api:
     image: "ghcr.io/fnatte/pizza-tribes-api:latest"
     build:

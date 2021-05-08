@@ -7,6 +7,7 @@ import ConstructionQueue from "./ConstructionQueue";
 import Population from "./Population";
 import classes from "./town.module.css";
 import TownSvg from "./TownSvg";
+import TravelQueue from "./TravelQueue";
 
 function Town() {
   const ref = useRef<SVGSVGElement>(null);
@@ -63,8 +64,21 @@ function Town() {
           lots={lots}
           height={undefined}
         />
-        <Population className={classnames("absolute", "top-0", "right-0")} />
-        <ConstructionQueue className={classnames("absolute", "top-0", "left-0")} />
+        <div
+          className={classnames(
+            "absolute",
+            "top-0",
+            "left-0",
+            "w-full",
+            "flex",
+            "justify-between",
+            "items-start"
+          )}
+        >
+          <ConstructionQueue />
+          <TravelQueue />
+          <Population />
+        </div>
       </div>
     </div>
   );

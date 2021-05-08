@@ -1,5 +1,5 @@
 import React from "react";
-import {useNavigate} from "react-router-dom";
+import {Navigate, useNavigate} from "react-router-dom";
 import {classnames} from "tailwindcss-classnames";
 import Header from "./Header";
 import LoginForm from "./LoginForm";
@@ -41,6 +41,13 @@ function LoginPage() {
   const onLogin = () => {
     navigate("/");
   };
+  const connectionState = useStore((state) => state.connectionState);
+  const user = useStore((state) => state.user);
+
+  if (connectionState?.connected || connectionState?.connecting || user !== null) {
+    return <Navigate to="/" replace />;
+  }
+
   return (
     <div>
       <Welcome />

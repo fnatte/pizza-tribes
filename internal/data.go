@@ -1,6 +1,10 @@
 package internal
 
+import "time"
+
 const MicePerHouse = 10
+
+const ThiefSpeed = 30 * time.Second
 
 var FullGameData = GameData{
 	Buildings: map[int32]*BuildingInfo{

@@ -10,6 +10,7 @@ import {
   GameStatePatch_LotPatch,
   GameState_Population,
   Training,
+  Travel,
 } from "./generated/gamestate";
 import { GameData } from "./generated/game_data";
 import { ServerMessage, ServerMessage_User } from "./generated/server_message";
@@ -28,6 +29,9 @@ export type GameState = {
   population: GameState_Population;
   trainingQueue: Array<Training>;
   constructionQueue: Array<Construction>;
+  travelQueue: Array<Travel>;
+  townX: number;
+  townY: number;
 };
 
 type User = {
@@ -49,6 +53,7 @@ type State = {
   tap: () => void;
   constructBuilding: (lotId: string, building: Building) => void;
   train: (education: Education, amount: number) => void;
+  steal: (x: number, y: number, amount: number) => void;
 };
 
 const mergeLots = (
@@ -90,6 +95,9 @@ export const useStore = create<State>((set, get) => ({
     },
     trainingQueue: [],
     constructionQueue: [],
+    travelQueue: [],
+    townX: 0,
+    townY: 0,
   },
   gameStats: null,
   user: null,
@@ -179,6 +187,11 @@ export const useStore = create<State>((set, get) => ({
             constructionQueue: stateChange.constructionQueuePatched
               ? stateChange.constructionQueue
               : state.gameState.constructionQueue,
+            travelQueue: stateChange.travelQueuePatched
+              ? stateChange.travelQueue
+              : state.gameState.travelQueue,
+            townX: stateChange.townX?.value ?? state.gameState.townX,
+            townY: stateChange.townY?.value ?? state.gameState.townY,
           },
         }));
       });
@@ -222,6 +235,8 @@ export const useStore = create<State>((set, get) => ({
         set((state) => ({ ...state, connectionState }));
       });
     };
+
+    console.log('connecting...');
     const connection = connect(onStateChange, onMessage);
     set((state) => ({ ...state, connection }));
   },
@@ -254,4 +269,19 @@ export const useStore = create<State>((set, get) => ({
       })
     );
   },
+  steal: (x: number, y: number, amount: number) => {
+    get().connection?.send(
+      ClientMessage.create({
+        id: "test-456",
+        type: {
+          oneofKind: "steal",
+          steal: {
+            x, y, amount
+          },
+        },
+      })
+    );
+  },
 }));
+
+(window as any).useStore = useStore;

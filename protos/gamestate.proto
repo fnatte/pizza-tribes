@@ -19,6 +19,15 @@ message Construction {
   Building building = 3;
 }
 
+message Travel {
+  int64 arrival_at = 1;
+  int32 destinationX = 2;
+  int32 destinationY = 3;
+  bool returning = 4;
+  int32 thieves = 5;
+  int64 coins = 6;
+}
+
 message GameState {
   message Resources {
     int32 coins = 1;
@@ -43,6 +52,9 @@ message GameState {
   int64 timestamp = 4;
   repeated Training trainingQueue = 5;
   repeated Construction constructionQueue = 6;
+  int32 townX = 7;
+  int32 townY = 8;
+  repeated Travel travelQueue = 9;
 }
 
 message GameStatePatch {
@@ -71,5 +83,9 @@ message GameStatePatch {
   repeated Training trainingQueue = 6;
   bool constructionQueuePatched = 7;
   repeated Construction constructionQueue = 8;
+  google.protobuf.Int32Value townX = 9;
+  google.protobuf.Int32Value townY = 10;
+  bool travelQueuePatched = 11;
+  repeated Travel travelQueue = 12;
 }
 

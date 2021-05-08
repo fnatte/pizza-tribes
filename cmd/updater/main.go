@@ -33,11 +33,12 @@ func getPopulationKey(edu internal.Education) (string, error) {
 }
 
 type updater struct {
-	r internal.RedisClient
+	r     internal.RedisClient
+	world *internal.WorldService
 }
 
 func (u *updater) update(ctx context.Context, userId string) {
-	log.Info().Str("userId", userId).Msg("Update")
+	log.Debug().Str("userId", userId).Msg("Update")
 
 	gameStateKey := fmt.Sprintf("user:%s:gamestate", userId)
 
@@ -45,6 +46,9 @@ func (u *updater) update(ctx context.Context, userId string) {
 	var changes changes
 	var completedTrainings []*internal.Training
 	var completedConstructions []*internal.Construction
+
+	// Patch that will be used to notify and update clients
+	gsPatch := &internal.GameStatePatch{}
 
 	txf := func(tx *redis.Tx) error {
 		// Get current game state
@@ -61,6 +65,13 @@ func (u *updater) update(ctx context.Context, userId string) {
 		changes = extrapolate(&gs)
 		completedTrainings = getCompletedTrainings(&gs)
 		completedConstructions = getCompletedConstructions(&gs)
+
+		log.Debug().Int("completedTrainings", len(completedTrainings)).Msg("")
+
+		pipeFn, err := completeTravels(ctx, tx, u.world, userId, &gs, gsPatch)
+		if err != nil {
+			return err
+		}
 
 		// Write changes to Redis
 		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
@@ -152,8 +163,15 @@ func (u *updater) update(ctx context.Context, userId string) {
 				}
 			}
 
+			if pipeFn != nil {
+				if err = pipeFn(pipe); err != nil {
+					return err
+				}
+			}
+
 			return nil
 		})
+
 		return err
 	}
 
@@ -172,28 +190,38 @@ func (u *updater) update(ctx context.Context, userId string) {
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to ensure timeseries")
 	}
-	err = internal.AddMetricCoins(ctx, u.r, userId, changes.timestamp * 1000, int64(changes.coins))
+	err = internal.AddMetricCoins(ctx, u.r, userId, changes.timestamp*1000, int64(changes.coins))
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to add coins metric")
 	}
-	err = internal.AddMetricPizzas(ctx, u.r, userId, changes.timestamp * 1000, int64(changes.pizzas))
+	err = internal.AddMetricPizzas(ctx, u.r, userId, changes.timestamp*1000, int64(changes.pizzas))
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to add pizzas metric")
 	}
 
-	// Notify
-	gsPatch := &internal.GameStatePatch{
-		Resources: &internal.GameStatePatch_ResourcesPatch{
-			Coins:  &wrapperspb.Int32Value{Value: changes.coins},
-			Pizzas: &wrapperspb.Int32Value{Value: changes.pizzas},
-		},
-		Timestamp: &wrapperspb.Int64Value{Value: changes.timestamp},
+	// Update patch
+	if gsPatch.Resources == nil {
+		gsPatch.Resources = &internal.GameStatePatch_ResourcesPatch{}
 	}
+	if gsPatch.Resources.Coins == nil {
+		gsPatch.Resources.Coins = &wrapperspb.Int32Value{}
+	}
+	gsPatch.Resources.Coins.Value = gsPatch.Resources.Coins.Value + changes.coins
+	if gsPatch.Resources.Pizzas == nil {
+		gsPatch.Resources.Pizzas = &wrapperspb.Int32Value{}
+	}
+	gsPatch.Resources.Pizzas.Value = gsPatch.Resources.Pizzas.Value + changes.pizzas
+	gsPatch.Timestamp = &wrapperspb.Int64Value{Value: changes.timestamp}
 
+	// TODO: move to when trainings are done
 	if len(completedTrainings) > 0 {
 		gsPatch.TrainingQueue = gs.TrainingQueue[len(completedTrainings):]
 		gsPatch.TrainingQueuePatched = true
-		gsPatch.Population = &internal.GameStatePatch_PopulationPatch{}
+		if gsPatch.Population == nil {
+			gsPatch.Population = &internal.GameStatePatch_PopulationPatch{}
+		}
+		// TODO: fix bug that will happend if thieves return at the same time
+		// as thieves return
 		for _, t := range completedTrainings {
 			switch t.Education {
 			case internal.Education_CHEF:
@@ -216,6 +244,7 @@ func (u *updater) update(ctx context.Context, userId string) {
 		}
 	}
 
+	// TODO: move to when constructions are done
 	if len(completedConstructions) > 0 {
 		gsPatch.ConstructionQueue = gs.ConstructionQueue[len(completedConstructions):]
 		gsPatch.ConstructionQueuePatched = true
@@ -312,8 +341,8 @@ func extrapolate(gs *internal.GameState) changes {
 
 	stats := internal.CalculateStats(gs)
 
-	demand := int32(stats.DemandOffpeak * float64(offpeak) +
-		stats.DemandRushHour * float64(rush))
+	demand := int32(stats.DemandOffpeak*float64(offpeak) +
+		stats.DemandRushHour*float64(rush))
 
 	pizzasProduced := int32(stats.PizzasProducedPerSecond * dt)
 	pizzasAvailable := gs.Resources.Pizzas + pizzasProduced
@@ -380,7 +409,8 @@ func main() {
 	})
 
 	rc := internal.NewRedisClient(rdb)
-	u := updater{r: rc}
+	world := internal.NewWorldService(rc)
+	u := updater{r: rc, world: world}
 
 	ctx := context.Background()
 

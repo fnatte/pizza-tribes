@@ -28,14 +28,6 @@ const svgs: Record<number, React.VFC | undefined> = {
   [Education.THIEF]: ThiefSvg,
 };
 
-const shortDuration = (str: string) => {
-  return str
-    .replace("minutes", "min")
-    .replace("minute", "min")
-    .replace("seconds", "sec")
-    .replace("second", "sec");
-};
-
 const numberFormat = new Intl.NumberFormat();
 
 function School() {
@@ -117,7 +109,7 @@ function School() {
                       </td>
                       <td className={classnames("px-2")}>
                         <span className={value}>
-                          {formatDurationShort(education.trainTime * 1000)}
+                          {formatDurationShort(education.trainTime)}
                         </span>
                       </td>
                     </tr>

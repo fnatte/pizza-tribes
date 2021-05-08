@@ -105,12 +105,15 @@ const connect = (
     };
 
     conn.onopen = () => {
+      console.log('connected');
       setState({ connected: true, connecting: false, reconnectAttempts: 0 });
     };
 
     conn.onerror = (e) => {
       console.error("WebSocket error", e);
     };
+
+    console.log(conn);
   };
 
   const send = (msg: ClientMessage) => {

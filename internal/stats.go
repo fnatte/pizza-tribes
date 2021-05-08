@@ -18,10 +18,10 @@ func CalculateStats(gs *GameState) *Stats {
 	buildingCount := CountBuildings(gs)
 	maxEmployed := CountMaxEmployed(buildingCount)
 
-	employedChefs := minInt32(gs.Population.Chefs, maxEmployed[int32(Building_KITCHEN)])
+	employedChefs := MinInt32(gs.Population.Chefs, maxEmployed[int32(Building_KITCHEN)])
 	pizzasProducedPerSecond := float64(employedChefs) * CHEF_PIZZAS_PER_SECOND
 
-	employedSalesmice := minInt32(gs.Population.Salesmice, maxEmployed[int32(Building_SHOP)])
+	employedSalesmice := MinInt32(gs.Population.Salesmice, maxEmployed[int32(Building_SHOP)])
 	maxSellsByMicePerSecond := float64(employedSalesmice) * SALESMICE_SELLS_PER_SECOND
 
 	return &Stats{

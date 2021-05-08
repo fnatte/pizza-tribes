@@ -29,7 +29,9 @@ func main() {
 
 	rc := internal.NewRedisClient(rdb)
 
-	h := &handler{ rdb: rc }
+	world := internal.NewWorldService(rc)
+
+	h := &handler{ rdb: rc, world: world }
 
 	ctx := context.Background()
 

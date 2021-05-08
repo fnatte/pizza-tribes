@@ -4,11 +4,10 @@ import { useInterval, useMedia } from "react-use";
 import { classnames, TArg, TClasses } from "tailwindcss-classnames";
 import { useStore } from "../store";
 
-const ConstructionQueue: React.FC<{ className?: string }> = ({ className }) => {
+const TravelQueue: React.FC<{ className?: string }> = ({ className }) => {
   const isMinLg = useMedia("(min-width: 1024px)", false);
-  const buildings = useStore((state) => state.gameData?.buildings) ?? {};
-  const constructionQueue = useStore(
-    (state) => state.gameState.constructionQueue
+  const travelQueue = useStore(
+    (state) => state.gameState.travelQueue
   );
   const [minimized, setMinimized] = useState(isMinLg);
 
@@ -24,8 +23,8 @@ const ConstructionQueue: React.FC<{ className?: string }> = ({ className }) => {
     setNow(Date.now());
   }, 1000);
 
-  if (constructionQueue.length === 0) {
-    return <div />;
+  if (travelQueue.length === 0) {
+    return null;
   }
 
   return (
@@ -38,7 +37,7 @@ const ConstructionQueue: React.FC<{ className?: string }> = ({ className }) => {
             "mr-2": true,
           })}
         >
-          Construction Queue
+          Travels
         </h4>
         <div>
           <button
@@ -60,21 +59,21 @@ const ConstructionQueue: React.FC<{ className?: string }> = ({ className }) => {
       {!minimized && (
         <table>
           <tbody>
-            {constructionQueue.map((construction) => (
+            {travelQueue.map((travel) => (
               <tr
                 key={
-                  construction.completeAt.toString() +
-                  construction.building +
-                  construction.lotId
+                  travel.arrivalAt.toString() +
+                  travel.coins +
+                  travel.thieves
                 }
               >
                 <td className={classnames("p-2")}>
-                  {buildings[construction.building].title}
+                  {travel.thieves} {travel.returning ? 'returning' : 'travelling'} thieves
                 </td>
                 <td className={classnames("p-2")}>
                   {`in ${JSBI.divide(
                     JSBI.subtract(
-                      JSBI.BigInt(construction.completeAt),
+                      JSBI.BigInt(travel.arrivalAt),
                       JSBI.multiply(JSBI.BigInt(now), JSBI.BigInt(1e6)),
                     ),
                     JSBI.BigInt(1e9)
@@ -89,4 +88,4 @@ const ConstructionQueue: React.FC<{ className?: string }> = ({ className }) => {
   );
 };
 
-export default ConstructionQueue;
+export default TravelQueue;

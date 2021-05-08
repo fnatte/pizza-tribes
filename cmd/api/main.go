@@ -19,6 +19,7 @@ import (
 
 type wsHandler struct {
 	rc internal.RedisClient
+	world *internal.WorldService
 }
 
 func (h *wsHandler) HandleMessage(ctx context.Context, m []byte, c *ws.Client) {
@@ -64,6 +65,17 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 		}
 	}
 
+	// Make sure the user has town in world
+	if gs.TownX == 0 && gs.TownY == 0 {
+		x, y, err := h.world.AcquireTown(ctx, c.UserId())
+		if err != nil {
+			return fmt.Errorf("failed to acquire town: %w", err)
+		}
+		gs.TownX = int32(x)
+		gs.TownY = int32(y)
+		log.Info().Msg("Town acquired")
+	}
+
 	// Make sure the user is enqueued for updates
 	_, err = internal.UpdateTimestamp(h.rc, ctx, c.UserId(), &gs)
 	if err != nil {
@@ -75,7 +87,7 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 	userKey := fmt.Sprintf("user:%s", c.UserId())
 	username, err := h.rc.HGet(ctx, userKey, "username").Result()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get username: %w", err)
 	}
 
 	go (func() {
@@ -178,12 +190,15 @@ func main() {
 
 	origin := envOrDefault("ORIGIN", "http://localhost:8080")
 
-	handler := wsHandler{rc: rc}
 	auth := NewAuthService(rdb)
+	world := internal.NewWorldService(rc)
 	wsHub := ws.NewHub()
+	handler := wsHandler{rc: rc, world: world}
 	wsEndpoint := ws.NewEndpoint(auth.Authorize, wsHub, &handler, origin)
 	poller := poller{rdb: rdb, hub: wsHub}
 	ts := &TimeseriesService{ r: rc, auth: auth }
+	worldController := &WorldController{ auth: auth, world: world }
+	userController := &UserController{ auth: auth, r: rc }
 
 	r := mux.NewRouter()
 	r.PathPrefix("/auth").Handler(http.StripPrefix("/auth", auth.Router()))
@@ -201,6 +216,8 @@ func main() {
 		w.Write(b)
 	})
 	r.PathPrefix("/timeseries").Handler(http.StripPrefix("/timeseries", ts.Router()))
+	r.PathPrefix("/world").Handler(http.StripPrefix("/world", worldController.Router()))
+	r.PathPrefix("/user").Handler(http.StripPrefix("/user", userController.Router()))
 
 	go wsHub.Run()
 	go poller.run(ctx)

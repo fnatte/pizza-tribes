@@ -14,9 +14,12 @@ import (
 
 type handler struct {
 	rdb internal.RedisClient
+	world *internal.WorldService
 }
 
 func (h *handler) Handle(ctx context.Context, senderId string, m *internal.ClientMessage) {
+	var err error
+
 	switch x := m.Type.(type) {
 	case *internal.ClientMessage_Tap_:
 		log.Info().
@@ -27,8 +30,14 @@ func (h *handler) Handle(ctx context.Context, senderId string, m *internal.Clien
 		h.handleConstructBuilding(ctx, senderId, x.ConstructBuilding)
 	case *internal.ClientMessage_Train_:
 		h.handleTrain(ctx, senderId, x.Train)
+	case *internal.ClientMessage_Steal_:
+		err = h.handleSteal(ctx, senderId, x.Steal)
 	default:
 		log.Info().Str("senderId", senderId).Msg("Received message")
+	}
+
+	if err != nil {
+		log.Error().Err(err).Msg("failed to handle message")
 	}
 }
 
