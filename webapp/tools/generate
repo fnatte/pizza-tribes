@@ -7,6 +7,7 @@ protoc \
 	--ts_out src/generated/ \
 	--ts_opt long_type_string \
 	--proto_path ./node_modules/@protobuf-ts/plugin \
+	--proto_path ./node_modules/@protobuf-ts/protoc/installed/protoc-3.16.0-*/include \
 	--proto_path ../protos/ \
 	../protos/*.proto
 
