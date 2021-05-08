@@ -10,6 +10,7 @@ services:
       "--loadmodule", "/usr/lib/redis/modules/redistimeseries.so",
       "--loadmodule", "/usr/lib/redis/modules/rejson.so",
       "--appendonly yes",
+      "--aof-use-rdb-preamble yes",
       "--dir /data"]
   api:
     image: "ghcr.io/fnatte/pizza-tribes-api:latest"
