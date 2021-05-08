@@ -1,14 +1,23 @@
 :root {
-  --tilesX: 9;
-  --tilesY: 9;
+  --tilesX: 5;
+  --tilesY: 5;
+  --tileSize: 10vw;
+}
+
+@media screen and (min-width: 1024px) {
+  :root {
+    --tilesX: 9;
+    --tilesY: 9;
+  --tileSize: 5vw;
+  }
 }
 
 .root {
   transform: rotateX(60deg) rotateZ(45deg);
   transform-style: preserve-3d;
 
-  width: calc(var(--tilesX) * 5vw);
-  height: calc(var(--tilesY) * 5vw);
+  width: calc(var(--tilesX) * var(--tileSize));
+  height: calc(var(--tilesY) * var(--tileSize));
 }
 
 .row {
@@ -16,11 +25,10 @@
 }
 
 .tile {
-  width: 5vw;
-  height: 5vw;
+  width: var(--tileSize);
+  height: var(--tileSize);
   background: #fff;
-  border: 1px solid #D9F99D;
-
+  border: 1px solid #d9f99d;
 }
 
 .town {
@@ -28,10 +36,10 @@
 }
 
 .grass {
-  background: #BEF264;
+  background: #bef264;
 }
 .grass:hover {
-    background: #A3E635;
+  background: #a3e635;
 }
 
 .arrow {
@@ -42,7 +50,7 @@
 
 .arrow:before {
   display: block;
-  content: '';
+  content: "";
   background: #059669;
   width: 50px;
   height: 50px;
@@ -50,7 +58,7 @@
 }
 
 .arrow:hover:before {
-  background: #34D399;
+  background: #34d399;
 }
 
 .arrowleft {

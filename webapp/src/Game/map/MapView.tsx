@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useAsync } from "react-use";
+import { useAsync, useMedia } from "react-use";
 import { classnames } from "tailwindcss-classnames";
 import { WorldZone } from "../../generated/world";
 import HexGrid from "./HexGrid";
@@ -13,6 +13,7 @@ const unique = <T extends unknown>(arr: T[]): T[] => {
 };
 
 function MapView() {
+  const isMinLg = useMedia("(min-width: 1024px)", false);
   const townX = useStore((state) => state.gameState.townX);
   const townY = useStore((state) => state.gameState.townY);
   const [{ x, y }, setXY] = useState({ x: -1, y: -1 });
@@ -84,7 +85,7 @@ function MapView() {
         <HexGrid
           x={x}
           y={y}
-          size={9}
+          size={isMinLg ? 9 : 5}
           data={zones}
           onNavigate={onNavigate}
           onClick={onClick}
