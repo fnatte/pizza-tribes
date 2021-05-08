@@ -1,5 +1,7 @@
 # Pizza Tribes
 
+Play at: https://pizzatribes.teus.dev
+
 This project is aimed to be registered for [RedisConf 2021
 Hackathon](https://hackathons.redislabs.com/hackathons/build-on-redis-hackathon).
 
