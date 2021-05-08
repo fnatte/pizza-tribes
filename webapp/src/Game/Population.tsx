@@ -40,7 +40,14 @@ const Population: React.FC<{ className?: string }> = ({ className }) => {
   const buildings = gameData?.buildings ?? {};
 
   return (
-    <div className={classnames("bg-white", "p-2", className as TArg)}>
+    <div
+      className={classnames(
+        "bg-white",
+        "p-2",
+        "pointer-events-auto",
+        className as TArg
+      )}
+    >
       <div className={classnames("flex", "items-center", "justify-between")}>
         <h4
           className={classnames({

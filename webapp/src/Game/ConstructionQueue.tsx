@@ -29,7 +29,7 @@ const ConstructionQueue: React.FC<{ className?: string }> = ({ className }) => {
   }
 
   return (
-    <div className={classnames("bg-white", "p-2", className as TArg)}>
+    <div className={classnames("bg-white", "p-2", className as TArg, "pointer-events-auto")}>
       <div className={classnames("flex", "items-center", "justify-between")}>
         <h4
           className={classnames({

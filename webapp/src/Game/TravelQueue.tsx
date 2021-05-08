@@ -6,9 +6,7 @@ import { useStore } from "../store";
 
 const TravelQueue: React.FC<{ className?: string }> = ({ className }) => {
   const isMinLg = useMedia("(min-width: 1024px)", false);
-  const travelQueue = useStore(
-    (state) => state.gameState.travelQueue
-  );
+  const travelQueue = useStore((state) => state.gameState.travelQueue);
   const [minimized, setMinimized] = useState(isMinLg);
 
   const onToggleClick = (e: React.MouseEvent) => {
@@ -29,7 +27,14 @@ const TravelQueue: React.FC<{ className?: string }> = ({ className }) => {
 
   return (
     <div className={classnames("bg-white", "p-2", className as TArg)}>
-      <div className={classnames("flex", "items-center", "justify-between")}>
+      <div
+        className={classnames(
+          "flex",
+          "items-center",
+          "justify-between",
+          "pointer-events-auto"
+        )}
+      >
         <h4
           className={classnames({
             hidden: minimized,
@@ -62,19 +67,18 @@ const TravelQueue: React.FC<{ className?: string }> = ({ className }) => {
             {travelQueue.map((travel) => (
               <tr
                 key={
-                  travel.arrivalAt.toString() +
-                  travel.coins +
-                  travel.thieves
+                  travel.arrivalAt.toString() + travel.coins + travel.thieves
                 }
               >
                 <td className={classnames("p-2")}>
-                  {travel.thieves} {travel.returning ? 'returning' : 'travelling'} thieves
+                  {travel.thieves}{" "}
+                  {travel.returning ? "returning" : "travelling"} thieves
                 </td>
                 <td className={classnames("p-2")}>
                   {`in ${JSBI.divide(
                     JSBI.subtract(
                       JSBI.BigInt(travel.arrivalAt),
-                      JSBI.multiply(JSBI.BigInt(now), JSBI.BigInt(1e6)),
+                      JSBI.multiply(JSBI.BigInt(now), JSBI.BigInt(1e6))
                     ),
                     JSBI.BigInt(1e9)
                   )}s`}

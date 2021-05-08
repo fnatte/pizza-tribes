@@ -72,7 +72,8 @@ function Town() {
             "w-full",
             "flex",
             "justify-between",
-            "items-start"
+            "items-start",
+            "pointer-events-none"
           )}
         >
           <ConstructionQueue />
