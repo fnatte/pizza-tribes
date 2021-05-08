@@ -35,6 +35,7 @@ func getPopulationKey(edu internal.Education) (string, error) {
 type updater struct {
 	r     internal.RedisClient
 	world *internal.WorldService
+	leaderboard *internal.LeaderboardService
 }
 
 func (u *updater) update(ctx context.Context, userId string) {
@@ -282,6 +283,11 @@ func (u *updater) update(ctx context.Context, userId string) {
 		ReceiverId: userId,
 		Body:       string(b),
 	})
+
+
+	if err = u.leaderboard.UpdateUser(ctx, userId, int64(changes.coins)); err != nil {
+		log.Error().Err(err).Msg("Failed to update leaderboard")
+	}
 }
 
 func (u *updater) next(ctx context.Context) (string, error) {
@@ -410,7 +416,8 @@ func main() {
 
 	rc := internal.NewRedisClient(rdb)
 	world := internal.NewWorldService(rc)
-	u := updater{r: rc, world: world}
+	leaderboard := internal.NewLeaderboardService(rc)
+	u := updater{r: rc, world: world, leaderboard: leaderboard}
 
 	ctx := context.Background()
 

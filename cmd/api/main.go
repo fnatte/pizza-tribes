@@ -192,6 +192,7 @@ func main() {
 
 	auth := NewAuthService(rdb)
 	world := internal.NewWorldService(rc)
+	leaderboard := internal.NewLeaderboardService(rc)
 	wsHub := ws.NewHub()
 	handler := wsHandler{rc: rc, world: world}
 	wsEndpoint := ws.NewEndpoint(auth.Authorize, wsHub, &handler, origin)
@@ -199,6 +200,7 @@ func main() {
 	ts := &TimeseriesService{ r: rc, auth: auth }
 	worldController := &WorldController{ auth: auth, world: world }
 	userController := &UserController{ auth: auth, r: rc }
+	leaderboardController := &LeaderboardController{ auth: auth, leaderboard: leaderboard }
 
 	r := mux.NewRouter()
 	r.PathPrefix("/auth").Handler(http.StripPrefix("/auth", auth.Router()))
@@ -218,6 +220,7 @@ func main() {
 	r.PathPrefix("/timeseries").Handler(http.StripPrefix("/timeseries", ts.Router()))
 	r.PathPrefix("/world").Handler(http.StripPrefix("/world", worldController.Router()))
 	r.PathPrefix("/user").Handler(http.StripPrefix("/user", userController.Router()))
+	r.PathPrefix("/leaderboard").Handler(http.StripPrefix("/leaderboard", leaderboardController.Router()))
 
 	go wsHub.Run()
 	go poller.run(ctx)

@@ -1,0 +1,18 @@
+syntax = "proto3";
+package pizzatribes;
+
+option go_package = "github.com/fnatte/pizza-tribes/internal";
+
+message Leaderboard {
+  message Row {
+    string userId = 1;
+    string username = 2;
+    int64 coins = 3;
+  }
+
+  // Defines how many leader rows have been skipped in this leaderboard result
+  int32 skip = 1; 
+
+  repeated Row rows = 2;
+}
+

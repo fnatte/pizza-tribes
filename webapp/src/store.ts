@@ -79,26 +79,28 @@ const mergeLots = (
   return res;
 };
 
-export const useStore = create<State>((set, get) => ({
-  gameState: {
-    resources: {
-      pizzas: 0,
-      coins: 0,
-    },
-    lots: {},
-    population: {
-      uneducated: 0,
-      chefs: 0,
-      salesmice: 0,
-      guards: 0,
-      thieves: 0,
-    },
-    trainingQueue: [],
-    constructionQueue: [],
-    travelQueue: [],
-    townX: 0,
-    townY: 0,
+const initialGameState = {
+  resources: {
+    pizzas: 0,
+    coins: 0,
   },
+  lots: {},
+  population: {
+    uneducated: 0,
+    chefs: 0,
+    salesmice: 0,
+    guards: 0,
+    thieves: 0,
+  },
+  trainingQueue: [],
+  constructionQueue: [],
+  travelQueue: [],
+  townX: 0,
+  townY: 0,
+};
+
+export const useStore = create<State>((set, get) => ({
+  gameState: initialGameState,
   gameStats: null,
   user: null,
   connection: null,
@@ -120,10 +122,17 @@ export const useStore = create<State>((set, get) => ({
     set((state) => ({ ...state, gameData }));
   },
   logout: async () => {
+    set((state) => ({
+      ...state,
+      connection: null,
+      connectionState: null,
+      user: null,
+      gameState: initialGameState,
+      gameStats: null,
+    }));
     const res = await fetch("/api/auth/logout");
     if (res.ok) {
       get().connection?.close();
-      set((state) => ({ ...state, connection: null, user: null }));
     }
   },
   tap: () => {
@@ -236,7 +245,6 @@ export const useStore = create<State>((set, get) => ({
       });
     };
 
-    console.log('connecting...');
     const connection = connect(onStateChange, onMessage);
     set((state) => ({ ...state, connection }));
   },
@@ -276,7 +284,9 @@ export const useStore = create<State>((set, get) => ({
         type: {
           oneofKind: "steal",
           steal: {
-            x, y, amount
+            x,
+            y,
+            amount,
           },
         },
       })

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import { classnames, TArg } from "tailwindcss-classnames";
 import Town from "./Game/Town";
@@ -10,6 +10,8 @@ import { ConnectionState } from "./connect";
 import StatsContent from "./Game/StatsContent";
 import MapView from "./Game/map/MapView";
 import WorldEntryView from "./Game/world/WorldEntryView";
+import LeaderboardView from "./Game/LeaderboardView";
+import { useClickAway, useMedia } from "react-use";
 
 type ClockState = {
   formatted: string;
@@ -40,16 +42,34 @@ const useMouseClock = () => {
   return clock;
 };
 
+function BurgerMenuIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 100 80" width="25" height="25" fill="#333" {...props}>
+      <rect width="100" height="20"></rect>
+      <rect y="30" width="100" height="20"></rect>
+      <rect y="60" width="100" height="20"></rect>
+    </svg>
+  );
+}
+
 function Navigation() {
+  const isMinLg = useMedia("(min-width: 1024px)", false);
+  const menuRef = useRef(null);
   const logout = useStore((state) => state.logout);
   const navigate = useNavigate();
+  const [menuExpanded, setMenuExpaded] = useState(false);
+
+  useClickAway(menuRef, () => {
+    setMenuExpaded(false);
+  });
+
   const onClickLogout = () => {
     logout();
     navigate("/login");
-  }
+  };
 
   return (
-    <nav className={classnames("flex", "justify-center")}>
+    <nav className={classnames("flex", "justify-center", "items-center")}>
       <Link to="/map">
         <button className={classnames(styles.button, "mr-2")}>Map</button>
       </Link>
@@ -59,12 +79,61 @@ function Navigation() {
       <Link to="/stats">
         <button className={classnames(styles.button, "mr-2")}>Stats</button>
       </Link>
-      <button
-        className={classnames(styles.button, "mr-2")}
-        onClick={() => onClickLogout()}
-      >
-        Logout
-      </button>
+      {isMinLg ? (
+        <>
+          <Link to="/leaderboard">
+            <button className={classnames(styles.button, "mr-2")}>
+              Leaderboard
+            </button>
+          </Link>
+          <button
+            className={classnames(styles.button, "mr-2")}
+            onClick={() => onClickLogout()}
+          >
+            Logout
+          </button>{" "}
+        </>
+      ) : (
+        <div className={classnames("relative", "ml-8")} ref={menuRef}>
+          <BurgerMenuIcon
+            className={classnames("cursor-pointer")}
+            onClick={() => {
+              setMenuExpaded((s) => !s);
+            }}
+          />
+          {menuExpanded && (
+            <div
+              className={classnames(
+                "fixed",
+                "flex",
+                "flex-col",
+                "bg-green-200",
+                "transform" as TArg,
+                "sm:-translate-x-1/2",
+                "sm:right-auto",
+                "translate-y-2",
+                "p-2",
+                "right-0"
+              )}
+            >
+              <Link to="/leaderboard" onClick={() => setMenuExpaded(false)}>
+                <button className={classnames(styles.button, "mr-2")}>
+                  Leaderboard
+                </button>
+              </Link>
+              <button
+                className={classnames(styles.button, "mr-2")}
+                onClick={() => {
+                  setMenuExpaded(false);
+                  onClickLogout();
+                }}
+              >
+                Logout
+              </button>{" "}
+            </div>
+          )}
+        </div>
+      )}
     </nav>
   );
 }
@@ -183,18 +252,18 @@ const ConnectionPopup: React.VFC<{ connectionState: ConnectionState }> = ({
 
 function Loading() {
   return (
-      <div
-        className={classnames(
-          "fixed",
-          "left-1/2",
-          "top-1/2",
-          "transform" as TArg,
-          "-translate-y-1/2",
-          "-translate-x-1/2"
-        )}
-      >
-        <HeartsSvg />
-      </div>
+    <div
+      className={classnames(
+        "fixed",
+        "left-1/2",
+        "top-1/2",
+        "transform" as TArg,
+        "-translate-y-1/2",
+        "-translate-x-1/2"
+      )}
+    >
+      <HeartsSvg />
+    </div>
   );
 }
 
@@ -210,8 +279,8 @@ function GamePage(): JSX.Element {
     start();
   }, []);
 
-  if (connectionState?.error === 'unauthorized') {
-    console.log('redirect to /login');
+  if (connectionState?.error === "unauthorized") {
+    console.log("redirect to /login");
     return <Navigate to="/login" replace />;
   }
 
@@ -238,6 +307,7 @@ function GamePage(): JSX.Element {
         <Route path="town" element={<Town />} />
         <Route path="stats" element={<StatsContent />} />
         <Route path="world/entry" element={<WorldEntryView />} />
+        <Route path="leaderboard" element={<LeaderboardView />} />
         <Route path="/" element={<Navigate to="/town" replace />} />
       </Routes>
       {connectionState?.connecting && (
