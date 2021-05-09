@@ -262,6 +262,7 @@ func (u *updater) next(ctx context.Context) (string, error) {
 	return userId, nil
 }
 
+// Send a message to the specified userId
 func send(ctx context.Context, r redis.Cmdable, userId string, msg *internal.ServerMessage) error {
 	b, err := protojson.Marshal(msg)
 	if err != nil {
@@ -272,13 +273,6 @@ func send(ctx context.Context, r redis.Cmdable, userId string, msg *internal.Ser
 		ReceiverId: userId,
 		Body:       string(b),
 	}).Err()
-}
-
-func min(x, y int32) int32 {
-	if x < y {
-		return x
-	}
-	return y
 }
 
 func envOrDefault(key string, defaultVal string) string {

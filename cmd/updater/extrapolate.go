@@ -78,7 +78,8 @@ func calculateExtrapolateChanges(gs *internal.GameState) extrapolateChanges {
 	pizzasAvailable := gs.Resources.Pizzas + pizzasProduced
 
 	maxSellsByMice := int32(stats.MaxSellsByMicePerSecond * dt)
-	pizzasSold := min(demand, min(maxSellsByMice, pizzasAvailable))
+	pizzasSold := internal.MinInt32(demand,
+		internal.MinInt32(maxSellsByMice, pizzasAvailable))
 
 	log.Debug().
 		Int32("pizzasProduced", pizzasProduced).
