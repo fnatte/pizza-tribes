@@ -4,7 +4,7 @@ import "time"
 
 const MicePerHouse = 10
 
-const ThiefSpeed = 30 * time.Second
+const ThiefSpeed = 2 * time.Minute
 
 var FullGameData = GameData{
 	Buildings: map[int32]*BuildingInfo{

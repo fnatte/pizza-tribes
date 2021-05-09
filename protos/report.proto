@@ -1,0 +1,13 @@
+syntax = "proto3";
+package pizzatribes;
+
+option go_package = "github.com/fnatte/pizza-tribes/internal";
+
+message Report {
+  string id = 1;
+  int64 created_at = 2;
+  string title = 3;
+  string content = 4;
+  bool unread = 5;
+}
+

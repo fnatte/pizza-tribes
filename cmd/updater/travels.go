@@ -1,21 +1,54 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"math"
+	"text/template"
+	"time"
 
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/go-redis/redis/v8"
+	"github.com/rs/xid"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
+const thiefReportTemplateText = `
+Our heist with {{ .Thieves }} thieves on {{ .TargetUsername }}'s town was successful.
+We got away with {{ .Loot }} coins.
+`
+const targetReportTemplateText = `
+It looks like someone stole {{ .Loot }} coins from us.
+`
+var thiefReportTemplate *template.Template
+var targetReportTemplate *template.Template
+
+type reportTemplateData struct {
+	TargetUsername string
+	Loot int64
+	Thieves int32
+}
+
 type pipeFn func(redis.Pipeliner) error
 
-func completeSteal(ctx context.Context, tx *redis.Tx, world *internal.WorldService, gs *internal.GameState, gsPatch *internal.GameStatePatch, userId string, travel *internal.Travel, travelIndex int) (pipeFn, error) {
+func init() {
+	var err error
+	thiefReportTemplate, err = template.New("root").Parse(thiefReportTemplateText)
+	if err != nil {
+		panic(err)
+	}
+
+	targetReportTemplate, err = template.New("root").Parse(targetReportTemplateText)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func completeSteal(ctx context.Context, tx *redis.Tx, world *internal.WorldService, gs *internal.GameState, gsPatch *internal.GameStatePatch, userId string, travel *internal.Travel, travelIndex int, sendReports *bool) (pipeFn, error) {
 	gsTarget := &internal.GameState{}
 	x := travel.DestinationX
 	y := travel.DestinationY
@@ -41,6 +74,12 @@ func completeSteal(ctx context.Context, tx *redis.Tx, world *internal.WorldServi
 		return nil, fmt.Errorf("failed to complete steal: %w", err)
 	}
 	if err = gsTarget.LoadProtoJson([]byte(b)); err != nil {
+		return nil, fmt.Errorf("failed to complete steal: %w", err)
+	}
+
+	// Get username of target
+	targetUsername, err := tx.HGet(ctx, fmt.Sprintf("user:%s", town.UserId), "username").Result()
+	if err != nil {
 		return nil, fmt.Errorf("failed to complete steal: %w", err)
 	}
 
@@ -71,6 +110,36 @@ func completeSteal(ctx context.Context, tx *redis.Tx, world *internal.WorldServi
 	// Update patch with return travel
 	gsPatch.TravelQueue = append(gsPatch.TravelQueue, &returnTravel)
 
+	// Build reports
+	tmplData := reportTemplateData{
+		TargetUsername: targetUsername,
+		Loot: loot,
+		Thieves: travel.Thieves,
+	}
+	buf := new(bytes.Buffer)
+	if err = thiefReportTemplate.Execute(buf, &tmplData); err != nil {
+		return nil, fmt.Errorf("failed to get thief report contents: %w", err)
+	}
+	thiefReport := &internal.Report{
+		Id: xid.New().String(),
+		CreatedAt: time.Now().UnixNano(),
+		Title: "Thief report",
+		Content: buf.String(),
+		Unread: true,
+	}
+	buf = new(bytes.Buffer)
+	if err = targetReportTemplate.Execute(buf, &tmplData); err != nil {
+		return nil, fmt.Errorf("failed to get target report contents: %w", err)
+	}
+	targetReport := &internal.Report{
+		Id: xid.New().String(),
+		CreatedAt: time.Now().UnixNano(),
+		Title: "We have been robbed!",
+		Content: buf.String(),
+		Unread: true,
+	}
+	*sendReports = true
+
 	return func(pipe redis.Pipeliner) error {
 		// TODO: notify (send game state patch) to target user
 		// Decrease coins in target town
@@ -85,6 +154,9 @@ func completeSteal(ctx context.Context, tx *redis.Tx, world *internal.WorldServi
 			".travelQueue", returnTravelBytes).Err(); err != nil {
 			return fmt.Errorf("failed to append new travel: %w", err)
 		}
+
+		internal.SaveReport(ctx, pipe, userId, thiefReport)
+		internal.SaveReport(ctx, pipe, town.UserId, targetReport)
 
 		log.Info().Str("userId", userId).Int64("loot", loot).Msg("Steal completed")
 
@@ -137,7 +209,7 @@ func completeStealReturn(ctx context.Context, tx *redis.Tx, world *internal.Worl
 	}, nil
 }
 
-func completeTravels(ctx context.Context, tx *redis.Tx, world *internal.WorldService, userId string, gs *internal.GameState, gsPatch *internal.GameStatePatch) (pipeFn, error) {
+func completeTravels(ctx context.Context, tx *redis.Tx, world *internal.WorldService, userId string, gs *internal.GameState, gsPatch *internal.GameStatePatch, sendReports *bool) (pipeFn, error) {
 	completedTravels := gs.GetCompletedTravels()
 	if len(completedTravels) == 0 {
 		return nil, nil
@@ -163,7 +235,7 @@ func completeTravels(ctx context.Context, tx *redis.Tx, world *internal.WorldSer
 			}
 		} else {
 			if travel.Thieves > 0 {
-				fn, err := completeSteal(ctx, tx, world, gs, gsPatch, userId, travel, travelIndex)
+				fn, err := completeSteal(ctx, tx, world, gs, gsPatch, userId, travel, travelIndex, sendReports)
 				if err != nil {
 					return nil, err
 				}

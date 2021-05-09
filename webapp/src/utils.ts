@@ -1,4 +1,5 @@
 import { formatDuration, intervalToDuration } from "date-fns";
+import JSBI from "jsbi";
 import { Building } from "./generated/building";
 import { GameState, Lot } from "./store";
 
@@ -71,3 +72,18 @@ export const formatDurationShort = (time: number) =>
       { delimiter: ", " }
     )
   );
+
+export const generateId = () => {
+  return (
+    Array(16)
+      .fill(0)
+      .map(() => String.fromCharCode(Math.floor(Math.random() * 26) + 97))
+      .join("") + Date.now().toString(36)
+  );
+};
+
+export const parseDateNano = (ns: string) => {
+  return new Date(
+    JSBI.toNumber(JSBI.divide(JSBI.BigInt(ns), JSBI.BigInt(1e6)))
+  );
+};

@@ -12,6 +12,8 @@ import MapView from "./Game/map/MapView";
 import WorldEntryView from "./Game/world/WorldEntryView";
 import LeaderboardView from "./Game/LeaderboardView";
 import { useClickAway, useMedia } from "react-use";
+import ListReportsView from "./Game/reports/ListReportsView";
+import ShowReportView from "./Game/reports/ShowReportView";
 
 type ClockState = {
   formatted: string;
@@ -52,12 +54,55 @@ function BurgerMenuIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
+const NotificationCount: React.VFC<{ className?: string; count: number }> = ({
+  className,
+  count,
+}) => {
+  return (
+    <div
+      className={classnames(
+        "flex",
+        "justify-center",
+        "items-center",
+        "rounded-full",
+        "absolute",
+        "top-0",
+        "right-0",
+        "bg-red-700",
+        "w-7",
+        "h-7",
+        "text-white",
+        className as TArg
+      )}
+    >
+      {count}
+    </div>
+  );
+};
+
+const ButtonNotificationCount: React.FC<{ count: number }> = ({ count }) => {
+  return (
+    <NotificationCount
+      count={count}
+      className={classnames(
+        "transform" as TArg,
+        "translate-x-1",
+        "-translate-y-3"
+      )}
+    />
+  );
+};
+
 function Navigation() {
   const isMinLg = useMedia("(min-width: 1024px)", false);
   const menuRef = useRef(null);
   const logout = useStore((state) => state.logout);
   const navigate = useNavigate();
   const [menuExpanded, setMenuExpaded] = useState(false);
+
+  const unreads = useStore((state) =>
+    state.reports.reduce((count, report) => count + (report.unread ? 1 : 0), 0)
+  );
 
   useClickAway(menuRef, () => {
     setMenuExpaded(false);
@@ -81,6 +126,12 @@ function Navigation() {
       </Link>
       {isMinLg ? (
         <>
+          <Link to="/reports">
+            <button className={classnames(styles.button, "mr-2", "relative")}>
+              {unreads > 0 && <ButtonNotificationCount count={unreads} />}
+              Reports
+            </button>
+          </Link>
           <Link to="/leaderboard">
             <button className={classnames(styles.button, "mr-2")}>
               Leaderboard
@@ -95,12 +146,22 @@ function Navigation() {
         </>
       ) : (
         <div className={classnames("relative", "ml-8")} ref={menuRef}>
-          <BurgerMenuIcon
-            className={classnames("cursor-pointer")}
-            onClick={() => {
-              setMenuExpaded((s) => !s);
-            }}
-          />
+          <div
+            className={classnames("relative", "cursor-pointer")}
+            onClick={() => setMenuExpaded((s) => !s)}
+          >
+            <BurgerMenuIcon />
+            {unreads > 0 && !menuExpanded && (
+              <NotificationCount
+                count={unreads}
+                className={classnames(
+                  "transform" as TArg,
+                  "translate-x-5",
+                  "-translate-y-4"
+                )}
+              />
+            )}
+          </div>
           {menuExpanded && (
             <div
               className={classnames(
@@ -116,6 +177,14 @@ function Navigation() {
                 "right-0"
               )}
             >
+              <Link to="/reports" onClick={() => setMenuExpaded(false)}>
+                <button
+                  className={classnames(styles.button, "mr-2", "relative")}
+                >
+                  {unreads > 0 && <ButtonNotificationCount count={unreads} />}
+                  Reports
+                </button>
+              </Link>
               <Link to="/leaderboard" onClick={() => setMenuExpaded(false)}>
                 <button className={classnames(styles.button, "mr-2")}>
                   Leaderboard
@@ -308,6 +377,8 @@ function GamePage(): JSX.Element {
         <Route path="stats" element={<StatsContent />} />
         <Route path="world/entry" element={<WorldEntryView />} />
         <Route path="leaderboard" element={<LeaderboardView />} />
+        <Route path="reports" element={<ListReportsView />} />
+        <Route path="reports/:id" element={<ShowReportView />} />
         <Route path="/" element={<Navigate to="/town" replace />} />
       </Routes>
       {connectionState?.connecting && (

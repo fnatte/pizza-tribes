@@ -130,6 +130,31 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 		log.Info().Msg("Sent init game state and stats")
 	})()
 
+	// Send reports
+	go (func() {
+		r, err := internal.GetReports(ctx, h.rc, c.UserId())
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to send inital reports")
+			return
+		}
+
+		msg := &internal.ServerMessage{
+			Id: xid.New().String(),
+			Payload: &internal.ServerMessage_Reports_{
+				Reports: &internal.ServerMessage_Reports{
+					Reports: r,
+				},
+			},
+		}
+		b, err := protojson.Marshal(msg)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to send inital reports")
+			return
+		}
+		c.Send(b)
+		log.Info().Msg("Sent init reports")
+	})()
+
 	return nil
 }
 

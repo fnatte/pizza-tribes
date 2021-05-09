@@ -34,6 +34,10 @@ message ClientMessage {
     int32 y = 3;
   }
 
+  message ReadReport {
+    string id = 1;
+  }
+
   string id = 1;
   oneof type {
     Tap tap = 2;
@@ -42,6 +46,7 @@ message ClientMessage {
     Train train = 5;
     Expand expand = 6;
     Steal steal = 7;
+    ReadReport readReport = 8;
   }
 }
 

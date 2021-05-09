@@ -13,8 +13,10 @@ import {
   Travel,
 } from "./generated/gamestate";
 import { GameData } from "./generated/game_data";
-import { ServerMessage, ServerMessage_User } from "./generated/server_message";
+import { Report } from "./generated/report";
+import { ServerMessage, ServerMessage_Reports, ServerMessage_User } from "./generated/server_message";
 import { Stats } from "./generated/stats";
+import { generateId } from "./utils";
 
 export type Lot = {
   building: Building;
@@ -43,6 +45,7 @@ type State = {
   gameStats: Stats | null;
   gameData: GameData | null;
   gameDataLoading: boolean;
+  reports: Report[];
   user: User | null;
   connection: ConnectionApi | null;
   connectionState: ConnectionState | null;
@@ -54,6 +57,7 @@ type State = {
   constructBuilding: (lotId: string, building: Building) => void;
   train: (education: Education, amount: number) => void;
   steal: (x: number, y: number, amount: number) => void;
+  readReport: (id: string) => void;
 };
 
 const mergeLots = (
@@ -107,6 +111,7 @@ export const useStore = create<State>((set, get) => ({
   connectionState: null,
   gameData: null,
   gameDataLoading: false,
+  reports: [],
   fetchGameData: async () => {
     set((state) => ({ ...state, gameDataLoading: true }));
     const response = await fetch("/api/gamedata");
@@ -129,6 +134,7 @@ export const useStore = create<State>((set, get) => ({
       user: null,
       gameState: initialGameState,
       gameStats: null,
+      reports: [],
     }));
     const res = await fetch("/api/auth/logout");
     if (res.ok) {
@@ -137,7 +143,7 @@ export const useStore = create<State>((set, get) => ({
   },
   tap: () => {
     const msg = ClientMessage.create({
-      id: "test-123",
+      id: generateId(),
       type: {
         oneofKind: "tap",
         tap: {
@@ -226,6 +232,15 @@ export const useStore = create<State>((set, get) => ({
       });
     };
 
+    const handleReports = (msg: ServerMessage_Reports) => {
+      unstable_batchedUpdates(() => {
+        set((state) => ({
+          ...state,
+          reports: msg.reports,
+        }));
+      });
+    };
+
     const onMessage = (msg: ServerMessage) => {
       switch (msg.payload.oneofKind) {
         case "stateChange":
@@ -236,6 +251,9 @@ export const useStore = create<State>((set, get) => ({
           break;
         case "stats":
           handleStats(msg.payload.stats);
+          break;
+        case "reports":
+          handleReports(msg.payload.reports);
           break;
       }
     };
@@ -252,7 +270,7 @@ export const useStore = create<State>((set, get) => ({
   constructBuilding: (lotId, building) => {
     get().connection?.send(
       ClientMessage.create({
-        id: "test-456",
+        id: generateId(),
         type: {
           oneofKind: "constructBuilding",
           constructBuilding: {
@@ -266,7 +284,7 @@ export const useStore = create<State>((set, get) => ({
   train: (education, amount) => {
     get().connection?.send(
       ClientMessage.create({
-        id: "test-456",
+        id: generateId(),
         type: {
           oneofKind: "train",
           train: {
@@ -280,7 +298,7 @@ export const useStore = create<State>((set, get) => ({
   steal: (x: number, y: number, amount: number) => {
     get().connection?.send(
       ClientMessage.create({
-        id: "test-456",
+        id: generateId(),
         type: {
           oneofKind: "steal",
           steal: {
@@ -291,6 +309,26 @@ export const useStore = create<State>((set, get) => ({
         },
       })
     );
+  },
+  readReport: (id: string) => {
+    get().connection?.send(
+      ClientMessage.create({
+        id: generateId(),
+        type: {
+          oneofKind: "readReport",
+          readReport: { id },
+        },
+      })
+    );
+
+    set(state => {
+      const reports = [...state.reports];
+      const i = reports.findIndex(report => report.id === id);
+      if (i !== -1) {
+        reports[i] = { ...reports[i], unread: false };
+      }
+      return { ...state, reports };
+    });
   },
 }));
 

@@ -50,6 +50,7 @@ func (u *updater) update(ctx context.Context, userId string) {
 
 	// Patch that will be used to notify and update clients
 	gsPatch := &internal.GameStatePatch{}
+	sendReports := false
 
 	txf := func(tx *redis.Tx) error {
 		// Get current game state
@@ -69,7 +70,7 @@ func (u *updater) update(ctx context.Context, userId string) {
 
 		log.Debug().Int("completedTrainings", len(completedTrainings)).Msg("")
 
-		pipeFn, err := completeTravels(ctx, tx, u.world, userId, &gs, gsPatch)
+		pipeFn, err := completeTravels(ctx, tx, u.world, userId, &gs, gsPatch, &sendReports)
 		if err != nil {
 			return err
 		}
@@ -287,6 +288,31 @@ func (u *updater) update(ctx context.Context, userId string) {
 
 	if err = u.leaderboard.UpdateUser(ctx, userId, int64(changes.coins)); err != nil {
 		log.Error().Err(err).Msg("Failed to update leaderboard")
+	}
+
+	if sendReports {
+		reports, err := internal.GetReports(ctx, u.r, userId)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to send updated reports")
+			return
+		}
+
+		b, err = protojson.Marshal(&internal.ServerMessage{
+			Id: xid.New().String(),
+			Payload: &internal.ServerMessage_Reports_{
+				Reports: &internal.ServerMessage_Reports{
+					Reports: reports,
+				},
+			},
+		})
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to send inital reports")
+		} else {
+			u.r.RPush(ctx, "wsout", &internal.OutgoingMessage{
+				ReceiverId: userId,
+				Body:       string(b),
+			})
+		}
 	}
 }
 

@@ -32,6 +32,8 @@ func (h *handler) Handle(ctx context.Context, senderId string, m *internal.Clien
 		h.handleTrain(ctx, senderId, x.Train)
 	case *internal.ClientMessage_Steal_:
 		err = h.handleSteal(ctx, senderId, x.Steal)
+	case *internal.ClientMessage_ReadReport_:
+		err = h.handleReadReport(ctx, senderId, x.ReadReport)
 	default:
 		log.Info().Str("senderId", senderId).Msg("Received message")
 	}
