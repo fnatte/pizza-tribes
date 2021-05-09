@@ -1,13 +1,16 @@
-name: Docker Images
+name: Backend Docker Images
 
 on:
   push:
     branches: [ main, actions ]
+    paths-ignore:
+      - 'README.md'
+      - 'webapp/**'
   pull_request:
     branches: [ main ]
 
 jobs:
-  build-and-push-docker-images:
+  build-and-push-backend-docker-images:
     runs-on: ubuntu-latest
     steps:
       -
@@ -53,20 +56,4 @@ jobs:
           target: migrator
           push: true
           tags: ghcr.io/fnatte/pizza-tribes-migrator:latest
-      -
-        name: Build and push - Web app
-        id: docker_build_webapp
-        uses: docker/build-push-action@v2
-        with:
-          target: webapp
-          push: true
-          tags: ghcr.io/fnatte/pizza-tribes-webapp:latest
-      -
-        name: Build and push - Front
-        id: docker_build_front
-        uses: docker/build-push-action@v2
-        with:
-          target: front
-          push: true
-          tags: ghcr.io/fnatte/pizza-tribes-front:latest
 
