@@ -8,10 +8,10 @@ Hackathon](https://hackathons.redislabs.com/hackathons/build-on-redis-hackathon)
 ## Project Idea
 
 Pizza Tribes is a multiplayer persistent browser-based clicker real-time
-strategy game. The gameplay is a combination of a clicker game
-(https://en.wikipedia.org/wiki/Incremental_game) and a real-time strategy
-game
-(https://en.wikipedia.org/wiki/Massively_multiplayer_online_real-time_strategy_game).
+strategy game. The gameplay is a combination of a [clicker
+game](https://en.wikipedia.org/wiki/Incremental_game) and a [real-time
+strategy
+game](https://en.wikipedia.org/wiki/Massively_multiplayer_online_real-time_strategy_game).
 
 As a player, you are in charge of building and expanding your town by
 building and assigning roles to your mice population. Your pizza empire
