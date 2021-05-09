@@ -109,14 +109,14 @@ endpoint as well.
 A typical Web socket flow goes as follows:
 
 1. The _Web App_ sends commands over the Web socket
-2. The _Web API_ enqueue the command on a Redis queue _in_
+2. The _Web API_ enqueue the command on a Redis queue _wsin_ (`RPUSH`)
 3. A _Worker_
-	a. Pulls the command from the Redis queue _in_
-	b. Executes the command
-	c. May push a response to another Redis queue _out_
+	1. Pulls the command from the Redis queue _wsin_(`BLPop`)
+	1. Executes the command
+	1. May push a response to another Redis queue _wsout_ (`RPUSH`)
 4. The _Web API_
-	a. Pulls a response from the Redis queue _out_
-	b. Sends the response back to the corresponding Web socket
+	1. Pulls a response from the Redis queue _wsout_ (`BLPOP`)
+	1. Sends the response back to the corresponding Web socket
 
 #### Web Sockets
 
@@ -133,7 +133,7 @@ the clients.
 
 Note that the messages are not sent between the API and workers using
 pub/sub but instead using Redis lists (RPush and BLPop). I am not sure if
-this is a good idea or not - but I think one upside is that the workers or
+this is used as a good idea or not - but I think one upside is that the workers or
 API can be restarted without losing messages (pub/sub is fire-and-forget).
 
 ### Updater (Delayed Tasks)
