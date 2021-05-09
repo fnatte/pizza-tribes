@@ -154,7 +154,7 @@ func completeSteal(ctx updateContext, tx *redis.Tx, world *internal.WorldService
 		// TODO: notify (send game state patch) to target user
 		// Decrease coins in target town
 		_, err := internal.RedisJsonNumIncrBy(
-			pipe, ctx, gsKeyTarget, ".resources.coins", loot).Result()
+			pipe, ctx, gsKeyTarget, ".resources.coins", -loot).Result()
 		if err != nil {
 			return fmt.Errorf("failed to decrease coins from target town: %w", err)
 		}
