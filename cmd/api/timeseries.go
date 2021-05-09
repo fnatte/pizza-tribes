@@ -10,7 +10,7 @@ import (
 )
 
 type TimeseriesService struct {
-	r internal.RedisClient
+	r    internal.RedisClient
 	auth *AuthService
 }
 
@@ -44,56 +44,9 @@ func (s *TimeseriesService) Router() http.Handler {
 			return
 		}
 
-		res := []*internal.DataPoint{}
-
-		pi := 0
-		ci := 0
-		for pi < len(tsPizzas) && ci < len(tsCoins) {
-			p := tsPizzas[pi]
-			c := tsCoins[ci]
-
-			if p.Timestamp == c.Timestamp {
-				res = append(res, &internal.DataPoint{
-					Timestamp: p.Timestamp,
-					Coins: c.Value,
-					Pizzas: p.Value,
-				})
-			} else {
-				dpp := &internal.DataPoint{
-					Timestamp: p.Timestamp,
-					Pizzas: p.Value,
-				}
-				dpc := &internal.DataPoint{
-					Timestamp: p.Timestamp,
-					Coins: c.Value,
-				}
-				if dpp.Timestamp < dpc.Timestamp {
-					res = append(res, dpp, dpc)
-				} else {
-					res = append(res, dpc, dpp)
-				}
-			}
-
-			ci++
-			pi++
-		}
-		for pi < len(tsPizzas) {
-			res = append(res, &internal.DataPoint{
-				Timestamp: tsPizzas[pi].Timestamp,
-				Pizzas: tsPizzas[pi].Value,
-			})
-			pi++
-		}
-		for ci < len(tsCoins) {
-			res = append(res, &internal.DataPoint{
-				Timestamp: tsCoins[ci].Timestamp,
-				Coins: tsCoins[ci].Value,
-			})
-			ci++
-		}
-
+		ts := mergeTimeseries(tsPizzas, tsCoins)
 		d := &internal.TimeseriesData{
-			DataPoints: res,
+			DataPoints: ts,
 		}
 		b, err := protojson.Marshal(d)
 		if err != nil {
@@ -108,4 +61,56 @@ func (s *TimeseriesService) Router() http.Handler {
 	})
 
 	return r
+}
+
+// Merge timeseries data and convert from Redis format to message format.
+func mergeTimeseries(tsPizzas []*internal.TimeseriesDataPoint, tsCoins []*internal.TimeseriesDataPoint) []*internal.DataPoint {
+	res := []*internal.DataPoint{}
+	pi := 0
+	ci := 0
+	for pi < len(tsPizzas) && ci < len(tsCoins) {
+		p := tsPizzas[pi]
+		c := tsCoins[ci]
+
+		if p.Timestamp == c.Timestamp {
+			res = append(res, &internal.DataPoint{
+				Timestamp: p.Timestamp,
+				Coins:     c.Value,
+				Pizzas:    p.Value,
+			})
+		} else {
+			dpp := &internal.DataPoint{
+				Timestamp: p.Timestamp,
+				Pizzas:    p.Value,
+			}
+			dpc := &internal.DataPoint{
+				Timestamp: p.Timestamp,
+				Coins:     c.Value,
+			}
+			if dpp.Timestamp < dpc.Timestamp {
+				res = append(res, dpp, dpc)
+			} else {
+				res = append(res, dpc, dpp)
+			}
+		}
+
+		ci++
+		pi++
+	}
+	for pi < len(tsPizzas) {
+		res = append(res, &internal.DataPoint{
+			Timestamp: tsPizzas[pi].Timestamp,
+			Pizzas:    tsPizzas[pi].Value,
+		})
+		pi++
+	}
+	for ci < len(tsCoins) {
+		res = append(res, &internal.DataPoint{
+			Timestamp: tsCoins[ci].Timestamp,
+			Coins:     tsCoins[ci].Value,
+		})
+		ci++
+	}
+
+	return res
 }

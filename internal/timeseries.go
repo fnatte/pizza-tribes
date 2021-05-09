@@ -49,7 +49,7 @@ func FetchPizzasTimeseries(ctx context.Context, r RedisClient, userId string) ([
 	from := time.Now().Unix() * 1000 - (24 * time.Hour).Milliseconds()
 	to := time.Now().Unix() * 1000
 	k := fmt.Sprintf("user:%s:ts_pizzas", userId)
-	timeBucket := (15 * time.Minute).Milliseconds()
+	timeBucket := (60 * time.Minute).Milliseconds()
 
 	return r.TsRangeAggr(ctx, k, from, to, "avg", timeBucket)
 }
@@ -58,7 +58,7 @@ func FetchCoinsTimeseries(ctx context.Context, r RedisClient, userId string) ([]
 	from := time.Now().Unix() * 1000 - (24 * time.Hour).Milliseconds()
 	to := time.Now().Unix() * 1000
 	k := fmt.Sprintf("user:%s:ts_coins", userId)
-	timeBucket := (15 * time.Minute).Milliseconds()
+	timeBucket := (60 * time.Minute).Milliseconds()
 
 	return r.TsRangeAggr(ctx, k, from, to, "avg", timeBucket)
 }

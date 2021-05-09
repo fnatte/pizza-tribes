@@ -14,7 +14,10 @@ import { classnames } from "tailwindcss-classnames";
 import { TimeseriesData } from "../generated/timeseries";
 import { useStore } from "../store";
 
-const StatsContent: React.FC<{}> = () => {
+const numberFormat = new Intl.NumberFormat();
+const formatNumber = (n: number) => numberFormat.format(n);
+
+const StatsView: React.FC<{}> = () => {
   const { coins, pizzas } = useStore((state) => state.gameState.resources);
   const stats = useStore((state) => state.gameStats);
 
@@ -27,10 +30,22 @@ const StatsContent: React.FC<{}> = () => {
     (stats && [
       { label: "Employed chefs", value: stats.employedChefs },
       { label: "Employed salesmice", value: stats.employedSalesmice },
-      { label: "Pizzas produces", value: `${stats.pizzasProducedPerSecond}/s` },
-      { label: "Max sells", value: `${stats.maxSellsByMicePerSecond}/s` },
-      { label: "Pizza demand (offpeak)", value: `${stats.demandOffpeak}/s` },
-      { label: "Pizza demand (rush hour)", value: `${stats.demandRushHour}/s` },
+      {
+        label: "Pizzas produces",
+        value: `${formatNumber(stats.pizzasProducedPerSecond)}/s`,
+      },
+      {
+        label: "Max sells",
+        value: `${formatNumber(stats.maxSellsByMicePerSecond)}/s`,
+      },
+      {
+        label: "Pizza demand (offpeak)",
+        value: `${formatNumber(stats.demandOffpeak)}/s`,
+      },
+      {
+        label: "Pizza demand (rush hour)",
+        value: `${formatNumber(stats.demandRushHour)}/s`,
+      },
     ]) ??
     [];
 
@@ -42,8 +57,8 @@ const StatsContent: React.FC<{}> = () => {
     ) {
       throw new Error("Failed to get timeseries data");
     }
-    const data = await response.json();
-    return data as TimeseriesData;
+    const data = TimeseriesData.fromJson(await response.json());
+    return data;
   });
 
   const isMinLg = useMedia("(min-width: 1024px)", false);
@@ -119,6 +134,7 @@ const StatsContent: React.FC<{}> = () => {
           <YAxis />
           <Tooltip
             labelFormatter={(l) => format(new Date(Number(l)), "dd/MM HH:mm")}
+            formatter={(value: number) => formatNumber(Math.floor(value))}
           />
           <Legend verticalAlign="top" />
         </LineChart>
@@ -127,4 +143,4 @@ const StatsContent: React.FC<{}> = () => {
   );
 };
 
-export default StatsContent;
+export default StatsView;

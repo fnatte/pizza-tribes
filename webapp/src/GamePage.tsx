@@ -7,7 +7,7 @@ import { useStore } from "./store";
 import styles from "./styles";
 import { ReactComponent as HeartsSvg } from "../images/hearts.svg";
 import { ConnectionState } from "./connect";
-import StatsContent from "./Game/StatsContent";
+import StatsView from "./Game/StatsView";
 import MapView from "./Game/map/MapView";
 import WorldEntryView from "./Game/world/WorldEntryView";
 import LeaderboardView from "./Game/LeaderboardView";
@@ -374,7 +374,7 @@ function GamePage(): JSX.Element {
         <Route path="map" element={<MapView />} />
         <Route path="town/:id" element={<TownLot />} />
         <Route path="town" element={<Town />} />
-        <Route path="stats" element={<StatsContent />} />
+        <Route path="stats" element={<StatsView />} />
         <Route path="world/entry" element={<WorldEntryView />} />
         <Route path="leaderboard" element={<LeaderboardView />} />
         <Route path="reports" element={<ListReportsView />} />
