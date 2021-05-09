@@ -12,16 +12,19 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog/log"
+	"golang.org/x/text/message"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
+var messagePrinter = message.NewPrinter(message.MatchLanguage("en"))
+
 const thiefReportTemplateText = `
 Our heist with {{ .Thieves }} thieves on {{ .TargetUsername }}'s town was successful.
-We got away with {{ .Loot }} coins.
+We got away with {{ .Loot | mprintf "%d" }} coins.
 `
 const targetReportTemplateText = `
-It looks like someone stole {{ .Loot }} coins from us.
+It looks like someone stole {{ .Loot | mprintf "%d" }} coins from us.
 `
 var thiefReportTemplate *template.Template
 var targetReportTemplate *template.Template
@@ -36,12 +39,20 @@ type pipeFn func(redis.Pipeliner) error
 
 func init() {
 	var err error
-	thiefReportTemplate, err = template.New("root").Parse(thiefReportTemplateText)
+	tmplFuncMap := template.FuncMap{
+		"mprintf": messagePrinter.Sprintf,
+	}
+
+	thiefReportTemplate, err = template.New("root").
+		Funcs(tmplFuncMap).
+		Parse(thiefReportTemplateText)
 	if err != nil {
 		panic(err)
 	}
 
-	targetReportTemplate, err = template.New("root").Parse(targetReportTemplateText)
+	targetReportTemplate, err = template.New("root").
+		Funcs(tmplFuncMap).
+		Parse(targetReportTemplateText)
 	if err != nil {
 		panic(err)
 	}
