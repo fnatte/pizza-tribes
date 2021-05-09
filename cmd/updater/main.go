@@ -8,12 +8,10 @@ import (
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/fnatte/pizza-tribes/internal/mtime"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 func getPopulationKey(edu internal.Education) (string, error) {
@@ -46,22 +44,36 @@ type updateContext struct {
 	sendStats   *bool
 }
 
+// Update the game state for the specified user
 func (u *updater) update(ctx context.Context, userId string) {
 	log.Debug().Str("userId", userId).Msg("Update")
 
+	/*
+	 * There's a lot of stuff happening in this function, but this is
+	 * also the heart of the game. In short it does:
+	 *   - calculate changes
+	 *   - apply changes in a Redis pipeline
+	 *   - send changes to the client (so that UI can be updated in the web app)
+	 *   - update the leaderboard
+	 *   - update the timeseries data
+	 *   - set the next update time
+	 */
+
 	gameStateKey := fmt.Sprintf("user:%s:gamestate", userId)
 
-	sendReports := false
+	sendReportsBoolRef := false
 	sendStats2 := false
 
 	uctx := updateContext{
 		ctx,
 		userId,
 		&internal.GameState{},
-		&internal.GameStatePatch{},
-		&sendReports,
+		&internal.GameStatePatch{
+			Resources:  &internal.GameStatePatch_ResourcesPatch{},
+			Population: &internal.GameStatePatch_PopulationPatch{},
+		},
+		&sendReportsBoolRef,
 		&sendStats2}
-	var changes changes
 
 	txf := func(tx *redis.Tx) error {
 		// Get current game state
@@ -74,53 +86,25 @@ func (u *updater) update(ctx context.Context, userId string) {
 			return err
 		}
 
-		// Calculate changes
-		changes = extrapolate(uctx.gs)
-
-		// Prepare changes and setup pipeline funcs
-		pipeFn1, err := completedConstructions(uctx, tx)
-		if err != nil {
+		// Prepare changes and setup pipeline funcs.
+		// Each of the following functions returns a pipeline function
+		// that is executed serially in a single Redis pipeline below.
+		pipeFns := make([]pipeFn, 4)
+		if pipeFns[0], err = extrapolate(uctx, tx); err != nil {
+			return err
+		}
+		if pipeFns[1], err = completedConstructions(uctx, tx); err != nil {
+			return err
+		}
+		if pipeFns[2], err = completeTrainings(uctx, tx); err != nil {
+			return err
+		}
+		if pipeFns[3], err = completeTravels(uctx, tx, u.world); err != nil {
 			return err
 		}
 
-		pipeFn2, err := completeTrainings(uctx, tx)
-		if err != nil {
-			return err
-		}
-
-		pipeFn3, err := completeTravels(uctx, tx, u.world)
-		if err != nil {
-			return err
-		}
-
-		pipeFns := []pipeFn{pipeFn1, pipeFn2, pipeFn3}
-
-		// Write changes to Redis
+		// Write changes to Redis (execute pipelines)
 		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
-			// Write timestamp
-			err = internal.RedisJsonSet(
-				pipe, ctx, gameStateKey,
-				".timestamp", changes.timestamp).Err()
-			if err != nil {
-				return err
-			}
-
-			// Write coins
-			err = internal.RedisJsonSet(
-				pipe, ctx, gameStateKey,
-				".resources.coins", changes.coins).Err()
-			if err != nil {
-				return err
-			}
-
-			// Write pizzas
-			err = internal.RedisJsonSet(
-				pipe, ctx, gameStateKey,
-				".resources.pizzas", changes.pizzas).Err()
-			if err != nil {
-				return err
-			}
-
 			for _, pipeFn := range pipeFns {
 				if pipeFn != nil {
 					if err = pipeFn(pipe); err != nil {
@@ -140,38 +124,16 @@ func (u *updater) update(ctx context.Context, userId string) {
 		return
 	}
 
-	_, err = internal.UpdateTimestamp(u.r, ctx, userId, uctx.gs)
+	_, err = internal.SetNextUpdate(u.r, ctx, userId, uctx.gs)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to update timestamp")
+		log.Error().Err(err).Msg("Failed to set next update")
 	}
 
-	err = internal.EnsureTimeseries(ctx, u.r, userId)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to ensure timeseries")
-	}
-	err = internal.AddMetricCoins(ctx, u.r, userId, changes.timestamp*1000, int64(changes.coins))
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to add coins metric")
-	}
-	err = internal.AddMetricPizzas(ctx, u.r, userId, changes.timestamp*1000, int64(changes.pizzas))
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to add pizzas metric")
+	if err = addTimeseriesDataPoints(uctx, u.r); err != nil {
+		log.Error().Err(err).Msg("Failed to add timeseries data points")
 	}
 
-	// Update patch
-	if uctx.gsPatch.Resources == nil {
-		uctx.gsPatch.Resources = &internal.GameStatePatch_ResourcesPatch{}
-	}
-	if uctx.gsPatch.Resources.Coins == nil {
-		uctx.gsPatch.Resources.Coins = &wrapperspb.Int32Value{}
-	}
-	uctx.gsPatch.Resources.Coins.Value = uctx.gsPatch.Resources.Coins.Value + changes.coins
-	if uctx.gsPatch.Resources.Pizzas == nil {
-		uctx.gsPatch.Resources.Pizzas = &wrapperspb.Int32Value{}
-	}
-	uctx.gsPatch.Resources.Pizzas.Value = uctx.gsPatch.Resources.Pizzas.Value + changes.pizzas
-	uctx.gsPatch.Timestamp = &wrapperspb.Int64Value{Value: changes.timestamp}
-
+	// Send patch
 	err = send(ctx, u.r, userId, &internal.ServerMessage{
 		Id: xid.New().String(),
 		Payload: &internal.ServerMessage_StateChange{
@@ -182,26 +144,16 @@ func (u *updater) update(ctx context.Context, userId string) {
 		log.Error().Err(err).Msg("Failed to send state change")
 	}
 
-	if err = u.leaderboard.UpdateUser(ctx, userId, int64(changes.coins)); err != nil {
-		log.Error().Err(err).Msg("Failed to update leaderboard")
+	// Update leaderboard
+	if uctx.gsPatch.Resources.Coins != nil {
+		coins := int64(uctx.gsPatch.Resources.Coins.Value)
+		if err = u.leaderboard.UpdateUser(ctx, userId, coins); err != nil {
+			log.Error().Err(err).Msg("Failed to update leaderboard")
+		}
 	}
 
 	if *uctx.sendReports {
-		reports, err := internal.GetReports(ctx, u.r, userId)
-		if err != nil {
-			log.Error().Err(err).Msg("Failed to send updated reports")
-			return
-		}
-
-		err = send(ctx, u.r, userId, &internal.ServerMessage{
-			Id: xid.New().String(),
-			Payload: &internal.ServerMessage_Reports_{
-				Reports: &internal.ServerMessage_Reports{
-					Reports: reports,
-				},
-			},
-		})
-		if err != nil {
+		if err = sendReports(ctx, u.r, userId); err != nil {
 			log.Error().Err(err).Msg("Failed to send inital reports")
 		}
 	}
@@ -211,6 +163,54 @@ func (u *updater) update(ctx context.Context, userId string) {
 			log.Error().Err(err).Msg("Failed to send stats")
 		}
 	}
+}
+
+func addTimeseriesDataPoints(ctx updateContext, r internal.RedisClient) error {
+	if ctx.gsPatch.Timestamp == nil {
+		return nil
+	}
+
+	err := internal.EnsureTimeseries(ctx, r, ctx.userId)
+	if err != nil {
+		return fmt.Errorf("failed to ensure timeseries: %w", err)
+	}
+
+	time := ctx.gsPatch.Timestamp.Value * 1000
+	coins := ctx.gsPatch.Resources.Coins
+	pizzas := ctx.gsPatch.Resources.Pizzas
+
+	if coins != nil {
+		err = internal.AddMetricCoins(ctx, r, ctx.userId, time, int64(coins.Value))
+		if err != nil {
+			return fmt.Errorf("failed to add coins metric: %w", err)
+		}
+	}
+
+	if pizzas != nil {
+		err = internal.AddMetricPizzas(ctx, r, ctx.userId, time, int64(pizzas.Value))
+		if err != nil {
+			return fmt.Errorf("failed to add pizzas metric: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func sendReports(ctx context.Context, r internal.RedisClient, userId string) error {
+	reports, err := internal.GetReports(ctx, r, userId)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to send updated reports")
+		return fmt.Errorf("failed to get reports: %w", err)
+	}
+
+	return send(ctx, r, userId, &internal.ServerMessage{
+		Id: xid.New().String(),
+		Payload: &internal.ServerMessage_Reports_{
+			Reports: &internal.ServerMessage_Reports{
+				Reports: reports,
+			},
+		},
+	})
 }
 
 func sendStats(ctx context.Context, r internal.RedisClient, userId string) error {
@@ -274,51 +274,11 @@ func send(ctx context.Context, r redis.Cmdable, userId string, msg *internal.Ser
 	}).Err()
 }
 
-type changes struct {
-	timestamp int64
-	coins     int32
-	pizzas    int32
-}
-
 func min(x, y int32) int32 {
 	if x < y {
 		return x
 	}
 	return y
-}
-
-func extrapolate(gs *internal.GameState) changes {
-	// No changes if there are no population
-	if gs.Population == nil {
-		return changes{}
-	}
-
-	now := time.Now()
-	rush, offpeak := mtime.GetRush(gs.Timestamp, now.Unix())
-	dt := float64(now.Unix() - gs.Timestamp)
-
-	stats := internal.CalculateStats(gs)
-
-	demand := int32(stats.DemandOffpeak*float64(offpeak) +
-		stats.DemandRushHour*float64(rush))
-
-	pizzasProduced := int32(stats.PizzasProducedPerSecond * dt)
-	pizzasAvailable := gs.Resources.Pizzas + pizzasProduced
-
-	maxSellsByMice := int32(stats.MaxSellsByMicePerSecond * dt)
-	pizzasSold := min(demand, min(maxSellsByMice, pizzasAvailable))
-
-	log.Debug().
-		Int32("pizzasProduced", pizzasProduced).
-		Int32("maxSellsByMice", maxSellsByMice).
-		Int32("pizzasSold", pizzasSold).
-		Msg("Game state update")
-
-	return changes{
-		coins:     gs.Resources.Coins + pizzasSold,
-		pizzas:    gs.Resources.Pizzas + pizzasProduced - pizzasSold,
-		timestamp: now.Unix(),
-	}
 }
 
 func envOrDefault(key string, defaultVal string) string {

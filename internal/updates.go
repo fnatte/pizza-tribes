@@ -22,7 +22,7 @@ func GetNextUpdateTimestamp (gs *GameState) int64 {
 }
 
 
-func UpdateTimestamp(r RedisClient, ctx context.Context, userId string, gs *GameState) (int64, error) {
+func SetNextUpdate(r redis.Cmdable, ctx context.Context, userId string, gs *GameState) (int64, error) {
 	return r.ZAdd(ctx, "user_updates", &redis.Z{
 		Score: float64(GetNextUpdateTimestamp(gs)),
 		Member: userId,

@@ -137,7 +137,7 @@ func (h *handler) handleConstructBuilding(ctx context.Context, senderId string, 
 		return
 	}
 
-	internal.UpdateTimestamp(h.rdb, ctx, senderId, &gs)
+	internal.SetNextUpdate(h.rdb, ctx, senderId, &gs)
 
 	h.sendFullStateUpdate(ctx, senderId)
 }
@@ -244,7 +244,7 @@ func (h *handler) fetchAndUpdateTimestamp(ctx context.Context, userId string) (i
 		return 0, err
 	}
 
-	return internal.UpdateTimestamp(h.rdb, ctx, userId, &gs)
+	return internal.SetNextUpdate(h.rdb, ctx, userId, &gs)
 }
 
 func (h *handler) sendFullStateUpdate(ctx context.Context, senderId string) {

@@ -77,7 +77,7 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 	}
 
 	// Make sure the user is enqueued for updates
-	_, err = internal.UpdateTimestamp(h.rc, ctx, c.UserId(), &gs)
+	_, err = internal.SetNextUpdate(h.rc, ctx, c.UserId(), &gs)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to ensure user updates")
 		return err
