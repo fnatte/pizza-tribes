@@ -48,6 +48,9 @@ func GetReports(ctx context.Context, r redis.Cmdable, userId string) ([]*Report,
 	if err != nil {
 		return nil, fmt.Errorf("failed to read from reports index: %s", err)
 	}
+	if len(ids) == 0 {
+		return []*Report{}, nil
+	}
 	res, err := r.HMGet(ctx, reportsKey, ids...).Result()
 	if err != nil {
 		return nil, fmt.Errorf("failed to read reports: %s", err)
