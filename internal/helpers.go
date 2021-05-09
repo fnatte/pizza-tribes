@@ -1,8 +1,6 @@
 package internal
 
 import (
-	"time"
-
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -41,20 +39,6 @@ func MinInt32(a, b int32) int32 {
 		return a
 	}
 	return b
-}
-
-func GetNextUpdateTimestamp (gs *GameState) int64 {
-	t := time.Now().Add(10 * time.Second).UnixNano()
-	if len(gs.ConstructionQueue) > 0 {
-		t = Min(t, gs.ConstructionQueue[0].CompleteAt)
-	}
-	if len(gs.TrainingQueue) > 0 {
-		t = Min(t, gs.TrainingQueue[0].CompleteAt)
-	}
-	if len(gs.TravelQueue) > 0 {
-		t = Min(t, gs.TravelQueue[0].ArrivalAt)
-	}
-	return t
 }
 
 func CountMaxEmployed(buildingCount map[int32]int32) (counts map[int32]int32) {

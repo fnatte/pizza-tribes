@@ -33,8 +33,8 @@ func getPopulationKey(edu internal.Education) (string, error) {
 }
 
 type updater struct {
-	r     internal.RedisClient
-	world *internal.WorldService
+	r           internal.RedisClient
+	world       *internal.WorldService
 	leaderboard *internal.LeaderboardService
 }
 
@@ -45,7 +45,6 @@ func (u *updater) update(ctx context.Context, userId string) {
 
 	gs := internal.GameState{}
 	var changes changes
-	var completedTrainings []*internal.Training
 	var completedConstructions []*internal.Construction
 
 	// Patch that will be used to notify and update clients
@@ -65,15 +64,21 @@ func (u *updater) update(ctx context.Context, userId string) {
 
 		// Calculate changes
 		changes = extrapolate(&gs)
-		completedTrainings = getCompletedTrainings(&gs)
 		completedConstructions = getCompletedConstructions(&gs)
 
-		log.Debug().Int("completedTrainings", len(completedTrainings)).Msg("")
+		pipeFns := []pipeFn{}
 
-		pipeFn, err := completeTravels(ctx, tx, u.world, userId, &gs, gsPatch, &sendReports)
+		pipeFn, err := completeTrainings(ctx, tx, &gs, gsPatch, userId)
 		if err != nil {
 			return err
 		}
+		pipeFns = append(pipeFns, pipeFn)
+
+		pipeFn, err = completeTravels(ctx, tx, u.world, userId, &gs, gsPatch, &sendReports)
+		if err != nil {
+			return err
+		}
+		pipeFns = append(pipeFns, pipeFn)
 
 		// Write changes to Redis
 		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
@@ -99,35 +104,6 @@ func (u *updater) update(ctx context.Context, userId string) {
 				".resources.pizzas", changes.pizzas).Err()
 			if err != nil {
 				return err
-			}
-
-			if len(completedTrainings) > 0 {
-				// Remove completed trainings from queue
-				err = internal.RedisJsonArrTrim(
-					pipe, ctx, gameStateKey,
-					".trainingQueue",
-					len(completedTrainings),
-					math.MaxInt32,
-				).Err()
-				if err != nil {
-					return err
-				}
-
-				// Complete trainings by increasing the corresponding population
-				for _, t := range completedTrainings {
-					populationKey, err := getPopulationKey(t.Education)
-					if err != nil {
-						return err
-					}
-
-					_, err = internal.RedisJsonNumIncrBy(
-						pipe, ctx, gameStateKey,
-						fmt.Sprintf(".population.%s", populationKey),
-						int64(t.Amount)).Result()
-					if err != nil {
-						return err
-					}
-				}
 			}
 
 			if len(completedConstructions) > 0 {
@@ -165,12 +141,13 @@ func (u *updater) update(ctx context.Context, userId string) {
 				}
 			}
 
-			if pipeFn != nil {
-				if err = pipeFn(pipe); err != nil {
-					return err
+			for _, pipeFn := range pipeFns {
+				if pipeFn != nil {
+					if err = pipeFn(pipe); err != nil {
+						return err
+					}
 				}
 			}
-
 			return nil
 		})
 
@@ -215,37 +192,6 @@ func (u *updater) update(ctx context.Context, userId string) {
 	gsPatch.Resources.Pizzas.Value = gsPatch.Resources.Pizzas.Value + changes.pizzas
 	gsPatch.Timestamp = &wrapperspb.Int64Value{Value: changes.timestamp}
 
-	// TODO: move to when trainings are done
-	if len(completedTrainings) > 0 {
-		gsPatch.TrainingQueue = gs.TrainingQueue[len(completedTrainings):]
-		gsPatch.TrainingQueuePatched = true
-		if gsPatch.Population == nil {
-			gsPatch.Population = &internal.GameStatePatch_PopulationPatch{}
-		}
-		// TODO: fix bug that will happend if thieves return at the same time
-		// as thieves return
-		for _, t := range completedTrainings {
-			switch t.Education {
-			case internal.Education_CHEF:
-				gsPatch.Population.Chefs = &wrapperspb.Int32Value{
-					Value: gs.Population.Chefs + t.Amount,
-				}
-			case internal.Education_SALESMOUSE:
-				gsPatch.Population.Salesmice = &wrapperspb.Int32Value{
-					Value: gs.Population.Salesmice + t.Amount,
-				}
-			case internal.Education_GUARD:
-				gsPatch.Population.Guards = &wrapperspb.Int32Value{
-					Value: gs.Population.Guards + t.Amount,
-				}
-			case internal.Education_THIEF:
-				gsPatch.Population.Thieves = &wrapperspb.Int32Value{
-					Value: gs.Population.Thieves + t.Amount,
-				}
-			}
-		}
-	}
-
 	// TODO: move to when constructions are done
 	if len(completedConstructions) > 0 {
 		gsPatch.ConstructionQueue = gs.ConstructionQueue[len(completedConstructions):]
@@ -284,7 +230,6 @@ func (u *updater) update(ctx context.Context, userId string) {
 		ReceiverId: userId,
 		Body:       string(b),
 	})
-
 
 	if err = u.leaderboard.UpdateUser(ctx, userId, int64(changes.coins)); err != nil {
 		log.Error().Err(err).Msg("Failed to update leaderboard")
@@ -393,20 +338,6 @@ func extrapolate(gs *internal.GameState) changes {
 		pizzas:    gs.Resources.Pizzas + pizzasProduced - pizzasSold,
 		timestamp: now.Unix(),
 	}
-}
-
-func getCompletedTrainings(gs *internal.GameState) (res []*internal.Training) {
-	now := time.Now().UnixNano()
-
-	for _, t := range gs.TrainingQueue {
-		if t.CompleteAt > now {
-			break
-		}
-
-		res = append(res, t)
-	}
-
-	return res
 }
 
 func getCompletedConstructions(gs *internal.GameState) (res []*internal.Construction) {
