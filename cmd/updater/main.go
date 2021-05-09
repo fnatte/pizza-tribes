@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math"
 	"os"
 	"time"
 
@@ -63,7 +62,6 @@ func (u *updater) update(ctx context.Context, userId string) {
 		&sendReports,
 		&sendStats2}
 	var changes changes
-	var completedConstructions []*internal.Construction
 
 	txf := func(tx *redis.Tx) error {
 		// Get current game state
@@ -78,21 +76,24 @@ func (u *updater) update(ctx context.Context, userId string) {
 
 		// Calculate changes
 		changes = extrapolate(uctx.gs)
-		completedConstructions = getCompletedConstructions(uctx.gs)
 
-		pipeFns := []pipeFn{}
-
-		pipeFn, err := completeTrainings(uctx, tx)
+		// Prepare changes and setup pipeline funcs
+		pipeFn1, err := completedConstructions(uctx, tx)
 		if err != nil {
 			return err
 		}
-		pipeFns = append(pipeFns, pipeFn)
 
-		pipeFn, err = completeTravels(uctx, tx, u.world)
+		pipeFn2, err := completeTrainings(uctx, tx)
 		if err != nil {
 			return err
 		}
-		pipeFns = append(pipeFns, pipeFn)
+
+		pipeFn3, err := completeTravels(uctx, tx, u.world)
+		if err != nil {
+			return err
+		}
+
+		pipeFns := []pipeFn{pipeFn1, pipeFn2, pipeFn3}
 
 		// Write changes to Redis
 		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
@@ -118,41 +119,6 @@ func (u *updater) update(ctx context.Context, userId string) {
 				".resources.pizzas", changes.pizzas).Err()
 			if err != nil {
 				return err
-			}
-
-			if len(completedConstructions) > 0 {
-				// Remove completed constructions from queue
-				err = internal.RedisJsonArrTrim(
-					pipe, ctx, gameStateKey,
-					".constructionQueue",
-					len(completedConstructions),
-					math.MaxInt32,
-				).Err()
-				if err != nil {
-					return err
-				}
-
-				// Complete constructions
-				for _, constr := range completedConstructions {
-					err = internal.RedisJsonSet(
-						pipe, ctx, gameStateKey,
-						fmt.Sprintf(".lots[\"%s\"]", constr.LotId),
-						fmt.Sprintf("{ \"building\": %d }", constr.Building)).Err()
-					if err != nil {
-						log.Error().Err(err).Msg("Failed to handle construct building message")
-					}
-
-					// Increase population (uneducated) if a house was completed
-					if constr.Building == internal.Building_HOUSE {
-						_, err = internal.RedisJsonNumIncrBy(
-							pipe, ctx, gameStateKey,
-							".population.uneducated",
-							internal.MicePerHouse).Result()
-						if err != nil {
-							return err
-						}
-					}
-				}
 			}
 
 			for _, pipeFn := range pipeFns {
@@ -205,27 +171,6 @@ func (u *updater) update(ctx context.Context, userId string) {
 	}
 	uctx.gsPatch.Resources.Pizzas.Value = uctx.gsPatch.Resources.Pizzas.Value + changes.pizzas
 	uctx.gsPatch.Timestamp = &wrapperspb.Int64Value{Value: changes.timestamp}
-
-	// TODO: move to when constructions are done
-	if len(completedConstructions) > 0 {
-		uctx.gsPatch.ConstructionQueue = uctx.gs.ConstructionQueue[len(completedConstructions):]
-		uctx.gsPatch.ConstructionQueuePatched = true
-		uctx.gsPatch.Lots = map[string]*internal.GameStatePatch_LotPatch{}
-		for _, constr := range completedConstructions {
-			uctx.gsPatch.Lots[constr.LotId] = &internal.GameStatePatch_LotPatch{
-				Building: constr.Building,
-			}
-
-			if constr.Building == internal.Building_HOUSE {
-				if uctx.gsPatch.Population == nil {
-					uctx.gsPatch.Population = &internal.GameStatePatch_PopulationPatch{}
-				}
-				uctx.gsPatch.Population.Uneducated = &wrapperspb.Int32Value{
-					Value: uctx.gs.Population.Uneducated + internal.MicePerHouse,
-				}
-			}
-		}
-	}
 
 	err = send(ctx, u.r, userId, &internal.ServerMessage{
 		Id: xid.New().String(),
@@ -374,20 +319,6 @@ func extrapolate(gs *internal.GameState) changes {
 		pizzas:    gs.Resources.Pizzas + pizzasProduced - pizzasSold,
 		timestamp: now.Unix(),
 	}
-}
-
-func getCompletedConstructions(gs *internal.GameState) (res []*internal.Construction) {
-	now := time.Now().UnixNano()
-
-	for _, t := range gs.ConstructionQueue {
-		if t.CompleteAt > now {
-			break
-		}
-
-		res = append(res, t)
-	}
-
-	return res
 }
 
 func envOrDefault(key string, defaultVal string) string {
