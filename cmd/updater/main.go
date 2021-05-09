@@ -38,18 +38,32 @@ type updater struct {
 	leaderboard *internal.LeaderboardService
 }
 
+type updateContext struct {
+	context.Context
+	userId      string
+	gs          *internal.GameState
+	gsPatch     *internal.GameStatePatch
+	sendReports *bool
+	sendStats   *bool
+}
+
 func (u *updater) update(ctx context.Context, userId string) {
 	log.Debug().Str("userId", userId).Msg("Update")
 
 	gameStateKey := fmt.Sprintf("user:%s:gamestate", userId)
 
-	gs := internal.GameState{}
+	sendReports := false
+	sendStats2 := false
+
+	uctx := updateContext{
+		ctx,
+		userId,
+		&internal.GameState{},
+		&internal.GameStatePatch{},
+		&sendReports,
+		&sendStats2}
 	var changes changes
 	var completedConstructions []*internal.Construction
-
-	// Patch that will be used to notify and update clients
-	gsPatch := &internal.GameStatePatch{}
-	sendReports := false
 
 	txf := func(tx *redis.Tx) error {
 		// Get current game state
@@ -57,24 +71,24 @@ func (u *updater) update(ctx context.Context, userId string) {
 		if err != nil && err != redis.Nil {
 			return err
 		}
-		err = gs.LoadProtoJson([]byte(b))
+		err = uctx.gs.LoadProtoJson([]byte(b))
 		if err != nil {
 			return err
 		}
 
 		// Calculate changes
-		changes = extrapolate(&gs)
-		completedConstructions = getCompletedConstructions(&gs)
+		changes = extrapolate(uctx.gs)
+		completedConstructions = getCompletedConstructions(uctx.gs)
 
 		pipeFns := []pipeFn{}
 
-		pipeFn, err := completeTrainings(ctx, tx, &gs, gsPatch, userId)
+		pipeFn, err := completeTrainings(uctx, tx)
 		if err != nil {
 			return err
 		}
 		pipeFns = append(pipeFns, pipeFn)
 
-		pipeFn, err = completeTravels(ctx, tx, u.world, userId, &gs, gsPatch, &sendReports)
+		pipeFn, err = completeTravels(uctx, tx, u.world)
 		if err != nil {
 			return err
 		}
@@ -160,7 +174,7 @@ func (u *updater) update(ctx context.Context, userId string) {
 		return
 	}
 
-	_, err = internal.UpdateTimestamp(u.r, ctx, userId, &gs)
+	_, err = internal.UpdateTimestamp(u.r, ctx, userId, uctx.gs)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to update timestamp")
 	}
@@ -179,70 +193,62 @@ func (u *updater) update(ctx context.Context, userId string) {
 	}
 
 	// Update patch
-	if gsPatch.Resources == nil {
-		gsPatch.Resources = &internal.GameStatePatch_ResourcesPatch{}
+	if uctx.gsPatch.Resources == nil {
+		uctx.gsPatch.Resources = &internal.GameStatePatch_ResourcesPatch{}
 	}
-	if gsPatch.Resources.Coins == nil {
-		gsPatch.Resources.Coins = &wrapperspb.Int32Value{}
+	if uctx.gsPatch.Resources.Coins == nil {
+		uctx.gsPatch.Resources.Coins = &wrapperspb.Int32Value{}
 	}
-	gsPatch.Resources.Coins.Value = gsPatch.Resources.Coins.Value + changes.coins
-	if gsPatch.Resources.Pizzas == nil {
-		gsPatch.Resources.Pizzas = &wrapperspb.Int32Value{}
+	uctx.gsPatch.Resources.Coins.Value = uctx.gsPatch.Resources.Coins.Value + changes.coins
+	if uctx.gsPatch.Resources.Pizzas == nil {
+		uctx.gsPatch.Resources.Pizzas = &wrapperspb.Int32Value{}
 	}
-	gsPatch.Resources.Pizzas.Value = gsPatch.Resources.Pizzas.Value + changes.pizzas
-	gsPatch.Timestamp = &wrapperspb.Int64Value{Value: changes.timestamp}
+	uctx.gsPatch.Resources.Pizzas.Value = uctx.gsPatch.Resources.Pizzas.Value + changes.pizzas
+	uctx.gsPatch.Timestamp = &wrapperspb.Int64Value{Value: changes.timestamp}
 
 	// TODO: move to when constructions are done
 	if len(completedConstructions) > 0 {
-		gsPatch.ConstructionQueue = gs.ConstructionQueue[len(completedConstructions):]
-		gsPatch.ConstructionQueuePatched = true
-		gsPatch.Lots = map[string]*internal.GameStatePatch_LotPatch{}
+		uctx.gsPatch.ConstructionQueue = uctx.gs.ConstructionQueue[len(completedConstructions):]
+		uctx.gsPatch.ConstructionQueuePatched = true
+		uctx.gsPatch.Lots = map[string]*internal.GameStatePatch_LotPatch{}
 		for _, constr := range completedConstructions {
-			gsPatch.Lots[constr.LotId] = &internal.GameStatePatch_LotPatch{
+			uctx.gsPatch.Lots[constr.LotId] = &internal.GameStatePatch_LotPatch{
 				Building: constr.Building,
 			}
 
 			if constr.Building == internal.Building_HOUSE {
-				if gsPatch.Population == nil {
-					gsPatch.Population = &internal.GameStatePatch_PopulationPatch{}
+				if uctx.gsPatch.Population == nil {
+					uctx.gsPatch.Population = &internal.GameStatePatch_PopulationPatch{}
 				}
-				gsPatch.Population.Uneducated = &wrapperspb.Int32Value{
-					Value: gs.Population.Uneducated + internal.MicePerHouse,
+				uctx.gsPatch.Population.Uneducated = &wrapperspb.Int32Value{
+					Value: uctx.gs.Population.Uneducated + internal.MicePerHouse,
 				}
 			}
 		}
 	}
 
-	msg := internal.ServerMessage{
+	err = send(ctx, u.r, userId, &internal.ServerMessage{
 		Id: xid.New().String(),
 		Payload: &internal.ServerMessage_StateChange{
-			StateChange: gsPatch,
+			StateChange: uctx.gsPatch,
 		},
-	}
-
-	b, err := protojson.Marshal(&msg)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to send full state update")
-		return
-	}
-
-	u.r.RPush(ctx, "wsout", &internal.OutgoingMessage{
-		ReceiverId: userId,
-		Body:       string(b),
 	})
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to send state change")
+	}
 
 	if err = u.leaderboard.UpdateUser(ctx, userId, int64(changes.coins)); err != nil {
 		log.Error().Err(err).Msg("Failed to update leaderboard")
 	}
 
-	if sendReports {
+	if *uctx.sendReports {
 		reports, err := internal.GetReports(ctx, u.r, userId)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to send updated reports")
 			return
 		}
 
-		b, err = protojson.Marshal(&internal.ServerMessage{
+		err = send(ctx, u.r, userId, &internal.ServerMessage{
 			Id: xid.New().String(),
 			Payload: &internal.ServerMessage_Reports_{
 				Reports: &internal.ServerMessage_Reports{
@@ -252,13 +258,31 @@ func (u *updater) update(ctx context.Context, userId string) {
 		})
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to send inital reports")
-		} else {
-			u.r.RPush(ctx, "wsout", &internal.OutgoingMessage{
-				ReceiverId: userId,
-				Body:       string(b),
-			})
 		}
 	}
+
+	if *uctx.sendStats {
+		if err = sendStats(ctx, u.r, userId); err != nil {
+			log.Error().Err(err).Msg("Failed to send stats")
+		}
+	}
+}
+
+func sendStats(ctx context.Context, r internal.RedisClient, userId string) error {
+	gs := internal.GameState{}
+	gsKey := fmt.Sprintf("user:%s:gamestate", userId)
+	b, err := internal.RedisJsonGet(r, ctx, gsKey, ".").Result()
+	if err != nil && err != redis.Nil {
+		return err
+	}
+	err = gs.LoadProtoJson([]byte(b))
+	if err != nil {
+		return err
+	}
+
+	msg := internal.CalculateStats(&gs).ToServerMessage()
+
+	return send(ctx, r, userId, msg)
 }
 
 func (u *updater) next(ctx context.Context) (string, error) {
@@ -291,6 +315,18 @@ func (u *updater) next(ctx context.Context) (string, error) {
 	}
 
 	return userId, nil
+}
+
+func send(ctx context.Context, r redis.Cmdable, userId string, msg *internal.ServerMessage) error {
+	b, err := protojson.Marshal(msg)
+	if err != nil {
+		return err
+	}
+
+	return r.RPush(ctx, "wsout", &internal.OutgoingMessage{
+		ReceiverId: userId,
+		Body:       string(b),
+	}).Err()
 }
 
 type changes struct {

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"time"
 
@@ -10,21 +9,24 @@ import (
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
-func completeTrainings(ctx context.Context, tx *redis.Tx, gs *internal.GameState, gsPatch *internal.GameStatePatch, userId string) (pipeFn, error) {
-	gsKey := fmt.Sprintf("user:%s:gamestate", userId)
+func completeTrainings(ctx updateContext, tx *redis.Tx) (pipeFn, error) {
+	gsKey := fmt.Sprintf("user:%s:gamestate", ctx.userId)
 
+	// Setup a internal completion struct to hold completed trainings.
+	// By using the internal data structure it will be easier to apply
+	// the changes in the Redis pipeline. Also, we avoid doing stuff
+	// that can return errors in the pipeline.
 	type completion struct {
 		queueIdx  int
 		popKey    string
 		amount    int32
 		education internal.Education
 	}
-
 	completions := []completion{}
 
 	// Append a completion for every completed training
 	now := time.Now().UnixNano()
-	for i, t := range gs.TrainingQueue {
+	for i, t := range ctx.gs.TrainingQueue {
 		if t.CompleteAt > now {
 			continue
 		}
@@ -52,23 +54,26 @@ func completeTrainings(ctx context.Context, tx *redis.Tx, gs *internal.GameState
 	}
 
 	// Update patch
-	gsPatch.TrainingQueue = gs.TrainingQueue
-	gsPatch.TrainingQueuePatched = true
-	if gsPatch.Population == nil {
-		gsPatch.Population = &internal.GameStatePatch_PopulationPatch{}
+	ctx.gsPatch.TrainingQueue = ctx.gs.TrainingQueue
+	ctx.gsPatch.TrainingQueuePatched = true
+	if ctx.gsPatch.Population == nil {
+		ctx.gsPatch.Population = &internal.GameStatePatch_PopulationPatch{}
 	}
 	for _, c := range completions {
 		// Remove completion index from training queue
-		gsPatch.TrainingQueue = append(
-			gsPatch.TrainingQueue[:c.queueIdx],
-			gsPatch.TrainingQueue[c.queueIdx+1:]...,
+		ctx.gsPatch.TrainingQueue = append(
+			ctx.gsPatch.TrainingQueue[:c.queueIdx],
+			ctx.gsPatch.TrainingQueue[c.queueIdx+1:]...,
 		)
 
 		// TODO:
 		// fix bug that will happen if thieves return at the same time as
 		// thieves return
-		increasePopulation(gs, gsPatch, c.education, c.amount)
+		increasePopulation(ctx.gs, ctx.gsPatch, c.education, c.amount)
 	}
+
+	// Since we have changed the population we should send a new stats message
+	*ctx.sendStats = true
 
 	return func(pipe redis.Pipeliner) error {
 		for _, c := range completions {

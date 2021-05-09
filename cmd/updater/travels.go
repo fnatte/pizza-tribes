@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"errors"
 	"fmt"
 	"math"
@@ -48,11 +47,11 @@ func init() {
 	}
 }
 
-func completeSteal(ctx context.Context, tx *redis.Tx, world *internal.WorldService, gs *internal.GameState, gsPatch *internal.GameStatePatch, userId string, travel *internal.Travel, travelIndex int, sendReports *bool) (pipeFn, error) {
+func completeSteal(ctx updateContext, tx *redis.Tx, world *internal.WorldService, travel *internal.Travel, travelIndex int) (pipeFn, error) {
 	gsTarget := &internal.GameState{}
 	x := travel.DestinationX
 	y := travel.DestinationY
-	gsKeyThief := fmt.Sprintf("user:%s:gamestate", userId)
+	gsKeyThief := fmt.Sprintf("user:%s:gamestate", ctx.userId)
 
 	// Validate target town
 	worldEntry, err := world.GetEntryXY(ctx, int(x), int(y))
@@ -63,7 +62,7 @@ func completeSteal(ctx context.Context, tx *redis.Tx, world *internal.WorldServi
 	if town == nil {
 		return nil, fmt.Errorf("no town at %d, %d", x, y)
 	}
-	if town.UserId == userId {
+	if town.UserId == ctx.userId {
 		return nil, errors.New("can't steal from own town")
 	}
 
@@ -90,7 +89,7 @@ func completeSteal(ctx context.Context, tx *redis.Tx, world *internal.WorldServi
 	// Calculate arrival time
 	arrivalAt := internal.CalculateArrivalTime(
 		travel.DestinationX, travel.DestinationY,
-		gs.TownX, gs.TownY,
+		ctx.gs.TownX, ctx.gs.TownY,
 		internal.ThiefSpeed,
 	)
 
@@ -108,7 +107,7 @@ func completeSteal(ctx context.Context, tx *redis.Tx, world *internal.WorldServi
 	}
 
 	// Update patch with return travel
-	gsPatch.TravelQueue = append(gsPatch.TravelQueue, &returnTravel)
+	ctx.gsPatch.TravelQueue = append(ctx.gsPatch.TravelQueue, &returnTravel)
 
 	// Build reports
 	tmplData := reportTemplateData{
@@ -138,7 +137,7 @@ func completeSteal(ctx context.Context, tx *redis.Tx, world *internal.WorldServi
 		Content: buf.String(),
 		Unread: true,
 	}
-	*sendReports = true
+	*ctx.sendReports = true
 
 	return func(pipe redis.Pipeliner) error {
 		// TODO: notify (send game state patch) to target user
@@ -155,35 +154,35 @@ func completeSteal(ctx context.Context, tx *redis.Tx, world *internal.WorldServi
 			return fmt.Errorf("failed to append new travel: %w", err)
 		}
 
-		internal.SaveReport(ctx, pipe, userId, thiefReport)
+		internal.SaveReport(ctx, pipe, ctx.userId, thiefReport)
 		internal.SaveReport(ctx, pipe, town.UserId, targetReport)
 
-		log.Info().Str("userId", userId).Int64("loot", loot).Msg("Steal completed")
+		log.Info().Str("userId", ctx.userId).Int64("loot", loot).Msg("Steal completed")
 
 		return nil
 	}, nil
 }
 
-func completeStealReturn(ctx context.Context, tx *redis.Tx, world *internal.WorldService, gs *internal.GameState, gsPatch *internal.GameStatePatch, userId string, travel *internal.Travel, travelIndex int) (pipeFn, error) {
-	gsKey := fmt.Sprintf("user:%s:gamestate", userId)
+func completeStealReturn(ctx updateContext, tx *redis.Tx, world *internal.WorldService, travel *internal.Travel, travelIndex int) (pipeFn, error) {
+	gsKey := fmt.Sprintf("user:%s:gamestate", ctx.userId)
 
 	// Update patch with coins
-	if gsPatch.Resources == nil {
-		gsPatch.Resources = &internal.GameStatePatch_ResourcesPatch{}
+	if ctx.gsPatch.Resources == nil {
+		ctx.gsPatch.Resources = &internal.GameStatePatch_ResourcesPatch{}
 	}
-	if gsPatch.Resources.Coins == nil {
-		gsPatch.Resources.Coins = &wrapperspb.Int32Value{}
+	if ctx.gsPatch.Resources.Coins == nil {
+		ctx.gsPatch.Resources.Coins = &wrapperspb.Int32Value{}
 	}
-	gsPatch.Resources.Coins.Value = gsPatch.Resources.Coins.Value + int32(travel.Coins)
+	ctx.gsPatch.Resources.Coins.Value = ctx.gsPatch.Resources.Coins.Value + int32(travel.Coins)
 
 	// Update patch with thieves
-	if gsPatch.Population == nil {
-		gsPatch.Population = &internal.GameStatePatch_PopulationPatch{}
+	if ctx.gsPatch.Population == nil {
+		ctx.gsPatch.Population = &internal.GameStatePatch_PopulationPatch{}
 	}
-	if gsPatch.Population.Thieves == nil {
-		gsPatch.Population.Thieves = &wrapperspb.Int32Value{}
+	if ctx.gsPatch.Population.Thieves == nil {
+		ctx.gsPatch.Population.Thieves = &wrapperspb.Int32Value{}
 	}
-	gsPatch.Population.Thieves.Value = gsPatch.Population.Thieves.Value + travel.Thieves
+	ctx.gsPatch.Population.Thieves.Value = ctx.gsPatch.Population.Thieves.Value + travel.Thieves
 
 	return func(pipe redis.Pipeliner) error {
 		var err error
@@ -201,7 +200,7 @@ func completeStealReturn(ctx context.Context, tx *redis.Tx, world *internal.Worl
 		}
 
 		log.Info().
-			Str("userId", userId).
+			Str("userId", ctx.userId).
 			Int64("loot", travel.Coins).
 			Msg("Steal return completed")
 
@@ -209,25 +208,25 @@ func completeStealReturn(ctx context.Context, tx *redis.Tx, world *internal.Worl
 	}, nil
 }
 
-func completeTravels(ctx context.Context, tx *redis.Tx, world *internal.WorldService, userId string, gs *internal.GameState, gsPatch *internal.GameStatePatch, sendReports *bool) (pipeFn, error) {
-	completedTravels := gs.GetCompletedTravels()
+func completeTravels(ctx updateContext, tx *redis.Tx, world *internal.WorldService) (pipeFn, error) {
+	completedTravels := ctx.gs.GetCompletedTravels()
 	if len(completedTravels) == 0 {
 		return nil, nil
 	}
 
 	// Update patch
-	gsPatch.TravelQueue = gs.TravelQueue[len(completedTravels):]
-	gsPatch.TravelQueuePatched = true
+	ctx.gsPatch.TravelQueue = ctx.gs.TravelQueue[len(completedTravels):]
+	ctx.gsPatch.TravelQueuePatched = true
 
 	pipeFns := []pipeFn{}
 
-	gsKey := fmt.Sprintf("user:%s:gamestate", userId)
+	gsKey := fmt.Sprintf("user:%s:gamestate", ctx.userId)
 
 	// Complete travels
 	for travelIndex, travel := range completedTravels {
 		if travel.Returning {
 			if travel.Thieves > 0 {
-				fn, err := completeStealReturn(ctx, tx, world, gs, gsPatch, userId, travel, travelIndex)
+				fn, err := completeStealReturn(ctx, tx, world, travel, travelIndex)
 				if err != nil {
 					return nil, err
 				}
@@ -235,7 +234,7 @@ func completeTravels(ctx context.Context, tx *redis.Tx, world *internal.WorldSer
 			}
 		} else {
 			if travel.Thieves > 0 {
-				fn, err := completeSteal(ctx, tx, world, gs, gsPatch, userId, travel, travelIndex, sendReports)
+				fn, err := completeSteal(ctx, tx, world, travel, travelIndex)
 				if err != nil {
 					return nil, err
 				}
