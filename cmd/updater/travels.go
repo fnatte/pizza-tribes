@@ -12,7 +12,9 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog/log"
+	"golang.org/x/exp/rand"
 	"golang.org/x/text/message"
+	"gonum.org/v1/gonum/stat/distuv"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
@@ -20,42 +22,54 @@ import (
 var messagePrinter = message.NewPrinter(message.MatchLanguage("en"))
 
 const thiefReportTemplateText = `
+{{if gt .SuccessfulThieves 0}}
 Our heist with {{ .Thieves }} thieves on {{ .TargetUsername }}'s town was successful.
-We got away with {{ .Loot | mprintf "%d" }} coins.
+{{if gt .CaughtThieves 0}}
+{{ .CaughtThieves }} thieves were caught, but {{ .SuccessfulThieves }} thieves got away with {{ .Loot | mprintf "%d" }} coins.
+{{- else}}
+No thieves were caught, and they got away with {{ .Loot | mprintf "%d" }} coins.
+{{- end}}
+{{- else}}
+Our heist on {{ .TargetUsername }} was a failure. All {{ .Thieves }} thieves got caught.
+{{- end}}
 `
 const targetReportTemplateText = `
+{{if gt .SuccessfulThieves 0}}
+{{if gt .CaughtThieves 0}}
+{{.CaughtThieves}} thieves were caught trying to steal from our town, but {{ .SuccessfulThieves }} thieves got away with {{ .Loot | mprintf "%d" }} of our coins!
+{{- else}}
 It looks like someone stole {{ .Loot | mprintf "%d" }} coins from us.
+{{- end}}
+{{- else}}
+{{ .CaughtThieves }} thieves were caught trying to steal from our town.
+{{- end}}
 `
+
 var thiefReportTemplate *template.Template
 var targetReportTemplate *template.Template
 
 type reportTemplateData struct {
 	TargetUsername string
-	Loot int64
-	Thieves int32
+	Loot           int64
+	Thieves        int32
+	SuccessfulThieves int32
+	CaughtThieves int32
 }
 
 type pipeFn func(redis.Pipeliner) error
 
 func init() {
-	var err error
 	tmplFuncMap := template.FuncMap{
 		"mprintf": messagePrinter.Sprintf,
 	}
 
-	thiefReportTemplate, err = template.New("root").
+	thiefReportTemplate = template.Must(template.New("root").
 		Funcs(tmplFuncMap).
-		Parse(thiefReportTemplateText)
-	if err != nil {
-		panic(err)
-	}
+		Parse(thiefReportTemplateText))
 
-	targetReportTemplate, err = template.New("root").
+	targetReportTemplate = template.Must(template.New("root").
 		Funcs(tmplFuncMap).
-		Parse(targetReportTemplateText)
-	if err != nil {
-		panic(err)
-	}
+		Parse(targetReportTemplateText))
 }
 
 func completeSteal(ctx updateContext, tx *redis.Tx, world *internal.WorldService, travel *internal.Travel, travelIndex int) (pipeFn, error) {
@@ -93,60 +107,78 @@ func completeSteal(ctx updateContext, tx *redis.Tx, world *internal.WorldService
 		return nil, fmt.Errorf("failed to complete steal: %w", err)
 	}
 
-	// Calculate loot
-	maxLoot := travel.Thieves * 3_000
+	// Calculate outcome
+	guards := float64(gsTarget.Population.Guards)
+	thieves := float64(travel.Thieves)
+	dist := distuv.Binomial{
+		N:   thieves,
+		P:   thieves / (thieves + guards),
+		Src: rand.NewSource(uint64(time.Now().UnixNano())),
+	}
+	successfulThieves := int32(dist.Rand())
+	caughtThieves := travel.Thieves - successfulThieves
+	maxLoot := successfulThieves * internal.ThiefCapacity
 	loot := int64(internal.MinInt32(maxLoot, gsTarget.Resources.Coins))
 
-	// Calculate arrival time
-	arrivalAt := internal.CalculateArrivalTime(
-		travel.DestinationX, travel.DestinationY,
-		ctx.gs.TownX, ctx.gs.TownY,
-		internal.ThiefSpeed,
-	)
+	// Prepare return travel - but not if all thieves got caught
+	var returnTravelBytes []byte
+	if successfulThieves > 0 {
+		arrivalAt := internal.CalculateArrivalTime(
+			travel.DestinationX, travel.DestinationY,
+			ctx.gs.TownX, ctx.gs.TownY,
+			internal.ThiefSpeed,
+		)
 
-	returnTravel := internal.Travel{
-		ArrivalAt:    arrivalAt,
-		DestinationX: travel.DestinationX,
-		DestinationY: travel.DestinationY,
-		Returning:    true,
-		Thieves:      travel.Thieves,
-		Coins:        loot,
-	}
-	returnTravelBytes, err := protojson.Marshal(&returnTravel)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal travel: %w", err)
-	}
+		returnTravel := internal.Travel{
+			ArrivalAt:    arrivalAt,
+			DestinationX: travel.DestinationX,
+			DestinationY: travel.DestinationY,
+			Returning:    true,
+			Thieves:      successfulThieves,
+			Coins:        loot,
+		}
+		returnTravelBytes, err = protojson.Marshal(&returnTravel)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal travel: %w", err)
+		}
 
-	// Update patch with return travel
-	ctx.gsPatch.TravelQueue = append(ctx.gsPatch.TravelQueue, &returnTravel)
+		// Update patch with return travel
+		ctx.gsPatch.TravelQueue = append(ctx.gsPatch.TravelQueue, &returnTravel)
+	}
 
 	// Build reports
 	tmplData := reportTemplateData{
 		TargetUsername: targetUsername,
-		Loot: loot,
-		Thieves: travel.Thieves,
+		Loot:           loot,
+		Thieves:        travel.Thieves,
+		SuccessfulThieves: successfulThieves,
+		CaughtThieves: caughtThieves,
 	}
 	buf := new(bytes.Buffer)
 	if err = thiefReportTemplate.Execute(buf, &tmplData); err != nil {
 		return nil, fmt.Errorf("failed to get thief report contents: %w", err)
 	}
 	thiefReport := &internal.Report{
-		Id: xid.New().String(),
+		Id:        xid.New().String(),
 		CreatedAt: time.Now().UnixNano(),
-		Title: "Thief report",
-		Content: buf.String(),
-		Unread: true,
+		Title:     "Thief report",
+		Content:   buf.String(),
+		Unread:    true,
 	}
 	buf = new(bytes.Buffer)
 	if err = targetReportTemplate.Execute(buf, &tmplData); err != nil {
 		return nil, fmt.Errorf("failed to get target report contents: %w", err)
 	}
+	targetReportTitle := "We have been robbed!"
+	if successfulThieves == 0 {
+		targetReportTitle = "We caught thieves!"
+	}
 	targetReport := &internal.Report{
-		Id: xid.New().String(),
+		Id:        xid.New().String(),
 		CreatedAt: time.Now().UnixNano(),
-		Title: "We have been robbed!",
-		Content: buf.String(),
-		Unread: true,
+		Title:     targetReportTitle,
+		Content:   buf.String(),
+		Unread:    true,
 	}
 	*ctx.sendReports = true
 
@@ -159,10 +191,12 @@ func completeSteal(ctx updateContext, tx *redis.Tx, world *internal.WorldService
 			return fmt.Errorf("failed to decrease coins from target town: %w", err)
 		}
 
-		// Append return travel
-		if err = internal.RedisJsonArrAppend(pipe, ctx, gsKeyThief,
-			".travelQueue", returnTravelBytes).Err(); err != nil {
-			return fmt.Errorf("failed to append new travel: %w", err)
+		if returnTravelBytes != nil {
+			// Append return travel
+			if err = internal.RedisJsonArrAppend(pipe, ctx, gsKeyThief,
+				".travelQueue", returnTravelBytes).Err(); err != nil {
+				return fmt.Errorf("failed to append new travel: %w", err)
+			}
 		}
 
 		internal.SaveReport(ctx, pipe, ctx.userId, thiefReport)
@@ -253,7 +287,6 @@ func completeTravels(ctx updateContext, tx *redis.Tx, world *internal.WorldServi
 			}
 		}
 	}
-
 
 	return func(pipe redis.Pipeliner) error {
 		// Remove completed travels from queue

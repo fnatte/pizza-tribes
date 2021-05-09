@@ -12,6 +12,8 @@ require (
 	github.com/rs/xid v1.2.1
 	github.com/rs/zerolog v1.21.0
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
-	golang.org/x/text v0.3.3
+	golang.org/x/exp v0.0.0-20191002040644-a1355ae1e2c3
+	golang.org/x/text v0.3.5
+	gonum.org/v1/gonum v0.9.1
 	google.golang.org/protobuf v1.23.0
 )

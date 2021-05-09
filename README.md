@@ -35,7 +35,7 @@ you join the dirty game yourself and send thieves on your competitors!
 
 - [x] Chef
 - [x] Salesmouse
-- [ ] Guard (can be trained but does nothing)
+- [x] Guard
 - [x] Thief
 
 ### Resources
