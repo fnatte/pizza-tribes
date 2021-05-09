@@ -259,7 +259,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderBuilding(lots["111"]?.building)}
+          {renderBuilding(lots["11"]?.building)}
         </g>
         <g
           id="lot10"
