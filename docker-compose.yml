@@ -12,6 +12,12 @@ services:
       "--appendonly yes",
       "--aof-use-rdb-preamble yes",
       "--dir /data"]
+  redisinsight:
+    image: "redislabs/redisinsight"
+    ports:
+      - "8001:8001"
+    volumes:
+      - redisinsight_data:/db
   api:
     image: "ghcr.io/fnatte/pizza-tribes-api:latest"
     build:
@@ -53,4 +59,5 @@ services:
 
 volumes:
   redis_data:
+  redisinsight_data:
   caddy_data:
