@@ -4,9 +4,15 @@ import (
 	"context"
 	"errors"
 	"strconv"
+	"strings"
 
 	"github.com/go-redis/redis/v8"
 )
+
+func IsRedisJsonKeyDoesNotExistError(err error) bool {
+	return strings.Contains(err.Error(), "ERR key") &&
+		strings.Contains(err.Error(), "does not exist")
+}
 
 type TimeseriesDataPoint struct {
 	Timestamp int64

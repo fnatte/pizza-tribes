@@ -14,12 +14,17 @@ import {
 } from "./generated/gamestate";
 import { GameData } from "./generated/game_data";
 import { Report } from "./generated/report";
-import { ServerMessage, ServerMessage_Reports, ServerMessage_User } from "./generated/server_message";
+import {
+  ServerMessage,
+  ServerMessage_Reports,
+  ServerMessage_User,
+} from "./generated/server_message";
 import { Stats } from "./generated/stats";
 import { generateId } from "./utils";
 
 export type Lot = {
   building: Building;
+  tappedAt: string;
 };
 
 export type GameState = {
@@ -53,7 +58,7 @@ type State = {
   fetchGameData: () => Promise<void>;
   start: () => void;
   logout: () => Promise<void>;
-  tap: () => void;
+  tap: (lotId: string) => void;
   constructBuilding: (lotId: string, building: Building) => void;
   train: (education: Education, amount: number) => void;
   steal: (x: number, y: number, amount: number) => void;
@@ -69,13 +74,12 @@ const mergeLots = (
   Object.keys(b).forEach((lotId) => {
     const lot = res[lotId];
     if (b[lotId] !== undefined) {
-      const { building } = b[lotId];
-      if (building !== undefined) {
-        if (lot === undefined) {
-          res[lotId] = { building };
-        } else {
-          lot.building = building;
-        }
+      const { building, tappedAt } = b[lotId];
+      if (lot === undefined) {
+        res[lotId] = { building, tappedAt };
+      } else {
+        lot.building = building;
+        lot.tappedAt = tappedAt;
       }
     }
   });
@@ -141,14 +145,12 @@ export const useStore = create<State>((set, get) => ({
       get().connection?.close();
     }
   },
-  tap: () => {
+  tap: (lotId: string) => {
     const msg = ClientMessage.create({
       id: generateId(),
       type: {
         oneofKind: "tap",
-        tap: {
-          amount: 10,
-        },
+        tap: { lotId },
       },
     });
     get().connection?.send(msg);
@@ -321,9 +323,9 @@ export const useStore = create<State>((set, get) => ({
       })
     );
 
-    set(state => {
+    set((state) => {
       const reports = [...state.reports];
-      const i = reports.findIndex(report => report.id === id);
+      const i = reports.findIndex((report) => report.id === id);
       if (i !== -1) {
         reports[i] = { ...reports[i], unread: false };
       }

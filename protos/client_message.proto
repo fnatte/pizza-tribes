@@ -8,7 +8,7 @@ import "building.proto";
 
 message ClientMessage {
   message Tap {
-    int32 amount = 1;
+    string lotId = 1;
   }
 
   message ConstructBuilding {

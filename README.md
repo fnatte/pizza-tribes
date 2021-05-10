@@ -45,7 +45,7 @@ you join the dirty game yourself and send thieves on your competitors!
 
 ### Actions
 
-- [ ] Click (tap)
+- [x] Click (tap)
 - [x] Construct building
 - [x] Upgrade building
 - [x] Train

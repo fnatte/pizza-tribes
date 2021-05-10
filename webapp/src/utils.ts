@@ -1,6 +1,7 @@
 import { formatDuration, intervalToDuration } from "date-fns";
 import JSBI from "jsbi";
 import { Building } from "./generated/building";
+import { GameState_Population } from "./generated/gamestate";
 import { GameState, Lot } from "./store";
 
 export type RemoveIndex<T> = {
@@ -49,6 +50,16 @@ export const countBuildingsUnderConstruction = (
       2: 0,
       3: 0,
     }
+  );
+};
+
+export const countPopulation = (population: GameState_Population): number => {
+  return (
+    population.chefs +
+    population.guards +
+    population.thieves +
+    population.salesmice +
+    population.uneducated
   );
 };
 

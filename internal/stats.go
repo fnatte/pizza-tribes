@@ -11,7 +11,7 @@ func CalculateStats(gs *GameState) *Stats {
 		return &Stats{}
 	}
 
-	popularity := float64(CountPopulation(gs))
+	popularity := float64(CountPopulation(gs.Population))
 	demandOffpeak := DEMAND_BASE * popularity
 	demandRushHour := (DEMAND_BASE + DEMAND_RUSH_HOUR_BONUS) * popularity
 

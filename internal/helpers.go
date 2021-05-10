@@ -54,14 +54,14 @@ func CountMaxEmployed(buildingCount map[int32]int32) (counts map[int32]int32) {
 	return counts
 }
 
-func CountPopulation(gs *GameState) int32 {
-	if gs.Population == nil {
+func CountPopulation(population *GameState_Population) int32 {
+	if population == nil {
 		return 0
 	}
 
-	return (gs.Population.Uneducated +
-		gs.Population.Chefs +
-		gs.Population.Salesmice +
-		gs.Population.Guards +
-		gs.Population.Thieves)
+	return (population.Uneducated +
+		population.Chefs +
+		population.Salesmice +
+		population.Guards +
+		population.Thieves)
 }

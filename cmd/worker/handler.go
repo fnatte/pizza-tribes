@@ -22,10 +22,7 @@ func (h *handler) Handle(ctx context.Context, senderId string, m *internal.Clien
 
 	switch x := m.Type.(type) {
 	case *internal.ClientMessage_Tap_:
-		log.Info().
-			Str("senderId", senderId).
-			Int32("Amount", x.Tap.Amount).
-			Msg("Received message")
+		err = h.handleTap(ctx, senderId, x.Tap)
 	case *internal.ClientMessage_ConstructBuilding_:
 		h.handleConstructBuilding(ctx, senderId, x.ConstructBuilding)
 	case *internal.ClientMessage_Train_:

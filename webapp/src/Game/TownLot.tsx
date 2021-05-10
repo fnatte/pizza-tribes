@@ -2,12 +2,66 @@ import React, { useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { classnames } from "tailwindcss-classnames";
 import { Building } from "../generated/building";
-import { useStore } from "../store";
+import { Lot, useStore } from "../store";
 import ConstructBuilding from "./ConstructBuilding";
 import School from "./School";
 import { ReactComponent as SvgKitchen } from "../../images/kitchen.svg";
 import { ReactComponent as SvgShop } from "../../images/shop.svg";
 import { ReactComponent as SvgHouse } from "../../images/house.svg";
+import JSBI from "jsbi";
+import styles from "../styles";
+import { formatDistanceToNow } from "date-fns";
+import {countPopulation} from "../utils";
+
+const TapSection: React.VFC<{ lotId: string, lot: Lot }> = ({ lot, lotId }) => {
+  const population = useStore(state => state.gameState.population);
+
+  // convert lot.tappedAt from ns ms
+  const tappedAt = JSBI.toNumber(
+    JSBI.divide(JSBI.BigInt(lot.tappedAt), JSBI.BigInt(1e6))
+  );
+  const nextTapAt = tappedAt + 60_000 * 15;
+  const canTap = nextTapAt < Date.now();
+
+  const tap = useStore(state => state.tap);
+
+  let tapResource;
+  let tapGains;
+  switch (lot.building) {
+    case Building.KITCHEN:
+      tapResource = "pizzas";
+      tapGains = 100 * countPopulation(population);
+      break;
+    case Building.SHOP:
+      tapResource = "coins";
+      tapGains = 50 * countPopulation(population);
+      break;
+    default:
+      return null;
+  }
+
+  const onClick = () => {
+    tap(lotId);
+  };
+
+  return (
+    <section className={classnames("m-4", "p-4", "bg-green-200")}>
+      <button className={styles.button} disabled={!canTap} onClick={onClick}>
+        Tap
+      </button>{" "}
+      <span>(+{tapGains} {tapResource})</span>
+      {!canTap && (
+        <div>
+          Next tap in{" "}
+          {formatDistanceToNow(new Date(nextTapAt), {
+            includeSeconds: true,
+            addSuffix: true,
+          })}
+        </div>
+      )}
+    </section>
+  );
+};
 
 function TownLot() {
   const { id } = useParams();
@@ -35,6 +89,7 @@ function TownLot() {
           <p className={classnames("my-4", "text-gray-700")}>
             Wow! It's hot in here. This is were you chefs are making pizza.
           </p>
+          <TapSection lot={lot} lotId={id} />
           <p className={classnames("my-4", "text-gray-700")}>
             There are currently{" "}
             <span className={classnames("font-bold", "text-gray-900")}>
@@ -70,6 +125,7 @@ function TownLot() {
           <p className={classnames("my-4", "text-gray-700")}>
             This is were your salesmice work to sell pizzas.
           </p>
+          <TapSection lot={lot} lotId={id} />
           <p className={classnames("my-4", "text-gray-700")}>
             There are currently{" "}
             <span className={classnames("font-bold", "text-gray-900")}>
@@ -86,9 +142,7 @@ function TownLot() {
           </p>
         </>
       )}
-      {lot?.building === Building.SCHOOL && (
-          <School />
-      )}
+      {lot?.building === Building.SCHOOL && <School />}
     </div>
   );
 }

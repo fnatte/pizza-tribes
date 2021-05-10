@@ -15,6 +15,7 @@ func (gs *GameState) ToServerMessage() *ServerMessage {
 	for lotId, lot := range gs.Lots {
 		lotsPatch[lotId] = &GameStatePatch_LotPatch{
 			Building: lot.Building,
+			TappedAt: lot.TappedAt,
 		}
 	}
 
