@@ -1,0 +1,24 @@
+{
+    "app_name": "Pizza Tribes",
+    "description": "A multiplayer persistent browser-based clicker real-time strategy game.",
+    "hidden": "false",
+    "rank": "20",
+    "type": "Full App",
+    "contributed_by": "Community",
+    "repo_url": "https://github.com/fnatte/pizza-tribes",
+    "download_url": "https://github.com/fnatte/pizza-tribes/archive/refs/heads/main.zip",
+    "hosted_url": "https://pizzatribes.teus.dev",
+    "quick_deploy": "false",
+    "deploy_buttons": [],
+    "language": ["Go", "TypeScript"],
+    "redis_commands": ["GET","SET","JSON.SET","JSON.GET", "JSON.NUMINCRBY", "JSON.ARRPOP", "JSON.ARRAPPEND", "JSON.ARRTRIM", "TS.CREATE", "TS.INFO", "TS.ADD", "TS.RANGE", "BLPOP", "RPUSH", "WATCH", "EXEC", "HGET", "HMGET", "HSET", "ZREM", "ZRANGE"],
+    "redis_features": [],
+    "redis_modules": ["RediJSON", "RedisTimeseries"],
+    "app_image_urls": [
+        "https://github.com/fnatte/pizza-tribes/raw/main/webapp/images/logo-wide.png"
+    ],
+    "youtube_url": "",
+    "special_tags": ["Hackathon"],
+    "verticals": [],
+    "markdown": "https://raw.githubusercontent.com/fnatte/pizza-tribes/main/README.md"
+}
