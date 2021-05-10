@@ -1,4 +1,4 @@
-import { format, fromUnixTime } from "date-fns";
+import { format } from "date-fns";
 import React, { useState } from "react";
 import { useAsync, useInterval, useMedia } from "react-use";
 import {
@@ -13,9 +13,7 @@ import {
 import { classnames } from "tailwindcss-classnames";
 import { TimeseriesData } from "../generated/timeseries";
 import { useStore } from "../store";
-
-const numberFormat = new Intl.NumberFormat();
-const formatNumber = (n: number) => numberFormat.format(n);
+import {formatNumber} from "../utils";
 
 const StatsView: React.FC<{}> = () => {
   const { coins, pizzas } = useStore((state) => state.gameState.resources);

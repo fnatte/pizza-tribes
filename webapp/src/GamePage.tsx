@@ -14,6 +14,7 @@ import LeaderboardView from "./Game/LeaderboardView";
 import { useClickAway, useMedia } from "react-use";
 import ListReportsView from "./Game/reports/ListReportsView";
 import ShowReportView from "./Game/reports/ShowReportView";
+import {formatNumber} from "./utils";
 
 type ClockState = {
   formatted: string;
@@ -247,10 +248,10 @@ function ResourceBar() {
       )}
     >
       <span className={classnames("px-6", "mb-2")}>
-        <CoinEmoji /> {coins.toString()}
+        <CoinEmoji /> {formatNumber(coins)}
       </span>
       <span className={classnames("px-6", "mb-2")}>
-        <PizzaEmoji /> {pizzas.toString()}
+        <PizzaEmoji /> {formatNumber(pizzas)}
       </span>
       <span className={classnames("px-6", "mb-2")}>
         <span className={classnames("px-2")}>

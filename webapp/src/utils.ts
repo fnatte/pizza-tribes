@@ -98,3 +98,7 @@ export const parseDateNano = (ns: string) => {
     JSBI.toNumber(JSBI.divide(JSBI.BigInt(ns), JSBI.BigInt(1e6)))
   );
 };
+
+const numberFormat = new Intl.NumberFormat();
+export const formatNumber = (n: number) => numberFormat.format(n);
+
