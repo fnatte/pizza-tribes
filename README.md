@@ -169,7 +169,8 @@ A (simplified) typical flow is as follows:
 
 #### Client Messages
 
-The following is not the exact definitions, they are here to describe on a higher-level what messages that exist and roughly the data they contain.
+The following is not the exact definitions, they are here to describe on a higher-level what messages that exist and roughly the data they contain. See [/protos/client_message.proto](/protos/client_message.proto) for full definition.
+
 
 | Id  |  Type                 |  Payload           |
 |-----|-----------------------|--------------------|
@@ -182,7 +183,7 @@ The following is not the exact definitions, they are here to describe on a highe
 
 #### Server Messages
 
-The following is not the exact definitions, they are here to describe on a higher-level what messages that exist and roughly the data they contain.
+The following is not the exact definitions, they are here to describe on a higher-level what messages that exist and roughly the data they contain. See [/protos/server_message.proto](/protos/server_message.proto) for full definition.
 
 |  Type                 |  Payload           |
 |-----------------------|--------------------|
