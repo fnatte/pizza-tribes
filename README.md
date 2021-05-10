@@ -5,6 +5,9 @@ Play at: https://pizzatribes.teus.dev
 This project is aimed to be registered for [RedisConf 2021
 Hackathon](https://hackathons.redislabs.com/hackathons/build-on-redis-hackathon).
 
+<img src="https://github.com/fnatte/pizza-tribes/raw/main/docs/screenshot.png" width="600" />
+
+
 ## Project Idea
 
 Pizza Tribes is a multiplayer persistent browser-based clicker real-time
