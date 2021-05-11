@@ -5,6 +5,10 @@ type Message struct {
 	Body      []byte
 }
 
+// The Hub maintain all web socket clients. When started (using Run()),
+// the Hub will pass messages from the message channel to the corresponding
+// recipient. The SendTo() func can be used to place messages on the message
+// channel.
 type Hub struct {
 	clients    map[*Client]bool
 	messages   chan *Message
@@ -29,10 +33,15 @@ func (h *Hub) userIds() map[string]bool {
 	return accIds
 }
 
+// Sends bytes to a recipient (user id) by putting a message on the messages
+// channel. If the Hub is running (using Run()), the messages will be passed
+// to the corresponding Client.
 func (h *Hub) SendTo(recipient string, body []byte) {
 	h.messages <- &Message{Recipient: recipient, Body: body}
 }
 
+// Starts the Hub (and blocks). It will pull messages and send them to the
+// corresponding client.
 func (h *Hub) Run() {
 	for {
 		select {
@@ -44,6 +53,7 @@ func (h *Hub) Run() {
 				close(client.send)
 			}
 		case msg := <-h.messages:
+			// TODO: should probably optimize this
 			for client := range h.clients {
 				if client.userId == msg.Recipient {
 					select {

@@ -16,7 +16,7 @@ type LeaderboardController struct {
 	auth *AuthService
 }
 
-func (c *LeaderboardController) Router() http.Handler {
+func (c *LeaderboardController) Handler() http.Handler {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

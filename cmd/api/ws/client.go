@@ -34,6 +34,8 @@ type Client struct {
 	send chan []byte
 }
 
+// Read pump loop. Reads messages from the web socket connection and invokes
+// the specified handler whenever a message is received.
 func (c *Client) reader(ctx context.Context, handler ClientMessageHandler) {
 	defer c.ws.Close()
 	c.ws.SetReadLimit(readLimit)
@@ -53,6 +55,8 @@ func (c *Client) reader(ctx context.Context, handler ClientMessageHandler) {
 	}
 }
 
+// Write pump loop. Writes bytes from the send chan to the actual
+// web socket connection.
 func (c *Client) writer() {
 	pingTicker := time.NewTicker(pingPeriod)
 	defer func() {
@@ -81,10 +85,14 @@ func (c *Client) writer() {
 	}
 }
 
+// Send the specified bytes to the web socket connection by placing the bytes
+// on the send channel. The writer() pump will pick up these bytes and send them
+// on the web socket connection.
 func (c *Client) Send(b []byte) {
 	c.send <- b
 }
 
+// Get the user id of this client
 func (c *Client) UserId() string {
 	return c.userId
 }

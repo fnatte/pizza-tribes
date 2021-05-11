@@ -15,7 +15,7 @@ type UserController struct {
 	auth *AuthService
 }
 
-func (c *UserController) Router() http.Handler {
+func (c *UserController) Handler() http.Handler {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/{userId}", func(w http.ResponseWriter, r *http.Request) {

@@ -60,8 +60,6 @@ func (e *WsEndpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Debug().Msg("WS Upgraded")
-
 	// The browser does not allow reading the HTTP response status code on
 	// Web Sockets because then it could be used to probe non-ws endpoints.
 	// We make the authentication check after upgrading so that we can
@@ -78,8 +76,7 @@ func (e *WsEndpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Debug().Msg("WS Authorized")
-
+	// Read user id from request context
 	userId, ok := r.Context().Value("userId").(string)
 	if !ok {
 		log.Warn().Msg("Failed to get account id")
@@ -94,8 +91,6 @@ func (e *WsEndpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		send:   make(chan []byte, 512),
 	}
 	client.hub.register <- client
-
-	log.Debug().Msg("WS Registered")
 
 	err = e.handler.HandleInit(r.Context(), client)
 	if err != nil {

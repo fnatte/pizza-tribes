@@ -14,7 +14,7 @@ type TimeseriesService struct {
 	auth *AuthService
 }
 
-func (s *TimeseriesService) Router() http.Handler {
+func (s *TimeseriesService) Handler() http.Handler {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/data", func(w http.ResponseWriter, r *http.Request) {

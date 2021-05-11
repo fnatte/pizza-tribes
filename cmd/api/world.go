@@ -16,7 +16,7 @@ type WorldController struct {
 	auth *AuthService
 }
 
-func (c *WorldController) Router() http.Handler {
+func (c *WorldController) Handler() http.Handler {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/zone", func(w http.ResponseWriter, r *http.Request) {

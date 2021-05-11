@@ -18,6 +18,21 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+/*
+
+This is an implementation of a simple user system (with login/logout/register).
+- Users are stored in Redis
+- Authentication is done using JWTs
+- Passwords are hashed using bcrypt
+
+
+Redis details
+
+- Users are stored as hashes in user:{userid}
+- User ids can be looked up using username:{username}
+
+*/
+
 type registerRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -35,10 +50,10 @@ type userDbo struct {
 }
 
 type AuthService struct {
-	rdb *redis.Client
+	rdb redis.UniversalClient
 }
 
-func NewAuthService(rdb *redis.Client) *AuthService {
+func NewAuthService(rdb redis.UniversalClient) *AuthService {
 	return &AuthService{
 		rdb: rdb,
 	}
@@ -115,8 +130,7 @@ func (a *AuthService) CreateToken(userId string) (string, error) {
 
 	tokenString, err := t.SignedString(getJwtSigningKey())
 	if err != nil {
-		fmt.Errorf("failed to create token: %s", err.Error())
-		return "", err
+		return "", fmt.Errorf("failed to create token: %w", err)
 	}
 
 	return tokenString, nil
@@ -157,7 +171,7 @@ func (a *AuthService) Authorize(r *http.Request) error {
 	return nil
 }
 
-func (a *AuthService) Router() http.Handler {
+func (a *AuthService) Handler() http.Handler {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
