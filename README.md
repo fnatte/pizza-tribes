@@ -1,11 +1,12 @@
 # Pizza Tribes
 
+<img src="https://github.com/fnatte/pizza-tribes/raw/main/webapp/images/logo-wide.png" width="400" />
+
 **Play at: https://pizzatribes.teus.dev**
 
 This project is aimed to be registered for [RedisConf 2021
 Hackathon](https://hackathons.redislabs.com/hackathons/build-on-redis-hackathon).
 
-<img src="https://github.com/fnatte/pizza-tribes/raw/main/docs/screenshot.png" width="600" />
 
 *Pizza Tribes* is a multiplayer persistent browser-based clicker real-time
 strategy game. The gameplay is a combination of a [clicker
@@ -21,6 +22,11 @@ proclaimed as the winner.
 To keep your profits intact, you must train part of your population as
 guards to protect yourself from being robbed by other players. And maybe,
 you join the dirty game yourself and send thieves on your competitors!
+
+<figure>
+	<img alt="screenshot of Pizza Tribes" src="https://github.com/fnatte/pizza-tribes/raw/main/docs/screenshot.png" width="500" />
+	<figcaption>Screenshot of Pizza Tribes</figcaption>
+</figure>
 
 
 ## Table of Contents
