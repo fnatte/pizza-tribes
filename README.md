@@ -1,16 +1,13 @@
 # Pizza Tribes
 
-Play at: https://pizzatribes.teus.dev
+**Play at: https://pizzatribes.teus.dev**
 
 This project is aimed to be registered for [RedisConf 2021
 Hackathon](https://hackathons.redislabs.com/hackathons/build-on-redis-hackathon).
 
 <img src="https://github.com/fnatte/pizza-tribes/raw/main/docs/screenshot.png" width="600" />
 
-
-## Project Idea
-
-Pizza Tribes is a multiplayer persistent browser-based clicker real-time
+*Pizza Tribes* is a multiplayer persistent browser-based clicker real-time
 strategy game. The gameplay is a combination of a [clicker
 game](https://en.wikipedia.org/wiki/Incremental_game) and a [real-time
 strategy
@@ -24,6 +21,35 @@ proclaimed as the winner.
 To keep your profits intact, you must train part of your population as
 guards to protect yourself from being robbed by other players. And maybe,
 you join the dirty game yourself and send thieves on your competitors!
+
+
+## Table of Contents
+
+* [Pizza Tribes](#pizza-tribes)
+   * [Tech Stack](#tech-stack)
+   * [Game Elements](#game-elements)
+      * [Buildings](#buildings)
+      * [Education / Roles](#education--roles)
+      * [Resources](#resources)
+      * [Actions](#actions)
+      * [Other Features](#other-features)
+   * [Architecture and Use of Redis](#architecture-and-use-of-redis)
+      * [Overview](#overview)
+      * [Client-server Communication](#client-server-communication)
+         * [Web Sockets](#web-sockets)
+      * [Updater (Delayed Tasks)](#updater-delayed-tasks)
+      * [Client-Server Protocol](#client-server-protocol)
+         * [Client Messages](#client-messages)
+         * [Server Messages](#server-messages)
+
+
+## Tech Stack
+
+- The Web App is be built with [TypeScript](https://www.typescriptlang.org/), _React_, [Zustand](https://github.com/pmndrs/zustand)
+- The Web API and workers are be built with [Go](https://golang.org/) and [**Redis**](https://redis.io)
+- Models for persistence and client/server messages are defined using [Protocol Buffers](https://developers.google.com/protocol-buffers/)
+
+See [go.mod](go.mod) and [package.json](webapp/package.json) for a list used libraries.
 
 ## Game Elements
 
@@ -126,7 +152,7 @@ A typical Web socket flow goes as follows:
 Web socket communication heavily relies on Redis for pushing and pulling
 messages. The API does not do any game logic but simply validates client
 messages before pushing them to Redis. This allows for running multiple
-game workers to do the "heavy" lifting (not that heavy really :)). The
+game workers to do the  lifting (not that heavy really :)). The
 workers can be horizontally scaled while relying on Redis performance to
 push messages through the system. Since Web Sockets are stateful
 bidirectional communication over a single TCP connection, it is not easy
@@ -193,9 +219,22 @@ The following is not the exact definitions, they are here to describe on a highe
 |  "STATE_CHANGE"       | ...game_state      |
 |  "RESPONSE"           | request_id, result |
 
-## Tech Stack
+## File Tree
 
-- The Web App is/will be built with [TypeScript](https://www.typescriptlang.org/), _React_, [Zustand](https://github.com/pmndrs/zustand)
-- The Web API and workers are/will be built with [Go](https://golang.org/) and [**Redis**](https://redis.io)
-- Models for persistence and client/server messages are defined using [Protocol Buffers](https://developers.google.com/protocol-buffers/)
-
+```
+.
+├── cmd (golang source files for each command/process)
+│   ├── api
+│   ├── migrator
+│   ├── updater
+│   └── worker
+├── docs
+├── internal (shared golang source files)
+├── protos (protobuf files used by both backend and frontend)
+└── webapp (frontend application)
+    ├── fonts
+    ├── images
+    ├── plugins
+    ├── src
+    └── tools
+```
