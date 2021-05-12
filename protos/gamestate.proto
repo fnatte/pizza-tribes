@@ -17,6 +17,7 @@ message Construction {
   int64 complete_at = 1;
   string lotId = 2;
   Building building = 3;
+  int32 level = 4;
 }
 
 message Travel {
@@ -37,6 +38,7 @@ message GameState {
   message Lot {
     Building building = 1;
     int64 tapped_at = 2;
+    int32 level = 3;
   }
 
   message Population {
@@ -67,6 +69,7 @@ message GameStatePatch {
   message LotPatch {
     Building building = 1;
     int64 tapped_at = 2;
+    int32 level = 3;
   }
 
   message PopulationPatch {

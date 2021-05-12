@@ -67,10 +67,10 @@ const ConstructBuilding = ({ lotId }: Props) => {
           if (buildingCounts[id] + buildingConstrCounts[id] === 0) {
             discountCost = 0;
             discountText = "First one is free and fast!";
-            reducedTime = Math.ceil(buildings[id].constructionTime / 100);
+            reducedTime = Math.ceil(buildings[id].levelInfos[0].constructionTime / 100);
           }
 
-          const canAfford = coins >= (discountCost ?? buildings[id].cost);
+          const canAfford = coins >= (discountCost ?? buildings[id].levelInfos[0].cost);
 
           return (
             <div className={classnames("flex", "mb-8")} key={id}>
@@ -94,13 +94,13 @@ const ConstructBuilding = ({ lotId }: Props) => {
                                   "text-sm"
                                 )}
                               >
-                                {numberFormat.format(buildings[id].cost)} coins
+                                {numberFormat.format(buildings[id].levelInfos[0].cost)} coins
                               </span>
                               <span>{discountCost} coins</span>
                             </>
                           ) : (
                             <span>
-                              {numberFormat.format(buildings[id].cost)} coins
+                              {numberFormat.format(buildings[id].levelInfos[0].cost)} coins
                             </span>
                           )}
                         </span>
@@ -121,14 +121,14 @@ const ConstructBuilding = ({ lotId }: Props) => {
                                   "text-sm"
                                 )}
                               >
-                                {buildings[id].constructionTime}s
+                                {buildings[id].levelInfos[0].constructionTime}s
                               </span>
                               <span>{formatDurationShort(reducedTime)}</span>
                             </>
                           ) : (
                             <span>
                               {formatDurationShort(
-                                buildings[id].constructionTime
+                                buildings[id].levelInfos[0].constructionTime
                               )}
                             </span>
                           )}

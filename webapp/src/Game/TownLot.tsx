@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { useParams } from "react-router-dom";
-import { classnames } from "tailwindcss-classnames";
+import { classnames, TArg } from "tailwindcss-classnames";
 import { Building } from "../generated/building";
 import { Lot, useStore } from "../store";
 import ConstructBuilding from "./ConstructBuilding";
@@ -11,10 +11,14 @@ import { ReactComponent as SvgHouse } from "../../images/house.svg";
 import JSBI from "jsbi";
 import styles from "../styles";
 import { formatDistanceToNow } from "date-fns";
-import {countPopulation} from "../utils";
+import { countPopulation, formatDurationShort, formatNumber } from "../utils";
 
-const TapSection: React.VFC<{ lotId: string, lot: Lot }> = ({ lot, lotId }) => {
-  const population = useStore(state => state.gameState.population);
+const title = classnames("text-lg", "md:text-xl", "mb-2");
+const label = classnames("text-xs", "md:text-sm", "mr-1");
+const value = classnames("text-sm", "md:text-lg", "ml-1");
+
+const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
+  const population = useStore((state) => state.gameState.population);
 
   // convert lot.tappedAt from ns ms
   const tappedAt = JSBI.toNumber(
@@ -23,7 +27,7 @@ const TapSection: React.VFC<{ lotId: string, lot: Lot }> = ({ lot, lotId }) => {
   const nextTapAt = tappedAt + 60_000 * 15;
   const canTap = nextTapAt < Date.now();
 
-  const tap = useStore(state => state.tap);
+  const tap = useStore((state) => state.tap);
 
   let tapResource;
   let tapGains;
@@ -49,7 +53,9 @@ const TapSection: React.VFC<{ lotId: string, lot: Lot }> = ({ lot, lotId }) => {
       <button className={styles.button} disabled={!canTap} onClick={onClick}>
         Tap
       </button>{" "}
-      <span>(+{tapGains} {tapResource})</span>
+      <span>
+        (+{tapGains} {tapResource})
+      </span>
       {!canTap && (
         <div>
           Next tap in{" "}
@@ -59,6 +65,77 @@ const TapSection: React.VFC<{ lotId: string, lot: Lot }> = ({ lot, lotId }) => {
           })}
         </div>
       )}
+    </section>
+  );
+};
+
+const UpgradeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
+  lot,
+  lotId,
+}) => {
+  const coins = useStore((state) => state.gameState.resources.coins);
+  const constructionQueue = useStore(
+    (state) => state.gameState.constructionQueue
+  );
+  const gameData = useStore((state) => state.gameData);
+  const buildingInfo = gameData?.buildings[lot.building];
+  const upgradeBuilding = useStore((state) => state.upgradeBuilding);
+
+  if (buildingInfo == null) {
+    return null;
+  }
+
+  if (lot.level + 1 >= buildingInfo.levelInfos.length) {
+    return (
+      <section className={classnames("m-4", "p-4", "bg-green-200")}>
+        <span>Already at max level</span>
+      </section>
+    );
+  }
+
+  if (constructionQueue.some((x) => x.lotId === lotId)) {
+    return (
+      <section className={classnames("m-4", "p-4", "bg-green-200")}>
+        <span>This building is being upgraded.</span>
+      </section>
+    );
+  }
+
+  const onClick = () => {
+    upgradeBuilding(lotId);
+  };
+
+  const { cost, constructionTime } = buildingInfo.levelInfos[lot.level + 1];
+
+  const canAfford = coins >= cost;
+
+  return (
+    <section className={classnames("m-4", "p-4", "bg-green-200")}>
+      <table>
+        <tbody>
+          <tr>
+            <td className={classnames(label as TArg, "pr-2")}>Cost:</td>
+            <td className={classnames(value as TArg, "pr-2")}>
+              {formatNumber(cost)} coins
+            </td>
+          </tr>
+          <tr>
+            <td className={classnames(label as TArg, "pr-2")}>Build time:</td>
+            <td className={classnames(value as TArg, "pr-2")}>
+              {formatDurationShort(constructionTime)}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <hr className={classnames("border-t-2", "border-green-300", "my-2")} />
+      {!canAfford && (
+        <div className={classnames("m-2", "text-sm", "text-red-800")}>
+          Not enough coins
+        </div>
+      )}
+      <button className={styles.button} disabled={!canAfford} onClick={onClick}>
+        Upgrade to level {lot.level + 2}
+      </button>
     </section>
   );
 };
@@ -84,7 +161,7 @@ function TownLot() {
       {!lot && <ConstructBuilding lotId={id} />}
       {lot?.building === Building.KITCHEN && (
         <>
-          <h2>Kitchen</h2>
+          <h2>Kitchen (level {lot.level + 1})</h2>
           <SvgKitchen width={100} height={100} />
           <p className={classnames("my-4", "text-gray-700")}>
             Wow! It's hot in here. This is were you chefs are making pizza.
@@ -102,25 +179,28 @@ function TownLot() {
             .
           </p>
           <p className={classnames("my-4", "text-gray-700")}>
-            If you build more kitchens you can have even more employed chefs!
+            If you upgrade or build more kitchens you can have even more
+            employed chefs!
           </p>
+          <UpgradeSection lot={lot} lotId={id} />
         </>
       )}
       {lot?.building === Building.HOUSE && (
         <>
-          <h2>House</h2>
+          <h2>House (level {lot.level + 1})</h2>
           <SvgHouse height={50} width={50} />
           <p className={classnames("my-4", "text-gray-700")}>
             Up to 10 mice can live in this small house.
           </p>
           <p className={classnames("my-4", "text-gray-700")}>
-            If you build more houses your population will grow.
+            If you upgrade or build more houses your population will grow.
           </p>
+          <UpgradeSection lot={lot} lotId={id} />
         </>
       )}
       {lot?.building === Building.SHOP && (
         <>
-          <h2>Shop</h2>
+          <h2>Shop (level {lot.level + 1})</h2>
           <SvgShop height={100} width={100} />
           <p className={classnames("my-4", "text-gray-700")}>
             This is were your salesmice work to sell pizzas.
@@ -138,8 +218,10 @@ function TownLot() {
             .
           </p>
           <p className={classnames("my-4", "text-gray-700")}>
-            If you build more shops you can have even more employed chefs!
+            If you upgrade or build more shops you can have even more employed
+            chefs!
           </p>
+          <UpgradeSection lot={lot} lotId={id} />
         </>
       )}
       {lot?.building === Building.SCHOOL && <School />}

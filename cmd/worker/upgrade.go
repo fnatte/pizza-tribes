@@ -12,7 +12,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-func (h *handler) handleConstructBuilding(ctx context.Context, senderId string, m *internal.ClientMessage_ConstructBuilding) {
+func (h *handler) handleUpgrade(ctx context.Context, senderId string, m *internal.ClientMessage_UpgradeBuilding) error {
 	gsKey := fmt.Sprintf("user:%s:gamestate", senderId)
 
 	var gs internal.GameState
@@ -28,18 +28,23 @@ func (h *handler) handleConstructBuilding(ctx context.Context, senderId string, 
 			return err
 		}
 
-		buildingInfo := internal.FullGameData.Buildings[int32(m.Building)]
-		buildingCount := internal.CountBuildings(&gs)
-		buildingConstrCount := internal.CountBuildingsUnderConstruction(&gs)
-
-		cost := buildingInfo.LevelInfos[0].Cost
-		constructionTime := buildingInfo.LevelInfos[0].ConstructionTime
-
-		// The first building of each type is free and built 100 times faster
-		if buildingCount[int32(m.Building)]+buildingConstrCount[int32(m.Building)] == 0 {
-			cost = 0
-			constructionTime = int32(float64(constructionTime)/100.0) + 1
+		for _, constr := range(gs.ConstructionQueue) {
+			if constr.LotId == m.LotId {
+				return errors.New("the building is under construction")
+			}
 		}
+
+		lot := gs.Lots[m.LotId]
+		if lot == nil {
+			return errors.New("no building in lot")
+		}
+
+		buildingInfo := internal.FullGameData.Buildings[int32(lot.Building)]
+		if int(lot.Level) + 1 >= len(buildingInfo.LevelInfos) {
+			return errors.New("building already max level")
+		}
+		cost := buildingInfo.LevelInfos[lot.Level + 1].Cost
+		constructionTime := buildingInfo.LevelInfos[lot.Level + 1].ConstructionTime
 
 		if gs.Resources.Coins < cost {
 			return errors.New("Not enough coins")
@@ -68,7 +73,8 @@ func (h *handler) handleConstructBuilding(ctx context.Context, senderId string, 
 			construction := internal.Construction{
 				CompleteAt: completeAt,
 				LotId:      m.LotId,
-				Building:   m.Building,
+				Building:   lot.Building,
+				Level: lot.Level + 1,
 			}
 
 			b, err := protojson.Marshal(&construction)
@@ -96,11 +102,13 @@ func (h *handler) handleConstructBuilding(ctx context.Context, senderId string, 
 
 	err := h.rdb.Watch(ctx, txf, gsKey)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to place on construction queue")
-		return
+		return fmt.Errorf("failed to place on construction queue: %w", err)
 	}
 
 	internal.SetNextUpdate(h.rdb, ctx, senderId, &gs)
 
 	h.sendFullStateUpdate(ctx, senderId)
+
+	return nil
 }
+

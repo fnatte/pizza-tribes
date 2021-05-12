@@ -4,7 +4,7 @@ import { classnames, TArg, TClasses } from "tailwindcss-classnames";
 import { Education } from "../generated/education";
 import { GameState_Population } from "../generated/gamestate";
 import { useStore } from "../store";
-import { countBuildings } from "../utils";
+import { countBuildings, countMaxEmployed } from "../utils";
 
 const getPopulationKey = (id: number): keyof GameState_Population | null => {
   switch (id) {
@@ -38,6 +38,7 @@ const Population: React.FC<{ className?: string }> = ({ className }) => {
 
   const educations = gameData?.educations ?? {};
   const buildings = gameData?.buildings ?? {};
+  const maxEmployed = gameData && countMaxEmployed(lots, gameData);
 
   return (
     <div
@@ -88,6 +89,10 @@ const Population: React.FC<{ className?: string }> = ({ className }) => {
                 const popKey = getPopulationKey(id);
                 const pop = (popKey && population[popKey].toString()) ?? "0";
                 const education = educations[id];
+                const max =
+                  maxEmployed &&
+                  education.employer !== undefined &&
+                  maxEmployed[education.employer];
 
                 return (
                   <tr key={id}>
@@ -96,11 +101,7 @@ const Population: React.FC<{ className?: string }> = ({ className }) => {
                     </td>
                     <td className={classnames("p-2")}>
                       {education.employer !== undefined
-                        ? `${pop.toString()} / ${
-                            (buildings[education.employer].employer
-                              ?.maxWorkforce ?? 0) *
-                            buildingCount[education.employer]
-                          }`
+                        ? `${pop.toString()} / ${max}`
                         : pop.toString()}
                     </td>
                   </tr>

@@ -4,7 +4,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-func NewInt64(i int64) *int64 { return &i }
+func NewInt64(i int64) *int64    { return &i }
 func NewString(s string) *string { return &s }
 
 var protojsonu = protojson.UnmarshalOptions{
@@ -41,17 +41,27 @@ func MinInt32(a, b int32) int32 {
 	return b
 }
 
-func CountMaxEmployed(buildingCount map[int32]int32) (counts map[int32]int32) {
+func CountMaxEmployed(gs *GameState) (counts map[int32]int32) {
 	counts = map[int32]int32{}
-	buildings := FullGameData.Buildings
-	for k := range Building_name {
-		employer := buildings[k].Employer
-		if employer != nil {
-			maxWorkforce := employer.MaxWorkforce
-			counts[k] = buildingCount[k] * maxWorkforce
+	for _, lot := range gs.Lots {
+		info := FullGameData.Buildings[int32(lot.Building)]
+		if info != nil && info.LevelInfos[lot.Level].Employer != nil {
+			counts[int32(lot.Building)] = counts[int32(lot.Building)] +
+				info.LevelInfos[lot.Level].Employer.MaxWorkforce
 		}
 	}
 	return counts
+}
+
+func CountMaxPopulation(gs *GameState) (count int32) {
+	for _, lot := range gs.Lots {
+		info := FullGameData.Buildings[int32(lot.Building)]
+		if info != nil && info.LevelInfos[lot.Level].Residence != nil {
+			count = count +
+				info.LevelInfos[lot.Level].Residence.Beds
+		}
+	}
+	return
 }
 
 func CountTownPopulation(population *GameState_Population) int32 {
@@ -68,7 +78,7 @@ func CountTownPopulation(population *GameState_Population) int32 {
 
 func CountTravellingPopulation(travelQueue []*Travel) int32 {
 	var count int32 = 0
-	for _, t := range(travelQueue) {
+	for _, t := range travelQueue {
 		count = count + t.Thieves
 	}
 

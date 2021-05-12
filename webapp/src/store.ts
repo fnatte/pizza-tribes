@@ -25,6 +25,7 @@ import { generateId } from "./utils";
 export type Lot = {
   building: Building;
   tappedAt: string;
+  level: number;
 };
 
 export type GameState = {
@@ -60,6 +61,7 @@ type State = {
   logout: () => Promise<void>;
   tap: (lotId: string) => void;
   constructBuilding: (lotId: string, building: Building) => void;
+  upgradeBuilding: (lotId: string) => void;
   train: (education: Education, amount: number) => void;
   steal: (x: number, y: number, amount: number) => void;
   readReport: (id: string) => void;
@@ -74,12 +76,13 @@ const mergeLots = (
   Object.keys(b).forEach((lotId) => {
     const lot = res[lotId];
     if (b[lotId] !== undefined) {
-      const { building, tappedAt } = b[lotId];
+      const { building, tappedAt, level } = b[lotId];
       if (lot === undefined) {
-        res[lotId] = { building, tappedAt };
+        res[lotId] = { building, tappedAt, level };
       } else {
         lot.building = building;
         lot.tappedAt = tappedAt;
+        lot.level = level;
       }
     }
   });
@@ -277,6 +280,19 @@ export const useStore = create<State>((set, get) => ({
           oneofKind: "constructBuilding",
           constructBuilding: {
             building,
+            lotId,
+          },
+        },
+      })
+    );
+  },
+  upgradeBuilding: (lotId) => {
+    get().connection?.send(
+      ClientMessage.create({
+        id: generateId(),
+        type: {
+          oneofKind: "upgradeBuilding",
+          upgradeBuilding: {
             lotId,
           },
         },

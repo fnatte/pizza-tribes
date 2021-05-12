@@ -1,7 +1,9 @@
 import { formatDuration, intervalToDuration } from "date-fns";
 import JSBI from "jsbi";
 import { Building } from "./generated/building";
+import { Education } from "./generated/education";
 import { GameState_Population } from "./generated/gamestate";
+import { GameData } from "./generated/game_data";
 import { GameState, Lot } from "./store";
 
 export type RemoveIndex<T> = {
@@ -63,6 +65,35 @@ export const countPopulation = (population: GameState_Population): number => {
   );
 };
 
+export const countMaxEmployed = (
+  lots: GameState["lots"],
+  gameData: GameData
+): Record<Education, number | undefined> => {
+  const counts: Record<Education, number|undefined> = {
+    [Building.SHOP]: undefined,
+    [Building.HOUSE]: undefined,
+    [Building.SCHOOL]: undefined,
+    [Building.KITCHEN]: undefined,
+  };
+
+  Object.keys(lots).map((lotId) => {
+    const lot = lots[lotId];
+    const building = lot?.building;
+    if (!lot || building === undefined) {
+      return;
+    }
+
+    const info = gameData.buildings[building];
+    const levelInfo = info.levelInfos[lot.level];
+    if (levelInfo?.employer !== undefined) {
+      counts[lot.building] =
+        (counts[lot.building] || 0) + levelInfo.employer.maxWorkforce;
+    }
+  });
+
+  return counts;
+};
+
 const shortDuration = (str: string) => {
   return str
     .replace("hours", "h")
@@ -84,6 +115,31 @@ export const formatDurationShort = (time: number) =>
     )
   );
 
+export const formatNanoTimestampToNowShort = (time: string) => {
+  const now = Date.now();
+  const totalSeconds = JSBI.toNumber(
+    JSBI.divide(
+      JSBI.subtract(
+        JSBI.BigInt(time),
+        JSBI.multiply(JSBI.BigInt(now), JSBI.BigInt(1e6))
+      ),
+      JSBI.BigInt(1e9)
+    )
+  );
+
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds - hours * 3600) / 60);
+  const seconds = Math.floor(totalSeconds - hours * 3600 - minutes * 60);
+
+  if (hours > 0) {
+    return `in ${hours} h ${minutes} min`;
+  } else if (minutes > 0) {
+    return `in ${minutes} min ${seconds} sec`;
+  } else {
+    return `in ${seconds} sec`;
+  }
+};
+
 export const generateId = () => {
   return (
     Array(16)
@@ -101,4 +157,3 @@ export const parseDateNano = (ns: string) => {
 
 const numberFormat = new Intl.NumberFormat();
 export const formatNumber = (n: number) => numberFormat.format(n);
-

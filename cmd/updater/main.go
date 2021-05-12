@@ -260,11 +260,8 @@ func (u *updater) restorePopulation(ctx context.Context, userId string) (error) 
 			return err
 		}
 
-		buildingCounts := internal.CountBuildings(gs)
-		houseCount := buildingCounts[int32(internal.Building_HOUSE)]
-
 		pop := internal.CountAllPopulation(gs)
-		maxPop := internal.MicePerHouse * houseCount
+		maxPop := internal.CountMaxPopulation(gs)
 
 		if pop < maxPop {
 			addedPop = maxPop - pop

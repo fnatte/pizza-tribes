@@ -2,74 +2,131 @@ package internal
 
 import "time"
 
-const MicePerHouse = 10
-
 const ThiefSpeed = 2 * time.Minute
 const ThiefCapacity = 3_000
 
 var FullGameData = GameData{
 	Buildings: map[int32]*BuildingInfo{
 		int32(Building_KITCHEN): {
-			Title: "Kitchen",
+			Title:       "Kitchen",
 			TitlePlural: "Kitchens",
-			Cost: 10_000,
-			ConstructionTime: 900,
-			Employer: &Employer{
-				MaxWorkforce: 7,
+			LevelInfos: []*BuildingInfo_LevelInfo{
+				{
+					Cost:             10_000,
+					ConstructionTime: 900,
+					Employer: &Employer{
+						MaxWorkforce: 7,
+					},
+				},
+				{
+					Cost:             20_000,
+					ConstructionTime: 1800,
+					Employer: &Employer{
+						MaxWorkforce: 11,
+					},
+				},
+				{
+					Cost:             40_000,
+					ConstructionTime: 2700,
+					Employer: &Employer{
+						MaxWorkforce: 15,
+					},
+				},
 			},
 		},
 		int32(Building_SHOP): {
-			Title: "Shop",
+			Title:       "Shop",
 			TitlePlural: "Shops",
-			Cost: 12_500,
-			ConstructionTime: 1200,
-			Employer: &Employer{
-				MaxWorkforce: 5,
+			LevelInfos: []*BuildingInfo_LevelInfo{
+				{
+					Cost:             12_500,
+					ConstructionTime: 1200,
+					Employer: &Employer{
+						MaxWorkforce: 5,
+					},
+				},
+				{
+					Cost:             25_000,
+					ConstructionTime: 2400,
+					Employer: &Employer{
+						MaxWorkforce: 8,
+					},
+				},
+				{
+					Cost:             48_000,
+					ConstructionTime: 3000,
+					Employer: &Employer{
+						MaxWorkforce: 11,
+					},
+				},
 			},
 		},
 		int32(Building_HOUSE): {
-			Title: "House",
+			Title:       "House",
 			TitlePlural: "Houses",
-			Cost: 17_000,
-			ConstructionTime: 450,
-			Employer: nil,
+			LevelInfos: []*BuildingInfo_LevelInfo{
+				{
+					Cost:             17_000,
+					ConstructionTime: 450,
+					Residence: &Residence{
+						Beds: 10,
+					},
+				},
+				{
+					Cost:             35_000,
+					ConstructionTime: 900,
+					Residence: &Residence{
+						Beds: 15,
+					},
+				},
+				{
+					Cost:             60_000,
+					ConstructionTime: 1800,
+					Residence: &Residence{
+						Beds: 20,
+					},
+				},
+			},
 		},
 		int32(Building_SCHOOL): {
-			Title: "School",
+			Title:       "School",
 			TitlePlural: "Schools",
-			Cost: 30_000,
-			ConstructionTime: 3600,
-			Employer: nil,
+			LevelInfos: []*BuildingInfo_LevelInfo{
+				{
+					Cost:             30_000,
+					ConstructionTime: 3600,
+				},
+			},
 		},
 	},
 	Educations: map[int32]*EducationInfo{
 		int32(Education_CHEF): {
-			Title: "Chef",
+			Title:       "Chef",
 			TitlePlural: "Chefs",
-			Cost: 0,
-			TrainTime: 200,
-			Employer: Building_KITCHEN.Enum(),
+			Cost:        0,
+			TrainTime:   200,
+			Employer:    Building_KITCHEN.Enum(),
 		},
 		int32(Education_SALESMOUSE): {
-			Title: "Salesmouse",
+			Title:       "Salesmouse",
 			TitlePlural: "Salesmice",
-			Cost: 0,
-			TrainTime: 100,
-			Employer: Building_SHOP.Enum(),
+			Cost:        0,
+			TrainTime:   100,
+			Employer:    Building_SHOP.Enum(),
 		},
 		int32(Education_GUARD): {
-			Title: "Guard",
+			Title:       "Guard",
 			TitlePlural: "Guards",
-			Cost: 10_000,
-			TrainTime: 1000,
-			Employer: nil,
+			Cost:        10_000,
+			TrainTime:   1000,
+			Employer:    nil,
 		},
 		int32(Education_THIEF): {
-			Title: "Thief",
+			Title:       "Thief",
 			TitlePlural: "Thieves",
-			Cost: 20_000,
-			TrainTime: 1800,
-			Employer: nil,
+			Cost:        20_000,
+			TrainTime:   1800,
+			Employer:    nil,
 		},
 	},
 }

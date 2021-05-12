@@ -15,8 +15,7 @@ func CalculateStats(gs *GameState) *Stats {
 	demandOffpeak := DEMAND_BASE * popularity
 	demandRushHour := (DEMAND_BASE + DEMAND_RUSH_HOUR_BONUS) * popularity
 
-	buildingCount := CountBuildings(gs)
-	maxEmployed := CountMaxEmployed(buildingCount)
+	maxEmployed := CountMaxEmployed(gs)
 
 	employedChefs := MinInt32(gs.Population.Chefs, maxEmployed[int32(Building_KITCHEN)])
 	pizzasProducedPerSecond := float64(employedChefs) * CHEF_PIZZAS_PER_SECOND

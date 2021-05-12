@@ -14,10 +14,18 @@ message Employer {
   int32 maxWorkforce = 1;
 }
 
+message Residence {
+  int32 beds = 1;
+}
+
 message BuildingInfo {
+  message LevelInfo {
+    int32 cost = 1;
+    int32 constructionTime = 2;
+    Employer employer = 3;
+    Residence residence = 4;
+  }
   string title = 1;
   string titlePlural = 2;
-  int32 cost = 3;
-  int32 constructionTime = 4;
-  Employer employer = 5;
+  repeated LevelInfo levelInfos = 3;
 }

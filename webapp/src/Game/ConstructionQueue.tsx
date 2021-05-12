@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useInterval, useMedia } from "react-use";
 import { classnames, TArg, TClasses } from "tailwindcss-classnames";
 import { useStore } from "../store";
+import {formatNanoTimestampToNowShort} from "../utils";
 
 const ConstructionQueue: React.FC<{ className?: string }> = ({ className }) => {
   const isMinLg = useMedia("(min-width: 1024px)", false);
@@ -29,7 +30,14 @@ const ConstructionQueue: React.FC<{ className?: string }> = ({ className }) => {
   }
 
   return (
-    <div className={classnames("bg-white", "p-2", className as TArg, "pointer-events-auto")}>
+    <div
+      className={classnames(
+        "bg-white",
+        "p-2",
+        className as TArg,
+        "pointer-events-auto"
+      )}
+    >
       <div className={classnames("flex", "items-center", "justify-between")}>
         <h4
           className={classnames({
@@ -61,24 +69,22 @@ const ConstructionQueue: React.FC<{ className?: string }> = ({ className }) => {
         <table>
           <tbody>
             {constructionQueue.map((construction) => (
-              <tr
-                key={
-                  construction.completeAt.toString() +
-                  construction.building +
-                  construction.lotId
-                }
-              >
+              <tr key={construction.lotId}>
                 <td className={classnames("p-2")}>
                   {buildings[construction.building].title}
+                  {construction.level > 0 && (
+                    <span> to level {construction.level + 1}</span>
+                  )}
                 </td>
                 <td className={classnames("p-2")}>
-                  {`in ${JSBI.divide(
+                  {/*`in ${JSBI.divide(
                     JSBI.subtract(
                       JSBI.BigInt(construction.completeAt),
-                      JSBI.multiply(JSBI.BigInt(now), JSBI.BigInt(1e6)),
+                      JSBI.multiply(JSBI.BigInt(now), JSBI.BigInt(1e6))
                     ),
                     JSBI.BigInt(1e9)
-                  )}s`}
+                  )}s`*/}
+                  {formatNanoTimestampToNowShort(construction.completeAt)}
                 </td>
               </tr>
             ))}
