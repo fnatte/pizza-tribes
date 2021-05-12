@@ -12,6 +12,7 @@ import (
 	"github.com/rs/xid"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 func getPopulationKey(edu internal.Education) (string, error) {
@@ -163,6 +164,10 @@ func (u *updater) update(ctx context.Context, userId string) {
 			log.Error().Err(err).Msg("Failed to send stats")
 		}
 	}
+
+	if err = u.restorePopulation(ctx, userId); err != nil {
+		log.Error().Err(err).Msg("Failed to restore population")
+	}
 }
 
 func addTimeseriesDataPoints(ctx updateContext, r internal.RedisClient) error {
@@ -228,6 +233,72 @@ func sendStats(ctx context.Context, r internal.RedisClient, userId string) error
 	msg := internal.CalculateStats(&gs).ToServerMessage()
 
 	return send(ctx, r, userId, msg)
+}
+
+// Restore population will add any missing population to the town.
+// If the user lost thieves in a heist, those mice will be replaced
+// by uneducated mice in the town.
+//
+// This process in currently not implemented as a part of the normal
+// game state update pipeline because it does not handle modification
+// of the same variables twice with ease. Once that is fixed, this
+// func should be part of the update pipeline.
+func (u *updater) restorePopulation(ctx context.Context, userId string) (error) {
+	gsKey := fmt.Sprintf("user:%s:gamestate", userId)
+
+	gs := &internal.GameState{}
+	var addedPop int32 = 0
+
+	txf := func(tx *redis.Tx) error {
+		// Get current game state
+		b, err := internal.RedisJsonGet(tx, ctx, gsKey, ".").Result()
+		if err != nil && err != redis.Nil {
+			return err
+		}
+		err = gs.LoadProtoJson([]byte(b))
+		if err != nil {
+			return err
+		}
+
+		buildingCounts := internal.CountBuildings(gs)
+		houseCount := buildingCounts[int32(internal.Building_HOUSE)]
+
+		pop := internal.CountAllPopulation(gs)
+		maxPop := internal.MicePerHouse * houseCount
+
+		if pop < maxPop {
+			addedPop = maxPop - pop
+			_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+				return internal.RedisJsonNumIncrBy(
+					u.r, ctx, gsKey,
+					".population.uneducated",
+					int64(addedPop)).Err()
+			})
+		}
+
+		return err
+	}
+
+	if err := u.r.Watch(ctx, txf, gsKey); err != nil {
+		return fmt.Errorf("failed to restore population: %w", err)
+	}
+
+	if addedPop != 0 {
+		return send(ctx, u.r, userId, &internal.ServerMessage{
+			Id: xid.New().String(),
+			Payload: &internal.ServerMessage_StateChange{
+				StateChange: &internal.GameStatePatch{
+					Population: &internal.GameStatePatch_PopulationPatch{
+						Uneducated: &wrapperspb.Int32Value{
+							Value: gs.Population.Uneducated + addedPop,
+						},
+					},
+				},
+			},
+		})
+	}
+
+	return nil
 }
 
 func (u *updater) next(ctx context.Context) (string, error) {

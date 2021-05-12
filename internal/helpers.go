@@ -54,7 +54,7 @@ func CountMaxEmployed(buildingCount map[int32]int32) (counts map[int32]int32) {
 	return counts
 }
 
-func CountPopulation(population *GameState_Population) int32 {
+func CountTownPopulation(population *GameState_Population) int32 {
 	if population == nil {
 		return 0
 	}
@@ -64,4 +64,23 @@ func CountPopulation(population *GameState_Population) int32 {
 		population.Salesmice +
 		population.Guards +
 		population.Thieves)
+}
+
+func CountTravellingPopulation(travelQueue []*Travel) int32 {
+	var count int32 = 0
+	for _, t := range(travelQueue) {
+		count = count + t.Thieves
+	}
+
+	return count
+}
+
+func CountAllPopulation(gs *GameState) int32 {
+	if gs == nil {
+		return 0
+	}
+
+	return CountTownPopulation(gs.Population) +
+		CountTravellingPopulation(gs.TravelQueue)
+
 }

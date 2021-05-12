@@ -51,10 +51,10 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *internal.Clie
 		switch lot.Building {
 		case internal.Building_KITCHEN:
 			incrPath = ".resources.pizzas"
-			incrAmount = 100 * int64(internal.CountPopulation(&population))
+			incrAmount = 100 * int64(internal.CountTownPopulation(&population))
 		case internal.Building_SHOP:
 			incrPath = ".resources.coins"
-			incrAmount = 50 * int64(internal.CountPopulation(&population))
+			incrAmount = 50 * int64(internal.CountTownPopulation(&population))
 		default:
 			return fmt.Errorf("this building cannot be tapped")
 		}
