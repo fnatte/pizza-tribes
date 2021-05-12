@@ -47,6 +47,13 @@ you join the dirty game yourself and send thieves on your competitors!
       * [Client-Server Protocol](#client-server-protocol)
          * [Client Messages](#client-messages)
          * [Server Messages](#server-messages)
+   * [File Tree](#file-tree)
+   * [Running it Locally](#running-it-locally)
+      * [The easy way (all services over docker)](#the-easy-way-all-services-over-docker)
+      * [For development (pick and choose)](#for-development-pick-and-choose)
+   * [Troubleshooting](#troubleshooting)
+      * [Check Origin](#check-origin)
+      * [Can't login after flushing db](#cant-login-after-flushing-db)
 
 
 ## Tech Stack
@@ -244,3 +251,66 @@ The following is not the exact definitions, they are here to describe on a highe
     ├── src
     └── tools
 ```
+
+## Running it Locally
+
+There are essentially two ways to run the project locally. You either run everything (redis, services, web app) over docker. Or you pick and choose what you want for faster development.
+
+### The easy way (all services over docker)
+
+The easiest way to get started is to run the *docker-compose.yml*:
+
+```sh
+docker-compose up --build -d
+```
+
+That will:
+
+- build all services, the web app, and caddy front
+- run everything, including redis and redisinsight
+
+The following is exposed:
+
+- redis at 6379
+- redisinsight at 8001
+- webapp at 8080
+
+### For development (pick and choose)
+
+If you want to make changes you might want to benefit from HMR (Hot Module Replacement) in the web app and faster build times for the Go apps. If that's the case, you might want to run redis using docker-compose, and then run the services and web app on your host OS:
+
+```
+printf "HOST=:8080\nORIGIN=http://localhost:3000\n" > .env
+docker-compose up -d redis redisinsight
+make -j start # Build and run go services (see Makefile for details)
+cd webapp # in another terminal
+npm install
+npm run dev
+```
+
+Given no errors, that should give you:
+
+- redis via docker at 6379
+- redisinsight via docker at 8001
+- webapp via host OS at 3000
+- api via host OS at 8080
+
+Note that the web app will proxy calls to `/api` to `http://localhost:8080` (see `webapp/vite.config.ts`).
+
+
+## Troubleshooting
+
+Start by checking your logs: `docker-compose logs -f`
+
+### Check Origin
+
+If you find that `websocket: request origin not allowed by Upgrader.CheckOrigin"` you might need to change your origin check setting. Try to add a `.env` file with the origin you are using like so:
+
+```
+ORIGIN=http://localhost:3000
+```
+
+### Can't login after flushing db
+
+You are probably still authenticated (and have a valid JWT) to a user that no longer exists. Either clean your cookies, or remove the `token` cookie, or navigate to `http://localhost:8080/api/auth/logout`.
+
