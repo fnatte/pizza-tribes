@@ -46,6 +46,13 @@ services:
     build:
       context: .
       target: webapp
+  migrator:
+    image: "ghcr.io/fnatte/pizza-tribes-migrator:latest"
+    build:
+      context: .
+      target: migrator
+    environment:
+      REDIS_ADDR: "redis:6379"
   front:
     image: "ghcr.io/fnatte/pizza-tribes-front:latest"
     env_file: .env
