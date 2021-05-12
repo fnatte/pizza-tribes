@@ -146,6 +146,7 @@ function TownLot() {
   const lot = useStore(useCallback((state) => state.gameState.lots[id], [id]));
   const stats = useStore((state) => state.gameStats);
   const population = useStore((state) => state.gameState.population);
+  const gameData = useStore((state) => state.gameData);
 
   return (
     <div
@@ -190,7 +191,10 @@ function TownLot() {
           <h2>House (level {lot.level + 1})</h2>
           <SvgHouse height={50} width={50} />
           <p className={classnames("my-4", "text-gray-700")}>
-            Up to 10 mice can live in this small house.
+            Up to{" "}
+            {gameData?.buildings[Building.HOUSE].levelInfos[lot.level].residence
+              ?.beds ?? 0}{" "}
+            mice can live in this small house.
           </p>
           <p className={classnames("my-4", "text-gray-700")}>
             If you upgrade or build more houses your population will grow.
