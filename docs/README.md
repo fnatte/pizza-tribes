@@ -2,14 +2,17 @@
 
 This document provides implementation details for each feature. More specifically, it shows how Redis is used and **the Redis commands to store and retrieve data.**
 
-- Users
-- Tap
-- ConstructBuilding
-- UpgradeBuilding
-- Train
-- Steal
-- Reports
-- Leaderboard
+## Table of Contents
+
+* [Pizza Tribes Documentation](#pizza-tribes-documentation)
+   * [Users — Registration and Authentication](#users--registration-and-authentication)
+   * [Game State](#game-state)
+   * [Game State Update](#game-state-update)
+      * [Figuring out Whom Needs Update](#figuring-out-whom-needs-update)
+      * [Updating the Game State](#updating-the-game-state)
+      * [Schedule for Next Update](#schedule-for-next-update)
+      * [Insert Data Points (Timeseries)](#insert-data-points-timeseries)
+      * [Updating the Leaderboard](#updating-the-leaderboard)
 
 ## Users &mdash; Registration and Authentication
 
