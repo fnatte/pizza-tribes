@@ -101,6 +101,8 @@ See [go.mod](go.mod) and [package.json](webapp/package.json) for a list used lib
 
 ## Architecture and Use of Redis
 
+This document provide some overview of the project and its use of Redis. For additional documentation, see [docs/README.md](/docs/README.md).
+
 
 ### Overview
 
@@ -204,6 +206,10 @@ A (simplified) typical flow is as follows:
 		1. Set next update time: `ZADD user_updates $timestamp $user_id`
 
 [![](https://mermaid.ink/img/eyJjb2RlIjoic2VxdWVuY2VEaWFncmFtXG4gICAgcGFydGljaXBhbnQgdXBkYXRlclxuICAgIHBhcnRpY2lwYW50IHVzZXJfdXBkYXRlc1xuICAgIHBhcnRpY2lwYW50IGdhbWVfc3RhdGVcblxuICAgIGxvb3BcbiAgICB1cGRhdGVyIC0-PiB1c2VyX3VwZGF0ZXM6IFpSQU5HRSB1c2VyX3VwZGF0ZXMgMCAwIFdJVEhTQ09SRVNcbiAgICB1c2VyX3VwZGF0ZXMgLT4-IHVwZGF0ZXI6ICgkdGltZXN0YW1wLCAkdXNlcl9pZClcbiAgICBhbHQgdGltZXN0YW1wIDwgbm93XG4gICAgICB1cGRhdGVyIC0-PiB1c2VyX3VwZGF0ZXM6IFpSRU0gdXNlcl91cGRhdGVzICR1c2VyX2lkXG4gICAgICB1cGRhdGVyIC0-PiBnYW1lX3N0YXRlOiBVcGRhdGUgZ2FtZSBzdGF0ZVxuICAgICAgdXBkYXRlciAtPj4gdXNlcl91cGRhdGVzOiBaQUREIHVzZXJfdXBkYXRlcyAkdXBkYXRlZF90aW1lc3RhbXAgJHVzZXJfaWRcbiAgICBlbmRcbiAgICBlbmRcbiIsIm1lcm1haWQiOnsidGhlbWUiOiJkZWZhdWx0In0sInVwZGF0ZUVkaXRvciI6ZmFsc2V9)](https://mermaid-js.github.io/mermaid-live-editor/#/edit/eyJjb2RlIjoic2VxdWVuY2VEaWFncmFtXG4gICAgcGFydGljaXBhbnQgdXBkYXRlclxuICAgIHBhcnRpY2lwYW50IHVzZXJfdXBkYXRlc1xuICAgIHBhcnRpY2lwYW50IGdhbWVfc3RhdGVcblxuICAgIGxvb3BcbiAgICB1cGRhdGVyIC0-PiB1c2VyX3VwZGF0ZXM6IFpSQU5HRSB1c2VyX3VwZGF0ZXMgMCAwIFdJVEhTQ09SRVNcbiAgICB1c2VyX3VwZGF0ZXMgLT4-IHVwZGF0ZXI6ICgkdGltZXN0YW1wLCAkdXNlcl9pZClcbiAgICBhbHQgdGltZXN0YW1wIDwgbm93XG4gICAgICB1cGRhdGVyIC0-PiB1c2VyX3VwZGF0ZXM6IFpSRU0gdXNlcl91cGRhdGVzICR1c2VyX2lkXG4gICAgICB1cGRhdGVyIC0-PiBnYW1lX3N0YXRlOiBVcGRhdGUgZ2FtZSBzdGF0ZVxuICAgICAgdXBkYXRlciAtPj4gdXNlcl91cGRhdGVzOiBaQUREIHVzZXJfdXBkYXRlcyAkdXBkYXRlZF90aW1lc3RhbXAgJHVzZXJfaWRcbiAgICBlbmRcbiAgICBlbmRcbiIsIm1lcm1haWQiOnsidGhlbWUiOiJkZWZhdWx0In0sInVwZGF0ZUVkaXRvciI6ZmFsc2V9)
+
+### More in-depth documentation
+
+For more in-depth documention, see [docs/README.md](/docs/README.md).
 
 ### Client-Server Protocol
 
