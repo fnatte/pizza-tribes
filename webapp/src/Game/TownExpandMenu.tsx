@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { classnames } from "tailwindcss-classnames";
+import { useStore } from "../store";
 import ConstructionQueueTable from "./ConstructionQueueTable";
 import PopulationTable from "./PopulationTable";
 import TravelQueueTable from "./TravelQueueTable";
@@ -15,6 +16,14 @@ const TownExpandMenu: React.VFC<{}> = () => {
     setMinimized((val) => !val);
     setSelection("none");
   };
+
+  const constructionQueueLength = useStore(
+    (state) => state.gameState.constructionQueue.length
+  );
+
+  const travelQueueLength = useStore(
+    (state) => state.gameState.travelQueue.length
+  );
 
   return (
     <div className={classnames("bg-white", "p-2", "pointer-events-auto")}>
@@ -53,7 +62,7 @@ const TownExpandMenu: React.VFC<{}> = () => {
         <ul className={classnames("bg-white", "p-4")}>
           <li className={classnames("border-b", "my-1")}>
             <button
-              className={classnames("w-full")}
+              className={classnames("w-full", "p-2")}
               onClick={() => setSelection("population")}
             >
               Population &gt;
@@ -61,39 +70,47 @@ const TownExpandMenu: React.VFC<{}> = () => {
           </li>
           <li className={classnames("border-b", "my-1")}>
             <button
-              className={classnames("w-full")}
+              className={classnames("w-full", "p-2")}
               onClick={() => setSelection("constructions")}
             >
-              Constructions &gt;
+              Constructions
+              {constructionQueueLength > 0 && (
+                <strong> ({constructionQueueLength}) </strong>
+              )}{" "}
+              &gt;
             </button>
           </li>
           <li className={classnames("border-b", "my-1")}>
             <button
-              className={classnames("w-full")}
+              className={classnames("w-full", "p-2")}
               onClick={() => setSelection("travels")}
             >
-              Travels &gt;
+              Travels
+              {travelQueueLength > 0 && (
+                <strong> ({travelQueueLength}) </strong>
+              )}{" "}
+              &gt;
             </button>
           </li>
         </ul>
       )}
       {!minimized && selection === "population" && (
-        <>
+        <div className={classnames("p-4")}>
           <h4>Population</h4>
           <PopulationTable />
-        </>
+        </div>
       )}
       {!minimized && selection === "constructions" && (
-        <>
+        <div className={classnames("p-4")}>
           <h4>Constructions</h4>
           <ConstructionQueueTable />
-        </>
+        </div>
       )}
       {!minimized && selection === "travels" && (
-        <>
+        <div className={classnames("p-4")}>
           <h4>Travels</h4>
           <TravelQueueTable />
-        </>
+        </div>
       )}
     </div>
   );
