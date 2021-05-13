@@ -1,22 +1,16 @@
-import React, { useState } from "react";
-import { useInterval } from "react-use";
+import React from "react";
 import { classnames, TArg, TClasses } from "tailwindcss-classnames";
 import { useStore } from "../store";
-import { formatNanoTimestampToNowShort } from "../utils";
+import ConstructionQueueTable from "./ConstructionQueueTable";
 
 const ConstructionQueue: React.FC<{
   className?: string;
   minimized: boolean;
   onToggleClick: () => void;
 }> = ({ className, minimized, onToggleClick }) => {
-  const buildings = useStore((state) => state.gameData?.buildings) ?? {};
   const constructionQueue = useStore(
     (state) => state.gameState.constructionQueue
   );
-  const [now, setNow] = useState(Date.now());
-  useInterval(() => {
-    setNow(Date.now());
-  }, 1000);
 
   if (constructionQueue.length === 0) {
     return <div />;
@@ -58,32 +52,7 @@ const ConstructionQueue: React.FC<{
           </button>
         </div>
       </div>
-      {!minimized && (
-        <table>
-          <tbody>
-            {constructionQueue.map((construction) => (
-              <tr key={construction.lotId}>
-                <td className={classnames("p-2")}>
-                  {buildings[construction.building].title}
-                  {construction.level > 0 && (
-                    <span> to level {construction.level + 1}</span>
-                  )}
-                </td>
-                <td className={classnames("p-2")}>
-                  {/*`in ${JSBI.divide(
-                    JSBI.subtract(
-                      JSBI.BigInt(construction.completeAt),
-                      JSBI.multiply(JSBI.BigInt(now), JSBI.BigInt(1e6))
-                    ),
-                    JSBI.BigInt(1e9)
-                  )}s`*/}
-                  {formatNanoTimestampToNowShort(construction.completeAt)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+      {!minimized && <ConstructionQueueTable />}
     </div>
   );
 };

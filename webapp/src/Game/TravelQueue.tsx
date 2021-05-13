@@ -1,21 +1,14 @@
-import JSBI from "jsbi";
-import React, { useState } from "react";
-import { useInterval } from "react-use";
+import React from "react";
 import { classnames, TArg, TClasses } from "tailwindcss-classnames";
 import { useStore } from "../store";
+import TravelQueueTable from "./TravelQueueTable";
 
 const TravelQueue: React.FC<{ className?: string, minimized: boolean, onToggleClick: () => void }> = ({ className, minimized, onToggleClick }) => {
   const travelQueue = useStore((state) => state.gameState.travelQueue);
-  const [now, setNow] = useState(Date.now());
-  useInterval(() => {
-    setNow(Date.now());
-  }, 1000);
 
-  /*
   if (travelQueue.length === 0) {
     return null;
   }
-   */
 
   return (
     <div className={classnames("bg-white", "p-2", className as TArg)}>
@@ -54,31 +47,7 @@ const TravelQueue: React.FC<{ className?: string, minimized: boolean, onToggleCl
         </div>
       </div>
       {!minimized && (
-        <table>
-          <tbody>
-            {travelQueue.map((travel) => (
-              <tr
-                key={
-                  travel.arrivalAt.toString() + travel.coins + travel.thieves
-                }
-              >
-                <td className={classnames("p-2")}>
-                  {travel.thieves}{" "}
-                  {travel.returning ? "returning" : "travelling"} thieves
-                </td>
-                <td className={classnames("p-2")}>
-                  {`in ${JSBI.divide(
-                    JSBI.subtract(
-                      JSBI.BigInt(travel.arrivalAt),
-                      JSBI.multiply(JSBI.BigInt(now), JSBI.BigInt(1e6))
-                    ),
-                    JSBI.BigInt(1e9)
-                  )}s`}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <TravelQueueTable />
       )}
     </div>
   );

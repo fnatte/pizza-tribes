@@ -7,6 +7,7 @@ import { useStore } from "../store";
 import ConstructionQueue from "./ConstructionQueue";
 import Population from "./Population";
 import classes from "./town.module.css";
+import TownExpandMenu from "./TownExpandMenu";
 import TownSvg from "./TownSvg";
 import TravelQueue from "./TravelQueue";
 
@@ -20,6 +21,7 @@ function Town() {
   };
 
   const isMinLg = useMedia("(min-width: 1024px)", false);
+  const isMinSm = useMedia("(min-width: 640px)", false);
 
   const [minimizedTravelQueue, setMinimizedTravelQueue] = useState(isMinLg);
   const onToggleClickTravelQueue = () => {
@@ -117,18 +119,26 @@ function Town() {
             "pointer-events-none"
           )}
         >
-          <ConstructionQueue
-            minimized={minimizedConstructionQueue}
-            onToggleClick={onToggleClickConstructionQueue}
-          />
-          <TravelQueue
-            minimized={minimizedTravelQueue}
-            onToggleClick={onToggleClickTravelQueue}
-          />
-          <Population
-            minimized={minimizedPopulation}
-            onToggleClick={onToggleClickMinimizedPopulation}
-          />
+          {isMinSm ? (
+            <>
+              <ConstructionQueue
+                minimized={minimizedConstructionQueue}
+                onToggleClick={onToggleClickConstructionQueue}
+              />
+              <TravelQueue
+                minimized={minimizedTravelQueue}
+                onToggleClick={onToggleClickTravelQueue}
+              />
+              <Population
+                minimized={minimizedPopulation}
+                onToggleClick={onToggleClickMinimizedPopulation}
+              />
+            </>
+          ) : (
+            <div className={classnames("absolute", "right-0")}>
+              <TownExpandMenu />
+            </div>
+          )}
         </div>
       </div>
     </div>
