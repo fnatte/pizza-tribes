@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useMedia } from "react-use";
 import { classnames, TArg } from "tailwindcss-classnames";
 import { useStore } from "../store";
 import ConstructionQueue from "./ConstructionQueue";
@@ -17,6 +18,46 @@ function Town() {
   const onLotClick = (lotId: string) => {
     navigate(`/town/${lotId.replace("lot", "")}`);
   };
+
+  const isMinLg = useMedia("(min-width: 1024px)", false);
+
+  const [minimizedTravelQueue, setMinimizedTravelQueue] = useState(isMinLg);
+  const onToggleClickTravelQueue = () => {
+    setMinimizedTravelQueue((value) => !value);
+    if (!isMinLg) {
+      setMinimizedConstructionQueue(true);
+      setMinimizedPopulation(true);
+    }
+  };
+  const [minimizedConstructionQueue, setMinimizedConstructionQueue] = useState(
+    isMinLg
+  );
+  const onToggleClickConstructionQueue = () => {
+    setMinimizedConstructionQueue((value) => !value);
+    if (!isMinLg) {
+      setMinimizedTravelQueue(true);
+      setMinimizedPopulation(true);
+    }
+  };
+  const [minimizedPopulation, setMinimizedPopulation] = useState(isMinLg);
+  const onToggleClickMinimizedPopulation = () => {
+    setMinimizedPopulation((value) => !value);
+    if (!isMinLg) {
+      setMinimizedTravelQueue(true);
+      setMinimizedConstructionQueue(true);
+    }
+  };
+
+  useEffect(() => {
+    setMinimizedTravelQueue(!isMinLg);
+    setMinimizedConstructionQueue(!isMinLg);
+    setMinimizedPopulation(!isMinLg);
+  }, [
+    isMinLg,
+    setMinimizedTravelQueue,
+    setMinimizedConstructionQueue,
+    setMinimizedPopulation,
+  ]);
 
   useEffect(() => {
     if (!ref.current) {
@@ -76,9 +117,18 @@ function Town() {
             "pointer-events-none"
           )}
         >
-          <ConstructionQueue />
-          <TravelQueue />
-          <Population />
+          <ConstructionQueue
+            minimized={minimizedConstructionQueue}
+            onToggleClick={onToggleClickConstructionQueue}
+          />
+          <TravelQueue
+            minimized={minimizedTravelQueue}
+            onToggleClick={onToggleClickTravelQueue}
+          />
+          <Population
+            minimized={minimizedPopulation}
+            onToggleClick={onToggleClickMinimizedPopulation}
+          />
         </div>
       </div>
     </div>

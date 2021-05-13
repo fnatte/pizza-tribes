@@ -1,25 +1,18 @@
-import JSBI from "jsbi";
-import React, { useEffect, useState } from "react";
-import { useInterval, useMedia } from "react-use";
+import React, { useState } from "react";
+import { useInterval } from "react-use";
 import { classnames, TArg, TClasses } from "tailwindcss-classnames";
 import { useStore } from "../store";
-import {formatNanoTimestampToNowShort} from "../utils";
+import { formatNanoTimestampToNowShort } from "../utils";
 
-const ConstructionQueue: React.FC<{ className?: string }> = ({ className }) => {
-  const isMinLg = useMedia("(min-width: 1024px)", false);
+const ConstructionQueue: React.FC<{
+  className?: string;
+  minimized: boolean;
+  onToggleClick: () => void;
+}> = ({ className, minimized, onToggleClick }) => {
   const buildings = useStore((state) => state.gameData?.buildings) ?? {};
   const constructionQueue = useStore(
     (state) => state.gameState.constructionQueue
   );
-  const [minimized, setMinimized] = useState(isMinLg);
-
-  const onToggleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setMinimized((value) => !value);
-  };
-
-  useEffect(() => setMinimized(!isMinLg), [isMinLg, setMinimized]);
-
   const [now, setNow] = useState(Date.now());
   useInterval(() => {
     setNow(Date.now());

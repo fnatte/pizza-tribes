@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { useMedia } from "react-use";
+import React from "react";
 import { classnames, TArg, TClasses } from "tailwindcss-classnames";
 import { Education } from "../generated/education";
 import { GameState_Population } from "../generated/gamestate";
 import { useStore } from "../store";
-import { countBuildings, countMaxEmployed } from "../utils";
+import { countMaxEmployed } from "../utils";
 
 const getPopulationKey = (id: number): keyof GameState_Population | null => {
   switch (id) {
@@ -20,24 +19,16 @@ const getPopulationKey = (id: number): keyof GameState_Population | null => {
   return null;
 };
 
-const Population: React.FC<{ className?: string }> = ({ className }) => {
-  const isMinLg = useMedia("(min-width: 1024px)", false);
+const Population: React.FC<{
+  className?: string;
+  minimized: boolean;
+  onToggleClick: () => void;
+}> = ({ className, minimized, onToggleClick }) => {
   const population = useStore((state) => state.gameState.population);
   const lots = useStore((state) => state.gameState.lots);
   const gameData = useStore((state) => state.gameData);
-  const [minimized, setMinimized] = useState(isMinLg);
-
-  const onToggleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setMinimized((value) => !value);
-  };
-
-  useEffect(() => setMinimized(!isMinLg), [isMinLg, setMinimized]);
-
-  const buildingCount = countBuildings(lots);
 
   const educations = gameData?.educations ?? {};
-  const buildings = gameData?.buildings ?? {};
   const maxEmployed = gameData && countMaxEmployed(lots, gameData);
 
   return (
