@@ -2,8 +2,8 @@ package internal
 
 import "time"
 
-const ThiefSpeed = 2 * time.Minute
-const ThiefCapacity = 3_000
+const ThiefSpeed = 5 * time.Minute
+const ThiefCapacity = 4_000
 
 var FullGameData = GameData{
 	Buildings: map[int32]*BuildingInfo{

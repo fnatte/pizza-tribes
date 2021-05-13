@@ -112,7 +112,7 @@ func completeSteal(ctx updateContext, tx *redis.Tx, world *internal.WorldService
 	thieves := float64(travel.Thieves)
 	dist := distuv.Binomial{
 		N:   thieves,
-		P:   thieves / (thieves + guards),
+		P:   thieves / (thieves + guards / 2),
 		Src: rand.NewSource(uint64(time.Now().UnixNano())),
 	}
 	successfulThieves := int32(dist.Rand())
