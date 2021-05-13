@@ -5,15 +5,15 @@ import (
 	"strconv"
 
 	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
 type LeaderboardController struct {
-	r internal.RedisClient
+	r           internal.RedisClient
 	leaderboard *internal.LeaderboardService
-	auth *AuthService
+	auth        *AuthService
 }
 
 func (c *LeaderboardController) Handler() http.Handler {

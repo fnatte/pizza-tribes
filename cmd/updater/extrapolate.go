@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/mtime"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/zerolog/log"
@@ -59,7 +60,7 @@ func extrapolate(ctx updateContext, tx *redis.Tx) (pipeFn, error) {
 	}, nil
 }
 
-func calculateExtrapolateChanges(gs *internal.GameState) extrapolateChanges {
+func calculateExtrapolateChanges(gs *models.GameState) extrapolateChanges {
 	// No changes if there are no population
 	if gs.Population == nil {
 		return extrapolateChanges{}

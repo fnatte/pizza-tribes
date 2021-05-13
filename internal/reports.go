@@ -5,7 +5,8 @@ import (
 	"fmt"
 
 	"github.com/go-redis/redis/v8"
-	"google.golang.org/protobuf/encoding/protojson"
+	"github.com/fnatte/pizza-tribes/internal/protojson"
+	. "github.com/fnatte/pizza-tribes/internal/models"
 )
 
 type ReportsService struct {

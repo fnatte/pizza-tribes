@@ -7,15 +7,16 @@ import (
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/models"
+	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/zerolog/log"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
-func (h *handler) handleSteal(ctx context.Context, senderId string, m *internal.ClientMessage_Steal) error {
+func (h *handler) handleSteal(ctx context.Context, senderId string, m *models.ClientMessage_Steal) error {
 	gsKeyThief := fmt.Sprintf("user:%s:gamestate", senderId)
 
-	var gsThief internal.GameState
+	var gsThief models.GameState
 
 	// Validate target town
 	worldEntry, err := h.world.GetEntryXY(ctx, int(m.X), int(m.Y))
@@ -32,12 +33,11 @@ func (h *handler) handleSteal(ctx context.Context, senderId string, m *internal.
 
 	txf := func(tx *redis.Tx) error {
 		// Get game state of thief
-		str, err := internal.RedisJsonGet(tx, ctx, gsKeyThief, ".").Result()
+		s, err := internal.RedisJsonGet(tx, ctx, gsKeyThief, ".").Result()
 		if err != nil && err != redis.Nil {
 			return err
 		}
-		err = gsThief.LoadProtoJson([]byte(str))
-		if err != nil {
+		if err = protojson.Unmarshal([]byte(s), &gsThief); err != nil {
 			return err
 		}
 
@@ -51,7 +51,7 @@ func (h *handler) handleSteal(ctx context.Context, senderId string, m *internal.
 			m.X, m.Y,
 			internal.ThiefSpeed)
 
-		travel := internal.Travel{
+		travel := models.Travel{
 			ArrivalAt:    arrivalAt,
 			DestinationX: m.X,
 			DestinationY: m.Y,

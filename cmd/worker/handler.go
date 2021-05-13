@@ -5,8 +5,9 @@ import (
 	"fmt"
 
 	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/rs/zerolog/log"
-	"google.golang.org/protobuf/encoding/protojson"
+	"github.com/fnatte/pizza-tribes/internal/protojson"
 )
 
 type handler struct {
@@ -14,21 +15,21 @@ type handler struct {
 	world *internal.WorldService
 }
 
-func (h *handler) Handle(ctx context.Context, senderId string, m *internal.ClientMessage) {
+func (h *handler) Handle(ctx context.Context, senderId string, m *models.ClientMessage) {
 	var err error
 
 	switch x := m.Type.(type) {
-	case *internal.ClientMessage_Tap_:
+	case *models.ClientMessage_Tap_:
 		err = h.handleTap(ctx, senderId, x.Tap)
-	case *internal.ClientMessage_ConstructBuilding_:
+	case *models.ClientMessage_ConstructBuilding_:
 		h.handleConstructBuilding(ctx, senderId, x.ConstructBuilding)
-	case *internal.ClientMessage_Train_:
+	case *models.ClientMessage_Train_:
 		h.handleTrain(ctx, senderId, x.Train)
-	case *internal.ClientMessage_Steal_:
+	case *models.ClientMessage_Steal_:
 		err = h.handleSteal(ctx, senderId, x.Steal)
-	case *internal.ClientMessage_ReadReport_:
+	case *models.ClientMessage_ReadReport_:
 		err = h.handleReadReport(ctx, senderId, x.ReadReport)
-	case *internal.ClientMessage_UpgradeBuilding_:
+	case *models.ClientMessage_UpgradeBuilding_:
 		err = h.handleUpgrade(ctx, senderId, x.UpgradeBuilding)
 	default:
 		log.Info().Str("senderId", senderId).Msg("Received message")
@@ -40,14 +41,13 @@ func (h *handler) Handle(ctx context.Context, senderId string, m *internal.Clien
 }
 
 func (h *handler) fetchAndUpdateTimestamp(ctx context.Context, userId string) (int64, error) {
-	b, err := h.rdb.JsonGet(ctx, fmt.Sprintf("user:%s:gamestate", userId), ".").Result()
+	s, err := h.rdb.JsonGet(ctx, fmt.Sprintf("user:%s:gamestate", userId), ".").Result()
 	if err != nil {
 		return 0, err
 	}
 
-	gs := internal.GameState{}
-	gs.LoadProtoJson([]byte(b))
-	if err != nil {
+	gs := models.GameState{}
+	if err = protojson.Unmarshal([]byte(s), &gs); err != nil {
 		return 0, err
 	}
 
@@ -61,9 +61,8 @@ func (h *handler) sendFullStateUpdate(ctx context.Context, senderId string) {
 		return
 	}
 
-	gs := internal.GameState{}
-	gs.LoadProtoJson([]byte(s))
-	if err != nil {
+	gs := models.GameState{}
+	if err = protojson.Unmarshal([]byte(s), &gs); err != nil {
 		log.Error().Err(err).Msg("Failed to send full state update")
 		return
 	}
@@ -83,7 +82,7 @@ func (h *handler) sendFullStateUpdate(ctx context.Context, senderId string) {
 	}
 }
 
-func (h *handler) send(ctx context.Context, senderId string, m *internal.ServerMessage) error {
+func (h *handler) send(ctx context.Context, senderId string, m *models.ServerMessage) error {
 	b, err := protojson.Marshal(m)
 	if err != nil {
 		return err

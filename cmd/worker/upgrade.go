@@ -7,28 +7,28 @@ import (
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/models"
+	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/zerolog/log"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
-func (h *handler) handleUpgrade(ctx context.Context, senderId string, m *internal.ClientMessage_UpgradeBuilding) error {
+func (h *handler) handleUpgrade(ctx context.Context, senderId string, m *models.ClientMessage_UpgradeBuilding) error {
 	gsKey := fmt.Sprintf("user:%s:gamestate", senderId)
 
-	var gs internal.GameState
+	var gs models.GameState
 
 	txf := func(tx *redis.Tx) error {
 		// Get current game state
-		b, err := internal.RedisJsonGet(tx, ctx, gsKey, ".").Result()
+		s, err := internal.RedisJsonGet(tx, ctx, gsKey, ".").Result()
 		if err != nil && err != redis.Nil {
 			return err
 		}
-		err = gs.LoadProtoJson([]byte(b))
-		if err != nil {
+		if err = protojson.Unmarshal([]byte(s), &gs); err != nil {
 			return err
 		}
 
-		for _, constr := range(gs.ConstructionQueue) {
+		for _, constr := range gs.ConstructionQueue {
 			if constr.LotId == m.LotId {
 				return errors.New("the building is under construction")
 			}
@@ -40,11 +40,11 @@ func (h *handler) handleUpgrade(ctx context.Context, senderId string, m *interna
 		}
 
 		buildingInfo := internal.FullGameData.Buildings[int32(lot.Building)]
-		if int(lot.Level) + 1 >= len(buildingInfo.LevelInfos) {
+		if int(lot.Level)+1 >= len(buildingInfo.LevelInfos) {
 			return errors.New("building already max level")
 		}
-		cost := buildingInfo.LevelInfos[lot.Level + 1].Cost
-		constructionTime := buildingInfo.LevelInfos[lot.Level + 1].ConstructionTime
+		cost := buildingInfo.LevelInfos[lot.Level+1].Cost
+		constructionTime := buildingInfo.LevelInfos[lot.Level+1].ConstructionTime
 
 		if gs.Resources.Coins < cost {
 			return errors.New("Not enough coins")
@@ -70,11 +70,11 @@ func (h *handler) handleUpgrade(ctx context.Context, senderId string, m *interna
 				return err
 			}
 
-			construction := internal.Construction{
+			construction := models.Construction{
 				CompleteAt: completeAt,
 				LotId:      m.LotId,
 				Building:   lot.Building,
-				Level: lot.Level + 1,
+				Level:      lot.Level + 1,
 			}
 
 			b, err := protojson.Marshal(&construction)
@@ -111,4 +111,3 @@ func (h *handler) handleUpgrade(ctx context.Context, senderId string, m *interna
 
 	return nil
 }
-

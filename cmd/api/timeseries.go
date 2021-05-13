@@ -4,9 +4,10 @@ import (
 	"net/http"
 
 	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/models"
+	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
 type TimeseriesService struct {
@@ -45,7 +46,7 @@ func (s *TimeseriesService) Handler() http.Handler {
 		}
 
 		ts := mergeTimeseries(tsPizzas, tsCoins)
-		d := &internal.TimeseriesData{
+		d := &models.TimeseriesData{
 			DataPoints: ts,
 		}
 		b, err := protojson.Marshal(d)
@@ -64,8 +65,8 @@ func (s *TimeseriesService) Handler() http.Handler {
 }
 
 // Merge timeseries data and convert from Redis format to message format.
-func mergeTimeseries(tsPizzas []*internal.TimeseriesDataPoint, tsCoins []*internal.TimeseriesDataPoint) []*internal.DataPoint {
-	res := []*internal.DataPoint{}
+func mergeTimeseries(tsPizzas []*internal.TimeseriesDataPoint, tsCoins []*internal.TimeseriesDataPoint) []*models.DataPoint {
+	res := []*models.DataPoint{}
 	pi := 0
 	ci := 0
 	for pi < len(tsPizzas) && ci < len(tsCoins) {
@@ -73,17 +74,17 @@ func mergeTimeseries(tsPizzas []*internal.TimeseriesDataPoint, tsCoins []*intern
 		c := tsCoins[ci]
 
 		if p.Timestamp == c.Timestamp {
-			res = append(res, &internal.DataPoint{
+			res = append(res, &models.DataPoint{
 				Timestamp: p.Timestamp,
 				Coins:     c.Value,
 				Pizzas:    p.Value,
 			})
 		} else {
-			dpp := &internal.DataPoint{
+			dpp := &models.DataPoint{
 				Timestamp: p.Timestamp,
 				Pizzas:    p.Value,
 			}
-			dpc := &internal.DataPoint{
+			dpc := &models.DataPoint{
 				Timestamp: p.Timestamp,
 				Coins:     c.Value,
 			}
@@ -98,14 +99,14 @@ func mergeTimeseries(tsPizzas []*internal.TimeseriesDataPoint, tsCoins []*intern
 		pi++
 	}
 	for pi < len(tsPizzas) {
-		res = append(res, &internal.DataPoint{
+		res = append(res, &models.DataPoint{
 			Timestamp: tsPizzas[pi].Timestamp,
 			Pizzas:    tsPizzas[pi].Value,
 		})
 		pi++
 	}
 	for ci < len(tsCoins) {
-		res = append(res, &internal.DataPoint{
+		res = append(res, &models.DataPoint{
 			Timestamp: tsCoins[ci].Timestamp,
 			Coins:     tsCoins[ci].Value,
 		})

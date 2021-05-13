@@ -5,15 +5,16 @@ import (
 	"strconv"
 
 	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/models"
+	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
 type WorldController struct {
-	r internal.RedisClient
+	r     internal.RedisClient
 	world *internal.WorldService
-	auth *AuthService
+	auth  *AuthService
 }
 
 func (c *WorldController) Handler() http.Handler {
@@ -31,7 +32,7 @@ func (c *WorldController) Handler() http.Handler {
 		paramY := r.URL.Query().Get("y")
 		paramIdx := r.URL.Query().Get("idx")
 
-		var zone *internal.WorldZone
+		var zone *models.WorldZone
 
 		if paramIdx != "" {
 			var idx int

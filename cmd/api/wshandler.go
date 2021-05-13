@@ -6,10 +6,11 @@ import (
 
 	"github.com/fnatte/pizza-tribes/cmd/api/ws"
 	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog/log"
-	"google.golang.org/protobuf/encoding/protojson"
+	"github.com/fnatte/pizza-tribes/internal/protojson"
 )
 
 type wsHandler struct {
@@ -30,10 +31,10 @@ func (h *wsHandler) HandleMessage(ctx context.Context, m []byte, c *ws.Client) {
 func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 	// Please excuse me for this looong func :|
 
-	gs := internal.GameState{
-		Population: &internal.GameState_Population{},
-		Resources:  &internal.GameState_Resources{},
-		Lots:       map[string]*internal.GameState_Lot{},
+	gs := models.GameState{
+		Population: &models.GameState_Population{},
+		Resources:  &models.GameState_Resources{},
+		Lots:       map[string]*models.GameState_Lot{},
 	}
 
 	log.Info().Str("userId", c.UserId()).Msg("Client connected")
@@ -56,8 +57,7 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 		}
 		log.Info().Msg("Initilized new game state for user")
 	} else {
-		gs.LoadProtoJson([]byte(s))
-		if err != nil {
+		if err = protojson.Unmarshal([]byte(s), &gs); err != nil {
 			return err
 		}
 	}
@@ -88,10 +88,10 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 	}
 
 	go (func() {
-		msg := &internal.ServerMessage{
+		msg := &models.ServerMessage{
 			Id: xid.New().String(),
-			Payload: &internal.ServerMessage_User_{
-				User: &internal.ServerMessage_User{
+			Payload: &models.ServerMessage_User_{
+				User: &models.ServerMessage_User{
 					Username: username,
 				},
 			},
@@ -135,10 +135,10 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 			return
 		}
 
-		msg := &internal.ServerMessage{
+		msg := &models.ServerMessage{
 			Id: xid.New().String(),
-			Payload: &internal.ServerMessage_Reports_{
-				Reports: &internal.ServerMessage_Reports{
+			Payload: &models.ServerMessage_Reports_{
+				Reports: &models.ServerMessage_Reports{
 					Reports: r,
 				},
 			},

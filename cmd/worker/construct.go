@@ -7,24 +7,24 @@ import (
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/models"
+	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/zerolog/log"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
-func (h *handler) handleConstructBuilding(ctx context.Context, senderId string, m *internal.ClientMessage_ConstructBuilding) {
+func (h *handler) handleConstructBuilding(ctx context.Context, senderId string, m *models.ClientMessage_ConstructBuilding) {
 	gsKey := fmt.Sprintf("user:%s:gamestate", senderId)
 
-	var gs internal.GameState
+	var gs models.GameState
 
 	txf := func(tx *redis.Tx) error {
 		// Get current game state
-		b, err := internal.RedisJsonGet(tx, ctx, gsKey, ".").Result()
+		s, err := internal.RedisJsonGet(tx, ctx, gsKey, ".").Result()
 		if err != nil && err != redis.Nil {
 			return err
 		}
-		err = gs.LoadProtoJson([]byte(b))
-		if err != nil {
+		if err = protojson.Unmarshal([]byte(s), &gs); err != nil {
 			return err
 		}
 
@@ -65,7 +65,7 @@ func (h *handler) handleConstructBuilding(ctx context.Context, senderId string, 
 				return err
 			}
 
-			construction := internal.Construction{
+			construction := models.Construction{
 				CompleteAt: completeAt,
 				LotId:      m.LotId,
 				Building:   m.Building,

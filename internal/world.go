@@ -8,8 +8,9 @@ import (
 	"math/rand"
 	"strconv"
 
+	. "github.com/fnatte/pizza-tribes/internal/models"
+	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/go-redis/redis/v8"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
 const WORLD_SIZE = 110
@@ -106,10 +107,10 @@ func (s *WorldService) AcquireTown(ctx context.Context, userId string) (x, y int
 		eidx = getEntryIdx(ex, ey)
 
 		// Convert from index to x,y
-		zy := zidx / (WORLD_SIZE/WORLD_ZONE_SIZE)
-		zx := zidx % (WORLD_SIZE/WORLD_ZONE_SIZE)
-		x = zx * (WORLD_ZONE_SIZE) + ex
-		y = zy * (WORLD_ZONE_SIZE) + ey
+		zy := zidx / (WORLD_SIZE / WORLD_ZONE_SIZE)
+		zx := zidx % (WORLD_SIZE / WORLD_ZONE_SIZE)
+		x = zx*(WORLD_ZONE_SIZE) + ex
+		y = zy*(WORLD_ZONE_SIZE) + ey
 
 		zone, err := s.GetZoneIdx(ctx, zidx)
 		if err != nil {
@@ -254,12 +255,12 @@ func (s *WorldService) Initilize(ctx context.Context) error {
 	// This makes the zones closest to the center to be filled first.
 	cx := WORLD_SIZE / WORLD_ZONE_SIZE / 2
 	cy := WORLD_SIZE / WORLD_ZONE_SIZE / 2
-	for x := 0; x < WORLD_SIZE / WORLD_ZONE_SIZE; x++ {
-		for y := 0; y < WORLD_SIZE / WORLD_ZONE_SIZE; y++ {
-			zidx, _ := getIdx(x * WORLD_ZONE_SIZE, y * WORLD_ZONE_SIZE)
+	for x := 0; x < WORLD_SIZE/WORLD_ZONE_SIZE; x++ {
+		for y := 0; y < WORLD_SIZE/WORLD_ZONE_SIZE; y++ {
+			zidx, _ := getIdx(x*WORLD_ZONE_SIZE, y*WORLD_ZONE_SIZE)
 			dx := cx - x
 			dy := cy - y
-			d := math.Sqrt(float64(dx*dx+dy*dy))
+			d := math.Sqrt(float64(dx*dx + dy*dy))
 			s.tryOpenZone(ctx, zidx, d)
 		}
 	}

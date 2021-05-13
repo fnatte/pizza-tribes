@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/go-redis/redis/v8"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
@@ -23,12 +24,12 @@ func completedConstructions(ctx updateContext, tx *redis.Tx) (pipeFn, error) {
 	// Update patch
 	ctx.gsPatch.ConstructionQueue = ctx.gs.ConstructionQueue[len(completedConstructions):]
 	ctx.gsPatch.ConstructionQueuePatched = true
-	ctx.gsPatch.Lots = map[string]*internal.GameStatePatch_LotPatch{}
+	ctx.gsPatch.Lots = map[string]*models.GameStatePatch_LotPatch{}
 
 	var incrUneducated int32 = 0
 
 	for _, constr := range completedConstructions {
-		ctx.gsPatch.Lots[constr.LotId] = &internal.GameStatePatch_LotPatch{
+		ctx.gsPatch.Lots[constr.LotId] = &models.GameStatePatch_LotPatch{
 			Building: constr.Building,
 			Level:    constr.Level,
 		}
@@ -52,7 +53,7 @@ func completedConstructions(ctx updateContext, tx *redis.Tx) (pipeFn, error) {
 			}
 
 			if ctx.gsPatch.Population == nil {
-				ctx.gsPatch.Population = &internal.GameStatePatch_PopulationPatch{}
+				ctx.gsPatch.Population = &models.GameStatePatch_PopulationPatch{}
 			}
 			ctx.gsPatch.Population.Uneducated = &wrapperspb.Int32Value{
 				Value: ctx.gs.Population.Uneducated + incrUneducated,
@@ -116,7 +117,7 @@ func completedConstructions(ctx updateContext, tx *redis.Tx) (pipeFn, error) {
 	}, nil
 }
 
-func getCompletedConstructions(gs *internal.GameState) (res []*internal.Construction) {
+func getCompletedConstructions(gs *models.GameState) (res []*models.Construction) {
 	now := time.Now().UnixNano()
 
 	for _, t := range gs.ConstructionQueue {

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/go-redis/redis/v8"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
@@ -20,7 +21,7 @@ func completeTrainings(ctx updateContext, tx *redis.Tx) (pipeFn, error) {
 		queueIdx  int
 		popKey    string
 		amount    int32
-		education internal.Education
+		education models.Education
 	}
 	completions := []completion{}
 
@@ -57,7 +58,7 @@ func completeTrainings(ctx updateContext, tx *redis.Tx) (pipeFn, error) {
 	ctx.gsPatch.TrainingQueue = ctx.gs.TrainingQueue
 	ctx.gsPatch.TrainingQueuePatched = true
 	if ctx.gsPatch.Population == nil {
-		ctx.gsPatch.Population = &internal.GameStatePatch_PopulationPatch{}
+		ctx.gsPatch.Population = &models.GameStatePatch_PopulationPatch{}
 	}
 	for _, c := range completions {
 		// Remove completion index from training queue
@@ -96,21 +97,21 @@ func completeTrainings(ctx updateContext, tx *redis.Tx) (pipeFn, error) {
 	}, nil
 }
 
-func increasePopulation(gs *internal.GameState, gsPatch *internal.GameStatePatch, education internal.Education, amount int32) {
+func increasePopulation(gs *models.GameState, gsPatch *models.GameStatePatch, education models.Education, amount int32) {
 	switch education {
-	case internal.Education_CHEF:
+	case models.Education_CHEF:
 		gsPatch.Population.Chefs = &wrapperspb.Int32Value{
 			Value: gs.Population.Chefs + amount,
 		}
-	case internal.Education_SALESMOUSE:
+	case models.Education_SALESMOUSE:
 		gsPatch.Population.Salesmice = &wrapperspb.Int32Value{
 			Value: gs.Population.Salesmice + amount,
 		}
-	case internal.Education_GUARD:
+	case models.Education_GUARD:
 		gsPatch.Population.Guards = &wrapperspb.Int32Value{
 			Value: gs.Population.Guards + amount,
 		}
-	case internal.Education_THIEF:
+	case models.Education_THIEF:
 		gsPatch.Population.Thieves = &wrapperspb.Int32Value{
 			Value: gs.Population.Thieves + amount,
 		}

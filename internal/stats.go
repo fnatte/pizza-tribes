@@ -1,5 +1,9 @@
 package internal
 
+import (
+	. "github.com/fnatte/pizza-tribes/internal/models"
+)
+
 const CHEF_PIZZAS_PER_SECOND = 0.2
 const SALESMICE_SELLS_PER_SECOND = 0.5
 const DEMAND_BASE = 0.2

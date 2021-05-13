@@ -1,6 +1,9 @@
 package internal
 
-import "time"
+import (
+	"time"
+	. "github.com/fnatte/pizza-tribes/internal/models"
+)
 
 const ThiefSpeed = 5 * time.Minute
 const ThiefCapacity = 4_000

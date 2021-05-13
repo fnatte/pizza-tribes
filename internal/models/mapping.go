@@ -1,4 +1,4 @@
-package internal
+package models
 
 import (
 	"github.com/rs/xid"

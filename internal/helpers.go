@@ -1,15 +1,13 @@
 package internal
 
 import (
-	"google.golang.org/protobuf/encoding/protojson"
+	"time"
+
+	. "github.com/fnatte/pizza-tribes/internal/models"
 )
 
 func NewInt64(i int64) *int64    { return &i }
 func NewString(s string) *string { return &s }
-
-var protojsonu = protojson.UnmarshalOptions{
-	DiscardUnknown: true,
-}
 
 func CountBuildings(gs *GameState) (counts map[int32]int32) {
 	counts = map[int32]int32{}
@@ -94,3 +92,18 @@ func CountAllPopulation(gs *GameState) int32 {
 		CountTravellingPopulation(gs.TravelQueue)
 
 }
+
+func GetCompletedTravels(gs *GameState) (res []*Travel) {
+	now := time.Now().UnixNano()
+
+	for _, t := range gs.TravelQueue {
+		if t.ArrivalAt > now {
+			break
+		}
+
+		res = append(res, t)
+	}
+
+	return res
+}
+

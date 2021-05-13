@@ -6,11 +6,13 @@ import (
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/models"
+	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/zerolog/log"
-	"google.golang.org/protobuf/encoding/protojson"
 )
-func envOrDefault(key string, defaultVal string) string{
+
+func envOrDefault(key string, defaultVal string) string {
 	val, ok := os.LookupEnv(key)
 	if ok {
 		return val
@@ -24,14 +26,14 @@ func main() {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     envOrDefault("REDIS_ADDR", "localhost:6379"),
 		Password: envOrDefault("REDIS_PASSWORD", ""),
-		DB:       0,  // use default DB
+		DB:       0, // use default DB
 	})
 
 	rc := internal.NewRedisClient(rdb)
 
 	world := internal.NewWorldService(rc)
 
-	h := &handler{ rdb: rc, world: world }
+	h := &handler{rdb: rc, world: world}
 
 	ctx := context.Background()
 
@@ -52,7 +54,7 @@ func main() {
 		msg := &internal.IncomingMessage{}
 		msg.UnmarshalBinary([]byte(res[1]))
 
-		m := &internal.ClientMessage{}
+		m := &models.ClientMessage{}
 		err = protojson.Unmarshal([]byte(msg.Body), m)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to parse incoming message")
@@ -63,4 +65,3 @@ func main() {
 	}
 
 }
-

@@ -7,12 +7,13 @@ import (
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/models"
+	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/zerolog/log"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
-func (h *handler) handleTrain(ctx context.Context, senderId string, m *internal.ClientMessage_Train) {
+func (h *handler) handleTrain(ctx context.Context, senderId string, m *models.ClientMessage_Train) {
 	log.Info().
 		Str("senderId", senderId).
 		Interface("Education", m.Education).
@@ -21,16 +22,15 @@ func (h *handler) handleTrain(ctx context.Context, senderId string, m *internal.
 
 	gameStateKey := fmt.Sprintf("user:%s:gamestate", senderId)
 
-	var gs internal.GameState
+	var gs models.GameState
 
 	txf := func(tx *redis.Tx) error {
 		// Get current game state
-		b, err := internal.RedisJsonGet(tx, ctx, gameStateKey, ".").Result()
+		s, err := internal.RedisJsonGet(tx, ctx, gameStateKey, ".").Result()
 		if err != nil && err != redis.Nil {
 			return err
 		}
-		err = gs.LoadProtoJson([]byte(b))
-		if err != nil {
+		if err = protojson.Unmarshal([]byte(s), &gs); err != nil {
 			return err
 		}
 
@@ -67,7 +67,7 @@ func (h *handler) handleTrain(ctx context.Context, senderId string, m *internal.
 				return err
 			}
 
-			training := internal.Training{
+			training := models.Training{
 				CompleteAt: time.Now().UnixNano() + trainTime*1e9,
 				Education:  m.Education,
 				Amount:     m.Amount,
@@ -101,5 +101,3 @@ func (h *handler) handleTrain(ctx context.Context, senderId string, m *internal.
 	h.fetchAndUpdateTimestamp(ctx, senderId)
 	h.sendFullStateUpdate(ctx, senderId)
 }
-
-

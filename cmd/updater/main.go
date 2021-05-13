@@ -8,22 +8,23 @@ import (
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/models"
+	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog/log"
-	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
-func getPopulationKey(edu internal.Education) (string, error) {
+func getPopulationKey(edu models.Education) (string, error) {
 	switch edu {
-	case internal.Education_CHEF:
+	case models.Education_CHEF:
 		return "chefs", nil
-	case internal.Education_SALESMOUSE:
+	case models.Education_SALESMOUSE:
 		return "salesmice", nil
-	case internal.Education_GUARD:
+	case models.Education_GUARD:
 		return "guards", nil
-	case internal.Education_THIEF:
+	case models.Education_THIEF:
 		return "thieves", nil
 	default:
 		return "", fmt.Errorf("Invalid education: %s", edu)
@@ -39,8 +40,8 @@ type updater struct {
 type updateContext struct {
 	context.Context
 	userId      string
-	gs          *internal.GameState
-	gsPatch     *internal.GameStatePatch
+	gs          *models.GameState
+	gsPatch     *models.GameStatePatch
 	sendReports *bool
 	sendStats   *bool
 }
@@ -68,22 +69,21 @@ func (u *updater) update(ctx context.Context, userId string) {
 	uctx := updateContext{
 		ctx,
 		userId,
-		&internal.GameState{},
-		&internal.GameStatePatch{
-			Resources:  &internal.GameStatePatch_ResourcesPatch{},
-			Population: &internal.GameStatePatch_PopulationPatch{},
+		&models.GameState{},
+		&models.GameStatePatch{
+			Resources:  &models.GameStatePatch_ResourcesPatch{},
+			Population: &models.GameStatePatch_PopulationPatch{},
 		},
 		&sendReportsBoolRef,
 		&sendStats2}
 
 	txf := func(tx *redis.Tx) error {
 		// Get current game state
-		b, err := internal.RedisJsonGet(tx, ctx, gameStateKey, ".").Result()
+		s, err := internal.RedisJsonGet(tx, ctx, gameStateKey, ".").Result()
 		if err != nil && err != redis.Nil {
 			return err
 		}
-		err = uctx.gs.LoadProtoJson([]byte(b))
-		if err != nil {
+		if err = protojson.Unmarshal([]byte(s), uctx.gs); err != nil {
 			return err
 		}
 
@@ -135,9 +135,9 @@ func (u *updater) update(ctx context.Context, userId string) {
 	}
 
 	// Send patch
-	err = send(ctx, u.r, userId, &internal.ServerMessage{
+	err = send(ctx, u.r, userId, &models.ServerMessage{
 		Id: xid.New().String(),
-		Payload: &internal.ServerMessage_StateChange{
+		Payload: &models.ServerMessage_StateChange{
 			StateChange: uctx.gsPatch,
 		},
 	})
@@ -208,10 +208,10 @@ func sendReports(ctx context.Context, r internal.RedisClient, userId string) err
 		return fmt.Errorf("failed to get reports: %w", err)
 	}
 
-	return send(ctx, r, userId, &internal.ServerMessage{
+	return send(ctx, r, userId, &models.ServerMessage{
 		Id: xid.New().String(),
-		Payload: &internal.ServerMessage_Reports_{
-			Reports: &internal.ServerMessage_Reports{
+		Payload: &models.ServerMessage_Reports_{
+			Reports: &models.ServerMessage_Reports{
 				Reports: reports,
 			},
 		},
@@ -219,14 +219,13 @@ func sendReports(ctx context.Context, r internal.RedisClient, userId string) err
 }
 
 func sendStats(ctx context.Context, r internal.RedisClient, userId string) error {
-	gs := internal.GameState{}
+	gs := models.GameState{}
 	gsKey := fmt.Sprintf("user:%s:gamestate", userId)
-	b, err := internal.RedisJsonGet(r, ctx, gsKey, ".").Result()
+	s, err := internal.RedisJsonGet(r, ctx, gsKey, ".").Result()
 	if err != nil && err != redis.Nil {
 		return err
 	}
-	err = gs.LoadProtoJson([]byte(b))
-	if err != nil {
+	if err = protojson.Unmarshal([]byte(s), &gs); err != nil {
 		return err
 	}
 
@@ -243,20 +242,19 @@ func sendStats(ctx context.Context, r internal.RedisClient, userId string) error
 // game state update pipeline because it does not handle modification
 // of the same variables twice with ease. Once that is fixed, this
 // func should be part of the update pipeline.
-func (u *updater) restorePopulation(ctx context.Context, userId string) (error) {
+func (u *updater) restorePopulation(ctx context.Context, userId string) error {
 	gsKey := fmt.Sprintf("user:%s:gamestate", userId)
 
-	gs := &internal.GameState{}
+	gs := &models.GameState{}
 	var addedPop int32 = 0
 
 	txf := func(tx *redis.Tx) error {
 		// Get current game state
-		b, err := internal.RedisJsonGet(tx, ctx, gsKey, ".").Result()
+		s, err := internal.RedisJsonGet(tx, ctx, gsKey, ".").Result()
 		if err != nil && err != redis.Nil {
 			return err
 		}
-		err = gs.LoadProtoJson([]byte(b))
-		if err != nil {
+		if err = protojson.Unmarshal([]byte(s), gs); err != nil {
 			return err
 		}
 
@@ -281,11 +279,11 @@ func (u *updater) restorePopulation(ctx context.Context, userId string) (error) 
 	}
 
 	if addedPop != 0 {
-		return send(ctx, u.r, userId, &internal.ServerMessage{
+		return send(ctx, u.r, userId, &models.ServerMessage{
 			Id: xid.New().String(),
-			Payload: &internal.ServerMessage_StateChange{
-				StateChange: &internal.GameStatePatch{
-					Population: &internal.GameStatePatch_PopulationPatch{
+			Payload: &models.ServerMessage_StateChange{
+				StateChange: &models.GameStatePatch{
+					Population: &models.GameStatePatch_PopulationPatch{
 						Uneducated: &wrapperspb.Int32Value{
 							Value: gs.Population.Uneducated + addedPop,
 						},
@@ -331,7 +329,7 @@ func (u *updater) next(ctx context.Context) (string, error) {
 }
 
 // Send a message to the specified userId
-func send(ctx context.Context, r redis.Cmdable, userId string, msg *internal.ServerMessage) error {
+func send(ctx context.Context, r redis.Cmdable, userId string, msg *models.ServerMessage) error {
 	b, err := protojson.Marshal(msg)
 	if err != nil {
 		return err

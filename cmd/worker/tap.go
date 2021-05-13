@@ -6,21 +6,22 @@ import (
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/models"
+	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/xid"
-	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
-func (h *handler) handleTap(ctx context.Context, userId string, m *internal.ClientMessage_Tap) error {
+func (h *handler) handleTap(ctx context.Context, userId string, m *models.ClientMessage_Tap) error {
 	gsKey := fmt.Sprintf("user:%s:gamestate", userId)
 	lotPath := fmt.Sprintf(".lots[\"%s\"]", m.LotId)
 	popPath := ".population"
 	tappedAtPath := fmt.Sprintf("%s.tapped_at", lotPath)
 	now := time.Now().UnixNano()
 
-	var lot internal.GameState_Lot
-	var population internal.GameState_Population
+	var lot models.GameState_Lot
+	var population models.GameState_Population
 
 	txf := func(tx *redis.Tx) error {
 		// Get lot
@@ -28,9 +29,7 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *internal.Clie
 		if err != nil {
 			return fmt.Errorf("failed to get lot: %w", err)
 		}
-		if err = (protojson.UnmarshalOptions{
-			DiscardUnknown: true,
-		}).Unmarshal([]byte(str), &lot); err != nil {
+		if err = protojson.Unmarshal([]byte(str), &lot); err != nil {
 			return fmt.Errorf("failed to unmarshal lot: %w", err)
 		}
 
@@ -39,9 +38,7 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *internal.Clie
 		if err != nil {
 			return fmt.Errorf("failed to get population: %w", err)
 		}
-		if err = (protojson.UnmarshalOptions{
-			DiscardUnknown: true,
-		}).Unmarshal([]byte(str), &population); err != nil {
+		if err = protojson.Unmarshal([]byte(str), &population); err != nil {
 			return fmt.Errorf("failed to unmarshal population: %w", err)
 		}
 
@@ -49,10 +46,10 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *internal.Clie
 		var incrPath string
 		var incrAmount int64
 		switch lot.Building {
-		case internal.Building_KITCHEN:
+		case models.Building_KITCHEN:
 			incrPath = ".resources.pizzas"
 			incrAmount = 100 * int64(internal.CountTownPopulation(&population))
-		case internal.Building_SHOP:
+		case models.Building_SHOP:
 			incrPath = ".resources.coins"
 			incrAmount = 50 * int64(internal.CountTownPopulation(&population))
 		default:
@@ -96,7 +93,7 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *internal.Clie
 	return nil
 }
 
-func (h *handler) sendTapUpdate(ctx context.Context, userId string, lotId string, building internal.Building, tappedAt int64) error {
+func (h *handler) sendTapUpdate(ctx context.Context, userId string, lotId string, building models.Building, tappedAt int64) error {
 	gsKey := fmt.Sprintf("user:%s:gamestate", userId)
 	path := ".resources"
 
@@ -105,28 +102,26 @@ func (h *handler) sendTapUpdate(ctx context.Context, userId string, lotId string
 		return fmt.Errorf("failed to get resources: %w", err)
 	}
 
-	res := internal.GameState_Resources{}
-	protojson.UnmarshalOptions{
-		DiscardUnknown:    true,
-	}.Unmarshal([]byte(s), &res)
+	res := models.GameState_Resources{}
+	protojson.Unmarshal([]byte(s), &res)
 	if err != nil {
 		return fmt.Errorf("failed to unmarshal resources: %w", err)
 	}
 
-	lotsPatch := map[string]*internal.GameStatePatch_LotPatch{}
-	lotsPatch[lotId] = &internal.GameStatePatch_LotPatch{
+	lotsPatch := map[string]*models.GameStatePatch_LotPatch{}
+	lotsPatch[lotId] = &models.GameStatePatch_LotPatch{
 		Building: building,
 		TappedAt: tappedAt,
 	}
 
-	return h.send(ctx, userId, &internal.ServerMessage{
+	return h.send(ctx, userId, &models.ServerMessage{
 		Id: xid.New().String(),
-		Payload: &internal.ServerMessage_StateChange{
-			StateChange: &internal.GameStatePatch{
+		Payload: &models.ServerMessage_StateChange{
+			StateChange: &models.GameStatePatch{
 				Lots: lotsPatch,
-				Resources: &internal.GameStatePatch_ResourcesPatch{
-					Coins: &wrapperspb.Int32Value{ Value: res.Coins },
-					Pizzas: &wrapperspb.Int32Value{ Value: res.Pizzas },
+				Resources: &models.GameStatePatch_ResourcesPatch{
+					Coins:  &wrapperspb.Int32Value{Value: res.Coins},
+					Pizzas: &wrapperspb.Int32Value{Value: res.Pizzas},
 				},
 			},
 		},
