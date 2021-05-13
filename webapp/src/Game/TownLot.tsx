@@ -12,6 +12,7 @@ import JSBI from "jsbi";
 import styles from "../styles";
 import { formatDistanceToNow } from "date-fns";
 import { countPopulation, formatDurationShort, formatNumber } from "../utils";
+import { Education } from "../generated/education";
 
 const title = classnames("text-lg", "md:text-xl", "mb-2");
 const label = classnames("text-xs", "md:text-sm", "mr-1");
@@ -105,6 +106,21 @@ const UpgradeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
     upgradeBuilding(lotId);
   };
 
+  const currentLevelInfo = buildingInfo.levelInfos[lot.level];
+  const nextLevelInfo = buildingInfo.levelInfos[lot.level + 1];
+
+  const increasesWorkforce =
+    (nextLevelInfo.employer?.maxWorkforce ?? 0) -
+    (currentLevelInfo.employer?.maxWorkforce ?? 0);
+  const increasedPopulation =
+    (nextLevelInfo.residence?.beds ?? 0) -
+    (currentLevelInfo.residence?.beds ?? 0);
+
+  const employsSalesmice =
+    gameData?.educations[Education.SALESMOUSE].employer === lot.building;
+  const employsChefs =
+    gameData?.educations[Education.CHEF].employer === lot.building;
+
   const { cost, constructionTime } = buildingInfo.levelInfos[lot.level + 1];
 
   const canAfford = coins >= cost;
@@ -125,6 +141,25 @@ const UpgradeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
               {formatDurationShort(constructionTime)}
             </td>
           </tr>
+          {increasedPopulation > 0 && (
+            <tr>
+              <td className={classnames(label as TArg, "pr-2")}>Population:</td>
+              <td className={classnames(value as TArg, "pr-2")}>
+                +{formatNumber(increasedPopulation)}
+              </td>
+            </tr>
+          )}
+          {increasesWorkforce > 0 && (
+            <tr>
+              <td className={classnames(label as TArg, "pr-2")}>
+                {employsChefs && "Chef positions"}
+                {employsSalesmice && "Salesmouse positions"}
+              </td>
+              <td className={classnames(value as TArg, "pr-2")}>
+                +{formatNumber(increasesWorkforce)}
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
       <hr className={classnames("border-t-2", "border-green-300", "my-2")} />
