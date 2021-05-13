@@ -14,7 +14,8 @@ import LeaderboardView from "./Game/LeaderboardView";
 import { useClickAway, useMedia } from "react-use";
 import ListReportsView from "./Game/reports/ListReportsView";
 import ShowReportView from "./Game/reports/ShowReportView";
-import {formatNumber} from "./utils";
+import { formatNumber } from "./utils";
+import HelpView from "./Game/HelpView";
 
 type ClockState = {
   formatted: string;
@@ -138,6 +139,9 @@ function Navigation() {
               Leaderboard
             </button>
           </Link>
+          <Link to="/help">
+            <button className={classnames(styles.button, "mr-2")}>Help</button>
+          </Link>
           <button
             className={classnames(styles.button, "mr-2")}
             onClick={() => onClickLogout()}
@@ -170,6 +174,7 @@ function Navigation() {
                 "flex",
                 "flex-col",
                 "bg-green-200",
+                "z-10",
                 "transform" as TArg,
                 "sm:-translate-x-1/2",
                 "sm:right-auto",
@@ -189,6 +194,11 @@ function Navigation() {
               <Link to="/leaderboard" onClick={() => setMenuExpaded(false)}>
                 <button className={classnames(styles.button, "mr-2")}>
                   Leaderboard
+                </button>
+              </Link>
+              <Link to="/help" onClick={() => setMenuExpaded(false)}>
+                <button className={classnames(styles.button, "mr-2")}>
+                  Help
                 </button>
               </Link>
               <button
@@ -380,6 +390,7 @@ function GamePage(): JSX.Element {
         <Route path="leaderboard" element={<LeaderboardView />} />
         <Route path="reports" element={<ListReportsView />} />
         <Route path="reports/:id" element={<ShowReportView />} />
+        <Route path="help" element={<HelpView />} />
         <Route path="/" element={<Navigate to="/town" replace />} />
       </Routes>
       {connectionState?.connecting && (

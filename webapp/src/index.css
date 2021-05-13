@@ -27,4 +27,8 @@
   input[type=text], input[type=password] {
     @apply p-1;
   }
+
+  article p {
+    @apply my-8;
+  }
 }

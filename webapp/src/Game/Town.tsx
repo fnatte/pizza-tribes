@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { useMedia } from "react-use";
+import { Navigate, useNavigate } from "react-router-dom";
+import { useLocalStorage, useMedia } from "react-use";
 import { classnames, TArg } from "tailwindcss-classnames";
 import { useStore } from "../store";
 import ConstructionQueue from "./ConstructionQueue";
@@ -81,6 +81,15 @@ function Town() {
       lots.forEach((lot) => lot.removeEventListener("click", handler));
     };
   }, [ref.current]);
+
+  const [hasSeenHelpPage] = useLocalStorage(
+    "hasSeenHelpPage",
+    false
+  );
+
+  if (hasSeenHelpPage === false) {
+    return <Navigate to="/help" replace />;
+  }
 
   return (
     <div
