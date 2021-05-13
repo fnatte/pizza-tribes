@@ -1,26 +1,38 @@
 import React, { useState } from "react";
 import { classnames, TArg } from "tailwindcss-classnames";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { RemoveIndex } from "./utils";
+import { useForm } from "react-hook-form";
 
 type Props = {
   onLogin: () => void;
 };
 
-const LoginForm: React.FC<Props> = ({ onLogin }) => {
-  const [isLoading, setLoading] = useState(false);
+const schema = yup.object().shape({
+  username: yup.string().required(),
+  password: yup.string().required(),
+});
 
-  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    setLoading(true);
+type FormFields = RemoveIndex<yup.Asserts<typeof schema>>;
+
+const LoginForm: React.FC<Props> = ({ onLogin }) => {
+  const [badCredentials, setBadCredentials] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<FormFields>({ resolver: yupResolver(schema) });
+
+  const onSubmit = async (data: FormFields) => {
     let response: Response;
     try {
-      e.preventDefault();
-      const formData = new FormData(e.currentTarget);
-      const json = JSON.stringify(Object.fromEntries(formData));
-
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
       response = await fetch("/api/auth/login", {
         method: "POST",
-        body: json,
+        body: JSON.stringify(data),
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -30,13 +42,14 @@ const LoginForm: React.FC<Props> = ({ onLogin }) => {
       });
       clearTimeout(timeoutId);
     } catch (e) {
-      setLoading(false);
       throw e;
     }
 
-    setLoading(false);
     if (response.status === 200) {
+      setBadCredentials(false);
       onLogin();
+    } else if (response.status === 403) {
+      setBadCredentials(true);
     }
   };
 
@@ -50,22 +63,28 @@ const LoginForm: React.FC<Props> = ({ onLogin }) => {
         "mx-auto",
         "my-4"
       )}
-      onSubmit={onSubmit}
+      onSubmit={handleSubmit(onSubmit)}
     >
       <input
         type="text"
-        name="username"
         placeholder="Username"
         className={classnames("my-1")}
-        disabled={isLoading}
+        disabled={isSubmitting}
+        {...register("username")}
       />
+      {errors.username && (
+        <span className="pb-2 text-red-900">{errors.username.message}</span>
+      )}
       <input
         type="password"
-        name="password"
         placeholder="Password"
         className={classnames("my-1")}
-        disabled={isLoading}
+        disabled={isSubmitting}
+        {...register("password")}
       />
+      {errors.password && (
+        <span className="pb-2 text-red-900">{errors.password.message}</span>
+      )}
       <button
         type="submit"
         className={classnames(
@@ -76,10 +95,15 @@ const LoginForm: React.FC<Props> = ({ onLogin }) => {
           "bg-green-600",
           "disabled:bg-gray-600" as TArg
         )}
-        disabled={isLoading}
+        disabled={isSubmitting}
       >
         Login
       </button>
+      {badCredentials && (
+        <div className={classnames("text-red-900")}>
+          Wrong username or password
+        </div>
+      )}
     </form>
   );
 };
