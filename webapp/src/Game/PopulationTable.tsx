@@ -51,7 +51,7 @@ const Population: React.FC<{ className?: string }> = ({ className }) => {
                   {educations[id].titlePlural}
                 </td>
                 <td className={classnames("p-2")}>
-                  {education.employer !== undefined
+                  {education.employer !== undefined && max !== undefined
                     ? `${pop.toString()} / ${max}`
                     : pop.toString()}
                 </td>
