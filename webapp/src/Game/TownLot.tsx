@@ -35,11 +35,11 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
   switch (lot.building) {
     case Building.KITCHEN:
       tapResource = "pizzas";
-      tapGains = 100 * countPopulation(population);
+      tapGains = 80 * countPopulation(population);
       break;
     case Building.SHOP:
       tapResource = "coins";
-      tapGains = 50 * countPopulation(population);
+      tapGains = 35 * countPopulation(population);
       break;
     default:
       return null;

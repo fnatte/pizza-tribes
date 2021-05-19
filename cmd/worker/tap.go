@@ -48,10 +48,10 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *models.Client
 		switch lot.Building {
 		case models.Building_KITCHEN:
 			incrPath = ".resources.pizzas"
-			incrAmount = 100 * int64(internal.CountTownPopulation(&population))
+			incrAmount = 80 * int64(internal.CountTownPopulation(&population))
 		case models.Building_SHOP:
 			incrPath = ".resources.coins"
-			incrAmount = 50 * int64(internal.CountTownPopulation(&population))
+			incrAmount = 35 * int64(internal.CountTownPopulation(&population))
 		default:
 			return fmt.Errorf("this building cannot be tapped")
 		}
