@@ -56,7 +56,7 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *models.Client
 			return fmt.Errorf("this building cannot be tapped")
 		}
 
-		nextTapAt := lot.TappedAt + (15 * time.Minute).Nanoseconds()
+		nextTapAt := lot.TappedAt + (60 * time.Minute).Nanoseconds()
 
 		if nextTapAt > now {
 			return fmt.Errorf("tapped to soon, next tap at %d", nextTapAt)

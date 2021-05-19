@@ -25,7 +25,7 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
   const tappedAt = JSBI.toNumber(
     JSBI.divide(JSBI.BigInt(lot.tappedAt), JSBI.BigInt(1e6))
   );
-  const nextTapAt = tappedAt + 60_000 * 15;
+  const nextTapAt = tappedAt + 60_000 * 60;
   const canTap = nextTapAt < Date.now();
 
   const tap = useStore((state) => state.tap);
