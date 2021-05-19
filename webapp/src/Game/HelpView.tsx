@@ -37,20 +37,18 @@ const HelpView: React.VFC<{}> = () => {
             competitors!
           </p>
 
-          <p>
-            You should start of by constructing some buildings:
-            <ul
-              className={classnames("list-disc", "list-inside", "ml-4", "my-2")}
-            >
-              <li>A house &mdash; so that mice will move in to your town</li>
-              <li>A school &mdash; so that you can educate your mice</li>
-              <li>A kitchen &mdash; so that your chefs can bake pizzas</li>
-              <li>
-                A shop &mdash; so that your salesmice can sell pizzas and earn
-                you coins
-              </li>
-            </ul>
-          </p>
+          <p>You should start of by constructing some buildings:</p>
+          <ul
+            className={classnames("list-disc", "list-inside", "ml-4", "my-2")}
+          >
+            <li>A house &mdash; so that mice will move in to your town</li>
+            <li>A school &mdash; so that you can educate your mice</li>
+            <li>A kitchen &mdash; so that your chefs can bake pizzas</li>
+            <li>
+              A shop &mdash; so that your salesmice can sell pizzas and earn you
+              coins
+            </li>
+          </ul>
         </section>
 
         <section>
@@ -67,7 +65,8 @@ const HelpView: React.VFC<{}> = () => {
                 "w-5/6",
                 "filter",
                 "hue-rotate-15",
-                "my-2"
+                "my-2",
+                "max-w-sm"
               )}
             />
           </p>
@@ -89,7 +88,8 @@ const HelpView: React.VFC<{}> = () => {
                 "w-5/6",
                 "filter",
                 "hue-rotate-15",
-                "my-2"
+                "my-2",
+                "max-w-sm"
               )}
             />
             If your <em>Uneducated</em> column shows 0, then you need to
@@ -107,7 +107,8 @@ const HelpView: React.VFC<{}> = () => {
                 "w-5/6",
                 "filter",
                 "hue-rotate-15",
-                "my-2"
+                "my-2",
+                "max-w-sm"
               )}
             />
             If your don't have a school, then you need to build one one an empty
