@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
 import { ReactComponent as HeartsSvg } from "../../images/hearts.svg";
 import { Leaderboard } from "../generated/leaderboard";
+import { formatNumber } from "../utils";
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -42,7 +43,9 @@ function LeaderboardView() {
         >
           <thead>
             <tr>
-              <th className={classnames("p-1", "text-left", "w-1")}>Position</th>
+              <th className={classnames("p-1", "text-left", "w-1")}>
+                Position
+              </th>
               <th className={classnames("p-1", "pl-8", "text-left")}>User</th>
               <th className={classnames("p-1", "text-right")}>Coins</th>
             </tr>
@@ -59,7 +62,9 @@ function LeaderboardView() {
                   {i + 1 + (data.value?.skip ?? 0)}
                 </td>
                 <td className={classnames("p-1", "pl-8")}>{row.username}</td>
-                <td className={classnames("text-right", "p-1")}>{row.coins}</td>
+                <td className={classnames("text-right", "p-1")}>
+                  {formatNumber(Number(row.coins))}
+                </td>
               </tr>
             ))}
           </tbody>
