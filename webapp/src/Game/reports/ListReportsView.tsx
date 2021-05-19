@@ -19,7 +19,7 @@ function ListReportsView() {
           "my-4",
           "border-collapse",
           "border-green-400",
-          "border-2",
+          "border-2"
         )}
       >
         <thead>
@@ -44,13 +44,20 @@ function ListReportsView() {
                   "p-1": true,
                   "pl-8": true,
                   "font-bold": report.unread,
-                  "underline": true,
+                  underline: true,
                 })}
               >
                 <Link to={`/reports/${report.id}`}>{report.title}</Link>
               </td>
             </tr>
           ))}
+          {reports.length === 0 && (
+            <tr className={classnames("bg-green-200")}>
+              <td colSpan={2} className={classnames("p-1")}>
+                You do not have any reports.
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
     </div>
