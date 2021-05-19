@@ -86,14 +86,14 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *models.Client
 		return err
 	}
 
-	if err := h.sendTapUpdate(ctx, userId, m.LotId, lot.Building, now); err != nil {
+	if err := h.sendTapUpdate(ctx, userId, m.LotId, lot.Building, lot.Level, now); err != nil {
 		return fmt.Errorf("failed to send tap update: %w", err)
 	}
 
 	return nil
 }
 
-func (h *handler) sendTapUpdate(ctx context.Context, userId string, lotId string, building models.Building, tappedAt int64) error {
+func (h *handler) sendTapUpdate(ctx context.Context, userId string, lotId string, building models.Building, level int32, tappedAt int64) error {
 	gsKey := fmt.Sprintf("user:%s:gamestate", userId)
 	path := ".resources"
 
@@ -112,6 +112,7 @@ func (h *handler) sendTapUpdate(ctx context.Context, userId string, lotId string
 	lotsPatch[lotId] = &models.GameStatePatch_LotPatch{
 		Building: building,
 		TappedAt: tappedAt,
+		Level: level,
 	}
 
 	return h.send(ctx, userId, &models.ServerMessage{
