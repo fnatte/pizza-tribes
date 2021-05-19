@@ -146,8 +146,8 @@ var FullGameData = GameData{
 			Employer:    Building_SHOP.Enum(),
 		},
 		int32(Education_GUARD): {
-			Title:       "Guard",
-			TitlePlural: "Guards",
+			Title:       "Security Guard",
+			TitlePlural: "Security Guards",
 			Cost:        10_000,
 			TrainTime:   1000,
 			Employer:    nil,

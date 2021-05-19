@@ -32,9 +32,9 @@ const HelpView: React.VFC<{}> = () => {
 
           <p>
             To keep your profits intact, you must train part of your population
-            as guards to protect yourself from being robbed by other players.
-            And maybe, you join the dirty game yourself and send thieves on your
-            competitors!
+            as security guards to protect yourself from being robbed by other
+            players. And maybe, you join the dirty game yourself and send
+            thieves on your competitors!
           </p>
 
           <p>You should start of by constructing some buildings:</p>

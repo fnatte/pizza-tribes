@@ -9,7 +9,7 @@ import styles from "../styles";
 import PlaceholderImage from "./PlaceholderImage";
 import { ReactComponent as ChefSvg } from "../../images/chef.svg";
 import { ReactComponent as SalesmouseSvg } from "../../images/salesmouse.svg";
-import { ReactComponent as GuardSvg } from "../../images/guard.svg";
+import { ReactComponent as SecuritySvg } from "../../images/security.svg";
 import { ReactComponent as ThiefSvg } from "../../images/thief.svg";
 import { ReactComponent as SvgSchool } from "../../images/school.svg";
 import { formatDurationShort } from "../utils";
@@ -22,7 +22,7 @@ const descriptionStyle = classnames("text-sm", "text-gray-600");
 const svgs: Record<number, React.VFC | undefined> = {
   [Education.CHEF]: ChefSvg,
   [Education.SALESMOUSE]: SalesmouseSvg,
-  [Education.GUARD]: GuardSvg,
+  [Education.GUARD]: SecuritySvg,
   [Education.THIEF]: ThiefSvg,
 };
 
@@ -35,7 +35,7 @@ const descriptions: Record<number, React.VFC | undefined> = {
   ),
   [Education.GUARD]: () => (
     <p className={descriptionStyle}>
-      Guards help protect your town against thieves.
+      Security guards help protect your town against thieves.
     </p>
   ),
   [Education.THIEF]: () => (

@@ -20,8 +20,9 @@ will earn coins by selling pizzas. The player with the most coins is
 proclaimed as the winner.
 
 To keep your profits intact, you must train part of your population as
-guards to protect yourself from being robbed by other players. And maybe,
-you join the dirty game yourself and send thieves on your competitors!
+security guards to protect yourself from being robbed by other players.
+And maybe, you join the dirty game yourself and send thieves on your
+competitors!
 
 <figure>
 	<img alt="screenshot of Pizza Tribes" src="https://github.com/fnatte/pizza-tribes/raw/main/docs/screenshot.png" width="500" />
