@@ -152,8 +152,8 @@ const UpgradeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
           {increasesWorkforce > 0 && (
             <tr>
               <td className={classnames(label as TArg, "pr-2")}>
-                {employsChefs && "Chef positions"}
-                {employsSalesmice && "Salesmouse positions"}
+                {employsChefs && "Chef positions:"}
+                {employsSalesmice && "Salesmouse positions:"}
               </td>
               <td className={classnames(value as TArg, "pr-2")}>
                 +{formatNumber(increasesWorkforce)}
