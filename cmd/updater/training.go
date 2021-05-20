@@ -55,26 +55,23 @@ func completeTrainings(ctx updateContext, tx *redis.Tx) (pipeFn, error) {
 	}
 
 	// Update patch
-	ctx.gsPatch.TrainingQueue = ctx.gs.TrainingQueue
-	ctx.gsPatch.TrainingQueuePatched = true
-	if ctx.gsPatch.Population == nil {
-		ctx.gsPatch.Population = &models.GameStatePatch_PopulationPatch{}
-	}
+	ctx.patch.gsPatch.TrainingQueue = ctx.gs.TrainingQueue
+	ctx.patch.gsPatch.TrainingQueuePatched = true
 	for _, c := range completions {
 		// Remove completion index from training queue
-		ctx.gsPatch.TrainingQueue = append(
-			ctx.gsPatch.TrainingQueue[:c.queueIdx],
-			ctx.gsPatch.TrainingQueue[c.queueIdx+1:]...,
+		ctx.patch.gsPatch.TrainingQueue = append(
+			ctx.patch.gsPatch.TrainingQueue[:c.queueIdx],
+			ctx.patch.gsPatch.TrainingQueue[c.queueIdx+1:]...,
 		)
 
 		// TODO:
 		// fix bug that will happen if thieves return at the same time as
 		// thieves return
-		increasePopulation(ctx.gs, ctx.gsPatch, c.education, c.amount)
+		increasePopulation(ctx.gs, ctx.patch.gsPatch, c.education, c.amount)
 	}
 
 	// Since we have changed the population we should send a new stats message
-	*ctx.sendStats = true
+	ctx.patch.sendStats = true
 
 	return func(pipe redis.Pipeliner) error {
 		for _, c := range completions {

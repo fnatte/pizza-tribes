@@ -37,13 +37,31 @@ type updater struct {
 	leaderboard *internal.LeaderboardService
 }
 
+type patch struct {
+	gsPatch     *models.GameStatePatch
+	sendStats   bool
+	sendReports bool
+}
+
 type updateContext struct {
 	context.Context
-	userId      string
-	gs          *models.GameState
-	gsPatch     *models.GameStatePatch
-	sendReports *bool
-	sendStats   *bool
+	userId  string
+	gs      *models.GameState
+	patch   *patch
+	patches map[string]*patch
+}
+
+func (ctx *updateContext) initPatch(userId string) {
+	if ctx.patches[userId] == nil {
+		ctx.patches[userId] = &patch{
+			&models.GameStatePatch{
+				Resources: &models.GameStatePatch_ResourcesPatch{},
+				Population: &models.GameStatePatch_PopulationPatch{},
+			},
+			false,
+			false,
+		}
+	}
 }
 
 // Update the game state for the specified user
@@ -63,19 +81,21 @@ func (u *updater) update(ctx context.Context, userId string) {
 
 	gameStateKey := fmt.Sprintf("user:%s:gamestate", userId)
 
-	sendReportsBoolRef := false
-	sendStats2 := false
-
 	uctx := updateContext{
 		ctx,
 		userId,
 		&models.GameState{},
-		&models.GameStatePatch{
-			Resources:  &models.GameStatePatch_ResourcesPatch{},
-			Population: &models.GameStatePatch_PopulationPatch{},
+		&patch{
+			&models.GameStatePatch{
+				Resources:  &models.GameStatePatch_ResourcesPatch{},
+				Population: &models.GameStatePatch_PopulationPatch{},
+			},
+			false,
+			false,
 		},
-		&sendReportsBoolRef,
-		&sendStats2}
+		map[string]*patch{},
+	}
+	uctx.patches[userId] = uctx.patch
 
 	txf := func(tx *redis.Tx) error {
 		// Get current game state
@@ -134,44 +154,67 @@ func (u *updater) update(ctx context.Context, userId string) {
 		log.Error().Err(err).Msg("Failed to add timeseries data points")
 	}
 
-	// Send patch
-	err = send(ctx, u.r, userId, &models.ServerMessage{
-		Id: xid.New().String(),
-		Payload: &models.ServerMessage_StateChange{
-			StateChange: uctx.gsPatch,
-		},
-	})
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to send state change")
+	if err = u.restorePopulation(ctx, userId); err != nil {
+		log.Error().Err(err).Msg("Failed to restore population")
+	}
+
+	for patchUserId, p := range uctx.patches {
+		if err = u.processPatch(uctx, patchUserId, p); err != nil {
+			log.Error().Err(err).
+				Bool("wasSender", userId == patchUserId).
+				Str("userId", patchUserId).
+				Msg("Failed to process patch")
+		}
+	}
+}
+
+func (u *updater) processPatch(ctx updateContext, userId string, p *patch) error {
+	if p == nil {
+		return nil
+	}
+
+	var err error
+
+	// Send game state patch
+	if p.gsPatch != nil {
+		err = send(ctx, u.r, userId, &models.ServerMessage{
+			Id: xid.New().String(),
+			Payload: &models.ServerMessage_StateChange{
+				StateChange: p.gsPatch,
+			},
+		})
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to send state change")
+		}
 	}
 
 	// Update leaderboard
-	if uctx.gsPatch.Resources.Coins != nil {
-		coins := int64(uctx.gsPatch.Resources.Coins.Value)
+	if p.gsPatch != nil && p.gsPatch.Resources.Coins != nil {
+		coins := int64(p.gsPatch.Resources.Coins.Value)
 		if err = u.leaderboard.UpdateUser(ctx, userId, coins); err != nil {
 			log.Error().Err(err).Msg("Failed to update leaderboard")
 		}
 	}
 
-	if *uctx.sendReports {
+	// Send reports
+	if p.sendReports {
 		if err = sendReports(ctx, u.r, userId); err != nil {
 			log.Error().Err(err).Msg("Failed to send inital reports")
 		}
 	}
 
-	if *uctx.sendStats {
+	// Send stats
+	if p.sendStats {
 		if err = sendStats(ctx, u.r, userId); err != nil {
 			log.Error().Err(err).Msg("Failed to send stats")
 		}
 	}
 
-	if err = u.restorePopulation(ctx, userId); err != nil {
-		log.Error().Err(err).Msg("Failed to restore population")
-	}
+	return nil
 }
 
 func addTimeseriesDataPoints(ctx updateContext, r internal.RedisClient) error {
-	if ctx.gsPatch.Timestamp == nil {
+	if ctx.patch.gsPatch.Timestamp == nil {
 		return nil
 	}
 
@@ -180,9 +223,9 @@ func addTimeseriesDataPoints(ctx updateContext, r internal.RedisClient) error {
 		return fmt.Errorf("failed to ensure timeseries: %w", err)
 	}
 
-	time := ctx.gsPatch.Timestamp.Value * 1000
-	coins := ctx.gsPatch.Resources.Coins
-	pizzas := ctx.gsPatch.Resources.Pizzas
+	time := ctx.patch.gsPatch.Timestamp.Value * 1000
+	coins := ctx.patch.gsPatch.Resources.Coins
+	pizzas := ctx.patch.gsPatch.Resources.Pizzas
 
 	if coins != nil {
 		err = internal.AddMetricCoins(ctx, r, ctx.userId, time, int64(coins.Value))
@@ -377,8 +420,6 @@ func main() {
 			time.Sleep(10 * time.Millisecond)
 			continue
 		}
-
-		log.Info().Msg("Updating")
 
 		u.update(ctx, userId)
 		time.Sleep(1 * time.Millisecond)

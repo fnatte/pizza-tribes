@@ -22,14 +22,14 @@ func completedConstructions(ctx updateContext, tx *redis.Tx) (pipeFn, error) {
 	}
 
 	// Update patch
-	ctx.gsPatch.ConstructionQueue = ctx.gs.ConstructionQueue[len(completedConstructions):]
-	ctx.gsPatch.ConstructionQueuePatched = true
-	ctx.gsPatch.Lots = map[string]*models.GameStatePatch_LotPatch{}
+	ctx.patch.gsPatch.ConstructionQueue = ctx.gs.ConstructionQueue[len(completedConstructions):]
+	ctx.patch.gsPatch.ConstructionQueuePatched = true
+	ctx.patch.gsPatch.Lots = map[string]*models.GameStatePatch_LotPatch{}
 
 	var incrUneducated int32 = 0
 
 	for _, constr := range completedConstructions {
-		ctx.gsPatch.Lots[constr.LotId] = &models.GameStatePatch_LotPatch{
+		ctx.patch.gsPatch.Lots[constr.LotId] = &models.GameStatePatch_LotPatch{
 			Building: constr.Building,
 			Level:    constr.Level,
 		}
@@ -52,10 +52,7 @@ func completedConstructions(ctx updateContext, tx *redis.Tx) (pipeFn, error) {
 				incrUneducated = levelInfo.Residence.Beds
 			}
 
-			if ctx.gsPatch.Population == nil {
-				ctx.gsPatch.Population = &models.GameStatePatch_PopulationPatch{}
-			}
-			ctx.gsPatch.Population.Uneducated = &wrapperspb.Int32Value{
+			ctx.patch.gsPatch.Population.Uneducated = &wrapperspb.Int32Value{
 				Value: ctx.gs.Population.Uneducated + incrUneducated,
 			}
 		}
@@ -64,7 +61,7 @@ func completedConstructions(ctx updateContext, tx *redis.Tx) (pipeFn, error) {
 	// Completion of buildings can affect the stats because we increase the
 	// number of employables. E.g. if the player had 10 chefs but only 5 of them
 	// were employed.
-	*ctx.sendStats = true
+	ctx.patch.sendStats = true
 
 	return func(pipe redis.Pipeliner) error {
 		if len(completedConstructions) > 0 {

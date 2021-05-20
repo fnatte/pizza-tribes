@@ -163,10 +163,10 @@ export const useStore = create<State>((set, get) => ({
 
     const handleStateChange = (stateChange: GameStatePatch) => {
       const resources: Partial<State["gameState"]["resources"]> = {};
-      if (stateChange.resources?.coins?.value) {
+      if (stateChange.resources?.coins?.value !== undefined) {
         resources.coins = stateChange.resources.coins.value;
       }
-      if (stateChange.resources?.pizzas?.value) {
+      if (stateChange.resources?.pizzas?.value !== undefined) {
         resources.pizzas = stateChange.resources.pizzas.value;
       }
 

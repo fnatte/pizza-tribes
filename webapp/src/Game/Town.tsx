@@ -125,7 +125,8 @@ function Town() {
             "flex",
             "justify-between",
             "items-start",
-            "pointer-events-none"
+            "pointer-events-none",
+            "gap-5",
           )}
         >
           {isMinSm ? (

@@ -23,16 +23,17 @@ func extrapolate(ctx updateContext, tx *redis.Tx) (pipeFn, error) {
 	changes := calculateExtrapolateChanges(ctx.gs)
 
 	// Update patch
-	r := ctx.gsPatch.Resources
+	r := ctx.patch.gsPatch.Resources
 	if r.Coins == nil {
 		r.Coins = &wrapperspb.Int32Value{}
 	}
 	if r.Pizzas == nil {
 		r.Pizzas = &wrapperspb.Int32Value{}
 	}
+	// TODO: Fix bug with adding absolute value
 	r.Coins.Value = r.Coins.Value + changes.coins
 	r.Pizzas.Value = r.Pizzas.Value + changes.pizzas
-	ctx.gsPatch.Timestamp = &wrapperspb.Int64Value{Value: changes.timestamp}
+	ctx.patch.gsPatch.Timestamp = &wrapperspb.Int64Value{Value: changes.timestamp}
 
 	return func(pipe redis.Pipeliner) error {
 		// Write timestamp

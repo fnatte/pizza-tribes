@@ -144,7 +144,7 @@ func completeSteal(ctx updateContext, tx *redis.Tx, world *internal.WorldService
 		}
 
 		// Update patch with return travel
-		ctx.gsPatch.TravelQueue = append(ctx.gsPatch.TravelQueue, &returnTravel)
+		ctx.patch.gsPatch.TravelQueue = append(ctx.patch.gsPatch.TravelQueue, &returnTravel)
 	}
 
 	// Build reports
@@ -181,10 +181,19 @@ func completeSteal(ctx updateContext, tx *redis.Tx, world *internal.WorldService
 		Content:   buf.String(),
 		Unread:    true,
 	}
-	*ctx.sendReports = true
+	ctx.patch.sendReports = true
+
+	// Prepare patch to target user (whoms coins was stoled)
+	ctx.initPatch(town.UserId)
+	if ctx.patches[town.UserId].gsPatch.Resources.Coins == nil {
+		ctx.patches[town.UserId].gsPatch.Resources.Coins = &wrapperspb.Int32Value{
+			Value: gsTarget.Resources.Coins,
+		}
+	}
+	ctx.patches[town.UserId].gsPatch.Resources.Coins.Value = ctx.patches[town.UserId].gsPatch.Resources.Coins.Value - int32(loot)
+	ctx.patches[town.UserId].sendReports = true
 
 	return func(pipe redis.Pipeliner) error {
-		// TODO: notify (send game state patch) to target user
 		// Decrease coins in target town
 		_, err := internal.RedisJsonNumIncrBy(
 			pipe, ctx, gsKeyTarget, ".resources.coins", -loot).Result()
@@ -213,22 +222,18 @@ func completeStealReturn(ctx updateContext, tx *redis.Tx, world *internal.WorldS
 	gsKey := fmt.Sprintf("user:%s:gamestate", ctx.userId)
 
 	// Update patch with coins
-	if ctx.gsPatch.Resources == nil {
-		ctx.gsPatch.Resources = &models.GameStatePatch_ResourcesPatch{}
+	if ctx.patch.gsPatch.Resources.Coins == nil {
+		ctx.patch.gsPatch.Resources.Coins = &wrapperspb.Int32Value{}
 	}
-	if ctx.gsPatch.Resources.Coins == nil {
-		ctx.gsPatch.Resources.Coins = &wrapperspb.Int32Value{}
-	}
-	ctx.gsPatch.Resources.Coins.Value = ctx.gsPatch.Resources.Coins.Value + int32(travel.Coins)
+	ctx.patch.gsPatch.Resources.Coins.Value =
+		ctx.patch.gsPatch.Resources.Coins.Value + int32(travel.Coins)
 
 	// Update patch with thieves
-	if ctx.gsPatch.Population == nil {
-		ctx.gsPatch.Population = &models.GameStatePatch_PopulationPatch{}
+	if ctx.patch.gsPatch.Population.Thieves == nil {
+		ctx.patch.gsPatch.Population.Thieves = &wrapperspb.Int32Value{}
 	}
-	if ctx.gsPatch.Population.Thieves == nil {
-		ctx.gsPatch.Population.Thieves = &wrapperspb.Int32Value{}
-	}
-	ctx.gsPatch.Population.Thieves.Value = ctx.gsPatch.Population.Thieves.Value + travel.Thieves
+	ctx.patch.gsPatch.Population.Thieves.Value =
+		ctx.patch.gsPatch.Population.Thieves.Value + travel.Thieves
 
 	return func(pipe redis.Pipeliner) error {
 		var err error
@@ -261,8 +266,8 @@ func completeTravels(ctx updateContext, tx *redis.Tx, world *internal.WorldServi
 	}
 
 	// Update patch
-	ctx.gsPatch.TravelQueue = ctx.gs.TravelQueue[len(completedTravels):]
-	ctx.gsPatch.TravelQueuePatched = true
+	ctx.patch.gsPatch.TravelQueue = ctx.gs.TravelQueue[len(completedTravels):]
+	ctx.patch.gsPatch.TravelQueuePatched = true
 
 	pipeFns := []pipeFn{}
 
