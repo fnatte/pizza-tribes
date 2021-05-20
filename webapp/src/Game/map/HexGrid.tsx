@@ -4,7 +4,7 @@ import { ReactComponent as TownSvg } from "../../../images/town.svg";
 
 import style from "./hexgrid.module.css";
 import { WorldZone } from "../../generated/world";
-import {getIdx} from "../getIdx";
+import { getIdx } from "../getIdx";
 
 type Props = {
   x: number;
@@ -47,11 +47,18 @@ const Arrow: React.FC<{
   );
 };
 
-const HexGrid: React.FC<Props> = ({ data, x, y, size, onNavigate, onClick }) => {
+const HexGrid: React.FC<Props> = ({
+  data,
+  x,
+  y,
+  size,
+  onNavigate,
+  onClick,
+}) => {
   const sh2floor = Math.floor(size / 2);
   const sh2round = Math.round(size / 2);
   return (
-    <div className={style.root}>
+    <div className={`${style.root} ${style[`size-${size}`]}`}>
       {range(y - sh2floor, y + sh2round).map((y) => (
         <div className={style.row} key={y}>
           {range(x - sh2floor, x + sh2round).map((x) => {

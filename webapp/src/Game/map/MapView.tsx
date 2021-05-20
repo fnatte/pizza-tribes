@@ -6,7 +6,8 @@ import HexGrid from "./HexGrid";
 import { ReactComponent as HeartsSvg } from "../../../images/hearts.svg";
 import { useStore } from "../../store";
 import { getIdx } from "../getIdx";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import styles from "../../styles";
 
 const unique = <T extends unknown>(arr: T[]): T[] => {
   return [...new Set(arr)];
@@ -17,11 +18,16 @@ function MapView() {
   const townX = useStore((state) => state.gameState.townX);
   const townY = useStore((state) => state.gameState.townY);
   const [{ x, y }, setXY] = useState({ x: -1, y: -1 });
+  const [size, setSize] = useState(isMinLg ? 9 : 5);
   const navigate = useNavigate();
 
   useEffect(() => {
     setXY({ x: townX, y: townY });
   }, [townX, townY]);
+
+  useEffect(() => {
+    setSize(isMinLg ? 9 : 5);
+  }, [isMinLg]);
 
   // TODO: store zones in store
   const [zones, setZones] = useState<WorldZone[]>([]);
@@ -69,7 +75,7 @@ function MapView() {
 
   const onClick = (x: number, y: number, zidx: number, eidx: number) => {
     if (zones[zidx].entries[eidx]?.object?.oneofKind === "town") {
-      navigate(`/world/entry?x=${x}&y=${y}`)
+      navigate(`/world/entry?x=${x}&y=${y}`);
     }
   };
 
@@ -82,14 +88,44 @@ function MapView() {
         </div>
       )}
       {zones.length > 0 && (
-        <HexGrid
-          x={x}
-          y={y}
-          size={isMinLg ? 9 : 5}
-          data={zones}
-          onNavigate={onNavigate}
-          onClick={onClick}
-        />
+        <div className={classnames("relative")}>
+          <div
+            className={classnames(
+              "flex",
+              "justify-center",
+              "md:flex-col",
+              "gap-1",
+              "md:absolute",
+              "-top-5",
+              "-right-1/4",
+            )}
+          >
+            <button
+              className={styles.button}
+              onClick={() =>
+                setSize((size) => Math.min(Math.max(size - 1, 5), 12))
+              }
+            >
+              Zoom In
+            </button>
+            <button
+              className={styles.button}
+              onClick={() =>
+                setSize((size) => Math.min(Math.max(size + 1, 5), 12))
+              }
+            >
+              Zoom Out
+            </button>
+          </div>
+          <HexGrid
+            x={x}
+            y={y}
+            size={size}
+            data={zones}
+            onNavigate={onNavigate}
+            onClick={onClick}
+          />
+        </div>
       )}
     </div>
   );

@@ -1,15 +1,55 @@
 :root {
   --tilesX: 5;
   --tilesY: 5;
-  --tileSize: 10vw;
+  --tileSize: calc(75vw / (1.414 * var(--tilesX)));
 }
 
-@media screen and (min-width: 1024px) {
-  :root {
-    --tilesX: 9;
-    --tilesY: 9;
-  --tileSize: 5vw;
-  }
+.size-5 {
+  --tilesX: 5;
+  --tilesY: 5;
+  --tileSize: calc(75vw / (1.414 * var(--tilesX)));
+}
+
+.size-6 {
+  --tilesX: 6;
+  --tilesY: 6;
+  --tileSize: calc(75vw / (1.414 * var(--tilesX)));
+}
+
+.size-7 {
+  --tilesX: 7;
+  --tilesY: 7;
+  --tileSize: calc(75vw / (1.414 * var(--tilesX)));
+}
+
+.size-8 {
+  --tilesX: 8;
+  --tilesY: 8;
+  --tileSize: calc(75vw / (1.414 * var(--tilesX)));
+}
+
+.size-9 {
+  --tilesX: 9;
+  --tilesY: 9;
+  --tileSize: calc(75vw / (1.414 * var(--tilesX)));
+}
+
+.size-10 {
+  --tilesX: 10;
+  --tilesY: 10;
+  --tileSize: calc(75vw / (1.414 * var(--tilesX)));
+}
+
+.size-11 {
+  --tilesX: 11;
+  --tilesY: 11;
+  --tileSize: calc(75vw / (1.414 * var(--tilesX)));
+}
+
+.size-12 {
+  --tilesX: 12;
+  --tilesY: 12;
+  --tileSize: calc(75vw / (1.414 * var(--tilesX)));
 }
 
 .root {
