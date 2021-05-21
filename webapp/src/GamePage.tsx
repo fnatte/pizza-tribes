@@ -56,7 +56,7 @@ function BurgerMenuIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-const NotificationCount: React.VFC<{ className?: string; count: number }> = ({
+const BadgeCount: React.VFC<{ className?: string; count: number }> = ({
   className,
   count,
 }) => {
@@ -82,9 +82,9 @@ const NotificationCount: React.VFC<{ className?: string; count: number }> = ({
   );
 };
 
-const ButtonNotificationCount: React.FC<{ count: number }> = ({ count }) => {
+const ButtonBadgeCount: React.FC<{ count: number }> = ({ count }) => {
   return (
-    <NotificationCount
+    <BadgeCount
       count={count}
       className={classnames(
         "transform" as TArg,
@@ -130,7 +130,7 @@ function Navigation() {
         <>
           <Link to="/reports">
             <button className={classnames(styles.button, "mr-2", "relative")}>
-              {unreads > 0 && <ButtonNotificationCount count={unreads} />}
+              {unreads > 0 && <ButtonBadgeCount count={unreads} />}
               Reports
             </button>
           </Link>
@@ -157,7 +157,7 @@ function Navigation() {
           >
             <BurgerMenuIcon />
             {unreads > 0 && !menuExpanded && (
-              <NotificationCount
+              <BadgeCount
                 count={unreads}
                 className={classnames(
                   "transform" as TArg,
@@ -187,7 +187,7 @@ function Navigation() {
                 <button
                   className={classnames(styles.button, "mr-2", "relative")}
                 >
-                  {unreads > 0 && <ButtonNotificationCount count={unreads} />}
+                  {unreads > 0 && <ButtonBadgeCount count={unreads} />}
                   Reports
                 </button>
               </Link>
