@@ -8,25 +8,18 @@ import School from "./School";
 import { ReactComponent as SvgKitchen } from "../../images/kitchen.svg";
 import { ReactComponent as SvgShop } from "../../images/shop.svg";
 import { ReactComponent as SvgHouse } from "../../images/house.svg";
-import JSBI from "jsbi";
 import styles from "../styles";
 import { formatDistanceToNow } from "date-fns";
-import { countPopulation, formatDurationShort, formatNumber } from "../utils";
+import { countPopulation, formatDurationShort, formatNumber, getTapInfo } from "../utils";
 import { Education } from "../generated/education";
 
-const title = classnames("text-lg", "md:text-xl", "mb-2");
 const label = classnames("text-xs", "md:text-sm", "mr-1");
 const value = classnames("text-sm", "md:text-lg", "ml-1");
 
 const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
   const population = useStore((state) => state.gameState.population);
 
-  // convert lot.tappedAt from ns ms
-  const tappedAt = JSBI.toNumber(
-    JSBI.divide(JSBI.BigInt(lot.tappedAt), JSBI.BigInt(1e6))
-  );
-  const nextTapAt = tappedAt + 60_000 * 60;
-  const canTap = nextTapAt < Date.now();
+  const { nextTapAt, canTap } = getTapInfo(lot);
 
   const tap = useStore((state) => state.tap);
 

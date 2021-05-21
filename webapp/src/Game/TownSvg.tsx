@@ -5,35 +5,81 @@ import { ReactComponent as SvgHouse } from "../../images/house.svg";
 import { ReactComponent as SvgShop } from "../../images/shop.svg";
 import { ReactComponent as SvgSchool } from "../../images/school.svg";
 import { Building } from "../generated/building";
+import { classnames, TArg } from "tailwindcss-classnames";
+import { getTapInfo } from "../utils";
 
-function renderBuilding(building: Building | undefined) {
+const Badge: React.VFC = () => {
+  return (
+    <div className={classnames("w-10", "h-10", "flex", "items-center")}>
+      <div
+        className={classnames(
+          "rounded-full",
+          "flex",
+          "justify-center",
+          "items-center",
+          "bg-red-700",
+          "w-5",
+          "h-5",
+          "text-gray-50",
+          "text-xs",
+          "animate-bounce-loop" as TArg
+        )}
+      />
+    </div>
+  );
+};
+
+const BuildingBadge: React.VFC = () => (
+  <foreignObject
+    x="-10"
+    y="-10"
+    width="100"
+    height="100"
+    transform="scale(0.2)"
+  >
+    <Badge />
+  </foreignObject>
+);
+
+function renderBuilding(building: Building | undefined, notification: boolean) {
   switch (building) {
     case Building.KITCHEN:
       return (
         <g transform="translate(-10, -13)">
           <SvgKitchen width={20} height={20} />
+          {notification && <BuildingBadge />}
         </g>
       );
     case Building.HOUSE:
       return (
         <g transform="translate(-5, -8) scale(0.5)">
           <SvgHouse width={20} height={20} />
+          {notification && <BuildingBadge />}
         </g>
       );
     case Building.SHOP:
       return (
         <g transform="translate(-10, -13)">
           <SvgShop width={20} height={20} />;
+          {notification && <BuildingBadge />}
         </g>
       );
     case Building.SCHOOL:
       return (
         <g transform="translate(-10, -13)">
           <SvgSchool width={20} height={20} />
+          {notification && <BuildingBadge />}
         </g>
       );
   }
 }
+
+const renderLot = (lot: Lot | undefined) => {
+  return renderBuilding(
+    lot?.building,
+    (lot && getTapInfo(lot).canTap) || false
+  );
+};
 
 function SvgTown(
   {
@@ -259,7 +305,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderBuilding(lots["11"]?.building)}
+          {renderLot(lots["11"])};
         </g>
         <g
           id="lot10"
@@ -277,7 +323,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderBuilding(lots["10"]?.building)}
+          {renderLot(lots["10"])}
         </g>
         <g
           id="lot9"
@@ -295,7 +341,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderBuilding(lots["9"]?.building)}
+          {renderLot(lots["9"])}
         </g>
         <g
           id="lot8"
@@ -313,7 +359,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderBuilding(lots["8"]?.building)}
+          {renderLot(lots["8"])}
         </g>
         <g
           id="lot7"
@@ -331,7 +377,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderBuilding(lots["7"]?.building)}
+          {renderLot(lots["7"])}
         </g>
         <g
           id="lot6"
@@ -349,7 +395,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderBuilding(lots["6"]?.building)}
+          {renderLot(lots["6"])}
         </g>
         <g
           id="lot5"
@@ -367,7 +413,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderBuilding(lots["5"]?.building)}
+          {renderLot(lots["5"])}
         </g>
         <g
           id="lot4"
@@ -385,7 +431,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderBuilding(lots["4"]?.building)}
+          {renderLot(lots["4"])}
         </g>
         <g
           id="lot3"
@@ -403,7 +449,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderBuilding(lots["3"]?.building)}
+          {renderLot(lots["3"])}
         </g>
         <g
           id="lot2"
@@ -421,7 +467,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderBuilding(lots["2"]?.building)}
+          {renderLot(lots["2"])}
         </g>
         <g
           id="lot1"
@@ -439,7 +485,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderBuilding(lots["1"]?.building)}
+          {renderLot(lots["1"])}
         </g>
       </g>
     </svg>

@@ -157,3 +157,19 @@ export const parseDateNano = (ns: string) => {
 
 const numberFormat = new Intl.NumberFormat();
 export const formatNumber = (n: number) => numberFormat.format(n);
+
+export const getTapInfo = (lot: Lot) => {
+  if (lot.building !== Building.KITCHEN && lot.building !== Building.SHOP) {
+    return { canTap: false, nextTapAt: 0 };
+  }
+
+  // convert lot.tappedAt from ns ms
+  const tappedAt = JSBI.toNumber(
+    JSBI.divide(JSBI.BigInt(lot.tappedAt), JSBI.BigInt(1e6))
+  );
+  const nextTapAt = tappedAt + 60_000 * 60;
+  const canTap = nextTapAt < Date.now();
+
+  return { canTap, nextTapAt };
+}
+
