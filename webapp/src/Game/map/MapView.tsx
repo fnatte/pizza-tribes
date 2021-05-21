@@ -88,14 +88,14 @@ function MapView() {
         </div>
       )}
       {zones.length > 0 && (
-        <div className={classnames("relative")}>
+        <div className={classnames("relative", "flex", "flex-col", "items-center")}>
           <div
             className={classnames(
               "flex",
               "justify-center",
-              "md:flex-col",
+              "lg:flex-col",
               "gap-1",
-              "md:absolute",
+              "lg:absolute",
               "-top-5",
               "-right-1/4",
             )}
@@ -103,7 +103,7 @@ function MapView() {
             <button
               className={styles.button}
               onClick={() =>
-                setSize((size) => Math.min(Math.max(size - 1, 5), 12))
+                setSize((size) => Math.min(Math.max(size - 1, 4), 12))
               }
             >
               Zoom In
@@ -111,7 +111,7 @@ function MapView() {
             <button
               className={styles.button}
               onClick={() =>
-                setSize((size) => Math.min(Math.max(size + 1, 5), 12))
+                setSize((size) => Math.min(Math.max(size + 1, 4), 12))
               }
             >
               Zoom Out

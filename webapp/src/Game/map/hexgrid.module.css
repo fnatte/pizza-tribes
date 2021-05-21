@@ -2,54 +2,72 @@
   --tilesX: 5;
   --tilesY: 5;
   --tileSize: calc(75vw / (1.414 * var(--tilesX)));
+  --scale: 85vw;
+  --arrowSize: 40px;
+  --arrowOffset: 20px;
+  --arrowPadding: 10px;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --scale: 75vw;
+    --arrowSize: 50px;
+    --arrowOffset: 50px;
+  }
+}
+
+.size-4 {
+  --tilesX: 4;
+  --tilesY: 4;
+  --tileSize: calc(var(--scale) / (1.414 * var(--tilesX)));
 }
 
 .size-5 {
   --tilesX: 5;
   --tilesY: 5;
-  --tileSize: calc(75vw / (1.414 * var(--tilesX)));
+  --tileSize: calc(var(--scale) / (1.414 * var(--tilesX)));
 }
 
 .size-6 {
   --tilesX: 6;
   --tilesY: 6;
-  --tileSize: calc(75vw / (1.414 * var(--tilesX)));
+  --tileSize: calc(var(--scale) / (1.414 * var(--tilesX)));
 }
 
 .size-7 {
   --tilesX: 7;
   --tilesY: 7;
-  --tileSize: calc(75vw / (1.414 * var(--tilesX)));
+  --tileSize: calc(var(--scale) / (1.414 * var(--tilesX)));
 }
 
 .size-8 {
   --tilesX: 8;
   --tilesY: 8;
-  --tileSize: calc(75vw / (1.414 * var(--tilesX)));
+  --tileSize: calc(var(--scale) / (1.414 * var(--tilesX)));
 }
 
 .size-9 {
   --tilesX: 9;
   --tilesY: 9;
-  --tileSize: calc(75vw / (1.414 * var(--tilesX)));
+  --tileSize: calc(var(--scale) / (1.414 * var(--tilesX)));
 }
 
 .size-10 {
   --tilesX: 10;
   --tilesY: 10;
-  --tileSize: calc(75vw / (1.414 * var(--tilesX)));
+  --tileSize: calc(var(--scale) / (1.414 * var(--tilesX)));
 }
 
 .size-11 {
   --tilesX: 11;
   --tilesY: 11;
-  --tileSize: calc(75vw / (1.414 * var(--tilesX)));
+  --tileSize: calc(var(--scale) / (1.414 * var(--tilesX)));
 }
 
 .size-12 {
   --tilesX: 12;
   --tilesY: 12;
-  --tileSize: calc(75vw / (1.414 * var(--tilesX)));
+  --tileSize: calc(var(--scale) / (1.414 * var(--tilesX)));
 }
 
 .root {
@@ -83,7 +101,7 @@
 }
 
 .arrow {
-  padding: 10px;
+  padding: var(--arrowPadding);
   position: absolute;
   cursor: pointer;
 }
@@ -92,8 +110,8 @@
   display: block;
   content: "";
   background: #059669;
-  width: 50px;
-  height: 50px;
+  width: var(--arrowSize);
+  height: var(--arrowSize);
   clip-path: polygon(50% 0, 100% 100%, 0 100%);
 }
 
@@ -102,25 +120,25 @@
 }
 
 .arrowleft {
-  left: 0;
+  left: calc(-1 * var(--arrowSize) - 2 * var(--arrowPadding));
   top: 50%;
-  transform: translateY(-50%) translateX(-100px) rotateZ(-90deg);
+  transform: translateY(-50%) translateX(calc(-1 * var(--arrowSize))) rotateZ(-90deg);
 }
 
 .arrowright {
   left: 100%;
   top: 50%;
-  transform: translateY(-50%) translateX(50px) rotateZ(90deg);
+  transform: translateY(-50%) translateX(calc(1 * var(--arrowSize))) rotateZ(90deg);
 }
 
 .arrowtop {
   left: 50%;
-  top: 0%;
-  transform: translateY(-100px) translateX(-50%) rotateZ(0deg);
+  top: calc(0% - var(--arrowSize) - 2 * var(--arrowPadding));
+  transform: translateY(calc(-1 * var(--arrowSize))) translateX(-50%) rotateZ(0deg);
 }
 
 .arrowbottom {
   left: 50%;
   top: 100%;
-  transform: translateY(50px) translateX(-50%) rotateZ(180deg);
+  transform: translateY(calc(1 * var(--arrowSize))) translateX(-50%) rotateZ(180deg);
 }
