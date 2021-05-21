@@ -34,13 +34,17 @@ func (h *handler) handleTrain(ctx context.Context, senderId string, m *models.Cl
 			return err
 		}
 
-		eduInfo := internal.FullGameData.Educations[int32(m.Education)]
-		trainTime := int64(eduInfo.TrainTime)
-		cost := eduInfo.Cost
+		if m.Amount <= 0 {
+			return errors.New("Amount must be greater than 0")
+		}
 
 		if gs.Population.Uneducated < m.Amount {
 			return errors.New("Too few uneducated")
 		}
+
+		eduInfo := internal.FullGameData.Educations[int32(m.Education)]
+		trainTime := int64(eduInfo.TrainTime)
+		cost := eduInfo.Cost * m.Amount
 
 		if gs.Resources.Coins < cost {
 			return errors.New("Not enough coins")

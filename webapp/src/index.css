@@ -31,4 +31,8 @@
   article p {
     @apply my-8;
   }
+
+  input[type=number] {
+    -moz-appearance: textfield; /* Firefox number buttons are buggy */
+  }
 }

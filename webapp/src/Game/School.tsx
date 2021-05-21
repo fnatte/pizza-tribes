@@ -13,6 +13,11 @@ import { ReactComponent as SecuritySvg } from "../../images/security.svg";
 import { ReactComponent as ThiefSvg } from "../../images/thief.svg";
 import { ReactComponent as SvgSchool } from "../../images/school.svg";
 import { formatDurationShort } from "../utils";
+import { useForm } from "react-hook-form";
+import { EducationInfo } from "../generated/game_data";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { RemoveIndex } from "../utils";
 
 const title = classnames("text-lg", "md:text-xl", "mb-2");
 const label = classnames("text-xs", "md:text-sm");
@@ -47,18 +52,126 @@ const descriptions: Record<number, React.VFC | undefined> = {
 
 const numberFormat = new Intl.NumberFormat();
 
-function School() {
-  const educations = useStore((state) => state.gameData?.educations) || [];
-  const trainingQueue = useStore((state) => state.gameState.trainingQueue);
-  const train = useStore((state) => state.train);
+const schema = yup.object().shape({
+  amount: yup
+    .number()
+    .typeError("amount must be a number")
+    .integer()
+    .positive()
+    .required(),
+});
 
-  const onTrainClick = (e: React.MouseEvent, education: Education) => {
-    e.preventDefault();
-    train(education, 1);
+type FormFields = RemoveIndex<yup.Asserts<typeof schema>>;
+
+const SchoolEducation: React.VFC<{
+  education: Education;
+  educationInfo: EducationInfo;
+}> = ({ education, educationInfo }) => {
+  const coins = useStore((state) => state.gameState.resources.coins);
+  const train = useStore((state) => state.train);
+  const uneducated = useStore((state) => state.gameState.population.uneducated);
+
+  const maxByCost = Math.floor(coins / (educationInfo.cost ?? 0));
+
+  const max = Math.min(uneducated, maxByCost);
+
+  const schema2 = schema.shape({
+    amount: schema.fields.amount.max(
+      max,
+      uneducated < maxByCost
+        ? `Cannot train more than available uneducated mice (${uneducated}).`
+        : `Not enough coins. Can only afford ${maxByCost}).`
+    ),
+  });
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormFields>({ resolver: yupResolver(schema2) });
+
+  const onSubmit = ({ amount }: FormFields) => {
+    console.log(coins / educationInfo.cost, max);
+    train(education, amount);
     window.scroll(0, 0);
   };
 
-  const [now, setNow] = useState(Date.now());
+  const disabled = max <= 0;
+
+  const SvgImage = svgs[education];
+  const Description = descriptions[education];
+
+  return (
+    <div className={classnames("flex", "mb-8")} key={educationInfo.title}>
+      <div style={{ width: 110 }}>
+        {SvgImage ? <SvgImage /> : <PlaceholderImage />}
+      </div>
+      <div className={classnames("ml-6", "lg:ml-8")}>
+        <div className={title}>{educationInfo.title}</div>
+        {Description && <Description />}
+        <table>
+          <tbody>
+            <tr>
+              <td className={classnames("px-2")}>
+                <span className={label}>Train time:</span>
+              </td>
+              <td className={classnames("px-2")}>
+                <span className={value}>
+                  {formatDurationShort(educationInfo.trainTime)}
+                </span>
+              </td>
+            </tr>
+            {educationInfo.cost && (
+              <tr>
+                <td className={classnames("px-2")}>
+                  <span className={label}>Cost:</span>
+                </td>
+                <td className={classnames("px-2")}>
+                  <span className={value}>
+                    {numberFormat.format(educationInfo.cost)} coins
+                  </span>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+        <form
+          className={classnames("my-2")}
+          onSubmit={handleSubmit(onSubmit)}
+          noValidate
+        >
+          <input
+            className={classnames("w-20", "mr-2", "text-right")}
+            type="number"
+            min={0}
+            max={max}
+            defaultValue={1}
+            required
+            disabled={disabled}
+            {...register("amount")}
+          />
+          <button
+            type="submit"
+            className={classnames(styles.button)}
+            disabled={disabled}
+          >
+            Train
+          </button>
+          {errors.amount && (
+            <div className="pb-2 text-red-900">{errors.amount.message}</div>
+          )}
+        </form>
+      </div>
+    </div>
+  );
+};
+
+function School() {
+  const educations = useStore((state) => state.gameData?.educations) || [];
+  const trainingQueue = useStore((state) => state.gameState.trainingQueue);
+  const uneducated = useStore((state) => state.gameState.population.uneducated);
+
+  const [_, setNow] = useState(Date.now());
   useInterval(() => {
     setNow(Date.now());
   }, 1000);
@@ -69,6 +182,13 @@ function School() {
       <SvgSchool height={100} width={100} />
       <p className={classnames("my-4", "text-gray-700")}>
         Educate your mice so that they can start contributing to your town.
+      </p>
+      <p className={classnames("my-4", "text-gray-700")}>
+        There are{" "}
+        <span className={classnames("font-bold", "text-gray-900")}>
+          {uneducated} uneducated
+        </span>{" "}
+        mice in your town.
       </p>
 
       {trainingQueue.length > 0 && (
@@ -113,53 +233,12 @@ function School() {
       {Object.keys(educations)
         .map(Number)
         .map((eduKey) => {
-          const education = educations[eduKey];
-          const SvgImage = svgs[eduKey];
-          const Description = descriptions[eduKey];
           return (
-            <div className={classnames("flex", "mb-8")} key={education.title}>
-              <div style={{ width: 110 }}>
-                {SvgImage ? <SvgImage /> : <PlaceholderImage />}
-              </div>
-              <div className={classnames("ml-4")}>
-                <div className={title}>{education.title}</div>
-                {Description && <Description />}
-                <table>
-                  <tbody>
-                    <tr>
-                      <td className={classnames("px-2")}>
-                        <span className={label}>Train time:</span>
-                      </td>
-                      <td className={classnames("px-2")}>
-                        <span className={value}>
-                          {formatDurationShort(education.trainTime)}
-                        </span>
-                      </td>
-                    </tr>
-                    {education.cost && (
-                      <tr>
-                        <td className={classnames("px-2")}>
-                          <span className={label}>Cost:</span>
-                        </td>
-                        <td className={classnames("px-2")}>
-                          <span className={value}>
-                            {numberFormat.format(education.cost)} coins
-                          </span>
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-                <div className={classnames("my-2")}>
-                  <button
-                    className={classnames(styles.button)}
-                    onClick={(e) => onTrainClick(e, eduKey)}
-                  >
-                    Train
-                  </button>
-                </div>
-              </div>
-            </div>
+            <SchoolEducation
+              key={eduKey}
+              education={eduKey}
+              educationInfo={educations[eduKey]}
+            />
           );
         })}
     </div>

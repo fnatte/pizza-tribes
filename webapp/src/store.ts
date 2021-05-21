@@ -306,7 +306,7 @@ export const useStore = create<State>((set, get) => ({
         type: {
           oneofKind: "train",
           train: {
-            education: education,
+            education,
             amount,
           },
         },

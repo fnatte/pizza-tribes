@@ -12,6 +12,7 @@
     "@protobuf-ts/plugin": "^1.0.13",
     "@svgr/core": "^5.5.0",
     "@svgr/plugin-svgo": "^5.5.0",
+    "@tailwindcss/forms": "^0.3.2",
     "date-fns": "^2.21.1",
     "esbuild": "^0.11.18",
     "history": "^5.0.0",
