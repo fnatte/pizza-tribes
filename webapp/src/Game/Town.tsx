@@ -15,6 +15,7 @@ function Town() {
   const ref = useRef<SVGSVGElement>(null);
   const navigate = useNavigate();
   const lots = useStore((state) => state.gameState.lots);
+  const constructionQueue = useStore((state) => state.gameState.constructionQueue);
 
   const onLotClick = (lotId: string) => {
     navigate(`/town/${lotId.replace("lot", "")}`);
@@ -114,7 +115,7 @@ function Town() {
           ref={ref}
           className={classnames("w-full", classes.svg as TArg)}
           lots={lots}
-          height={undefined}
+          constructionQueue={constructionQueue}
         />
         <div
           className={classnames(

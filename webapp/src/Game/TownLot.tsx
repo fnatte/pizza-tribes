@@ -10,7 +10,12 @@ import { ReactComponent as SvgShop } from "../../images/shop.svg";
 import { ReactComponent as SvgHouse } from "../../images/house.svg";
 import styles from "../styles";
 import { formatDistanceToNow } from "date-fns";
-import { countPopulation, formatDurationShort, formatNumber, getTapInfo } from "../utils";
+import {
+  countPopulation,
+  formatDurationShort,
+  formatNumber,
+  getTapInfo,
+} from "../utils";
 import { Education } from "../generated/education";
 
 const label = classnames("text-xs", "md:text-sm", "mr-1");
@@ -176,6 +181,13 @@ function TownLot() {
   const population = useStore((state) => state.gameState.population);
   const gameData = useStore((state) => state.gameData);
 
+  const ongoingConstruction = useStore(
+    useCallback(
+      (state) => state.gameState.constructionQueue.find((x) => x.lotId === id),
+      [id]
+    )
+  );
+
   return (
     <div
       className={classnames(
@@ -187,7 +199,19 @@ function TownLot() {
         "p-2"
       )}
     >
-      {!lot && <ConstructBuilding lotId={id} />}
+      {!lot && !ongoingConstruction && <ConstructBuilding lotId={id} />}
+      {!lot && ongoingConstruction && (
+        <>
+          <h2>Construction site</h2>
+          <p className={classnames("my-4", "text-gray-700")}>
+            A{" "}
+            {gameData?.buildings[
+              ongoingConstruction.building
+            ].title.toLowerCase()}{" "}
+            is being constructed here.
+          </p>
+        </>
+      )}
       {lot?.building === Building.KITCHEN && (
         <>
           <h2>Kitchen (level {lot.level + 1})</h2>
