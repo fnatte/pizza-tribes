@@ -83,13 +83,23 @@ func CountTravellingPopulation(travelQueue []*Travel) int32 {
 	return count
 }
 
+func CountTrainingPopulation(trainingQueue []*Training) int32 {
+	var count int32 = 0
+	for _, t := range trainingQueue {
+		count = count + t.Amount
+	}
+
+	return count
+}
+
 func CountAllPopulation(gs *GameState) int32 {
 	if gs == nil {
 		return 0
 	}
 
 	return CountTownPopulation(gs.Population) +
-		CountTravellingPopulation(gs.TravelQueue)
+		CountTravellingPopulation(gs.TravelQueue) +
+		CountTrainingPopulation(gs.TrainingQueue)
 
 }
 
