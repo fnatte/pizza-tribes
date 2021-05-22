@@ -31,6 +31,13 @@ func (h *wsHandler) HandleMessage(ctx context.Context, m []byte, c *ws.Client) {
 func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 	// Please excuse me for this looong func :|
 
+	// Get username
+	userKey := fmt.Sprintf("user:%s", c.UserId())
+	username, err := h.rc.HGet(ctx, userKey, "username").Result()
+	if err != nil {
+		return fmt.Errorf("failed to get username: %w", err)
+	}
+
 	gs := models.GameState{
 		Population: &models.GameState_Population{},
 		Resources:  &models.GameState_Resources{},
@@ -78,13 +85,6 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to ensure user updates")
 		return err
-	}
-
-	// Get username
-	userKey := fmt.Sprintf("user:%s", c.UserId())
-	username, err := h.rc.HGet(ctx, userKey, "username").Result()
-	if err != nil {
-		return fmt.Errorf("failed to get username: %w", err)
 	}
 
 	go (func() {

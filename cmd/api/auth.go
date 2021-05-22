@@ -61,17 +61,14 @@ func NewAuthService(rdb redis.UniversalClient) *AuthService {
 
 var jwtSigningKey = []byte{}
 
-func getJwtSigningKey() []byte {
+func init() {
+	jwtSigningKey = []byte(os.Getenv("JWT_SIGNING_KEY"))
 	if len(jwtSigningKey) == 0 {
-		jwtSigningKey = []byte(os.Getenv("JWT_SIGNING_KEY"))
+		panic("JWT_SIGNING_KEY was not set")
 	}
-	return jwtSigningKey
 }
 
 func getJwtSigningKeyFunc(*jwt.Token) (interface{}, error) {
-	if len(jwtSigningKey) == 0 {
-		jwtSigningKey = []byte(os.Getenv("JWT_SIGNING_KEY"))
-	}
 	return jwtSigningKey, nil
 }
 
@@ -128,7 +125,7 @@ func (a *AuthService) CreateToken(userId string) (string, error) {
 		Subject:   userId,
 	}
 
-	tokenString, err := t.SignedString(getJwtSigningKey())
+	tokenString, err := t.SignedString(jwtSigningKey)
 	if err != nil {
 		return "", fmt.Errorf("failed to create token: %w", err)
 	}
