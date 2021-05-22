@@ -8,6 +8,7 @@ import School from "./School";
 import { ReactComponent as SvgKitchen } from "../../images/kitchen.svg";
 import { ReactComponent as SvgShop } from "../../images/shop.svg";
 import { ReactComponent as SvgHouse } from "../../images/house.svg";
+import { ReactComponent as SvgMarketingHQ } from "../../images/marketing-hq.svg";
 import styles from "../styles";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -98,19 +99,11 @@ const UpgradeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
 
   const constr = constructionQueue.find((x) => x.lotId === lotId);
   if (constr) {
-    return (
-      <section
-        className={classnames(
-          "m-4",
-          "p-4",
-          constr.razing ? "bg-red-400" : "bg-green-200"
-        )}
-      >
-        <span>
-          This building is being {constr.razing ? "razed" : "upgraded"}.
-        </span>
+    return !constr.razing ? (
+      <section className={classnames("m-4", "p-4", "bg-green-200")}>
+        <span>This building is being upgraded.</span>
       </section>
-    );
+    ) : null;
   }
 
   const onClick = () => {
@@ -206,10 +199,6 @@ const RazeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
     return null;
   }
 
-  if (constructionQueue.some((x) => x.lotId === lotId)) {
-    return null;
-  }
-
   const onClick = () => {
     razeBuilding(lotId);
   };
@@ -219,6 +208,15 @@ const RazeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
   const cost = Math.floor(levelInfo.cost / 2);
 
   const canAfford = coins >= cost;
+
+  const constr = constructionQueue.find((x) => x.lotId === lotId);
+  if (constr) {
+    return constr.razing ? (
+      <section className={classnames("m-4", "p-4", "bg-red-400")}>
+        <span>This building is being razed.</span>
+      </section>
+    ) : null;
+  }
 
   return (
     <section className={classnames("m-4", "p-4", "bg-gray-300")}>
@@ -361,7 +359,16 @@ function TownLot() {
             If you upgrade or build more shops you can have even more employed
             chefs!
           </p>
-          <UpgradeSection lot={lot} lotId={id} />
+          <RazeSection lot={lot} lotId={id} />
+        </>
+      )}
+      {lot?.building === Building.MARKETINGHQ && (
+        <>
+          <h2>Marketing HQ</h2>
+          <SvgMarketingHQ height={100} width={100} />
+          <p className={classnames("my-4", "text-gray-700")}>
+            This is were your marketing personel work.
+          </p>
           <RazeSection lot={lot} lotId={id} />
         </>
       )}

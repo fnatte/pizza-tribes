@@ -26,6 +26,8 @@ func getPopulationKey(edu models.Education) (string, error) {
 		return "guards", nil
 	case models.Education_THIEF:
 		return "thieves", nil
+	case models.Education_PUBLICIST:
+		return "publicists", nil
 	default:
 		return "", fmt.Errorf("Invalid education: %s", edu)
 	}
@@ -268,6 +270,14 @@ func (u *updater) patchToPipe(ctx updateContext, userId string, p *patch) (pipeF
 				int64(pop.Thieves.Value)).Result()
 			if err != nil {
 				return fmt.Errorf("failed to increase thieves: %w", err)
+			}
+		}
+		if pop.Publicists != nil {
+			_, err = internal.RedisJsonSet(
+				pipe, ctx, gsKey, ".population.publicists",
+				int64(pop.Publicists.Value)).Result()
+			if err != nil {
+				return fmt.Errorf("failed to increase publicists: %w", err)
 			}
 		}
 

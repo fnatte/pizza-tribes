@@ -39,14 +39,16 @@ func (h *handler) handleConstructBuilding(ctx context.Context, senderId string, 
 		if gs.Lots[m.LotId] != nil {
 			return errors.New("Lot must be empty")
 		}
-		for _, constr := range(gs.ConstructionQueue) {
+		for _, constr := range gs.ConstructionQueue {
 			if constr.LotId == m.LotId {
 				return errors.New("Already constructing at lot")
 			}
 		}
 
-		// The first building of each type is free and built 100 times faster
-		if buildingCount[int32(m.Building)]+buildingConstrCount[int32(m.Building)] == 0 {
+		// The first building of all types except markting hq is free and
+		// built 100 times faster
+		if m.Building != models.Building_MARKETINGHQ &&
+			buildingCount[int32(m.Building)]+buildingConstrCount[int32(m.Building)] == 0 {
 			cost = 0
 			constructionTime = int32(float64(constructionTime)/100.0) + 1
 		}

@@ -16,35 +16,36 @@ func (gs *GameState) ToServerMessage() *ServerMessage {
 		lotsPatch[lotId] = &GameStatePatch_LotPatch{
 			Building: lot.Building,
 			TappedAt: lot.TappedAt,
-			Level: lot.Level,
+			Level:    lot.Level,
 		}
 	}
 
 	pop := &GameStatePatch_PopulationPatch{}
 
 	if gs.Population != nil {
-		pop.Uneducated = &wrapperspb.Int32Value{ Value: gs.Population.Uneducated }
-		pop.Chefs =      &wrapperspb.Int32Value{ Value: gs.Population.Chefs }
-		pop.Salesmice =  &wrapperspb.Int32Value{ Value: gs.Population.Salesmice }
-		pop.Guards =     &wrapperspb.Int32Value{ Value: gs.Population.Guards }
-		pop.Thieves =    &wrapperspb.Int32Value{ Value: gs.Population.Thieves }
+		pop.Uneducated = &wrapperspb.Int32Value{Value: gs.Population.Uneducated}
+		pop.Chefs = &wrapperspb.Int32Value{Value: gs.Population.Chefs}
+		pop.Salesmice = &wrapperspb.Int32Value{Value: gs.Population.Salesmice}
+		pop.Guards = &wrapperspb.Int32Value{Value: gs.Population.Guards}
+		pop.Thieves = &wrapperspb.Int32Value{Value: gs.Population.Thieves}
+		pop.Publicists = &wrapperspb.Int32Value{Value: gs.Population.Publicists}
 	}
 
 	p := &GameStatePatch{
 		Lots: lotsPatch,
 		Resources: &GameStatePatch_ResourcesPatch{
-			Coins: &wrapperspb.Int32Value{ Value: gs.Resources.Coins },
-			Pizzas: &wrapperspb.Int32Value{ Value: gs.Resources.Pizzas },
+			Coins:  &wrapperspb.Int32Value{Value: gs.Resources.Coins},
+			Pizzas: &wrapperspb.Int32Value{Value: gs.Resources.Pizzas},
 		},
-		Population: pop,
-		TrainingQueue: gs.TrainingQueue,
-		TrainingQueuePatched: true,
-		ConstructionQueue: gs.ConstructionQueue,
+		Population:               pop,
+		TrainingQueue:            gs.TrainingQueue,
+		TrainingQueuePatched:     true,
+		ConstructionQueue:        gs.ConstructionQueue,
 		ConstructionQueuePatched: true,
-		TownX: &wrapperspb.Int32Value{ Value: gs.TownX },
-		TownY: &wrapperspb.Int32Value{ Value: gs.TownY },
-		TravelQueue: gs.TravelQueue,
-		TravelQueuePatched: true,
+		TownX:                    &wrapperspb.Int32Value{Value: gs.TownX},
+		TownY:                    &wrapperspb.Int32Value{Value: gs.TownY},
+		TravelQueue:              gs.TravelQueue,
+		TravelQueuePatched:       true,
 	}
 
 	return &ServerMessage{
@@ -63,4 +64,3 @@ func (stats *Stats) ToServerMessage() *ServerMessage {
 		},
 	}
 }
-

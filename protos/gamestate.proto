@@ -48,6 +48,7 @@ message GameState {
     int32 salesmice = 3;
     int32 guards = 4;
     int32 thieves = 5;
+    int32 publicists = 6;
   }
 
   Resources resources = 1;
@@ -80,6 +81,7 @@ message GameStatePatch {
     google.protobuf.Int32Value salesmice = 3;
     google.protobuf.Int32Value guards = 4;
     google.protobuf.Int32Value thieves = 5;
+    google.protobuf.Int32Value publicists = 6;
   }
 
   ResourcesPatch resources = 1;

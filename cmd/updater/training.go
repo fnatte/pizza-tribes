@@ -68,6 +68,8 @@ func completeTrainings(ctx updateContext, tx *redis.Tx) error {
 			ctx.IncrGuards(c.amount)
 		case models.Education_THIEF:
 			ctx.IncrThieves(c.amount)
+		case models.Education_PUBLICIST:
+			ctx.IncrPublicists(c.amount)
 		}
 	}
 

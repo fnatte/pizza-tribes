@@ -86,8 +86,13 @@ func completedConstructions(ctx updateContext, tx *redis.Tx) (error) {
 							ctx.IncrThieves(-1)
 							rest = rest - 1
 						}
+					case 4:
+						if ctx.gs.Population.Publicists > 0 {
+							ctx.IncrPublicists(-1)
+							rest = rest - 1
+						}
 					}
-					popKey = (popKey + 1) % 4
+					popKey = (popKey + 1) % 5
 					loopCount++
 				}
 			}

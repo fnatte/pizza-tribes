@@ -4,10 +4,12 @@ import { ReactComponent as SvgKitchen } from "../../images/kitchen.svg";
 import { ReactComponent as SvgHouse } from "../../images/house.svg";
 import { ReactComponent as SvgShop } from "../../images/shop.svg";
 import { ReactComponent as SvgSchool } from "../../images/school.svg";
+import { ReactComponent as SvgMarketingHQ } from "../../images/marketing-hq.svg";
 import { ReactComponent as SvgConstructingKitchen } from "../../images/constructing-kitchen.svg";
 import { ReactComponent as SvgConstructingHouse } from "../../images/constructing-house.svg";
 import { ReactComponent as SvgConstructingShop } from "../../images/constructing-shop.svg";
 import { ReactComponent as SvgConstructingSchool } from "../../images/constructing-school.svg";
+import { ReactComponent as SvgConstructingMarketingHQ } from "../../images/constructing-marketing-hq.svg";
 import { Building } from "../generated/building";
 import { classnames, TArg } from "tailwindcss-classnames";
 import { getTapInfo } from "../utils";
@@ -75,6 +77,13 @@ function renderBuilding(building: Building | undefined, notification: boolean) {
           {notification && <BuildingBadge />}
         </g>
       );
+    case Building.MARKETINGHQ:
+      return (
+        <g transform="translate(-10, -13)">
+          <SvgMarketingHQ width={20} height={20} />
+          {notification && <BuildingBadge />}
+        </g>
+      );
   }
 }
 
@@ -102,6 +111,12 @@ const renderConstructingBuilding = (building: Building | undefined) => {
       return (
         <g transform="translate(-10, -13)">
           <SvgConstructingSchool width={20} height={20} />
+        </g>
+      );
+    case Building.MARKETINGHQ:
+      return (
+        <g transform="translate(-10, -13)">
+          <SvgConstructingMarketingHQ width={20} height={20} />
         </g>
       );
   }

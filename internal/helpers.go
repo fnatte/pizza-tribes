@@ -71,7 +71,8 @@ func CountTownPopulation(population *GameState_Population) int32 {
 		population.Chefs +
 		population.Salesmice +
 		population.Guards +
-		population.Thieves)
+		population.Thieves +
+		population.Publicists)
 }
 
 func CountTravellingPopulation(travelQueue []*Travel) int32 {

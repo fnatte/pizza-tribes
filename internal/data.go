@@ -129,6 +129,19 @@ var FullGameData = GameData{
 				},
 			},
 		},
+		int32(Building_MARKETINGHQ): {
+			Title:       "Marketing HQ",
+			TitlePlural: "Marketing HQs",
+			LevelInfos: []*BuildingInfo_LevelInfo{
+				{
+					Cost:             100_000,
+					ConstructionTime: 7200,
+					Employer: &Employer{
+						MaxWorkforce: 5,
+					},
+				},
+			},
+		},
 	},
 	Educations: map[int32]*EducationInfo{
 		int32(Education_CHEF): {
@@ -158,6 +171,13 @@ var FullGameData = GameData{
 			Cost:        20_000,
 			TrainTime:   1800,
 			Employer:    nil,
+		},
+		int32(Education_PUBLICIST): {
+			Title:       "Publicist",
+			TitlePlural: "Publicists",
+			Cost:        80_000,
+			TrainTime:   1200,
+			Employer:    Building_MARKETINGHQ.Enum(),
 		},
 	},
 }

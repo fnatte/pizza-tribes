@@ -109,6 +109,7 @@ const initialGameState = {
     salesmice: 0,
     guards: 0,
     thieves: 0,
+    publicists: 0,
   },
   trainingQueue: [],
   constructionQueue: [],
@@ -192,6 +193,9 @@ export const useStore = create<State>((set, get) => ({
       }
       if (stateChange.population?.thieves) {
         population.thieves = stateChange.population.thieves.value;
+      }
+      if (stateChange.population?.publicists) {
+        population.publicists = stateChange.population.publicists.value;
       }
 
       unstable_batchedUpdates(() => {

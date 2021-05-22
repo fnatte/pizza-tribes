@@ -104,3 +104,14 @@ func (u *updateContext) IncrThieves(amount int32) {
 	u.gs.Population.Thieves = u.patch.gsPatch.Population.Thieves.Value
 }
 
+func (u *updateContext) IncrPublicists(amount int32) {
+	if u.patch.gsPatch.Population.Publicists == nil {
+		u.patch.gsPatch.Population.Publicists = &wrapperspb.Int32Value{
+			Value: u.gs.Population.Publicists,
+		}
+	}
+
+	u.patch.gsPatch.Population.Publicists.Value = u.patch.gsPatch.Population.Publicists.Value + amount
+	u.gs.Population.Publicists = u.patch.gsPatch.Population.Publicists.Value
+}
+

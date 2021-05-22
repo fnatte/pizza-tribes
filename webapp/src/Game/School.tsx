@@ -11,6 +11,7 @@ import { ReactComponent as ChefSvg } from "../../images/chef.svg";
 import { ReactComponent as SalesmouseSvg } from "../../images/salesmouse.svg";
 import { ReactComponent as SecuritySvg } from "../../images/security.svg";
 import { ReactComponent as ThiefSvg } from "../../images/thief.svg";
+import { ReactComponent as PublicistSvg } from "../../images/publicist.svg";
 import { ReactComponent as SvgSchool } from "../../images/school.svg";
 import { formatDurationShort } from "../utils";
 import { useForm } from "react-hook-form";
@@ -29,6 +30,7 @@ const svgs: Record<number, React.VFC | undefined> = {
   [Education.SALESMOUSE]: SalesmouseSvg,
   [Education.GUARD]: SecuritySvg,
   [Education.THIEF]: ThiefSvg,
+  [Education.PUBLICIST]: PublicistSvg,
 };
 
 const descriptions: Record<number, React.VFC | undefined> = {
@@ -46,6 +48,11 @@ const descriptions: Record<number, React.VFC | undefined> = {
   [Education.THIEF]: () => (
     <p className={descriptionStyle}>
       Thieves can be sent to other towns to steal coins.
+    </p>
+  ),
+  [Education.PUBLICIST]: () => (
+    <p className={descriptionStyle}>
+      Publicists work in marketing HQ to increase your popularity and demand.
     </p>
   ),
 };
@@ -71,7 +78,9 @@ const SchoolEducation: React.VFC<{
   const train = useStore((state) => state.train);
   const uneducated = useStore((state) => state.gameState.population.uneducated);
 
-  const maxByCost = educationInfo.cost ? Math.floor(coins / educationInfo.cost) : 1_000;
+  const maxByCost = educationInfo.cost
+    ? Math.floor(coins / educationInfo.cost)
+    : 1_000;
   const max = Math.min(uneducated, maxByCost);
 
   const schema2 = schema.shape({

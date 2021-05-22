@@ -8,4 +8,5 @@ enum Education {
   SALESMOUSE = 1;
   GUARD = 2;
   THIEF = 3;
+  PUBLICIST = 4;
 }

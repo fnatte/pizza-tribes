@@ -15,6 +15,8 @@ const getPopulationKey = (id: number): keyof GameState_Population | null => {
       return "thieves";
     case Education.SALESMOUSE:
       return "salesmice";
+    case Education.PUBLICIST:
+      return "publicists";
   }
   return null;
 };
@@ -38,12 +40,18 @@ const Population: React.FC<{ className?: string }> = ({ className }) => {
           .map(Number)
           .map((id) => {
             const popKey = getPopulationKey(id);
-            const pop = (popKey && population[popKey].toString()) ?? "0";
+            const pop = (popKey && population[popKey]) ?? 0;
             const education = educations[id];
             const max =
-              maxEmployed &&
-              education.employer !== undefined &&
-              maxEmployed[education.employer];
+              (maxEmployed &&
+                education.employer !== undefined &&
+                maxEmployed[education.employer]) ||
+              0;
+            const isOverStaffed = pop > max;
+
+            if (pop === 0 && max === 0) {
+              return null;
+            }
 
             return (
               <tr key={id}>
@@ -51,9 +59,20 @@ const Population: React.FC<{ className?: string }> = ({ className }) => {
                   {educations[id].titlePlural}
                 </td>
                 <td className={classnames("p-2")}>
-                  {education.employer !== undefined && max !== undefined
-                    ? `${pop.toString()} / ${max}`
-                    : pop.toString()}
+                  {education.employer !== undefined && max !== undefined ? (
+                    <>
+                      {pop.toString()} /{" "}
+                      <span
+                        className={classnames({
+                          "text-red-800": isOverStaffed,
+                        })}
+                      >
+                        {max}
+                      </span>
+                    </>
+                  ) : (
+                    pop.toString()
+                  )}
                 </td>
               </tr>
             );

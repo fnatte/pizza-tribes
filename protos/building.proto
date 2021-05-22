@@ -8,6 +8,7 @@ enum Building {
   SHOP = 1;
   HOUSE = 2;
   SCHOOL = 3;
+  MARKETINGHQ = 4;
 }
 
 message Employer {
