@@ -49,7 +49,11 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
 
   return (
     <section className={classnames("m-4", "p-4", "bg-green-200")}>
-      <button className={styles.button} disabled={!canTap} onClick={onClick}>
+      <button
+        className={styles.primaryButton}
+        disabled={!canTap}
+        onClick={onClick}
+      >
         Tap
       </button>{" "}
       <span>
@@ -92,10 +96,19 @@ const UpgradeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
     );
   }
 
-  if (constructionQueue.some((x) => x.lotId === lotId)) {
+  const constr = constructionQueue.find((x) => x.lotId === lotId);
+  if (constr) {
     return (
-      <section className={classnames("m-4", "p-4", "bg-green-200")}>
-        <span>This building is being upgraded.</span>
+      <section
+        className={classnames(
+          "m-4",
+          "p-4",
+          constr.razing ? "bg-red-400" : "bg-green-200"
+        )}
+      >
+        <span>
+          This building is being {constr.razing ? "razed" : "upgraded"}.
+        </span>
       </section>
     );
   }
@@ -166,8 +179,77 @@ const UpgradeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
           Not enough coins
         </div>
       )}
-      <button className={styles.button} disabled={!canAfford} onClick={onClick}>
+      <button
+        className={styles.primaryButton}
+        disabled={!canAfford}
+        onClick={onClick}
+      >
         Upgrade to level {lot.level + 2}
+      </button>
+    </section>
+  );
+};
+
+const RazeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
+  lot,
+  lotId,
+}) => {
+  const coins = useStore((state) => state.gameState.resources.coins);
+  const constructionQueue = useStore(
+    (state) => state.gameState.constructionQueue
+  );
+  const gameData = useStore((state) => state.gameData);
+  const buildingInfo = gameData?.buildings[lot.building];
+  const razeBuilding = useStore((state) => state.razeBuilding);
+
+  if (buildingInfo == null) {
+    return null;
+  }
+
+  if (constructionQueue.some((x) => x.lotId === lotId)) {
+    return null;
+  }
+
+  const onClick = () => {
+    razeBuilding(lotId);
+  };
+
+  const levelInfo = buildingInfo.levelInfos[lot.level];
+  const constructionTime = Math.floor(levelInfo.constructionTime * 2);
+  const cost = Math.floor(levelInfo.cost / 2);
+
+  const canAfford = coins >= cost;
+
+  return (
+    <section className={classnames("m-4", "p-4", "bg-gray-300")}>
+      <table>
+        <tbody>
+          <tr>
+            <td className={classnames(label as TArg, "pr-2")}>Raze Cost:</td>
+            <td className={classnames(value as TArg, "pr-2")}>
+              {formatNumber(cost)} coins
+            </td>
+          </tr>
+          <tr>
+            <td className={classnames(label as TArg, "pr-2")}>Raze time:</td>
+            <td className={classnames(value as TArg, "pr-2")}>
+              {formatDurationShort(constructionTime)}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <hr className={classnames("border-t-2", "border-red-500", "my-2")} />
+      {!canAfford && (
+        <div className={classnames("m-2", "text-sm", "text-red-800")}>
+          Not enough coins
+        </div>
+      )}
+      <button
+        className={classnames(...styles.button, "bg-red-800")}
+        disabled={!canAfford}
+        onClick={onClick}
+      >
+        Raze {buildingInfo.title}
       </button>
     </section>
   );
@@ -236,6 +318,7 @@ function TownLot() {
             employed chefs!
           </p>
           <UpgradeSection lot={lot} lotId={id} />
+          <RazeSection lot={lot} lotId={id} />
         </>
       )}
       {lot?.building === Building.HOUSE && (
@@ -252,6 +335,7 @@ function TownLot() {
             If you upgrade or build more houses your population will grow.
           </p>
           <UpgradeSection lot={lot} lotId={id} />
+          <RazeSection lot={lot} lotId={id} />
         </>
       )}
       {lot?.building === Building.SHOP && (
@@ -278,6 +362,7 @@ function TownLot() {
             chefs!
           </p>
           <UpgradeSection lot={lot} lotId={id} />
+          <RazeSection lot={lot} lotId={id} />
         </>
       )}
       {lot?.building === Building.SCHOOL && <School />}

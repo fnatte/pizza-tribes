@@ -29,7 +29,14 @@ const ConstructionQueue: React.FC<{
       <tbody>
         {constructionQueue.map((construction) => (
           <tr key={construction.lotId}>
-            <td className={classnames("p-2")}>
+            <td
+              className={classnames({
+                "p-2": true,
+                "font-bold": construction.razing,
+                "text-red-700": construction.razing,
+              })}
+            >
+              {construction.razing && "Razing "}
               {buildings[construction.building].title}
               {construction.level > 0 && (
                 <span> to level {construction.level + 1}</span>

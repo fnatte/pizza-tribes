@@ -37,25 +37,11 @@ type updater struct {
 	leaderboard *internal.LeaderboardService
 }
 
-type patch struct {
-	gsPatch     *models.GameStatePatch
-	sendStats   bool
-	sendReports bool
-}
-
-type updateContext struct {
-	context.Context
-	userId  string
-	gs      *models.GameState
-	patch   *patch
-	patches map[string]*patch
-}
-
 func (ctx *updateContext) initPatch(userId string) {
 	if ctx.patches[userId] == nil {
 		ctx.patches[userId] = &patch{
 			&models.GameStatePatch{
-				Resources: &models.GameStatePatch_ResourcesPatch{},
+				Resources:  &models.GameStatePatch_ResourcesPatch{},
 				Population: &models.GameStatePatch_PopulationPatch{},
 			},
 			false,
@@ -94,6 +80,7 @@ func (u *updater) update(ctx context.Context, userId string) {
 			false,
 		},
 		map[string]*patch{},
+		map[string][]*models.Report{},
 	}
 	uctx.patches[userId] = uctx.patch
 
@@ -107,32 +94,46 @@ func (u *updater) update(ctx context.Context, userId string) {
 			return err
 		}
 
-		// Prepare changes and setup pipeline funcs.
-		// Each of the following functions returns a pipeline function
-		// that is executed serially in a single Redis pipeline below.
-		pipeFns := make([]pipeFn, 4)
-		if pipeFns[0], err = extrapolate(uctx, tx); err != nil {
+		if err = extrapolate(uctx, tx); err != nil {
 			return err
 		}
-		if pipeFns[1], err = completedConstructions(uctx, tx); err != nil {
+		if err = completedConstructions(uctx, tx); err != nil {
 			return err
 		}
-		if pipeFns[2], err = completeTrainings(uctx, tx); err != nil {
+		if err = completeTrainings(uctx, tx); err != nil {
 			return err
 		}
-		if pipeFns[3], err = completeTravels(uctx, tx, u.world); err != nil {
+		if err = completeTravels(uctx, tx, u.world); err != nil {
 			return err
 		}
 
-		// Write changes to Redis (execute pipelines)
+		// Prepare redis pipes from patches
+		pipeFns := []pipeFn{}
+		for patchUserId, p := range uctx.patches {
+			pipeFn, err := u.patchToPipe(uctx, patchUserId, p)
+			if err != nil {
+				return fmt.Errorf("failed preparing pipe: %w", err)
+			}
+			pipeFns = append(pipeFns, pipeFn)
+		}
+
+		// Append pipe for reports
+		reportsPipe, err := reportsToPipe(uctx)
+		if err != nil {
+			return fmt.Errorf("failed preparing reports pipe: %w", err)
+		}
+		pipeFns = append(pipeFns, reportsPipe)
+
+		// Apply/persist patches
 		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			for _, pipeFn := range pipeFns {
 				if pipeFn != nil {
 					if err = pipeFn(pipe); err != nil {
-						return err
+						return fmt.Errorf("persist pipe failed: %w", err)
 					}
 				}
 			}
+
 			return nil
 		})
 
@@ -159,7 +160,7 @@ func (u *updater) update(ctx context.Context, userId string) {
 	}
 
 	for patchUserId, p := range uctx.patches {
-		if err = u.processPatch(uctx, patchUserId, p); err != nil {
+		if err = u.postProcessPatch(uctx, patchUserId, p); err != nil {
 			log.Error().Err(err).
 				Bool("wasSender", userId == patchUserId).
 				Str("userId", patchUserId).
@@ -168,7 +169,167 @@ func (u *updater) update(ctx context.Context, userId string) {
 	}
 }
 
-func (u *updater) processPatch(ctx updateContext, userId string, p *patch) error {
+func (u *updater) patchToPipe(ctx updateContext, userId string, p *patch) (pipeFn, error) {
+	var err error
+	gsKey := fmt.Sprintf("user:%s:gamestate", userId)
+
+	return func(pipe redis.Pipeliner) error {
+		// Write timestamp
+		if p.gsPatch.Timestamp != nil {
+			err := internal.RedisJsonSet(
+				pipe, ctx, gsKey, ".timestamp",
+				p.gsPatch.Timestamp.Value).Err()
+			if err != nil {
+				return fmt.Errorf("failed to write timestamp: %w", err)
+			}
+		}
+
+		// Write coins
+		if p.gsPatch.Resources.Coins != nil {
+			err = internal.RedisJsonSet(
+				pipe, ctx, gsKey, ".resources.coins",
+				p.gsPatch.Resources.Coins.Value).Err()
+			if err != nil {
+				return fmt.Errorf("failed to write coins: %w", err)
+			}
+		}
+
+		// Write pizzas
+		if p.gsPatch.Resources.Pizzas != nil {
+			err = internal.RedisJsonSet(
+				pipe, ctx, gsKey, ".resources.pizzas",
+				p.gsPatch.Resources.Pizzas.Value).Err()
+			if err != nil {
+				return fmt.Errorf("failed to write pizzas: %w", err)
+			}
+		}
+
+		// Write lots
+		for lotId, lot := range p.gsPatch.Lots {
+			if lot.Razed {
+				err = internal.RedisJsonDel(
+					pipe, ctx, gsKey,
+					fmt.Sprintf(".lots[\"%s\"]", lotId)).Err()
+				if err != nil {
+					return fmt.Errorf("failed to delete building on lot: %w", err)
+				}
+			} else {
+				var b []byte
+				if b, err = protojson.Marshal(lot); err != nil {
+					return fmt.Errorf("failed to write building on lot: %w", err)
+				}
+				err = internal.RedisJsonSet(
+					pipe, ctx, gsKey,
+					fmt.Sprintf(".lots[\"%s\"]", lotId),
+					b).Err()
+				if err != nil {
+					return fmt.Errorf("failed to write building on lot: %w", err)
+				}
+			}
+		}
+
+		// Write population
+		pop := p.gsPatch.Population
+		if pop.Uneducated != nil {
+			_, err = internal.RedisJsonSet(
+				pipe, ctx, gsKey, ".population.uneducated",
+				int64(pop.Uneducated.Value)).Result()
+			if err != nil {
+				return fmt.Errorf("failed to increase uneducated: %w", err)
+			}
+		}
+		if pop.Chefs != nil {
+			_, err = internal.RedisJsonSet(
+				pipe, ctx, gsKey, ".population.chefs",
+				int64(pop.Chefs.Value)).Result()
+			if err != nil {
+				return fmt.Errorf("failed to increase chefs: %w", err)
+			}
+		}
+		if pop.Salesmice != nil {
+			_, err = internal.RedisJsonSet(
+				pipe, ctx, gsKey, ".population.salesmice",
+				int64(pop.Salesmice.Value)).Result()
+			if err != nil {
+				return fmt.Errorf("failed to increase salesmice: %w", err)
+			}
+		}
+		if pop.Guards != nil {
+			_, err = internal.RedisJsonSet(
+				pipe, ctx, gsKey, ".population.guards",
+				int64(pop.Guards.Value)).Result()
+			if err != nil {
+				return fmt.Errorf("failed to increase guards: %w", err)
+			}
+		}
+		if pop.Thieves != nil {
+			_, err = internal.RedisJsonSet(
+				pipe, ctx, gsKey, ".population.thieves",
+				int64(pop.Thieves.Value)).Result()
+			if err != nil {
+				return fmt.Errorf("failed to increase thieves: %w", err)
+			}
+		}
+
+		// Write training queue
+		if p.gsPatch.TrainingQueuePatched {
+			jsonarr := "["
+			for _, t := range p.gsPatch.TrainingQueue {
+				var b []byte
+				if b, err = protojson.Marshal(t); err != nil {
+					return fmt.Errorf("failed marshal training: %w", err)
+				}
+				jsonarr = jsonarr + string(b)
+			}
+			jsonarr = jsonarr + "]"
+			err = internal.RedisJsonSet(
+				pipe, ctx, gsKey, ".trainingQueue", jsonarr).Err()
+			if err != nil {
+				return fmt.Errorf("failed to write training queue: %w", err)
+			}
+		}
+
+		// Write construction queue
+		if p.gsPatch.ConstructionQueuePatched {
+			jsonarr := "["
+			for _, c := range p.gsPatch.ConstructionQueue {
+				var b []byte
+				if b, err = protojson.Marshal(c); err != nil {
+					return fmt.Errorf("failed marshal construction: %w", err)
+				}
+				jsonarr = jsonarr + string(b)
+			}
+			jsonarr = jsonarr + "]"
+			err = internal.RedisJsonSet(
+				pipe, ctx, gsKey, ".constructionQueue", jsonarr).Err()
+			if err != nil {
+				return fmt.Errorf("failed to write construction queue: %w", err)
+			}
+		}
+
+		// Write travel queue
+		if p.gsPatch.TravelQueuePatched {
+			jsonarr := "["
+			for _, t := range p.gsPatch.TravelQueue {
+				var b []byte
+				if b, err = protojson.Marshal(t); err != nil {
+					return fmt.Errorf("failed marshal travel: %w", err)
+				}
+				jsonarr = jsonarr + string(b)
+			}
+			jsonarr = jsonarr + "]"
+			err = internal.RedisJsonSet(
+				pipe, ctx, gsKey, ".travelQueue", jsonarr).Err()
+			if err != nil {
+				return fmt.Errorf("failed to write construction queue: %w", err)
+			}
+		}
+
+		return nil
+	}, nil
+}
+
+func (u *updater) postProcessPatch(ctx updateContext, userId string, p *patch) error {
 	if p == nil {
 		return nil
 	}
@@ -211,6 +372,20 @@ func (u *updater) processPatch(ctx updateContext, userId string, p *patch) error
 	}
 
 	return nil
+}
+
+func reportsToPipe(ctx updateContext) (pipeFn, error) {
+	return func(pipe redis.Pipeliner) error {
+		for userId, reports := range ctx.reports {
+			for _, report := range reports {
+				if err := internal.SaveReport(ctx, pipe, userId, report); err != nil {
+					return fmt.Errorf("failed to save report: %w", err)
+				}
+			}
+		}
+
+		return nil
+	}, nil
 }
 
 func addTimeseriesDataPoints(ctx updateContext, r internal.RedisClient) error {

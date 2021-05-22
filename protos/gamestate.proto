@@ -18,6 +18,7 @@ message Construction {
   string lotId = 2;
   Building building = 3;
   int32 level = 4;
+  bool razing = 5;
 }
 
 message Travel {
@@ -70,6 +71,7 @@ message GameStatePatch {
     Building building = 1;
     int64 tapped_at = 2;
     int32 level = 3;
+    bool razed = 4;
   }
 
   message PopulationPatch {

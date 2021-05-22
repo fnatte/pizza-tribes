@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal"
@@ -18,47 +17,15 @@ type extrapolateChanges struct {
 	pizzas    int32
 }
 
-func extrapolate(ctx updateContext, tx *redis.Tx) (pipeFn, error) {
-	gsKey := fmt.Sprintf("user:%s:gamestate", ctx.userId)
+func extrapolate(ctx updateContext, tx *redis.Tx) (error) {
 	changes := calculateExtrapolateChanges(ctx.gs)
 
 	// Update patch
-	r := ctx.patch.gsPatch.Resources
-	if r.Coins == nil {
-		r.Coins = &wrapperspb.Int32Value{}
-	}
-	if r.Pizzas == nil {
-		r.Pizzas = &wrapperspb.Int32Value{}
-	}
-	// TODO: Fix bug with adding absolute value
-	r.Coins.Value = r.Coins.Value + changes.coins
-	r.Pizzas.Value = r.Pizzas.Value + changes.pizzas
+	ctx.IncrCoins(changes.coins)
+	ctx.IncrPizzas(changes.pizzas)
 	ctx.patch.gsPatch.Timestamp = &wrapperspb.Int64Value{Value: changes.timestamp}
 
-	return func(pipe redis.Pipeliner) error {
-		// Write timestamp
-		err := internal.RedisJsonSet(
-			pipe, ctx, gsKey, ".timestamp", changes.timestamp).Err()
-		if err != nil {
-			return err
-		}
-
-		// Write coins
-		err = internal.RedisJsonSet(
-			pipe, ctx, gsKey, ".resources.coins", changes.coins).Err()
-		if err != nil {
-			return err
-		}
-
-		// Write pizzas
-		err = internal.RedisJsonSet(
-			pipe, ctx, gsKey, ".resources.pizzas", changes.pizzas).Err()
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}, nil
+	return nil
 }
 
 func calculateExtrapolateChanges(gs *models.GameState) extrapolateChanges {
@@ -90,8 +57,8 @@ func calculateExtrapolateChanges(gs *models.GameState) extrapolateChanges {
 		Msg("Game state update")
 
 	return extrapolateChanges{
-		coins:     gs.Resources.Coins + pizzasSold,
-		pizzas:    gs.Resources.Pizzas + pizzasProduced - pizzasSold,
+		coins:     pizzasSold,
+		pizzas:    pizzasProduced - pizzasSold,
 		timestamp: now.Unix(),
 	}
 }

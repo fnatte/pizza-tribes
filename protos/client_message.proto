@@ -20,6 +20,10 @@ message ClientMessage {
     string lotId = 1;
   }
 
+  message RazeBuilding {
+    string lotId = 1;
+  }
+
   message Train {
     Education education = 1;
     int32 amount = 2;
@@ -47,6 +51,7 @@ message ClientMessage {
     Expand expand = 6;
     Steal steal = 7;
     ReadReport readReport = 8;
+    RazeBuilding razeBuilding = 9;
   }
 }
 

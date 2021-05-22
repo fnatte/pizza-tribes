@@ -62,6 +62,7 @@ type State = {
   tap: (lotId: string) => void;
   constructBuilding: (lotId: string, building: Building) => void;
   upgradeBuilding: (lotId: string) => void;
+  razeBuilding: (lotId: string) => void;
   train: (education: Education, amount: number) => void;
   steal: (x: number, y: number, amount: number) => void;
   readReport: (id: string) => void;
@@ -76,7 +77,13 @@ const mergeLots = (
   Object.keys(b).forEach((lotId) => {
     const lot = res[lotId];
     if (b[lotId] !== undefined) {
-      const { building, tappedAt, level } = b[lotId];
+      const { building, tappedAt, level, razed } = b[lotId];
+
+      if (razed) {
+        delete res[lotId];
+        return;
+      }
+
       if (lot === undefined) {
         res[lotId] = { building, tappedAt, level };
       } else {
@@ -293,6 +300,19 @@ export const useStore = create<State>((set, get) => ({
         type: {
           oneofKind: "upgradeBuilding",
           upgradeBuilding: {
+            lotId,
+          },
+        },
+      })
+    );
+  },
+  razeBuilding: (lotId) => {
+    get().connection?.send(
+      ClientMessage.create({
+        id: generateId(),
+        type: {
+          oneofKind: "razeBuilding",
+          razeBuilding: {
             lotId,
           },
         },

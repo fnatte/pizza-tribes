@@ -82,7 +82,7 @@ const WorldTownView: React.FC<Props> = ({ x, y, town }) => {
           />
           {errors.count && <div className="p-2">{errors.count.message}</div>}
         </label>
-        <button type="submit" className={styles.button} disabled={isSubmitting}>
+        <button type="submit" className={styles.primaryButton} disabled={isSubmitting}>
           Send thieves
         </button>
       </form>

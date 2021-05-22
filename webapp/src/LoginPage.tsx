@@ -29,7 +29,7 @@ function CreateAccountPromotion() {
       )}
     >
       No account yet?
-      <button className={classnames(styles.button)} onClick={onClick}>
+      <button className={classnames(styles.primaryButton)} onClick={onClick}>
         Create Account
       </button>
     </div>

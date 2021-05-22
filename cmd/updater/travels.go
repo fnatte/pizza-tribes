@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"math"
 	"text/template"
 	"time"
 
@@ -73,39 +72,38 @@ func init() {
 		Parse(targetReportTemplateText))
 }
 
-func completeSteal(ctx updateContext, tx *redis.Tx, world *internal.WorldService, travel *models.Travel, travelIndex int) (pipeFn, error) {
+func completeSteal(ctx updateContext, tx *redis.Tx, world *internal.WorldService, travel *models.Travel, travelIndex int) (error) {
 	gsTarget := &models.GameState{}
 	x := travel.DestinationX
 	y := travel.DestinationY
-	gsKeyThief := fmt.Sprintf("user:%s:gamestate", ctx.userId)
 
 	// Validate target town
 	worldEntry, err := world.GetEntryXY(ctx, int(x), int(y))
 	if err != nil {
-		return nil, fmt.Errorf("could not find world entry: %w", err)
+		return fmt.Errorf("could not find world entry: %w", err)
 	}
 	town := worldEntry.GetTown()
 	if town == nil {
-		return nil, fmt.Errorf("no town at %d, %d", x, y)
+		return fmt.Errorf("no town at %d, %d", x, y)
 	}
 	if town.UserId == ctx.userId {
-		return nil, errors.New("can't steal from own town")
+		return errors.New("can't steal from own town")
 	}
 
 	// Get game state of target
 	gsKeyTarget := fmt.Sprintf("user:%s:gamestate", town.UserId)
 	s, err := internal.RedisJsonGet(tx, ctx, gsKeyTarget, ".").Result()
 	if err != nil {
-		return nil, fmt.Errorf("failed to complete steal: %w", err)
+		return fmt.Errorf("failed to complete steal: %w", err)
 	}
 	if err = protojson.Unmarshal([]byte(s), gsTarget); err != nil {
-		return nil, fmt.Errorf("failed to complete steal: %w", err)
+		return fmt.Errorf("failed to complete steal: %w", err)
 	}
 
 	// Get username of target
 	targetUsername, err := tx.HGet(ctx, fmt.Sprintf("user:%s", town.UserId), "username").Result()
 	if err != nil {
-		return nil, fmt.Errorf("failed to complete steal: %w", err)
+		return fmt.Errorf("failed to complete steal: %w", err)
 	}
 
 	// Calculate outcome
@@ -122,7 +120,6 @@ func completeSteal(ctx updateContext, tx *redis.Tx, world *internal.WorldService
 	loot := int64(internal.MinInt32(maxLoot, gsTarget.Resources.Coins))
 
 	// Prepare return travel - but not if all thieves got caught
-	var returnTravelBytes []byte
 	if successfulThieves > 0 {
 		arrivalAt := internal.CalculateArrivalTime(
 			travel.DestinationX, travel.DestinationY,
@@ -138,9 +135,8 @@ func completeSteal(ctx updateContext, tx *redis.Tx, world *internal.WorldService
 			Thieves:      successfulThieves,
 			Coins:        loot,
 		}
-		returnTravelBytes, err = protojson.Marshal(&returnTravel)
 		if err != nil {
-			return nil, fmt.Errorf("failed to marshal travel: %w", err)
+			return fmt.Errorf("failed to marshal travel: %w", err)
 		}
 
 		// Update patch with return travel
@@ -157,7 +153,7 @@ func completeSteal(ctx updateContext, tx *redis.Tx, world *internal.WorldService
 	}
 	buf := new(bytes.Buffer)
 	if err = thiefReportTemplate.Execute(buf, &tmplData); err != nil {
-		return nil, fmt.Errorf("failed to get thief report contents: %w", err)
+		return fmt.Errorf("failed to get thief report contents: %w", err)
 	}
 	thiefReport := &models.Report{
 		Id:        xid.New().String(),
@@ -168,7 +164,7 @@ func completeSteal(ctx updateContext, tx *redis.Tx, world *internal.WorldService
 	}
 	buf = new(bytes.Buffer)
 	if err = targetReportTemplate.Execute(buf, &tmplData); err != nil {
-		return nil, fmt.Errorf("failed to get target report contents: %w", err)
+		return fmt.Errorf("failed to get target report contents: %w", err)
 	}
 	targetReportTitle := "We have been robbed!"
 	if successfulThieves == 0 {
@@ -181,7 +177,6 @@ func completeSteal(ctx updateContext, tx *redis.Tx, world *internal.WorldService
 		Content:   buf.String(),
 		Unread:    true,
 	}
-	ctx.patch.sendReports = true
 
 	// Prepare patch to target user (whoms coins was stoled)
 	ctx.initPatch(town.UserId)
@@ -190,128 +185,57 @@ func completeSteal(ctx updateContext, tx *redis.Tx, world *internal.WorldService
 			Value: gsTarget.Resources.Coins,
 		}
 	}
-	ctx.patches[town.UserId].gsPatch.Resources.Coins.Value = ctx.patches[town.UserId].gsPatch.Resources.Coins.Value - int32(loot)
-	ctx.patches[town.UserId].sendReports = true
+	ctx.patches[town.UserId].gsPatch.Resources.Coins.Value =
+		ctx.patches[town.UserId].gsPatch.Resources.Coins.Value - int32(loot)
 
-	return func(pipe redis.Pipeliner) error {
-		// Decrease coins in target town
-		_, err := internal.RedisJsonNumIncrBy(
-			pipe, ctx, gsKeyTarget, ".resources.coins", -loot).Result()
-		if err != nil {
-			return fmt.Errorf("failed to decrease coins from target town: %w", err)
-		}
+	// Append reports to patch
+	ctx.AppendReport(ctx.userId, thiefReport)
+	ctx.AppendReport(town.UserId, targetReport)
 
-		if returnTravelBytes != nil {
-			// Append return travel
-			if err = internal.RedisJsonArrAppend(pipe, ctx, gsKeyThief,
-				".travelQueue", returnTravelBytes).Err(); err != nil {
-				return fmt.Errorf("failed to append new travel: %w", err)
-			}
-		}
 
-		internal.SaveReport(ctx, pipe, ctx.userId, thiefReport)
-		internal.SaveReport(ctx, pipe, town.UserId, targetReport)
-
-		log.Info().Str("userId", ctx.userId).Int64("loot", loot).Msg("Steal completed")
-
-		return nil
-	}, nil
+	return nil
 }
 
-func completeStealReturn(ctx updateContext, tx *redis.Tx, world *internal.WorldService, travel *models.Travel, travelIndex int) (pipeFn, error) {
-	gsKey := fmt.Sprintf("user:%s:gamestate", ctx.userId)
+func completeStealReturn(ctx updateContext, tx *redis.Tx, world *internal.WorldService, travel *models.Travel, travelIndex int) (error) {
+	ctx.IncrCoins(int32(travel.Coins))
+	ctx.IncrThieves(travel.Thieves)
 
-	// Update patch with coins
-	if ctx.patch.gsPatch.Resources.Coins == nil {
-		ctx.patch.gsPatch.Resources.Coins = &wrapperspb.Int32Value{}
-	}
-	ctx.patch.gsPatch.Resources.Coins.Value =
-		ctx.patch.gsPatch.Resources.Coins.Value + int32(travel.Coins)
+	log.Info().
+		Str("userId", ctx.userId).
+		Int64("loot", travel.Coins).
+		Msg("Steal return completed")
 
-	// Update patch with thieves
-	if ctx.patch.gsPatch.Population.Thieves == nil {
-		ctx.patch.gsPatch.Population.Thieves = &wrapperspb.Int32Value{}
-	}
-	ctx.patch.gsPatch.Population.Thieves.Value =
-		ctx.patch.gsPatch.Population.Thieves.Value + travel.Thieves
-
-	return func(pipe redis.Pipeliner) error {
-		var err error
-		// Increase coins with the loot
-		if err = internal.RedisJsonNumIncrBy(
-			pipe, ctx, gsKey, ".resources.coins", travel.Coins).Err(); err != nil {
-			return fmt.Errorf("failed to increase coins with loot: %w", err)
-		}
-
-		// Add back thieves to town population
-		if err = internal.RedisJsonNumIncrBy(
-			pipe, ctx, gsKey, ".population.thieves",
-			int64(travel.Thieves)).Err(); err != nil {
-			return fmt.Errorf("failed to increase coins with loot: %w", err)
-		}
-
-		log.Info().
-			Str("userId", ctx.userId).
-			Int64("loot", travel.Coins).
-			Msg("Steal return completed")
-
-		return nil
-	}, nil
+	return nil
 }
 
-func completeTravels(ctx updateContext, tx *redis.Tx, world *internal.WorldService) (pipeFn, error) {
+func completeTravels(ctx updateContext, tx *redis.Tx, world *internal.WorldService) (error) {
 	completedTravels := internal.GetCompletedTravels(ctx.gs)
 	if len(completedTravels) == 0 {
-		return nil, nil
+		return nil
 	}
 
 	// Update patch
 	ctx.patch.gsPatch.TravelQueue = ctx.gs.TravelQueue[len(completedTravels):]
 	ctx.patch.gsPatch.TravelQueuePatched = true
 
-	pipeFns := []pipeFn{}
-
-	gsKey := fmt.Sprintf("user:%s:gamestate", ctx.userId)
-
 	// Complete travels
 	for travelIndex, travel := range completedTravels {
 		if travel.Returning {
 			if travel.Thieves > 0 {
-				fn, err := completeStealReturn(ctx, tx, world, travel, travelIndex)
+				err := completeStealReturn(ctx, tx, world, travel, travelIndex)
 				if err != nil {
-					return nil, err
+					return err
 				}
-				pipeFns = append(pipeFns, fn)
 			}
 		} else {
 			if travel.Thieves > 0 {
-				fn, err := completeSteal(ctx, tx, world, travel, travelIndex)
+				err := completeSteal(ctx, tx, world, travel, travelIndex)
 				if err != nil {
-					return nil, err
+					return err
 				}
-				pipeFns = append(pipeFns, fn)
 			}
 		}
 	}
 
-	return func(pipe redis.Pipeliner) error {
-		// Remove completed travels from queue
-		err := internal.RedisJsonArrTrim(
-			pipe, ctx, gsKey,
-			".travelQueue",
-			len(completedTravels),
-			math.MaxInt32,
-		).Err()
-		if err != nil {
-			return fmt.Errorf("failed to remove completed travels: %w", err)
-		}
-
-		for i := range pipeFns {
-			if err = pipeFns[i](pipe); err != nil {
-				return err
-			}
-		}
-
-		return nil
-	}, nil
+	return nil
 }

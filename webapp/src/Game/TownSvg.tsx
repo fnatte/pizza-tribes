@@ -115,7 +115,7 @@ const renderLot = (
   const lot = lots[lotId];
   const construction = constructionQueue.find((x) => x.lotId === lotId);
 
-  return construction
+  return (construction && !construction.razing && construction.level <= 0)
     ? renderConstructingBuilding(construction.building)
     : renderBuilding(lot?.building, (lot && getTapInfo(lot).canTap) || false);
 };

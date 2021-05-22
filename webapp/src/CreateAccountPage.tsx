@@ -79,7 +79,7 @@ const CreateAccountPage: React.VFC<{}> = () => {
           {...register("confirm")}
         />
         {errors.confirm && <span className="pb-2">{errors.confirm.message}</span>}
-        <button type="submit" className={styles.button} disabled={isSubmitting}>
+        <button type="submit" className={styles.primaryButton} disabled={isSubmitting}>
           Create Account
         </button>
       </form>

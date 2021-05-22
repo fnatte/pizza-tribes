@@ -1,24 +1,19 @@
 package main
 
 import (
-	"fmt"
-	"math"
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/go-redis/redis/v8"
-	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
-func completedConstructions(ctx updateContext, tx *redis.Tx) (pipeFn, error) {
-	gsKey := fmt.Sprintf("user:%s:gamestate", ctx.userId)
-
+func completedConstructions(ctx updateContext, tx *redis.Tx) (error) {
 	completedConstructions := getCompletedConstructions(ctx.gs)
 
 	// Exit early if there are no completed constructions
 	if len(completedConstructions) == 0 {
-		return nil, nil
+		return nil
 	}
 
 	// Update patch
@@ -26,12 +21,16 @@ func completedConstructions(ctx updateContext, tx *redis.Tx) (pipeFn, error) {
 	ctx.patch.gsPatch.ConstructionQueuePatched = true
 	ctx.patch.gsPatch.Lots = map[string]*models.GameStatePatch_LotPatch{}
 
-	var incrUneducated int32 = 0
-
 	for _, constr := range completedConstructions {
-		ctx.patch.gsPatch.Lots[constr.LotId] = &models.GameStatePatch_LotPatch{
-			Building: constr.Building,
-			Level:    constr.Level,
+		if constr.Razing {
+			ctx.patch.gsPatch.Lots[constr.LotId] = &models.GameStatePatch_LotPatch{
+				Razed: true,
+			}
+		} else {
+			ctx.patch.gsPatch.Lots[constr.LotId] = &models.GameStatePatch_LotPatch{
+				Building: constr.Building,
+				Level:    constr.Level,
+			}
 		}
 
 		buildInfo := internal.FullGameData.Buildings[int32(constr.Building)]
@@ -45,15 +44,52 @@ func completedConstructions(ctx updateContext, tx *redis.Tx) (pipeFn, error) {
 		}
 
 		if levelInfo.Residence != nil {
-			if constr.Level > 0 {
-				prevLevelInfo := buildInfo.LevelInfos[constr.Level - 1]
-				incrUneducated = levelInfo.Residence.Beds - prevLevelInfo.Residence.Beds
+			if !constr.Razing {
+				if constr.Level > 0 {
+					prevLevelInfo := buildInfo.LevelInfos[constr.Level-1]
+					ctx.IncrUneducated(levelInfo.Residence.Beds - prevLevelInfo.Residence.Beds)
+				} else {
+					ctx.IncrUneducated(levelInfo.Residence.Beds)
+				}
 			} else {
-				incrUneducated = levelInfo.Residence.Beds
-			}
+				rest := levelInfo.Residence.Beds
 
-			ctx.patch.gsPatch.Population.Uneducated = &wrapperspb.Int32Value{
-				Value: ctx.gs.Population.Uneducated + incrUneducated,
+				if rest > ctx.gs.Population.Uneducated {
+					ctx.IncrUneducated(-ctx.gs.Population.Uneducated)
+					rest = rest - ctx.gs.Population.Uneducated
+				} else {
+					ctx.IncrUneducated(-rest)
+					rest = 0
+				}
+
+				popKey := 0
+				loopCount := 0
+				for rest > 0 && loopCount < 1000 {
+					switch popKey {
+					case 0:
+						if ctx.gs.Population.Chefs > 0 {
+							ctx.IncrChefs(-1)
+							rest = rest - 1
+						}
+					case 1:
+						if ctx.gs.Population.Salesmice > 0 {
+							ctx.IncrSalesmice(-1)
+							rest = rest - 1
+						}
+					case 2:
+						if ctx.gs.Population.Guards > 0 {
+							ctx.IncrGuards(-1)
+							rest = rest - 1
+						}
+					case 3:
+						if ctx.gs.Population.Thieves > 0 {
+							ctx.IncrThieves(-1)
+							rest = rest - 1
+						}
+					}
+					popKey = (popKey + 1) % 4
+					loopCount++
+				}
 			}
 		}
 	}
@@ -63,55 +99,7 @@ func completedConstructions(ctx updateContext, tx *redis.Tx) (pipeFn, error) {
 	// were employed.
 	ctx.patch.sendStats = true
 
-	return func(pipe redis.Pipeliner) error {
-		if len(completedConstructions) > 0 {
-			// Remove completed constructions from queue
-			err := internal.RedisJsonArrTrim(
-				pipe, ctx, gsKey,
-				".constructionQueue",
-				len(completedConstructions),
-				math.MaxInt32,
-			).Err()
-			if err != nil {
-				return err
-			}
-
-			// Complete constructions
-			for _, constr := range completedConstructions {
-
-				if constr.Level == 0 {
-					// Place building (level 0)
-					err = internal.RedisJsonSet(
-						pipe, ctx, gsKey,
-						fmt.Sprintf(".lots[\"%s\"]", constr.LotId),
-						fmt.Sprintf("{ \"building\": %d }", constr.Building)).Err()
-					if err != nil {
-						return fmt.Errorf("failed to set building on lot: %w", err)
-					}
-				} else {
-					// Upgrade building (level >= 1)
-					err = internal.RedisJsonSet(
-						pipe, ctx, gsKey,
-						fmt.Sprintf(".lots[\"%s\"].level", constr.LotId),
-						constr.Level).Err()
-					if err != nil {
-						return fmt.Errorf("failed to set building on lot: %w", err)
-					}
-				}
-
-				if incrUneducated > 0 {
-					_, err = internal.RedisJsonNumIncrBy(
-						pipe, ctx, gsKey,
-						".population.uneducated",
-						int64(incrUneducated)).Result()
-					if err != nil {
-						return err
-					}
-				}
-			}
-		}
-		return nil
-	}, nil
+	return nil
 }
 
 func getCompletedConstructions(gs *models.GameState) (res []*models.Construction) {

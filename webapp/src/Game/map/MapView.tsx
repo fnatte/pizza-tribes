@@ -101,7 +101,7 @@ function MapView() {
             )}
           >
             <button
-              className={styles.button}
+              className={styles.primaryButton}
               onClick={() =>
                 setSize((size) => Math.min(Math.max(size - 1, 4), 12))
               }
@@ -109,7 +109,7 @@ function MapView() {
               Zoom In
             </button>
             <button
-              className={styles.button}
+              className={styles.primaryButton}
               onClick={() =>
                 setSize((size) => Math.min(Math.max(size + 1, 4), 12))
               }

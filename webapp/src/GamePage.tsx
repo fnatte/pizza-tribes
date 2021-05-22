@@ -118,32 +118,32 @@ function Navigation() {
   return (
     <nav className={classnames("flex", "justify-center", "items-center")}>
       <Link to="/map">
-        <button className={classnames(styles.button, "mr-2")}>Map</button>
+        <button className={classnames(styles.primaryButton, "mr-2")}>Map</button>
       </Link>
       <Link to="/town">
-        <button className={classnames(styles.button, "mr-2")}>Town</button>
+        <button className={classnames(styles.primaryButton, "mr-2")}>Town</button>
       </Link>
       <Link to="/stats">
-        <button className={classnames(styles.button, "mr-2")}>Stats</button>
+        <button className={classnames(styles.primaryButton, "mr-2")}>Stats</button>
       </Link>
       {isMinLg ? (
         <>
           <Link to="/reports">
-            <button className={classnames(styles.button, "mr-2", "relative")}>
+            <button className={classnames(styles.primaryButton, "mr-2", "relative")}>
               {unreads > 0 && <ButtonBadgeCount count={unreads} />}
               Reports
             </button>
           </Link>
           <Link to="/leaderboard">
-            <button className={classnames(styles.button, "mr-2")}>
+            <button className={classnames(styles.primaryButton, "mr-2")}>
               Leaderboard
             </button>
           </Link>
           <Link to="/help">
-            <button className={classnames(styles.button, "mr-2")}>Help</button>
+            <button className={classnames(styles.primaryButton, "mr-2")}>Help</button>
           </Link>
           <button
-            className={classnames(styles.button, "mr-2")}
+            className={classnames(styles.primaryButton, "mr-2")}
             onClick={() => onClickLogout()}
           >
             Logout
@@ -185,24 +185,24 @@ function Navigation() {
             >
               <Link to="/reports" onClick={() => setMenuExpaded(false)}>
                 <button
-                  className={classnames(styles.button, "mr-2", "relative")}
+                  className={classnames(styles.primaryButton, "mr-2", "relative")}
                 >
                   {unreads > 0 && <ButtonBadgeCount count={unreads} />}
                   Reports
                 </button>
               </Link>
               <Link to="/leaderboard" onClick={() => setMenuExpaded(false)}>
-                <button className={classnames(styles.button, "mr-2")}>
+                <button className={classnames(styles.primaryButton, "mr-2")}>
                   Leaderboard
                 </button>
               </Link>
               <Link to="/help" onClick={() => setMenuExpaded(false)}>
-                <button className={classnames(styles.button, "mr-2")}>
+                <button className={classnames(styles.primaryButton, "mr-2")}>
                   Help
                 </button>
               </Link>
               <button
-                className={classnames(styles.button, "mr-2")}
+                className={classnames(styles.primaryButton, "mr-2")}
                 onClick={() => {
                   setMenuExpaded(false);
                   onClickLogout();

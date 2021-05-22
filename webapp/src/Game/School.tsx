@@ -71,8 +71,7 @@ const SchoolEducation: React.VFC<{
   const train = useStore((state) => state.train);
   const uneducated = useStore((state) => state.gameState.population.uneducated);
 
-  const maxByCost = Math.floor(coins / (educationInfo.cost ?? 0));
-
+  const maxByCost = educationInfo.cost ? Math.floor(coins / educationInfo.cost) : 1_000;
   const max = Math.min(uneducated, maxByCost);
 
   const schema2 = schema.shape({
@@ -91,7 +90,6 @@ const SchoolEducation: React.VFC<{
   } = useForm<FormFields>({ resolver: yupResolver(schema2) });
 
   const onSubmit = ({ amount }: FormFields) => {
-    console.log(coins / educationInfo.cost, max);
     train(education, amount);
     window.scroll(0, 0);
   };
@@ -152,7 +150,7 @@ const SchoolEducation: React.VFC<{
           />
           <button
             type="submit"
-            className={classnames(styles.button)}
+            className={classnames(styles.primaryButton)}
             disabled={disabled}
           >
             Train
