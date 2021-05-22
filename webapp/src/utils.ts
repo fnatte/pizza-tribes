@@ -26,6 +26,7 @@ export const countBuildings = (
     1: 0,
     2: 0,
     3: 0,
+    4: 0,
   };
 
   Object.keys(lots).forEach((lotId) => {
@@ -51,6 +52,7 @@ export const countBuildingsUnderConstruction = (
       1: 0,
       2: 0,
       3: 0,
+      4: 0,
     }
   );
 };
@@ -61,6 +63,7 @@ export const countPopulation = (population: GameState_Population): number => {
     population.guards +
     population.thieves +
     population.salesmice +
+    population.publicists +
     population.uneducated
   );
 };
@@ -74,6 +77,7 @@ export const countMaxEmployed = (
     [Building.HOUSE]: undefined,
     [Building.SCHOOL]: undefined,
     [Building.KITCHEN]: undefined,
+    [Building.MARKETINGHQ]: undefined,
   };
 
   Object.keys(lots).map((lotId) => {
