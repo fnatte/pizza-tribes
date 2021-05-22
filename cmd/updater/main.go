@@ -64,7 +64,7 @@ func (u *updater) update(ctx context.Context, userId string) {
 	 *   - send changes to the client (so that UI can be updated in the web app)
 	 *   - update the leaderboard
 	 *   - update the timeseries data
-	 *   - set the next update time
+	 *   - schedule the next update
 	 */
 
 	gameStateKey := fmt.Sprintf("user:%s:gamestate", userId)
@@ -85,6 +85,8 @@ func (u *updater) update(ctx context.Context, userId string) {
 		map[string][]*models.Report{},
 	}
 	uctx.patches[userId] = uctx.patch
+
+	defer u.scheduleNextUpdate(uctx)
 
 	txf := func(tx *redis.Tx) error {
 		// Get current game state
@@ -142,32 +144,40 @@ func (u *updater) update(ctx context.Context, userId string) {
 		return err
 	}
 
-	err := u.r.Watch(ctx, txf, gameStateKey)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to update")
-		return
-	}
+	for i := 0; i < 5; i++ {
+		if err := u.r.Watch(ctx, txf, gameStateKey); err != nil {
+			if err == redis.TxFailedErr {
+				// Optimistic lock lost. Retry.
+				continue
+			}
 
-	_, err = internal.SetNextUpdate(u.r, ctx, userId, uctx.gs)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to set next update")
-	}
+			log.Error().Err(err).Msg("Failed to update")
+			return
+        }
+    }
 
-	if err = addTimeseriesDataPoints(uctx, u.r); err != nil {
+	if err := addTimeseriesDataPoints(uctx, u.r); err != nil {
 		log.Error().Err(err).Msg("Failed to add timeseries data points")
 	}
 
-	if err = u.restorePopulation(ctx, userId); err != nil {
+	if err := u.restorePopulation(ctx, userId); err != nil {
 		log.Error().Err(err).Msg("Failed to restore population")
 	}
 
 	for patchUserId, p := range uctx.patches {
-		if err = u.postProcessPatch(uctx, patchUserId, p); err != nil {
+		if err := u.postProcessPatch(uctx, patchUserId, p); err != nil {
 			log.Error().Err(err).
 				Bool("wasSender", userId == patchUserId).
 				Str("userId", patchUserId).
 				Msg("Failed to process patch")
 		}
+	}
+}
+
+func (u *updater) scheduleNextUpdate(ctx updateContext) {
+	_, err := internal.SetNextUpdate(u.r, ctx, ctx.userId, ctx.gs)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to set next update")
 	}
 }
 

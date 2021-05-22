@@ -54,7 +54,6 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 		b, err := protojson.MarshalOptions{
 			EmitUnpopulated: true,
 		}.Marshal(&gs)
-		log.Info().Msg(string(b))
 		if err != nil {
 			return err
 		}

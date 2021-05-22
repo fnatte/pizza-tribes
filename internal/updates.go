@@ -19,6 +19,11 @@ func GetNextUpdateTimestamp(gs *GameState) int64 {
 	for i := range gs.TravelQueue {
 		t = Min(t, gs.TravelQueue[i].ArrivalAt)
 	}
+
+	// Make the update time at least 100ms in the future to avoid
+	// update loops in case of failures.
+	t = Max(t, time.Now().Add(100 * time.Millisecond).UnixNano())
+
 	return t
 }
 
