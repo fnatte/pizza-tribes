@@ -127,6 +127,10 @@ export const formatNanoTimestampToNowShort = (time: string) => {
     )
   );
 
+  if (totalSeconds <= 0) {
+    return 'now';
+  }
+
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds - hours * 3600) / 60);
   const seconds = Math.floor(totalSeconds - hours * 3600 - minutes * 60);
