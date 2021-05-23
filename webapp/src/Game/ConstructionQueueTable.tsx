@@ -39,7 +39,7 @@ const ConstructionQueue: React.FC<{
               {construction.razing && "Razing "}
               {buildings[construction.building].title}
               {construction.level > 0 && (
-                <span> to level {construction.level + 1}</span>
+                <span> {!construction.razing && 'to'} level {construction.level + 1}</span>
               )}
             </td>
             <td className={classnames("p-2")}>

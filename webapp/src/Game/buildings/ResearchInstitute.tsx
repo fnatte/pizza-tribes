@@ -127,11 +127,13 @@ const ResearchNodeView: React.VFC<{
   const showResearchButton = !isBeingResearched && !discovered;
 
   return (
-    <div className={classnames("flex", "mb-8")}>
+    <div
+      className={classnames("flex", "mb-8", "flex-wrap", "gap-6", "lg:gap-8")}
+    >
       <div className={classnames("flex-shrink-0")}>
         {SvgImage ? <SvgImage /> : <PlaceholderImage />}
       </div>
-      <div className={classnames("ml-6", "lg:ml-8")}>
+      <div>
         <div className={title}>{node.title}</div>
         {Description && <Description />}
         <table>
