@@ -6,7 +6,6 @@ import (
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/mtime"
-	"github.com/go-redis/redis/v8"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
@@ -17,7 +16,7 @@ type extrapolateChanges struct {
 	pizzas    int32
 }
 
-func extrapolate(ctx updateContext, tx *redis.Tx) error {
+func extrapolate(ctx updateContext) error {
 	changes := calculateExtrapolateChanges(ctx.gs)
 
 	// Update patch

@@ -11,11 +11,19 @@ import (
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
 func main() {
 	log.Info().Msg("Starting Api")
+
+	debug := envOrDefault("DEBUG", "0") == "1"
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	if debug {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
+
 	ctx := context.Background()
 
 	port, err := strconv.Atoi(envOrDefault("PORT", "8080"))

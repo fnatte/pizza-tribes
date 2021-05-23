@@ -18,9 +18,9 @@ func (h *handler) handleUpgrade(ctx context.Context, senderId string, m *models.
 
 	var gs models.GameState
 
-	txf := func(tx *redis.Tx) error {
+	txf := func() error {
 		// Get current game state
-		s, err := internal.RedisJsonGet(tx, ctx, gsKey, ".").Result()
+		s, err := internal.RedisJsonGet(h.rdb, ctx, gsKey, ".").Result()
 		if err != nil && err != redis.Nil {
 			return err
 		}
@@ -60,7 +60,7 @@ func (h *handler) handleUpgrade(ctx context.Context, senderId string, m *models.
 		}
 		completeAt := timeOffset + int64(constructionTime)*1e9
 
-		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+		_, err = h.rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			_, err := internal.RedisJsonNumIncrBy(
 				pipe, ctx, gsKey,
 				".resources.coins",
@@ -100,9 +100,16 @@ func (h *handler) handleUpgrade(ctx context.Context, senderId string, m *models.
 		return err
 	}
 
-	err := h.rdb.Watch(ctx, txf, gsKey)
-	if err != nil {
-		return fmt.Errorf("failed to place on construction queue: %w", err)
+	mutex := h.rdb.NewMutex("lock:" + gsKey)
+	if err := mutex.Lock(); err != nil {
+		return fmt.Errorf("failed to obtain lock: %w", err)
+	}
+	err2 := txf()
+	if ok, err := mutex.Unlock(); !ok || err != nil {
+		return fmt.Errorf("failed to unlock: %w", err)
+	}
+	if err2 != nil {
+		return fmt.Errorf("failed to handle upgrade: %w", err2)
 	}
 
 	internal.SetNextUpdate(h.rdb, ctx, senderId, &gs)

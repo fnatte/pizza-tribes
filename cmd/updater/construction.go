@@ -5,10 +5,9 @@ import (
 
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/models"
-	"github.com/go-redis/redis/v8"
 )
 
-func completedConstructions(ctx updateContext, tx *redis.Tx) (error) {
+func completedConstructions(ctx updateContext) (error) {
 	completedConstructions := getCompletedConstructions(ctx.gs)
 
 	// Exit early if there are no completed constructions

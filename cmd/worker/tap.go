@@ -23,7 +23,7 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *models.Client
 	var lot models.GameState_Lot
 	var population models.GameState_Population
 
-	txf := func(tx *redis.Tx) error {
+	txf := func() error {
 		// Get lot
 		str, err := internal.RedisJsonGet(h.rdb, ctx, gsKey, lotPath).Result()
 		if err != nil {
@@ -62,7 +62,7 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *models.Client
 			return fmt.Errorf("tapped to soon, next tap at %d", nextTapAt)
 		}
 
-		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+		_, err = h.rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			// Update tapped_at to now
 			err = internal.RedisJsonSet(pipe, ctx, gsKey, tappedAtPath, int64(now)).Err()
 			if err != nil {
@@ -82,8 +82,16 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *models.Client
 		return err
 	}
 
-	if err := h.rdb.Watch(ctx, txf, gsKey); err != nil {
-		return err
+	mutex := h.rdb.NewMutex("lock:" + gsKey)
+	if err := mutex.Lock(); err != nil {
+		return fmt.Errorf("failed to obtain lock: %w", err)
+	}
+	err2 := txf()
+	if ok, err := mutex.Unlock(); !ok || err != nil {
+		return fmt.Errorf("failed to unlock: %w", err)
+	}
+	if err2 != nil {
+		return fmt.Errorf("failed to handle tap: %w", err2)
 	}
 
 	if err := h.sendTapUpdate(ctx, userId, m.LotId, lot.Building, lot.Level, now); err != nil {

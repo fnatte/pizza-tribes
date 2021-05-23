@@ -7,6 +7,9 @@ import (
 	"strings"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/go-redsync/redsync/v4"
+	"github.com/go-redsync/redsync/v4/redis/goredis/v8"
+	"github.com/rs/zerolog/log"
 )
 
 func IsRedisJsonKeyDoesNotExistError(err error) bool {
@@ -30,6 +33,8 @@ type RedisClient interface {
 	TsAdd(ctx context.Context, key string, timestamp, value int64) *redis.StatusCmd
 	TsRange(ctx context.Context, key string, from, to int64) ([]*TimeseriesDataPoint, error)
 	TsRangeAggr(ctx context.Context, key string, from, to int64, aggrType string, timeBucket int64) ([]*TimeseriesDataPoint, error)
+	NewMutex(name string, options ...redsync.Option) *redsync.Mutex
+	AddDebugHook()
 }
 
 type RedisProcesser interface {
@@ -38,10 +43,13 @@ type RedisProcesser interface {
 
 type redisClient struct {
 	redis.UniversalClient
+	*redsync.Redsync
 }
 
 func NewRedisClient(rdb redis.UniversalClient) RedisClient {
-	return &redisClient{rdb}
+	rs := redsync.New(goredis.NewPool(rdb))
+
+	return &redisClient{rdb, rs}
 }
 
 func RedisJsonGet(c RedisProcesser, ctx context.Context, key string, path string) *redis.StringCmd {
@@ -164,6 +172,10 @@ func (c *redisClient) TsRangeAggr(ctx context.Context, key string, from, to int6
 	return parseDataPoints(res)
 }
 
+func (c *redisClient) AddDebugHook() {
+	c.AddHook(&redisDebugHook{})
+}
+
 func parseDataPoints(res []interface{}) ([]*TimeseriesDataPoint, error) {
 	arr := make([]*TimeseriesDataPoint, len(res))
 	for i := range(res) {
@@ -204,5 +216,29 @@ func parseDataPoint(raw []interface{}) (dp *TimeseriesDataPoint, err error) {
 		Value: f,
 	}
 	return
+}
+
+type redisDebugHook struct{}
+
+var _ redis.Hook = redisDebugHook{}
+
+func (redisDebugHook) BeforeProcess(ctx context.Context, cmd redis.Cmder) (context.Context, error) {
+	log.Debug().Interface("cmd", cmd).Msg("starting processing")
+	return ctx, nil
+}
+
+func (redisDebugHook) AfterProcess(ctx context.Context, cmd redis.Cmder) error {
+	log.Debug().Interface("cmd", cmd).Msg("finished processing")
+	return nil
+}
+
+func (redisDebugHook) BeforeProcessPipeline(ctx context.Context, cmds []redis.Cmder) (context.Context, error) {
+	log.Debug().Interface("cmd", cmds).Msg("pipeline starting processing")
+	return ctx, nil
+}
+
+func (redisDebugHook) AfterProcessPipeline(ctx context.Context, cmds []redis.Cmder) error {
+	log.Debug().Interface("cmd", cmds).Msg("pipeline finished processing")
+	return nil
 }
 

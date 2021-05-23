@@ -13,7 +13,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (h *handler) handleTrain(ctx context.Context, senderId string, m *models.ClientMessage_Train) {
+func (h *handler) handleTrain(ctx context.Context, senderId string, m *models.ClientMessage_Train) error {
 	log.Info().
 		Str("senderId", senderId).
 		Interface("Education", m.Education).
@@ -24,9 +24,9 @@ func (h *handler) handleTrain(ctx context.Context, senderId string, m *models.Cl
 
 	var gs models.GameState
 
-	txf := func(tx *redis.Tx) error {
+	txf := func() error {
 		// Get current game state
-		s, err := internal.RedisJsonGet(tx, ctx, gameStateKey, ".").Result()
+		s, err := internal.RedisJsonGet(h.rdb, ctx, gameStateKey, ".").Result()
 		if err != nil && err != redis.Nil {
 			return err
 		}
@@ -50,7 +50,7 @@ func (h *handler) handleTrain(ctx context.Context, senderId string, m *models.Cl
 			return errors.New("Not enough coins")
 		}
 
-		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+		_, err = h.rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			_, err := internal.RedisJsonNumIncrBy(
 				pipe,
 				ctx,
@@ -96,12 +96,20 @@ func (h *handler) handleTrain(ctx context.Context, senderId string, m *models.Cl
 		return err
 	}
 
-	err := h.rdb.Watch(ctx, txf, gameStateKey)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to train")
-		return
+	mutex := h.rdb.NewMutex("lock:" + gameStateKey)
+	if err := mutex.Lock(); err != nil {
+		return fmt.Errorf("failed to obtain lock: %w", err)
+	}
+	err2 := txf()
+	if ok, err := mutex.Unlock(); !ok || err != nil {
+		return fmt.Errorf("failed to unlock: %w", err)
+	}
+	if err2 != nil {
+		return fmt.Errorf("failed to handle train: %w", err2)
 	}
 
 	h.fetchAndUpdateTimestamp(ctx, senderId)
 	h.sendFullStateUpdate(ctx, senderId)
+
+	return nil
 }

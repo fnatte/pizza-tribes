@@ -22,9 +22,9 @@ func (h *handler) Handle(ctx context.Context, senderId string, m *models.ClientM
 	case *models.ClientMessage_Tap_:
 		err = h.handleTap(ctx, senderId, x.Tap)
 	case *models.ClientMessage_ConstructBuilding_:
-		h.handleConstructBuilding(ctx, senderId, x.ConstructBuilding)
+		err = h.handleConstructBuilding(ctx, senderId, x.ConstructBuilding)
 	case *models.ClientMessage_Train_:
-		h.handleTrain(ctx, senderId, x.Train)
+		err = h.handleTrain(ctx, senderId, x.Train)
 	case *models.ClientMessage_Steal_:
 		err = h.handleSteal(ctx, senderId, x.Steal)
 	case *models.ClientMessage_ReadReport_:

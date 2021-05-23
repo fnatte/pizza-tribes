@@ -1,7 +1,7 @@
 version: '3.4'
 services:
   redis:
-    image: "redislabs/redismod"
+    image: "redislabs/redismod:edge"
     volumes:
       - redis_data:/data
     ports:

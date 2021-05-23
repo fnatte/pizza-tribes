@@ -31,9 +31,9 @@ func (h *handler) handleSteal(ctx context.Context, senderId string, m *models.Cl
 		return errors.New("can't steal from own town")
 	}
 
-	txf := func(tx *redis.Tx) error {
+	txf := func() error {
 		// Get game state of thief
-		s, err := internal.RedisJsonGet(tx, ctx, gsKeyThief, ".").Result()
+		s, err := internal.RedisJsonGet(h.rdb, ctx, gsKeyThief, ".").Result()
 		if err != nil && err != redis.Nil {
 			return err
 		}
@@ -65,7 +65,7 @@ func (h *handler) handleSteal(ctx context.Context, senderId string, m *models.Cl
 			return fmt.Errorf("failed to marshal travel: %w", err)
 		}
 
-		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+		_, err = h.rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			// Decrease thieves in town population of sending town
 			_, err := internal.RedisJsonNumIncrBy(
 				pipe, ctx, gsKeyThief,
@@ -91,8 +91,16 @@ func (h *handler) handleSteal(ctx context.Context, senderId string, m *models.Cl
 		return err
 	}
 
-	if err = h.rdb.Watch(ctx, txf, gsKeyThief); err != nil {
-		return err
+	mutex := h.rdb.NewMutex("lock:" + gsKeyThief)
+	if err := mutex.Lock(); err != nil {
+		return fmt.Errorf("failed to obtain lock: %w", err)
+	}
+	err2 := txf()
+	if ok, err := mutex.Unlock(); !ok || err != nil {
+		return fmt.Errorf("failed to unlock: %w", err)
+	}
+	if err2 != nil {
+		return fmt.Errorf("failed to handle steal: %w", err2)
 	}
 
 	h.sendFullStateUpdate(ctx, senderId)

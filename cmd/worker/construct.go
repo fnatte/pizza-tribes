@@ -13,14 +13,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (h *handler) handleConstructBuilding(ctx context.Context, senderId string, m *models.ClientMessage_ConstructBuilding) {
+func (h *handler) handleConstructBuilding(ctx context.Context, senderId string, m *models.ClientMessage_ConstructBuilding) error {
 	gsKey := fmt.Sprintf("user:%s:gamestate", senderId)
 
 	var gs models.GameState
 
-	txf := func(tx *redis.Tx) error {
+	txf := func() error {
 		// Get current game state
-		s, err := internal.RedisJsonGet(tx, ctx, gsKey, ".").Result()
+		s, err := internal.RedisJsonGet(h.rdb, ctx, gsKey, ".").Result()
 		if err != nil && err != redis.Nil {
 			return err
 		}
@@ -68,7 +68,7 @@ func (h *handler) handleConstructBuilding(ctx context.Context, senderId string, 
 		}
 		completeAt := timeOffset + int64(constructionTime)*1e9
 
-		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+		_, err = h.rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			_, err := internal.RedisJsonNumIncrBy(
 				pipe, ctx, gsKey,
 				".resources.coins",
@@ -107,13 +107,21 @@ func (h *handler) handleConstructBuilding(ctx context.Context, senderId string, 
 		return err
 	}
 
-	err := h.rdb.Watch(ctx, txf, gsKey)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to place on construction queue")
-		return
+	mutex := h.rdb.NewMutex("lock:" + gsKey)
+	if err := mutex.Lock(); err != nil {
+		return fmt.Errorf("failed to obtain lock: %w", err)
+	}
+	err2 := txf()
+	if ok, err := mutex.Unlock(); !ok || err != nil {
+		return fmt.Errorf("failed to unlock: %w", err)
+	}
+	if err2 != nil {
+		return fmt.Errorf("failed to place on construction queue: %w", err2)
 	}
 
 	internal.SetNextUpdate(h.rdb, ctx, senderId, &gs)
 
 	h.sendFullStateUpdate(ctx, senderId)
+
+	return nil
 }

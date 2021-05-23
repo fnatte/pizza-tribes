@@ -5,6 +5,7 @@ go 1.16
 require (
 	github.com/form3tech-oss/jwt-go v3.2.2+incompatible
 	github.com/go-redis/redis/v8 v8.8.2
+	github.com/go-redsync/redsync/v4 v4.3.0
 	github.com/golang/protobuf v1.4.2
 	github.com/google/go-cmp v0.5.5
 	github.com/gorilla/mux v1.8.0

@@ -4,10 +4,9 @@ import (
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal/models"
-	"github.com/go-redis/redis/v8"
 )
 
-func completeTrainings(ctx updateContext, tx *redis.Tx) error {
+func completeTrainings(ctx updateContext) error {
 	// Setup a internal completion struct to hold completed trainings.
 	// By using the internal data structure it will be easier to apply
 	// the changes in the Redis pipeline. Also, we avoid doing stuff

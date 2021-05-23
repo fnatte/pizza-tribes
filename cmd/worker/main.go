@@ -9,6 +9,7 @@ import (
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/go-redis/redis/v8"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
@@ -22,6 +23,12 @@ func envOrDefault(key string, defaultVal string) string {
 
 func main() {
 	log.Info().Msg("Starting worker")
+
+	debug := envOrDefault("DEBUG", "0") == "1"
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	if debug {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
 
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     envOrDefault("REDIS_ADDR", "localhost:6379"),
@@ -65,3 +72,4 @@ func main() {
 	}
 
 }
+

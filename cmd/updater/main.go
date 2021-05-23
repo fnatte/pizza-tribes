@@ -14,6 +14,7 @@ import (
 	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/xid"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
@@ -90,9 +91,9 @@ func (u *updater) update(ctx context.Context, userId string) {
 
 	defer u.scheduleNextUpdate(uctx)
 
-	txf := func(tx *redis.Tx) error {
+	txf := func() error {
 		// Get current game state
-		s, err := internal.RedisJsonGet(tx, ctx, gameStateKey, ".").Result()
+		s, err := internal.RedisJsonGet(u.r, ctx, gameStateKey, ".").Result()
 		if err != nil && err != redis.Nil {
 			return err
 		}
@@ -100,19 +101,19 @@ func (u *updater) update(ctx context.Context, userId string) {
 			return err
 		}
 
-		if err = extrapolate(uctx, tx); err != nil {
+		if err = extrapolate(uctx); err != nil {
 			return err
 		}
-		if err = completedConstructions(uctx, tx); err != nil {
+		if err = completedConstructions(uctx); err != nil {
 			return err
 		}
-		if err = completeTrainings(uctx, tx); err != nil {
+		if err = completeTrainings(uctx); err != nil {
 			return err
 		}
-		if err = completeTravels(uctx, tx, u.world); err != nil {
+		if err = completeTravels(uctx, u.r, u.world); err != nil {
 			return err
 		}
-		if err = completeResearchs(uctx, tx); err != nil {
+		if err = completeResearchs(uctx); err != nil {
 			return err
 		}
 
@@ -134,7 +135,7 @@ func (u *updater) update(ctx context.Context, userId string) {
 		pipeFns = append(pipeFns, reportsPipe)
 
 		// Apply/persist patches
-		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+		_, err = u.r.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			for _, pipeFn := range pipeFns {
 				if pipeFn != nil {
 					if err = pipeFn(pipe); err != nil {
@@ -149,16 +150,16 @@ func (u *updater) update(ctx context.Context, userId string) {
 		return err
 	}
 
-	for i := 0; i < 5; i++ {
-		if err := u.r.Watch(ctx, txf, gameStateKey); err != nil {
-			if err == redis.TxFailedErr {
-				// Optimistic lock lost. Retry.
-				continue
-			}
-
-			log.Error().Err(err).Msg("Failed to update")
-			return
-		}
+	mutex := u.r.NewMutex("lock:" + gameStateKey)
+	if err := mutex.Lock(); err != nil {
+		log.Error().Err(err).Msg("Failed to obtain lock")
+		return
+	}
+	if err := txf(); err != nil {
+		log.Error().Err(err).Msg("Failed to update")
+	}
+	if ok, err := mutex.Unlock(); !ok || err != nil {
+		log.Error().Err(err).Msg("Failed to unlock")
 	}
 
 	if err := addTimeseriesDataPoints(uctx, u.r); err != nil {
@@ -526,9 +527,9 @@ func (u *updater) restorePopulation(ctx context.Context, userId string) error {
 	gs := &models.GameState{}
 	var addedPop int32 = 0
 
-	txf := func(tx *redis.Tx) error {
+	txf := func() error {
 		// Get current game state
-		s, err := internal.RedisJsonGet(tx, ctx, gsKey, ".").Result()
+		s, err := internal.RedisJsonGet(u.r, ctx, gsKey, ".").Result()
 		if err != nil && err != redis.Nil {
 			return err
 		}
@@ -541,7 +542,7 @@ func (u *updater) restorePopulation(ctx context.Context, userId string) error {
 
 		if pop < maxPop {
 			addedPop = maxPop - pop
-			_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+			_, err = u.r.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 				return internal.RedisJsonNumIncrBy(
 					u.r, ctx, gsKey,
 					".population.uneducated",
@@ -552,8 +553,16 @@ func (u *updater) restorePopulation(ctx context.Context, userId string) error {
 		return err
 	}
 
-	if err := u.r.Watch(ctx, txf, gsKey); err != nil {
-		return fmt.Errorf("failed to restore population: %w", err)
+	mutex := u.r.NewMutex("lock:" + gsKey)
+	if err := mutex.Lock(); err != nil {
+		return fmt.Errorf("failed to obtain lock: %w", err)
+	}
+	err2 := txf()
+	if ok, err := mutex.Unlock(); !ok || err != nil {
+		return fmt.Errorf("failed to unlock: %w", err)
+	}
+	if err2 != nil {
+		return fmt.Errorf("failed to restore population: %w", err2)
 	}
 
 	if addedPop != 0 {
@@ -630,6 +639,12 @@ func envOrDefault(key string, defaultVal string) string {
 func main() {
 	log.Info().Msg("Starting updater")
 
+	debug := envOrDefault("DEBUG", "0") == "1"
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	if debug {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
+
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     envOrDefault("REDIS_ADDR", "localhost:6379"),
 		Password: envOrDefault("REDIS_PASSWORD", ""),
@@ -661,3 +676,4 @@ func main() {
 	}
 
 }
+

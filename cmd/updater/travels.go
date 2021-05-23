@@ -72,7 +72,7 @@ func init() {
 		Parse(targetReportTemplateText))
 }
 
-func completeSteal(ctx updateContext, tx *redis.Tx, world *internal.WorldService, travel *models.Travel, travelIndex int) (error) {
+func completeSteal(ctx updateContext, r internal.RedisClient, world *internal.WorldService, travel *models.Travel, travelIndex int) (error) {
 	gsTarget := &models.GameState{}
 	x := travel.DestinationX
 	y := travel.DestinationY
@@ -92,7 +92,7 @@ func completeSteal(ctx updateContext, tx *redis.Tx, world *internal.WorldService
 
 	// Get game state of target
 	gsKeyTarget := fmt.Sprintf("user:%s:gamestate", town.UserId)
-	s, err := internal.RedisJsonGet(tx, ctx, gsKeyTarget, ".").Result()
+	s, err := internal.RedisJsonGet(r, ctx, gsKeyTarget, ".").Result()
 	if err != nil {
 		return fmt.Errorf("failed to complete steal: %w", err)
 	}
@@ -101,7 +101,7 @@ func completeSteal(ctx updateContext, tx *redis.Tx, world *internal.WorldService
 	}
 
 	// Get username of target
-	targetUsername, err := tx.HGet(ctx, fmt.Sprintf("user:%s", town.UserId), "username").Result()
+	targetUsername, err := r.HGet(ctx, fmt.Sprintf("user:%s", town.UserId), "username").Result()
 	if err != nil {
 		return fmt.Errorf("failed to complete steal: %w", err)
 	}
@@ -196,7 +196,7 @@ func completeSteal(ctx updateContext, tx *redis.Tx, world *internal.WorldService
 	return nil
 }
 
-func completeStealReturn(ctx updateContext, tx *redis.Tx, world *internal.WorldService, travel *models.Travel, travelIndex int) (error) {
+func completeStealReturn(ctx updateContext, world *internal.WorldService, travel *models.Travel, travelIndex int) (error) {
 	ctx.IncrCoins(int32(travel.Coins))
 	ctx.IncrThieves(travel.Thieves)
 
@@ -208,7 +208,7 @@ func completeStealReturn(ctx updateContext, tx *redis.Tx, world *internal.WorldS
 	return nil
 }
 
-func completeTravels(ctx updateContext, tx *redis.Tx, world *internal.WorldService) (error) {
+func completeTravels(ctx updateContext, r internal.RedisClient, world *internal.WorldService) (error) {
 	completedTravels := internal.GetCompletedTravels(ctx.gs)
 	if len(completedTravels) == 0 {
 		return nil
@@ -222,14 +222,14 @@ func completeTravels(ctx updateContext, tx *redis.Tx, world *internal.WorldServi
 	for travelIndex, travel := range completedTravels {
 		if travel.Returning {
 			if travel.Thieves > 0 {
-				err := completeStealReturn(ctx, tx, world, travel, travelIndex)
+				err := completeStealReturn(ctx, world, travel, travelIndex)
 				if err != nil {
 					return err
 				}
 			}
 		} else {
 			if travel.Thieves > 0 {
-				err := completeSteal(ctx, tx, world, travel, travelIndex)
+				err := completeSteal(ctx, r, world, travel, travelIndex)
 				if err != nil {
 					return err
 				}

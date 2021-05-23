@@ -4,10 +4,9 @@ import (
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal/models"
-	"github.com/go-redis/redis/v8"
 )
 
-func completeResearchs(ctx updateContext, tx *redis.Tx) error {
+func completeResearchs(ctx updateContext) error {
 	completedResearchs := getCompletedResearchs(ctx.gs)
 
 	// Exit early if there are no completed researchs

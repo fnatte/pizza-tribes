@@ -46,6 +46,7 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 	}
 
 	log.Info().Str("userId", c.UserId()).Msg("Client connected")
+
 	gsKey := fmt.Sprintf("user:%s:gamestate", c.UserId())
 	s, err := h.rc.JsonGet(ctx, gsKey, ".").Result()
 	if err != nil {
@@ -103,7 +104,7 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 		}
 
 		c.Send(b)
-		log.Info().Msg("Sent user message")
+		log.Debug().Msg("Sent user message")
 	})()
 
 	go (func() {
@@ -124,7 +125,7 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 		}
 		c.Send(b)
 
-		log.Info().Msg("Sent init game state and stats")
+		log.Debug().Msg("Sent init game state and stats")
 	})()
 
 	// Send reports
@@ -149,7 +150,7 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 			return
 		}
 		c.Send(b)
-		log.Info().Msg("Sent init reports")
+		log.Debug().Msg("Sent init reports")
 	})()
 
 	return nil
