@@ -128,7 +128,9 @@ const ResearchNodeView: React.VFC<{
 
   return (
     <div className={classnames("flex", "mb-8")}>
-      {SvgImage ? <SvgImage /> : <PlaceholderImage />}
+      <div className={classnames("flex-shrink-0")}>
+        {SvgImage ? <SvgImage /> : <PlaceholderImage />}
+      </div>
       <div className={classnames("ml-6", "lg:ml-8")}>
         <div className={title}>{node.title}</div>
         {Description && <Description />}
