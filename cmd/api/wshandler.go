@@ -7,10 +7,10 @@ import (
 	"github.com/fnatte/pizza-tribes/cmd/api/ws"
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/models"
+	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog/log"
-	"github.com/fnatte/pizza-tribes/internal/protojson"
 )
 
 type wsHandler struct {
@@ -39,9 +39,10 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 	}
 
 	gs := models.GameState{
-		Population: &models.GameState_Population{},
-		Resources:  &models.GameState_Resources{},
-		Lots:       map[string]*models.GameState_Lot{},
+		Population:  &models.GameState_Population{},
+		Resources:   &models.GameState_Resources{},
+		Lots:        map[string]*models.GameState_Lot{},
+		Discoveries: []models.ResearchDiscovery{},
 	}
 
 	log.Info().Str("userId", c.UserId()).Msg("Client connected")
@@ -153,4 +154,3 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 
 	return nil
 }
-

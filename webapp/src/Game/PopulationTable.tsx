@@ -3,7 +3,7 @@ import { classnames } from "tailwindcss-classnames";
 import { Education } from "../generated/education";
 import { GameState_Population } from "../generated/gamestate";
 import { useStore } from "../store";
-import { countMaxEmployed } from "../utils";
+import { countMaxEmployedByBuilding } from "../utils";
 
 const getPopulationKey = (id: number): keyof GameState_Population | null => {
   switch (id) {
@@ -27,7 +27,7 @@ const Population: React.FC<{ className?: string }> = ({ className }) => {
   const gameData = useStore((state) => state.gameData);
 
   const educations = gameData?.educations ?? {};
-  const maxEmployed = gameData && countMaxEmployed(lots, gameData);
+  const maxEmployed = gameData && countMaxEmployedByBuilding(lots, gameData);
 
   return (
     <table className={className}>

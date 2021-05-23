@@ -65,13 +65,27 @@ const ConstructBuilding = ({ lotId }: Props) => {
           let discountCost: number | null = null;
           let reducedTime: number | null = null;
 
-          // First construction of building type is free
-          if (buildingCounts[id] + buildingConstrCounts[id] === 0) {
+          // First construction of all building types are free except for
+          // marketing hq and research institute
+          if (
+            id !== Building.MARKETINGHQ &&
+            id !== Building.RESEARCH_INSTITUTE &&
+            buildingCounts[id] + buildingConstrCounts[id] === 0
+          ) {
             discountCost = 0;
             discountText = "First one is free and fast!";
             reducedTime = Math.ceil(
               buildings[id].levelInfos[0].constructionTime / 100
             );
+          }
+
+          // Can only build one school, marketing hq, and research institute
+          if (
+            (id === Building.SCHOOL && buildingCounts[id] > 0) ||
+            (id === Building.MARKETINGHQ && buildingCounts[id] > 0) ||
+            (id === Building.RESEARCH_INSTITUTE && buildingCounts[id] > 0)
+          ) {
+            return null;
           }
 
           const canAfford =

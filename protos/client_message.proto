@@ -5,6 +5,7 @@ option go_package = "github.com/fnatte/pizza-tribes/internal/models";
 
 import "education.proto";
 import "building.proto";
+import "research.proto";
 
 message ClientMessage {
   message Tap {
@@ -42,6 +43,10 @@ message ClientMessage {
     string id = 1;
   }
 
+  message StartResearch {
+    ResearchDiscovery discovery = 1;
+  }
+
   string id = 1;
   oneof type {
     Tap tap = 2;
@@ -52,6 +57,7 @@ message ClientMessage {
     Steal steal = 7;
     ReadReport readReport = 8;
     RazeBuilding razeBuilding = 9;
+    StartResearch startResearch = 10;
   }
 }
 

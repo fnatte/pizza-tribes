@@ -1,0 +1,32 @@
+syntax = "proto3";
+package pizzatribes;
+
+option go_package = "github.com/fnatte/pizza-tribes/internal/models";
+
+enum ResearchDiscovery {
+  WEBSITE = 0;
+  DIGITAL_ORDERING_SYSTEM = 1;
+  MOBILE_APP = 2;
+  MASONRY_OVEN = 3;
+  GAS_OVEN = 4;
+  HYBRID_OVEN = 5;
+  DURUM_WHEAT = 6;
+  DOUBLE_ZERO_FLOUR = 7;
+  SAN_MARZANO_TOMATOES = 8;
+  OCIMUM_BASILICUM = 9;
+  EXTRA_VIRGIN = 10;
+}
+
+message ResearchNode {
+  string title = 1;
+  ResearchDiscovery discovery = 2;
+  repeated ResearchNode nodes = 3;
+  int32 cost = 4;
+  int32 researchTime = 5;
+}
+
+message ResearchTrack {
+  string title = 1;
+  ResearchNode rootNode = 2;
+}
+

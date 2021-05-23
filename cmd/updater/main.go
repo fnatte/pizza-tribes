@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -110,6 +111,9 @@ func (u *updater) update(ctx context.Context, userId string) {
 		if err = completeTravels(uctx, tx, u.world); err != nil {
 			return err
 		}
+		if err = completeResearchs(uctx, tx); err != nil {
+			return err
+		}
 
 		// Prepare redis pipes from patches
 		pipeFns := []pipeFn{}
@@ -153,8 +157,8 @@ func (u *updater) update(ctx context.Context, userId string) {
 
 			log.Error().Err(err).Msg("Failed to update")
 			return
-        }
-    }
+		}
+	}
 
 	if err := addTimeseriesDataPoints(uctx, u.r); err != nil {
 		log.Error().Err(err).Msg("Failed to add timeseries data points")
@@ -291,6 +295,7 @@ func (u *updater) patchToPipe(ctx updateContext, userId string, p *patch) (pipeF
 			}
 		}
 
+
 		// Write training queue
 		if p.gsPatch.TrainingQueuePatched {
 			jsonarr := "["
@@ -342,6 +347,41 @@ func (u *updater) patchToPipe(ctx updateContext, userId string, p *patch) (pipeF
 				pipe, ctx, gsKey, ".travelQueue", jsonarr).Err()
 			if err != nil {
 				return fmt.Errorf("failed to write construction queue: %w", err)
+			}
+		}
+
+		// Write research queue
+		if p.gsPatch.ResearchQueuePatched {
+			jsonarr := "["
+			for _, t := range p.gsPatch.ResearchQueue {
+				var b []byte
+				if b, err = protojson.Marshal(t); err != nil {
+					return fmt.Errorf("failed marshal research: %w", err)
+				}
+				jsonarr = jsonarr + string(b)
+			}
+			jsonarr = jsonarr + "]"
+			err = internal.RedisJsonSet(
+				pipe, ctx, gsKey, ".researchQueue", jsonarr).Err()
+			if err != nil {
+				return fmt.Errorf("failed to write research queue: %w", err)
+			}
+		}
+
+		// Write discoveries
+		if p.gsPatch.DiscoveriesPatched {
+			arr := []string{}
+			for _, t := range p.gsPatch.Discoveries {
+				arr = append(arr, t.String())
+			}
+			jsonarr, err := json.Marshal(arr)
+			if err != nil {
+				return fmt.Errorf("failed to marshal discoveries array: %w", err)
+			}
+			err = internal.RedisJsonSet(
+				pipe, ctx, gsKey, ".discoveries", jsonarr).Err()
+			if err != nil {
+				return fmt.Errorf("failed to write discovery queue: %w", err)
 			}
 		}
 

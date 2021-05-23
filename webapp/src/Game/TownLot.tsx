@@ -9,6 +9,7 @@ import { ReactComponent as SvgKitchen } from "../../images/kitchen.svg";
 import { ReactComponent as SvgShop } from "../../images/shop.svg";
 import { ReactComponent as SvgHouse } from "../../images/house.svg";
 import { ReactComponent as SvgMarketingHQ } from "../../images/marketing-hq.svg";
+import { ReactComponent as SvgResearchInstitute } from "../../images/research-institute.svg";
 import styles from "../styles";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -18,6 +19,7 @@ import {
   getTapInfo,
 } from "../utils";
 import { Education } from "../generated/education";
+import ResearchInstitute from "./buildings/ResearchInstitute";
 
 const label = classnames("text-xs", "md:text-sm", "mr-1");
 const value = classnames("text-sm", "md:text-lg", "ml-1");
@@ -372,6 +374,7 @@ function TownLot() {
           <RazeSection lot={lot} lotId={id} />
         </>
       )}
+      {lot?.building === Building.RESEARCH_INSTITUTE && <ResearchInstitute />}
       {lot?.building === Building.SCHOOL && <School />}
     </div>
   );

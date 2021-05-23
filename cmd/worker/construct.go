@@ -45,9 +45,10 @@ func (h *handler) handleConstructBuilding(ctx context.Context, senderId string, 
 			}
 		}
 
-		// The first building of all types except markting hq is free and
-		// built 100 times faster
+		// The first building of all types except markting hq and research institute
+		// are free and built 100 times faster
 		if m.Building != models.Building_MARKETINGHQ &&
+		   m.Building != models.Building_RESEARCH_INSTITUTE &&
 			buildingCount[int32(m.Building)]+buildingConstrCount[int32(m.Building)] == 0 {
 			cost = 0
 			constructionTime = int32(float64(constructionTime)/100.0) + 1

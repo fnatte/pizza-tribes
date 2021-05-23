@@ -33,6 +33,8 @@ func (h *handler) Handle(ctx context.Context, senderId string, m *models.ClientM
 		err = h.handleUpgrade(ctx, senderId, x.UpgradeBuilding)
 	case *models.ClientMessage_RazeBuilding_:
 		err = h.handleRazeBuilding(ctx, senderId, x.RazeBuilding)
+	case *models.ClientMessage_StartResearch_:
+		err = h.handleStartResearch(ctx, senderId, x.StartResearch)
 	default:
 		log.Info().Str("senderId", senderId).Msg("Received message")
 	}

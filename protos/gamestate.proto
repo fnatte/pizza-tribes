@@ -6,6 +6,12 @@ option go_package = "github.com/fnatte/pizza-tribes/internal/models";
 import "google/protobuf/wrappers.proto";
 import "education.proto";
 import "building.proto";
+import "research.proto";
+
+message OngoingResearch {
+  int64 complete_at = 1;
+  ResearchDiscovery discovery = 2;
+}
 
 message Training {
   int64 complete_at = 1;
@@ -60,6 +66,8 @@ message GameState {
   int32 townX = 7;
   int32 townY = 8;
   repeated Travel travelQueue = 9;
+  repeated ResearchDiscovery discoveries = 10;
+  repeated OngoingResearch researchQueue = 11;
 }
 
 message GameStatePatch {
@@ -96,5 +104,9 @@ message GameStatePatch {
   google.protobuf.Int32Value townY = 10;
   bool travelQueuePatched = 11;
   repeated Travel travelQueue = 12;
+  bool discoveriesPatched = 13;
+  repeated ResearchDiscovery discoveries = 14;
+  bool researchQueuePatched = 15;
+  repeated OngoingResearch researchQueue = 16;
 }
 

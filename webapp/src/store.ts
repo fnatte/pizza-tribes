@@ -11,9 +11,11 @@ import {
   GameState_Population,
   Training,
   Travel,
+  OngoingResearch,
 } from "./generated/gamestate";
 import { GameData } from "./generated/game_data";
 import { Report } from "./generated/report";
+import { ResearchDiscovery } from "./generated/research";
 import {
   ServerMessage,
   ServerMessage_Reports,
@@ -40,6 +42,8 @@ export type GameState = {
   travelQueue: Array<Travel>;
   townX: number;
   townY: number;
+  discoveries: Array<ResearchDiscovery>;
+  researchQueue: Array<OngoingResearch>;
 };
 
 type User = {
@@ -66,6 +70,7 @@ type State = {
   train: (education: Education, amount: number) => void;
   steal: (x: number, y: number, amount: number) => void;
   readReport: (id: string) => void;
+  startResearch: (discovery: ResearchDiscovery) => void;
 };
 
 const mergeLots = (
@@ -97,7 +102,7 @@ const mergeLots = (
   return res;
 };
 
-const initialGameState = {
+const initialGameState: GameState = {
   resources: {
     pizzas: 0,
     coins: 0,
@@ -116,6 +121,8 @@ const initialGameState = {
   travelQueue: [],
   townX: 0,
   townY: 0,
+  discoveries: [],
+  researchQueue: [],
 };
 
 export const useStore = create<State>((set, get) => ({
@@ -138,7 +145,7 @@ export const useStore = create<State>((set, get) => ({
       return;
     }
     const data = await response.json();
-    const gameData = data as GameData;
+    const gameData = GameData.fromJson(data);
     set((state) => ({ ...state, gameData }));
   },
   logout: async () => {
@@ -223,6 +230,12 @@ export const useStore = create<State>((set, get) => ({
               : state.gameState.travelQueue,
             townX: stateChange.townX?.value ?? state.gameState.townX,
             townY: stateChange.townY?.value ?? state.gameState.townY,
+            discoveries: stateChange.discoveriesPatched
+              ? stateChange.discoveries
+              : state.gameState.discoveries,
+            researchQueue: stateChange.researchQueuePatched
+              ? stateChange.researchQueue
+              : state.gameState.researchQueue,
           },
         }));
       });
@@ -372,6 +385,19 @@ export const useStore = create<State>((set, get) => ({
       return { ...state, reports };
     });
   },
+  startResearch: (discovery) => {
+    get().connection?.send(
+      ClientMessage.create({
+        id: generateId(),
+        type: {
+          oneofKind: "startResearch",
+          startResearch: {
+            discovery,
+          }
+        },
+      })
+    );
+  }
 }));
 
 (window as any).useStore = useStore;

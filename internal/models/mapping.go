@@ -46,6 +46,10 @@ func (gs *GameState) ToServerMessage() *ServerMessage {
 		TownY:                    &wrapperspb.Int32Value{Value: gs.TownY},
 		TravelQueue:              gs.TravelQueue,
 		TravelQueuePatched:       true,
+		DiscoveriesPatched:       true,
+		Discoveries:              gs.Discoveries,
+		ResearchQueuePatched:     true,
+		ResearchQueue:            gs.ResearchQueue,
 	}
 
 	return &ServerMessage{

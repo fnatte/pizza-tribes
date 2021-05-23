@@ -17,7 +17,7 @@ type extrapolateChanges struct {
 	pizzas    int32
 }
 
-func extrapolate(ctx updateContext, tx *redis.Tx) (error) {
+func extrapolate(ctx updateContext, tx *redis.Tx) error {
 	changes := calculateExtrapolateChanges(ctx.gs)
 
 	// Update patch

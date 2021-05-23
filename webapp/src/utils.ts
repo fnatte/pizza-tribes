@@ -27,6 +27,7 @@ export const countBuildings = (
     2: 0,
     3: 0,
     4: 0,
+    5: 0,
   };
 
   Object.keys(lots).forEach((lotId) => {
@@ -53,6 +54,7 @@ export const countBuildingsUnderConstruction = (
       2: 0,
       3: 0,
       4: 0,
+      5: 0,
     }
   );
 };
@@ -68,16 +70,17 @@ export const countPopulation = (population: GameState_Population): number => {
   );
 };
 
-export const countMaxEmployed = (
+export const countMaxEmployedByBuilding = (
   lots: GameState["lots"],
   gameData: GameData
-): Record<Education, number | undefined> => {
-  const counts: Record<Education, number|undefined> = {
+): Record<Building, number | undefined> => {
+  const counts: Record<Building, number|undefined> = {
+    [Building.KITCHEN]: undefined,
     [Building.SHOP]: undefined,
     [Building.HOUSE]: undefined,
     [Building.SCHOOL]: undefined,
-    [Building.KITCHEN]: undefined,
     [Building.MARKETINGHQ]: undefined,
+    [Building.RESEARCH_INSTITUTE]: undefined,
   };
 
   Object.keys(lots).map((lotId) => {
@@ -90,8 +93,8 @@ export const countMaxEmployed = (
     const info = gameData.buildings[building];
     const levelInfo = info.levelInfos[lot.level];
     if (levelInfo?.employer !== undefined) {
-      counts[lot.building] =
-        (counts[lot.building] || 0) + levelInfo.employer.maxWorkforce;
+      counts[building] =
+        (counts[building] || 0) + levelInfo.employer.maxWorkforce;
     }
   });
 
