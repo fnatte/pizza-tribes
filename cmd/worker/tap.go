@@ -112,7 +112,7 @@ func (h *handler) sendTapUpdate(ctx context.Context, userId string, lotId string
 	lotsPatch[lotId] = &models.GameStatePatch_LotPatch{
 		Building: building,
 		TappedAt: tappedAt,
-		Level: level,
+		Level:    level,
 	}
 
 	return h.send(ctx, userId, &models.ServerMessage{

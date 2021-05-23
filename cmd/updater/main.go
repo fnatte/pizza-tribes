@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal"
@@ -295,18 +296,17 @@ func (u *updater) patchToPipe(ctx updateContext, userId string, p *patch) (pipeF
 			}
 		}
 
-
 		// Write training queue
 		if p.gsPatch.TrainingQueuePatched {
-			jsonarr := "["
+			arr := []string{}
 			for _, t := range p.gsPatch.TrainingQueue {
 				var b []byte
 				if b, err = protojson.Marshal(t); err != nil {
 					return fmt.Errorf("failed marshal training: %w", err)
 				}
-				jsonarr = jsonarr + string(b)
+				arr = append(arr, string(b))
 			}
-			jsonarr = jsonarr + "]"
+			jsonarr := "[" + strings.Join(arr, ", ") + "]";
 			err = internal.RedisJsonSet(
 				pipe, ctx, gsKey, ".trainingQueue", jsonarr).Err()
 			if err != nil {
@@ -316,15 +316,15 @@ func (u *updater) patchToPipe(ctx updateContext, userId string, p *patch) (pipeF
 
 		// Write construction queue
 		if p.gsPatch.ConstructionQueuePatched {
-			jsonarr := "["
+			arr := []string{}
 			for _, c := range p.gsPatch.ConstructionQueue {
 				var b []byte
 				if b, err = protojson.Marshal(c); err != nil {
 					return fmt.Errorf("failed marshal construction: %w", err)
 				}
-				jsonarr = jsonarr + string(b)
+				arr = append(arr, string(b))
 			}
-			jsonarr = jsonarr + "]"
+			jsonarr := "[" + strings.Join(arr, ", ") + "]";
 			err = internal.RedisJsonSet(
 				pipe, ctx, gsKey, ".constructionQueue", jsonarr).Err()
 			if err != nil {
@@ -334,15 +334,15 @@ func (u *updater) patchToPipe(ctx updateContext, userId string, p *patch) (pipeF
 
 		// Write travel queue
 		if p.gsPatch.TravelQueuePatched {
-			jsonarr := "["
+			arr := []string{}
 			for _, t := range p.gsPatch.TravelQueue {
 				var b []byte
 				if b, err = protojson.Marshal(t); err != nil {
 					return fmt.Errorf("failed marshal travel: %w", err)
 				}
-				jsonarr = jsonarr + string(b)
+				arr = append(arr, string(b))
 			}
-			jsonarr = jsonarr + "]"
+			jsonarr := "[" + strings.Join(arr, ", ") + "]";
 			err = internal.RedisJsonSet(
 				pipe, ctx, gsKey, ".travelQueue", jsonarr).Err()
 			if err != nil {
@@ -352,15 +352,15 @@ func (u *updater) patchToPipe(ctx updateContext, userId string, p *patch) (pipeF
 
 		// Write research queue
 		if p.gsPatch.ResearchQueuePatched {
-			jsonarr := "["
+			arr := []string{}
 			for _, t := range p.gsPatch.ResearchQueue {
 				var b []byte
 				if b, err = protojson.Marshal(t); err != nil {
 					return fmt.Errorf("failed marshal research: %w", err)
 				}
-				jsonarr = jsonarr + string(b)
+				arr = append(arr, string(b))
 			}
-			jsonarr = jsonarr + "]"
+			jsonarr := "[" + strings.Join(arr, ", ") + "]";
 			err = internal.RedisJsonSet(
 				pipe, ctx, gsKey, ".researchQueue", jsonarr).Err()
 			if err != nil {
