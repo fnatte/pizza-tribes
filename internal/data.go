@@ -135,7 +135,7 @@ var FullGameData = GameData{
 			TitlePlural: "Marketing HQs",
 			LevelInfos: []*BuildingInfo_LevelInfo{
 				{
-					Cost:             100_000,
+					Cost:             75_000,
 					ConstructionTime: 7200,
 					Employer: &Employer{
 						MaxWorkforce: 5,
