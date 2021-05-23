@@ -113,7 +113,7 @@ function Town() {
       >
         <TownSvg
           ref={ref}
-          className={classnames("w-full", classes.svg as TArg)}
+          className={classnames("w-full", "h-auto", classes.svg as TArg)}
           lots={lots}
           constructionQueue={constructionQueue}
         />
