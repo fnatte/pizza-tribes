@@ -9,7 +9,6 @@ import { ReactComponent as SvgKitchen } from "../../images/kitchen.svg";
 import { ReactComponent as SvgShop } from "../../images/shop.svg";
 import { ReactComponent as SvgHouse } from "../../images/house.svg";
 import { ReactComponent as SvgMarketingHQ } from "../../images/marketing-hq.svg";
-import { ReactComponent as SvgResearchInstitute } from "../../images/research-institute.svg";
 import styles from "../styles";
 import { formatDistanceToNow } from "date-fns";
 import {

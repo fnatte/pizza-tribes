@@ -11,10 +11,28 @@ import {
   isNotNull,
 } from "../utils";
 import PlaceholderImage from "./PlaceholderImage";
+import { ReactComponent as SvgKitchen } from "../../images/kitchen.svg";
+import { ReactComponent as SvgShop } from "../../images/shop.svg";
+import { ReactComponent as SvgHouse } from "../../images/house.svg";
+import { ReactComponent as SvgSchool } from "../../images/school.svg";
+import { ReactComponent as SvgMarketingHQ } from "../../images/marketing-hq.svg";
+import { ReactComponent as SvgResearchInstitute } from "../../images/research-institute.svg";
 
 const title = classnames("text-lg", "md:text-xl", "mb-2");
 const label = classnames("text-xs", "md:text-sm", "mr-1");
 const value = classnames("text-sm", "md:text-lg", "ml-1");
+
+const svgs: Record<
+  Building,
+  React.VFC<React.SVGProps<SVGSVGElement>> | undefined
+> = {
+  [Building.KITCHEN]: SvgKitchen,
+  [Building.SHOP]: SvgShop,
+  [Building.HOUSE]: SvgHouse,
+  [Building.SCHOOL]: SvgSchool,
+  [Building.MARKETINGHQ]: SvgMarketingHQ,
+  [Building.RESEARCH_INSTITUTE]: SvgResearchInstitute,
+};
 
 type Props = {
   lotId: string;
@@ -91,9 +109,16 @@ const ConstructBuilding = ({ lotId }: Props) => {
           const canAfford =
             coins >= (discountCost ?? buildings[id].levelInfos[0].cost);
 
+          const SvgImage = svgs[id] || PlaceholderImage;
+
           return (
-            <div className={classnames("flex", "mb-8")} key={id}>
-              <PlaceholderImage />
+            <div
+              className={classnames("flex", "flex-wrap", "gap-4", "mb-8")}
+              key={id}
+            >
+              <div className={classnames("w-40", "h-28", "md:w-60", "md:h-40")}>
+                <SvgImage className="w-full h-full" />
+              </div>
               <div className={classnames("ml-4")}>
                 <div className={title}>{buildings[id].title}</div>
                 <table>

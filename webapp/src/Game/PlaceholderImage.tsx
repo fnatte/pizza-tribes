@@ -1,11 +1,12 @@
 import React from "react";
 
-const PlaceholderImage = () => (
+const PlaceholderImage: React.VFC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="300"
     height="150"
     viewBox="0 0 300 150"
+    {...props}
   >
     <rect fill="#ddd" width="300" height="150" />
     <text
