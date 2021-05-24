@@ -1,8 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { classnames } from "tailwindcss-classnames";
 import { useStore } from "../../store";
 import styles from "../../styles";
-import PlaceholderImage from "../PlaceholderImage";
 import {
   formatDurationShort,
   formatNanoTimestampToNowShort,
@@ -18,6 +17,30 @@ const title = classnames("text-lg", "md:text-xl", "mb-2");
 const label = classnames("text-xs", "md:text-sm");
 const value = classnames("text-sm");
 const descriptionStyle = classnames("text-sm", "text-gray-600");
+
+const PlaceholderImage: React.VFC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="50"
+    height="50"
+    viewBox="0 0 50 50"
+    {...props}
+  >
+    <rect fill="#ddd" width="50" height="50" />
+    <text
+      fill="rgba(0,0,0,0.5)"
+      fontFamily="sans-serif"
+      fontSize="10"
+      dy="10.5"
+      fontWeight="bold"
+      x="50%"
+      y="50%"
+      textAnchor="middle"
+    >
+      50x50
+    </text>
+  </svg>
+);
 
 const svgs: Record<ResearchDiscovery, React.VFC | undefined> = {
   [ResearchDiscovery.WEBSITE]: PlaceholderImage,
@@ -105,7 +128,9 @@ const numberFormat = new Intl.NumberFormat();
 const ResearchNodeView: React.VFC<{
   node: ResearchNode;
   discovered: boolean;
-}> = ({ node, discovered }) => {
+  opened: boolean;
+  onToggleOpen: () => void;
+}> = ({ node, discovered, opened, onToggleOpen }) => {
   const coins = useStore((state) => state.gameState.resources.coins);
   const startResearch = useStore((state) => state.startResearch);
   const researchQueue = useStore((state) => state.gameState.researchQueue);
@@ -115,7 +140,7 @@ const ResearchNodeView: React.VFC<{
     window.scroll(0, 0);
   };
 
-  const SvgImage = svgs[node.discovery];
+  const SvgImage = svgs[node.discovery] || PlaceholderImage;
   const Description = descriptions[node.discovery];
 
   const isBeingResearched = researchQueue.some(
@@ -126,13 +151,34 @@ const ResearchNodeView: React.VFC<{
   const disabled = !canAfford;
   const showResearchButton = !isBeingResearched && !discovered;
 
+  if (!opened) {
+    return (
+      <button
+        className={classnames("flex", "w-16", "h-16", "self-center")}
+        onClick={() => onToggleOpen()}
+      >
+        <SvgImage className={classnames("w-full", "h-full")} />
+      </button>
+    );
+  }
+
   return (
     <div
-      className={classnames("flex", "mb-8", "flex-wrap", "gap-6", "lg:gap-8")}
+      className={classnames(
+        "flex",
+        "justify-center",
+        "mb-8",
+        "flex-wrap",
+        "gap-6",
+        "lg:gap-8"
+      )}
     >
-      <div className={classnames("flex-shrink-0")}>
-        {SvgImage ? <SvgImage /> : <PlaceholderImage />}
-      </div>
+      <button
+        className={classnames("flex-shrink-0", "w-24", "h-24")}
+        onClick={() => onToggleOpen()}
+      >
+        <SvgImage className={classnames("w-full", "h-full")} />
+      </button>
       <div>
         <div className={title}>{node.title}</div>
         {Description && <Description />}
@@ -192,53 +238,44 @@ const ResearchNodeView: React.VFC<{
   );
 };
 
-const getResearchNodeViewsRecursive = (
-  node: ResearchNode,
-  discoveries: ResearchDiscovery[]
-): React.ReactNode[] => {
-  let nodes: React.ReactNode[] = [];
-  nodes.push(
-    <ResearchNodeView
-      key={node.discovery}
-      node={node}
-      discovered={discoveries.includes(node.discovery)}
-    />
-  );
-
-  if (discoveries.includes(node.discovery)) {
-    nodes = nodes.concat(
-      node.nodes.map((x) => getResearchNodeViewsRecursive(x, discoveries))
-    );
-  }
-
-  return nodes;
-};
-
-const ResearchTrackView: React.VFC<{ researchTrack: ResearchTrack }> = ({
-  researchTrack,
-}) => {
-  const discoveries = useStore((state) => state.gameState.discoveries);
-
-  if (!researchTrack.rootNode) {
-    return null;
-  }
-
+const ResearchNodesView: React.VFC<{
+  node: ResearchNode;
+  discoveries: ResearchDiscovery[];
+  openedDiscovery: ResearchDiscovery | null;
+  setOpenedDiscovery: (x: ResearchDiscovery | null) => void;
+}> = ({ node, discoveries, openedDiscovery, setOpenedDiscovery }) => {
   return (
-    <div>
-      <h3>{researchTrack.title}</h3>
-      {getResearchNodeViewsRecursive(researchTrack.rootNode, discoveries)}
+    <div className={classnames("flex", "flex-col", "gap-4")}>
+      <ResearchNodeView
+        key={node.discovery}
+        node={node}
+        discovered={discoveries.includes(node.discovery)}
+        opened={openedDiscovery === node.discovery}
+        onToggleOpen={() =>
+          setOpenedDiscovery(
+            openedDiscovery !== node.discovery ? node.discovery : null
+          )
+        }
+      />
+      <div className={classnames("flex", "gap-4", "justify-center")}>
+        {node.nodes.map((n) => (
+          <ResearchNodesView
+            key={n.discovery}
+            node={n}
+            discoveries={discoveries}
+            openedDiscovery={openedDiscovery}
+            setOpenedDiscovery={setOpenedDiscovery}
+          />
+        ))}
+      </div>
     </div>
   );
 };
 
-const recursiveSearch = <
+function recursiveSearch<
   TNode extends Record<"nodes", TNode[]>,
   TKey extends keyof TNode
->(
-  tree: TNode[],
-  value: TNode[TKey],
-  key: TKey
-): TNode | null => {
+>(tree: TNode[], value: TNode[TKey], key: TKey): TNode | null {
   const stack = [...tree];
   while (stack.length) {
     const node = stack.shift();
@@ -248,7 +285,7 @@ const recursiveSearch = <
     }
   }
   return null;
-};
+}
 
 const findNode = (
   researchTracks: ResearchTrack[],
@@ -274,6 +311,14 @@ function ResearchInstitute() {
   const researchTracks =
     useStore((state) => state.gameData?.researchTracks) || [];
   const researchQueue = useStore((state) => state.gameState.researchQueue);
+
+  const [treeOpen, setTreeOpen] = useState<string | null>(null);
+
+  const discoveries = useStore((state) => state.gameState.discoveries);
+  const [
+    openedDiscovery,
+    setOpenedDiscovery,
+  ] = useState<ResearchDiscovery | null>(null);
 
   return (
     <div className={classnames("max-w-full", "px-2")}>
@@ -303,15 +348,43 @@ function ResearchInstitute() {
         </>
       )}
 
-      <h3>Research</h3>
-      {researchTracks.map((researchTrack) => {
-        return (
-          <ResearchTrackView
-            key={researchTrack.title}
-            researchTrack={researchTrack}
-          />
-        );
-      })}
+      <h3>Areas</h3>
+      <div className={classnames("flex", "flex-col", "gap-4")}>
+        {researchTracks.map((track) => (
+          <div key={track.title} className={classnames("bg-green-400", "p-1")}>
+            <div className={classnames("flex", "items-center", "p-1")}>
+              <div className={classnames("ml-4")}>{track.title}</div>
+              <button
+                className={classnames(
+                  "p-1",
+                  "bg-white",
+                  "ml-auto",
+                  "flex",
+                  "justify-center",
+                  "items-center"
+                )}
+                onClick={() =>
+                  setTreeOpen((x) => (x !== track.title ? track.title : null))
+                }
+              >
+                {treeOpen === track.title ? "Close" : "Open"}
+              </button>
+            </div>
+            {treeOpen === track.title && (
+              <div className={classnames("p-2", "bg-green-200")}>
+                {track.rootNode && (
+                  <ResearchNodesView
+                    node={track.rootNode}
+                    discoveries={discoveries}
+                    openedDiscovery={openedDiscovery}
+                    setOpenedDiscovery={setOpenedDiscovery}
+                  />
+                )}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
