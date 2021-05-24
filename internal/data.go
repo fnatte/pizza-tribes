@@ -24,23 +24,30 @@ var FullGameData = GameData{
 				},
 				{
 					Cost:             20_000,
-					ConstructionTime: 1800,
+					ConstructionTime: 3600,
 					Employer: &Employer{
 						MaxWorkforce: 12,
 					},
 				},
 				{
 					Cost:             40_000,
-					ConstructionTime: 2700,
+					ConstructionTime: 2 * 3600,
 					Employer: &Employer{
 						MaxWorkforce: 20,
 					},
 				},
 				{
 					Cost:             85_000,
-					ConstructionTime: 4800,
+					ConstructionTime: 6 * 3600,
 					Employer: &Employer{
 						MaxWorkforce: 35,
+					},
+				},
+				{
+					Cost:             180_000,
+					ConstructionTime: 18 * 3600,
+					Employer: &Employer{
+						MaxWorkforce: 60,
 					},
 				},
 			},
@@ -50,31 +57,38 @@ var FullGameData = GameData{
 			TitlePlural: "Shops",
 			LevelInfos: []*BuildingInfo_LevelInfo{
 				{
-					Cost:             12_500,
-					ConstructionTime: 1200,
+					Cost:             10_500,
+					ConstructionTime: 1 * 1200,
 					Employer: &Employer{
 						MaxWorkforce: 5,
 					},
 				},
 				{
-					Cost:             25_000,
-					ConstructionTime: 2400,
+					Cost:             22_500,
+					ConstructionTime: 4 * 1200,
 					Employer: &Employer{
 						MaxWorkforce: 9,
 					},
 				},
 				{
-					Cost:             48_000,
-					ConstructionTime: 3600,
+					Cost:             45_000,
+					ConstructionTime: 9 * 1200,
 					Employer: &Employer{
 						MaxWorkforce: 15,
 					},
 				},
 				{
 					Cost:             99_000,
-					ConstructionTime: 8000,
+					ConstructionTime: 16 * 3600,
 					Employer: &Employer{
 						MaxWorkforce: 25,
+					},
+				},
+				{
+					Cost:             200_000,
+					ConstructionTime: 25 * 3600,
+					Employer: &Employer{
+						MaxWorkforce: 40,
 					},
 				},
 			},
@@ -98,24 +112,24 @@ var FullGameData = GameData{
 					},
 				},
 				{
-					Cost:             60_000,
+					Cost:             75_000,
 					ConstructionTime: 1800,
 					Residence: &Residence{
 						Beds: 30,
 					},
 				},
 				{
-					Cost:             135_000,
+					Cost:             165_000,
 					ConstructionTime: 4000,
 					Residence: &Residence{
 						Beds: 50,
 					},
 				},
 				{
-					Cost:             250_000,
+					Cost:             360_000,
 					ConstructionTime: 7200,
 					Residence: &Residence{
-						Beds: 90,
+						Beds: 80,
 					},
 				},
 			},
@@ -135,10 +149,31 @@ var FullGameData = GameData{
 			TitlePlural: "Marketing HQs",
 			LevelInfos: []*BuildingInfo_LevelInfo{
 				{
-					Cost:             75_000,
-					ConstructionTime: 7200,
+					Cost:             65_000,
+					ConstructionTime: 2 * 3600,
 					Employer: &Employer{
 						MaxWorkforce: 5,
+					},
+				},
+				{
+					Cost:             1.5 * 65_000,
+					ConstructionTime: 8 * 3600,
+					Employer: &Employer{
+						MaxWorkforce: 12,
+					},
+				},
+				{
+					Cost:             4 * 65_000,
+					ConstructionTime: 20 * 3600,
+					Employer: &Employer{
+						MaxWorkforce: 30,
+					},
+				},
+				{
+					Cost:             10 * 65_000,
+					ConstructionTime: 48 * 3600,
+					Employer: &Employer{
+						MaxWorkforce: 70,
 					},
 				},
 			},
