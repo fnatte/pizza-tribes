@@ -361,6 +361,7 @@ function TownLot() {
             If you upgrade or build more shops you can have even more employed
             chefs!
           </p>
+          <UpgradeSection lot={lot} lotId={id} />
           <RazeSection lot={lot} lotId={id} />
         </>
       )}
