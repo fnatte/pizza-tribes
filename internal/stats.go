@@ -46,7 +46,7 @@ func calculatePopularity(gs *GameState) float64 {
 
 	tasteScore := calculateTasteScore(gs)
 
-	return (1 + float64(gs.Population.Publicists)) * 5.0 * popularityBonus * tasteScore
+	return (3 + float64(gs.Population.Publicists)*2) * 5.0 * popularityBonus * tasteScore
 }
 
 func calculateSalesBonus(gs *GameState) float64 {
