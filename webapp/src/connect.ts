@@ -85,6 +85,7 @@ const connect = (
     conn.onclose = (e) => {
       const unauthorized = e.code === 4010;
       if (unauthorized) {
+        targetState = "disconnected";
         setState({
           error: "unauthorized",
           connecting: false,

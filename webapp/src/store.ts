@@ -126,6 +126,16 @@ const initialGameState: GameState = {
   researchQueue: [],
 };
 
+const resetAuthState = (state: State) => ({
+  ...state,
+  connection: null,
+  connectionState: null,
+  user: null,
+  gameState: initialGameState,
+  gameStats: null,
+  reports: [],
+});
+
 export const useStore = create<State>((set, get) => ({
   gameState: initialGameState,
   gameStats: null,
@@ -150,15 +160,7 @@ export const useStore = create<State>((set, get) => ({
     set((state) => ({ ...state, gameData }));
   },
   logout: async () => {
-    set((state) => ({
-      ...state,
-      connection: null,
-      connectionState: null,
-      user: null,
-      gameState: initialGameState,
-      gameStats: null,
-      reports: [],
-    }));
+    set(resetAuthState);
     const res = await fetch("/api/auth/logout");
     if (res.ok) {
       get().connection?.close();
@@ -289,7 +291,12 @@ export const useStore = create<State>((set, get) => ({
     };
     const onStateChange = (connectionState: ConnectionState) => {
       unstable_batchedUpdates(() => {
-        set((state) => ({ ...state, connectionState }));
+        set((state) => {
+          if (connectionState.error === 'unauthorized') {
+            state = resetAuthState(state);
+          }
+          return { ...state, connectionState }
+        });
       });
     };
 

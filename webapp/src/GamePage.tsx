@@ -360,7 +360,6 @@ function GamePage(): JSX.Element {
   }, []);
 
   if (connectionState?.error === "unauthorized") {
-    console.log("redirect to /login");
     return <Navigate to="/login" replace />;
   }
 
