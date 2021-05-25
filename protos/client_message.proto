@@ -25,6 +25,10 @@ message ClientMessage {
     string lotId = 1;
   }
 
+  message CancelRazeBuilding {
+    string lotId = 1;
+  }
+
   message Train {
     Education education = 1;
     int32 amount = 2;
@@ -58,6 +62,7 @@ message ClientMessage {
     ReadReport readReport = 8;
     RazeBuilding razeBuilding = 9;
     StartResearch startResearch = 10;
+    CancelRazeBuilding cancelRazeBuilding = 11;
   }
 }
 

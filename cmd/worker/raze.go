@@ -114,3 +114,63 @@ func (h *handler) handleRazeBuilding(ctx context.Context, senderId string, m *mo
 
 	return nil
 }
+
+func (h *handler) handleCancelRazeBuilding(ctx context.Context, senderId string, m *models.ClientMessage_CancelRazeBuilding) error {
+	gsKey := fmt.Sprintf("user:%s:gamestate", senderId)
+
+	var gs models.GameState
+
+	// TODO: adjust the constructions times of succeeding items
+
+	txf := func() error {
+		// Get current game state
+		s, err := internal.RedisJsonGet(h.rdb, ctx, gsKey, ".").Result()
+		if err != nil && err != redis.Nil {
+			return err
+		}
+		if err = protojson.Unmarshal([]byte(s), &gs); err != nil {
+			return err
+		}
+
+		// Make sure there is a "raze building" to cancel
+		index := -1
+		for i, constr := range gs.ConstructionQueue {
+			if constr.LotId == m.LotId {
+				index = i
+				break
+			}
+		}
+		if index == -1 {
+			return fmt.Errorf("could not find a raze building at that lot to cancel")
+		}
+
+		_, err = h.rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+			if err = internal.RedisJsonArrPop(pipe, ctx, gsKey,
+				".constructionQueue", index).Err(); err != nil {
+				return err
+			}
+
+			return nil
+		})
+
+		return err
+	}
+
+	mutex := h.rdb.NewMutex("lock:" + gsKey)
+	if err := mutex.Lock(); err != nil {
+		return fmt.Errorf("failed to obtain lock: %w", err)
+	}
+	err2 := txf()
+	if ok, err := mutex.Unlock(); !ok || err != nil {
+		return fmt.Errorf("failed to unlock: %w", err)
+	}
+	if err2 != nil {
+		return fmt.Errorf("failed to cancel raze building: %w", err2)
+	}
+
+	internal.SetNextUpdate(h.rdb, ctx, senderId, &gs)
+
+	h.sendFullStateUpdate(ctx, senderId)
+
+	return nil
+}

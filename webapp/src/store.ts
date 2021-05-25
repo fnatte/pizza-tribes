@@ -67,6 +67,7 @@ type State = {
   constructBuilding: (lotId: string, building: Building) => void;
   upgradeBuilding: (lotId: string) => void;
   razeBuilding: (lotId: string) => void;
+  cancelRazeBuilding: (lotId: string) => void;
   train: (education: Education, amount: number) => void;
   steal: (x: number, y: number, amount: number) => void;
   readReport: (id: string) => void;
@@ -330,6 +331,19 @@ export const useStore = create<State>((set, get) => ({
         type: {
           oneofKind: "razeBuilding",
           razeBuilding: {
+            lotId,
+          },
+        },
+      })
+    );
+  },
+  cancelRazeBuilding: (lotId) => {
+    get().connection?.send(
+      ClientMessage.create({
+        id: generateId(),
+        type: {
+          oneofKind: "cancelRazeBuilding",
+          cancelRazeBuilding: {
             lotId,
           },
         },

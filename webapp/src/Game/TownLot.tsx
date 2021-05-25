@@ -195,6 +195,7 @@ const RazeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
   const gameData = useStore((state) => state.gameData);
   const buildingInfo = gameData?.buildings[lot.building];
   const razeBuilding = useStore((state) => state.razeBuilding);
+  const cancelRazeBuilding = useStore((state) => state.cancelRazeBuilding);
 
   if (buildingInfo == null) {
     return null;
@@ -202,6 +203,12 @@ const RazeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
 
   const onClick = () => {
     razeBuilding(lotId);
+    window.scroll(0, 0);
+  };
+
+  const onCancelClick = () => {
+    cancelRazeBuilding(lotId);
+    window.scroll(0, 0);
   };
 
   const levelInfo = buildingInfo.levelInfos[lot.level];
@@ -213,8 +220,14 @@ const RazeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
   const constr = constructionQueue.find((x) => x.lotId === lotId);
   if (constr) {
     return constr.razing ? (
-      <section className={classnames("m-4", "p-4", "bg-red-400")}>
-        <span>This building is being razed.</span>
+      <section className={classnames("m-4", "p-4", "bg-red-200")}>
+        <div>This building is being razed.</div>
+        <button
+          className={classnames(...styles.button, "bg-red-800")}
+          onClick={onCancelClick}
+        >
+          Cancel
+        </button>
       </section>
     ) : null;
   }
