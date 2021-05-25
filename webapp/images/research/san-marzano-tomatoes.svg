@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="21.25322mm"
+   height="44.570885mm"
+   viewBox="0 0 21.25322 44.570885"
+   version="1.1"
+   id="svg30028"
+   inkscape:version="1.0.2 (e86c870879, 2021-01-15, custom)"
+   sodipodi:docname="san-marzano-tomatoes.svg">
+  <defs
+     id="defs30022" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.35"
+     inkscape:cx="134.44928"
+     inkscape:cy="147.08559"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:window-width="902"
+     inkscape:window-height="1021"
+     inkscape:window-x="1004"
+     inkscape:window-y="45"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata30025">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-70.260295,-109.25027)">
+    <g
+       id="g23895"
+       inkscape:label="SanMarzanoTomatoes"
+       transform="translate(-85.69797,-70.941411)">
+      <path
+         style="fill:#e15738;fill-opacity:1;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 165.5207,224.62923 c -1.83267,-0.28785 -3.94512,-0.36582 -4.82037,-2.25866 -3.79592,-8.20911 -4.72593,-18.60337 -2.12758,-25.89078 1.28484,-3.6035 3.78594,-4.6725 7.41797,-6.03384 3.15482,0.11719 6.50858,1.87702 7.62786,4.60288 2.60612,6.34684 0.0326,19.53495 -2.69821,26.22952 -1.04976,2.57343 -3.74748,3.18363 -5.39967,3.35088 z"
+         id="path23892"
+         sodipodi:nodetypes="csscssc" />
+      <path
+         style="fill:#58632d;fill-opacity:1;stroke:#000000;stroke-width:0.265;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         d="m 169.17751,191.81493 c 5.99964,0.75566 7.56339,-4.02986 7.90148,-10.68336 -1.66973,4.65727 -2.9566,10.27726 -6.89283,9.23526 2.78478,-2.99971 2.28876,-5.52402 1.55616,-8.01405 -0.8309,2.9091 -1.76057,5.76426 -4.47863,7.64264 -0.11086,-1.00751 0.91038,-2.77476 -0.86533,-2.66502 -1.12254,-0.45323 -1.03841,0.87147 -1.28909,1.70286 -1.19399,-0.435 -3.6209,-5.80506 -5.43173,-8.70911 -0.0499,3.96106 0.91567,8.25055 3.2991,10.25766 -2.24212,0.11061 -6.28882,-1.28171 -5.14469,-9.09019 -5.3766,6.65513 3.09104,12.94997 6.62571,10.63943 1.21012,0.80825 2.45177,1.7895 3.51444,1.78861 1.94011,-0.31308 0.99932,-2.96081 0.45695,-5.28566 0.24673,1.11031 0.63999,2.48464 0.74846,3.18093 z"
+         id="path23899"
+         sodipodi:nodetypes="cccccccccccccc" />
+      <path
+         style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 168.42905,188.634 c -0.0697,2.79148 -0.80697,4.14026 -1.82156,4.23283"
+         id="path23901"
+         sodipodi:nodetypes="cc" />
+    </g>
+  </g>
+</svg>

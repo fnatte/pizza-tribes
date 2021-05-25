@@ -278,7 +278,7 @@ var FullGameData = GameData{
 			},
 		},
 		{
-			Title: "Pizza",
+			Title: "Pizza Craft",
 			RootNode: &ResearchNode{
 				Title:        "Durum Wheat",
 				Discovery:    ResearchDiscovery_DURUM_WHEAT,

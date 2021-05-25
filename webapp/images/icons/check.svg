@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="31.536957mm"
+   height="31.344797mm"
+   viewBox="0 0 31.536957 31.344797"
+   version="1.1"
+   id="svg32844"
+   inkscape:version="1.0.2 (e86c870879, 2021-01-15, custom)"
+   sodipodi:docname="check.svg">
+  <defs
+     id="defs32838" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.35"
+     inkscape:cx="199.5974"
+     inkscape:cy="90.662836"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:window-width="902"
+     inkscape:window-height="483"
+     inkscape:window-x="1004"
+     inkscape:window-y="583"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata32841">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-53.023188,-124.17879)">
+    <g
+       id="g32823"
+       inkscape:label="Check"
+       style="fill:#8abb52;fill-opacity:1"
+       transform="translate(-11.088041,33.609224)">
+      <ellipse
+         style="fill:#8abb52;fill-opacity:1;stroke:#000000;stroke-width:0.964999;stroke-linejoin:round;stop-color:#000000"
+         id="path32817"
+         cx="79.879707"
+         cy="106.24197"
+         rx="15.285979"
+         ry="15.189899" />
+      <path
+         style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3.365;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         d="m 72.485977,106.82476 5.582938,5.18595 11.016858,-10.58679"
+         id="path32819"
+         sodipodi:nodetypes="ccc" />
+    </g>
+  </g>
+</svg>
