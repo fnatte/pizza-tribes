@@ -128,7 +128,7 @@ const SchoolEducation: React.VFC<{
                 </span>
               </td>
             </tr>
-            {educationInfo.cost && (
+            {educationInfo.cost > 0 && (
               <tr>
                 <td className={classnames("px-2")}>
                   <span className={label}>Cost:</span>
