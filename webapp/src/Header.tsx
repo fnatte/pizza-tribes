@@ -1,5 +1,6 @@
 import React from "react";
-import {classnames} from "tailwindcss-classnames";
+import { classnames } from "tailwindcss-classnames";
+import { ReactComponent as SvgLogoWide } from "../images/logo-wide.svg";
 
 function Header() {
   return (
@@ -11,10 +12,9 @@ function Header() {
         "items-center"
       )}
     >
-      <h1 className={classnames("flex", "justify-center", "p-8", "text-4xl")}>
-        Pizza Tribes
+      <h1 className={classnames("flex", "justify-center")}>
+        <SvgLogoWide />
       </h1>
-      <div className={classnames("text-2xl")}>🍕🍕🍕🍕</div>
     </div>
   );
 }

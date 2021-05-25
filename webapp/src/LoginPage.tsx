@@ -1,11 +1,10 @@
 import React from "react";
-import {Navigate, useNavigate} from "react-router-dom";
-import {classnames} from "tailwindcss-classnames";
+import { Navigate, useNavigate } from "react-router-dom";
+import { classnames } from "tailwindcss-classnames";
 import Header from "./Header";
 import LoginForm from "./LoginForm";
-import {useStore} from "./store";
+import { useStore } from "./store";
 import styles from "./styles";
-
 
 function Welcome() {
   return <Header />;
@@ -21,7 +20,7 @@ function CreateAccountPromotion() {
   return (
     <div
       className={classnames(
-        "mt-10",
+        "mt-5",
         "flex",
         "justify-center",
         "flex-col",
@@ -44,14 +43,26 @@ function LoginPage() {
   const connectionState = useStore((state) => state.connectionState);
   const user = useStore((state) => state.user);
 
-  if (connectionState?.connected || connectionState?.connecting || user !== null) {
+  if (
+    connectionState?.connected ||
+    connectionState?.connecting ||
+    user !== null
+  ) {
     return <Navigate to="/" replace />;
   }
 
   return (
-    <div>
+    <div
+      className={classnames(
+        "flex",
+        "flex-col",
+        "justify-center",
+        "items-center"
+      )}
+    >
       <Welcome />
       <LoginForm onLogin={onLogin} />
+      <div className={classnames("text-2xl", "mt-5")}>🍕🍕🍕🍕</div>
       <CreateAccountPromotion />
     </div>
   );
