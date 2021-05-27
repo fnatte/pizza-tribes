@@ -13,11 +13,11 @@
   }
 
   h2 {
-    @apply text-2xl my-4;
+    @apply text-2xl my-2 md:my-4;
   }
 
   h3 {
-    @apply text-xl my-4;
+    @apply text-xl my-2 md:my-4;
   }
 
   h4 {

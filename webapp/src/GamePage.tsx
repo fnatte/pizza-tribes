@@ -257,13 +257,13 @@ function ResourceBar() {
         "mt-2"
       )}
     >
-      <span className={classnames("px-6", "mb-2")}>
+      <span className={classnames("px-3", "mb-2", "md:px-6")}>
         <CoinEmoji /> {formatNumber(coins)}
       </span>
-      <span className={classnames("px-6", "mb-2")}>
+      <span className={classnames("px-3", "mb-2", "md:px-6")}>
         <PizzaEmoji /> {formatNumber(pizzas)}
       </span>
-      <span className={classnames("px-6", "mb-2")}>
+      <span className={classnames("px-3", "mb-2", "md:px-6")}>
         <span className={classnames("px-2")}>
           <ClockEmoji />{" "}
           <span style={{ minWidth: 60, display: "inline-block" }}>
@@ -286,7 +286,8 @@ function Separator() {
       className={classnames(
         "border-t-2",
         "border-gray-300",
-        "my-4",
+        "my-1",
+        "md:my-4",
         "w-10/12",
         "mx-auto"
       )}

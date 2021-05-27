@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useAsync, useMedia } from "react-use";
 import { classnames } from "tailwindcss-classnames";
-import { WorldZone } from "../../generated/world";
+import { WorldEntry, WorldZone } from "../../generated/world";
 import HexGrid from "./HexGrid";
 import { ReactComponent as HeartsSvg } from "../../../images/hearts.svg";
 import { useStore } from "../../store";
@@ -9,9 +9,9 @@ import { getIdx } from "../getIdx";
 import { useNavigate } from "react-router-dom";
 import styles from "../../styles";
 
-const unique = <T extends unknown>(arr: T[]): T[] => {
+function unique<T extends unknown>(arr: T[]): T[] {
   return [...new Set(arr)];
-};
+}
 
 function MapView() {
   const isMinLg = useMedia("(min-width: 1024px)", false);
@@ -31,6 +31,41 @@ function MapView() {
 
   // TODO: store zones in store
   const [zones, setZones] = useState<WorldZone[]>([]);
+
+  const [selectedEntry, setSelectedEntry] = useState<{
+    entry: WorldEntry;
+    myTown: boolean;
+    x: number;
+    y: number;
+  } | null>(null);
+
+  const selected = useAsync(async () => {
+    if (selectedEntry === null) {
+      return null;
+    }
+
+    if (selectedEntry.myTown) {
+      return { myTown: true };
+    }
+
+    const town =
+      selectedEntry.entry.object.oneofKind === "town" &&
+      selectedEntry.entry.object.town;
+    if (!town) {
+      return null;
+    }
+
+    const response = await fetch(`/api/user/${town.userId}`);
+    if (
+      !response.ok ||
+      response.headers.get("Content-Type") !== "application/json"
+    ) {
+      throw new Error("Failed to get user");
+    }
+
+    const data = await response.json();
+    return { username: data.username as string, myTown: false };
+  }, [selectedEntry]);
 
   useAsync(async () => {
     const missingZones =
@@ -75,7 +110,16 @@ function MapView() {
 
   const onClick = (x: number, y: number, zidx: number, eidx: number) => {
     if (zones[zidx].entries[eidx]?.object?.oneofKind === "town") {
-      navigate(`/world/entry?x=${x}&y=${y}`);
+      const entry = zones[zidx].entries[eidx];
+      setSelectedEntry({ entry, x, y, myTown: x === townX && y === townY });
+    } else {
+      setSelectedEntry(null);
+    }
+  };
+
+  const onClickVisit = () => {
+    if (selectedEntry) {
+      navigate(`/world/entry?x=${selectedEntry.x}&y=${selectedEntry.y}`);
     }
   };
 
@@ -88,7 +132,9 @@ function MapView() {
         </div>
       )}
       {zones.length > 0 && (
-        <div className={classnames("relative", "flex", "flex-col", "items-center")}>
+        <div
+          className={classnames("relative", "flex", "flex-col", "items-center")}
+        >
           <div
             className={classnames(
               "flex",
@@ -98,6 +144,8 @@ function MapView() {
               "lg:absolute",
               "-top-5",
               "-right-1/4",
+              "lg:bg-green-200",
+              "lg:p-4"
             )}
           >
             <button
@@ -125,6 +173,38 @@ function MapView() {
             onNavigate={onNavigate}
             onClick={onClick}
           />
+          {selected.value && (
+            <div
+              className={classnames(
+                "p-2",
+                "bg-green-200",
+                "w-full",
+                "max-w-sm",
+                "flex",
+                "justify-between",
+                "items-center",
+                "sm:-mt-5",
+                "lg:absolute",
+                "lg:-top-5",
+                "lg:-left-1/4",
+                "lg:max-w-none",
+                "lg:w-auto",
+                "lg:p-4",
+                "lg:mt-0"
+              )}
+            >
+              {selected.value?.myTown && "Your town"}
+              {selected.value?.username && (
+                <>Player: {selected.value.username}</>
+              )}
+              <button
+                className={classnames(styles.primaryButton, "ml-4")}
+                onClick={onClickVisit}
+              >
+                Visit
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
