@@ -4,6 +4,11 @@ GO_FLAGS := -ldflags '-s -w -extldflags "-static"'
 PROTOS := $(wildcard protos/*.proto)
 PBGO := $(patsubst protos/%.proto,internal/%.pb.go,$(PROTOS))
 
+ifneq (,$(wildcard ./.env))
+	include .env
+	export
+endif
+
 internal/%.pb.go: protos/%.proto
 	protoc -I=protos/ --go_out=./ --go_opt=module=$(GO_MODULE) --experimental_allow_proto3_optional $?
 

@@ -287,11 +287,12 @@ The following is exposed:
 If you want to make changes you might want to benefit from HMR (Hot Module Replacement) in the web app and faster build times for the Go apps. If that's the case, you might want to run redis using docker-compose, and then run the services and web app on your host OS:
 
 ```
-printf "HOST=:8080\nORIGIN=http://localhost:3000\n" > .env
+printf "HOST=:8080\nORIGIN=http://localhost:3000\nJWT_SIGNING_KEY=secret" > .env
 docker-compose up -d redis redisinsight
 make -j start # Build and run go services (see Makefile for details)
 cd webapp # in another terminal
 npm install
+npm generate
 npm run dev
 ```
 
