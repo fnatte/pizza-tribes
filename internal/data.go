@@ -16,6 +16,20 @@ var FullGameData = GameData{
 			TitlePlural: "Kitchens",
 			LevelInfos: []*BuildingInfo_LevelInfo{
 				{
+					Cost:             2_500,
+					ConstructionTime: 200,
+					Employer: &Employer{
+						MaxWorkforce: 2,
+					},
+				},
+				{
+					Cost:             5_000,
+					ConstructionTime: 450,
+					Employer: &Employer{
+						MaxWorkforce: 4,
+					},
+				},
+				{
 					Cost:             10_000,
 					ConstructionTime: 900,
 					Employer: &Employer{
@@ -45,9 +59,23 @@ var FullGameData = GameData{
 				},
 				{
 					Cost:             180_000,
-					ConstructionTime: 18 * 3600,
+					ConstructionTime: 14 * 3600,
 					Employer: &Employer{
 						MaxWorkforce: 60,
+					},
+				},
+				{
+					Cost:             370_000,
+					ConstructionTime: 24 * 3600,
+					Employer: &Employer{
+						MaxWorkforce: 110,
+					},
+				},
+				{
+					Cost:             750_000,
+					ConstructionTime: 36 * 3600,
+					Employer: &Employer{
+						MaxWorkforce: 200,
 					},
 				},
 			},
@@ -57,6 +85,13 @@ var FullGameData = GameData{
 			TitlePlural: "Shops",
 			LevelInfos: []*BuildingInfo_LevelInfo{
 				{
+					Cost:             3_500,
+					ConstructionTime: 360,
+					Employer: &Employer{
+						MaxWorkforce: 2,
+					},
+				},
+				{
 					Cost:             10_500,
 					ConstructionTime: 1 * 1200,
 					Employer: &Employer{
@@ -65,21 +100,21 @@ var FullGameData = GameData{
 				},
 				{
 					Cost:             22_500,
-					ConstructionTime: 4 * 1200,
+					ConstructionTime: 3 * 1200,
 					Employer: &Employer{
 						MaxWorkforce: 9,
 					},
 				},
 				{
 					Cost:             45_000,
-					ConstructionTime: 9 * 1200,
+					ConstructionTime: 8 * 1200,
 					Employer: &Employer{
 						MaxWorkforce: 15,
 					},
 				},
 				{
 					Cost:             99_000,
-					ConstructionTime: 16 * 3600,
+					ConstructionTime: 14 * 3600,
 					Employer: &Employer{
 						MaxWorkforce: 25,
 					},
@@ -91,6 +126,13 @@ var FullGameData = GameData{
 						MaxWorkforce: 40,
 					},
 				},
+				{
+					Cost:             420_000,
+					ConstructionTime: 40 * 3600,
+					Employer: &Employer{
+						MaxWorkforce: 70,
+					},
+				},
 			},
 		},
 		int32(Building_HOUSE): {
@@ -98,7 +140,21 @@ var FullGameData = GameData{
 			TitlePlural: "Houses",
 			LevelInfos: []*BuildingInfo_LevelInfo{
 				{
-					Cost:             17_000,
+					Cost:             3_000,
+					ConstructionTime: 90,
+					Residence: &Residence{
+						Beds: 3,
+					},
+				},
+				{
+					Cost:             7_500,
+					ConstructionTime: 200,
+					Residence: &Residence{
+						Beds: 6,
+					},
+				},
+				{
+					Cost:             16_000,
 					ConstructionTime: 450,
 					Residence: &Residence{
 						Beds: 10,
@@ -132,6 +188,13 @@ var FullGameData = GameData{
 						Beds: 80,
 					},
 				},
+				{
+					Cost:             800_000,
+					ConstructionTime: 2 * 7200,
+					Residence: &Residence{
+						Beds: 120,
+					},
+				},
 			},
 		},
 		int32(Building_SCHOOL): {
@@ -149,31 +212,38 @@ var FullGameData = GameData{
 			TitlePlural: "Marketing HQs",
 			LevelInfos: []*BuildingInfo_LevelInfo{
 				{
-					Cost:             55_000,
-					ConstructionTime: 2 * 3600,
+					Cost:             1 * 35_000,
+					ConstructionTime: 1 * 3600,
 					Employer: &Employer{
-						MaxWorkforce: 5,
+						MaxWorkforce: 3,
 					},
 				},
 				{
-					Cost:             1.5 * 55_000,
+					Cost:             2 * 35_000,
+					ConstructionTime: 2 * 3600,
+					Employer: &Employer{
+						MaxWorkforce: 6,
+					},
+				},
+				{
+					Cost:             4 * 35_000,
 					ConstructionTime: 8 * 3600,
 					Employer: &Employer{
 						MaxWorkforce: 12,
 					},
 				},
 				{
-					Cost:             4 * 55_000,
+					Cost:             10 * 35_000,
 					ConstructionTime: 20 * 3600,
 					Employer: &Employer{
-						MaxWorkforce: 30,
+						MaxWorkforce: 25,
 					},
 				},
 				{
-					Cost:             10 * 55_000,
+					Cost:             24 * 35_000,
 					ConstructionTime: 48 * 3600,
 					Employer: &Employer{
-						MaxWorkforce: 70,
+						MaxWorkforce: 55,
 					},
 				},
 			},
