@@ -16,6 +16,8 @@ import { Building } from "../generated/building";
 import { classnames, TArg } from "tailwindcss-classnames";
 import { getTapInfo } from "../utils";
 import { Construction } from "../generated/gamestate";
+import {useState} from "react";
+import {useTimeoutFn} from "react-use";
 
 const Badge: React.VFC = () => {
   return (
@@ -140,14 +142,15 @@ const renderConstructingBuilding = (building: Building | undefined) => {
 const renderLot = (
   lots: Record<string, Lot | undefined>,
   constructionQueue: Construction[],
-  lotId: string
+  lotId: string,
+  now: Date
 ) => {
   const lot = lots[lotId];
   const construction = constructionQueue.find((x) => x.lotId === lotId);
 
   return (construction && !construction.razing && construction.level <= 0)
     ? renderConstructingBuilding(construction.building)
-    : renderBuilding(lot?.building, (lot && getTapInfo(lot).canTap) || false);
+    : renderBuilding(lot?.building, (lot && getTapInfo(lot, now).canTap) || false);
 };
 
 function SvgTown(
@@ -161,6 +164,9 @@ function SvgTown(
   },
   svgRef?: React.Ref<SVGSVGElement>
 ) {
+  const [now, setNow] = useState(new Date());
+  useTimeoutFn(() => setNow(new Date()), 10_000);
+
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -376,7 +382,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "11")};
+          {renderLot(lots, constructionQueue, "11", now)};
         </g>
         <g
           id="lot10"
@@ -394,7 +400,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "10")}
+          {renderLot(lots, constructionQueue, "10", now)}
         </g>
         <g
           id="lot9"
@@ -412,7 +418,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "9")}
+          {renderLot(lots, constructionQueue, "9", now)}
         </g>
         <g
           id="lot8"
@@ -430,7 +436,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "8")}
+          {renderLot(lots, constructionQueue, "8", now)}
         </g>
         <g
           id="lot7"
@@ -448,7 +454,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "7")}
+          {renderLot(lots, constructionQueue, "7", now)}
         </g>
         <g
           id="lot6"
@@ -466,7 +472,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "6")}
+          {renderLot(lots, constructionQueue, "6", now)}
         </g>
         <g
           id="lot5"
@@ -484,7 +490,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "5")}
+          {renderLot(lots, constructionQueue, "5", now)}
         </g>
         <g
           id="lot4"
@@ -502,7 +508,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "4")}
+          {renderLot(lots, constructionQueue, "4", now)}
         </g>
         <g
           id="lot3"
@@ -520,7 +526,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "3")}
+          {renderLot(lots, constructionQueue, "3", now)}
         </g>
         <g
           id="lot2"
@@ -538,7 +544,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "2")}
+          {renderLot(lots, constructionQueue, "2", now)}
         </g>
         <g
           id="lot1"
@@ -556,7 +562,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "1")}
+          {renderLot(lots, constructionQueue, "1", now)}
         </g>
       </g>
     </svg>

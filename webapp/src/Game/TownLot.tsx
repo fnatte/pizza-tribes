@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { classnames, TArg } from "tailwindcss-classnames";
 import { Building } from "../generated/building";
@@ -12,34 +12,55 @@ import { ReactComponent as SvgMarketingHQ } from "../../images/marketing-hq.svg"
 import styles from "../styles";
 import { formatDistanceToNow } from "date-fns";
 import {
-  countPopulation,
   formatDurationShort,
   formatNumber,
   getTapInfo,
 } from "../utils";
 import { Education } from "../generated/education";
 import ResearchInstitute from "./buildings/ResearchInstitute";
+import { useTimeoutFn } from "react-use";
+import { confetti } from "../confetti";
+import classes from "./town-lot.module.css";
+import classNames from "classnames";
 
 const label = classnames("text-xs", "md:text-sm", "mr-1");
 const value = classnames("text-sm", "md:text-lg", "ml-1");
 
 const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
-  const population = useStore((state) => state.gameState.population);
-
-  const { nextTapAt, canTap } = getTapInfo(lot);
+  const [now, setNow] = useState(new Date());
+  const [tapBackoff, setTapBackoff] = useState(false);
+  const buttonConfettiRef = useRef<HTMLDivElement>(null);
 
   const tap = useStore((state) => state.tap);
+
+  const { nextTapAt, canTap, taps, tapsRemaining } = getTapInfo(lot, now);
+
+  useTimeoutFn(
+    () => setNow(new Date()),
+    Math.max(Math.min(nextTapAt - Date.now(), 10_000), 16)
+  );
+
+  useEffect(() => {
+    let timerId = -1;
+    if (tapBackoff) {
+      timerId = window.setTimeout(() => {
+        setTapBackoff(false);
+      }, 500);
+    }
+
+    return () => window.clearTimeout(timerId);
+  }, [tapBackoff]);
 
   let tapResource;
   let tapGains;
   switch (lot.building) {
     case Building.KITCHEN:
       tapResource = "pizzas";
-      tapGains = 80 * countPopulation(population);
+      tapGains = 80 * (lot.level + 1);
       break;
     case Building.SHOP:
       tapResource = "coins";
-      tapGains = 35 * countPopulation(population);
+      tapGains = 35 * (lot.level + 1);
       break;
     default:
       return null;
@@ -47,21 +68,40 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
 
   const onClick = () => {
     tap(lotId);
+    setTapBackoff(true);
+
+    if (buttonConfettiRef.current) {
+      confetti(buttonConfettiRef.current, {
+        elementCount: 3 * Math.ceil(Math.sqrt(lot.level + 1)),
+        colors: [],
+        startVelocity: 27,
+        spread: 35,
+        duration: 2000,
+        modifyElement: (element: HTMLElement) => {
+          element.textContent = "🍕";
+          element.style.fontSize = "25px";
+        },
+      });
+    }
   };
 
   return (
-    <section className={classnames("m-4", "p-4", "bg-green-200")}>
+    <section className={classnames("m-4", "p-4", "bg-green-200", "flex", "items-center", "flex-col")}>
       <button
-        className={styles.primaryButton}
-        disabled={!canTap}
+        className={classNames(styles.primaryButton, classes.tapButton, {
+          [classes.hasTapsRemaining]: tapsRemaining > 0,
+        })}
+        disabled={!canTap || tapBackoff}
         onClick={onClick}
       >
-        Tap
+        <span>
+          +{tapGains} {tapResource}
+          <br />
+          {taps} of 10
+        </span>
+        <div ref={buttonConfettiRef} />
       </button>{" "}
-      <span>
-        (+{tapGains} {tapResource})
-      </span>
-      {!canTap && (
+      {!canTap && tapsRemaining === 0 && (
         <div>
           Next tap in{" "}
           {formatDistanceToNow(new Date(nextTapAt), {

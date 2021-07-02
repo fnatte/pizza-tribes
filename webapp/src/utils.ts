@@ -1,7 +1,11 @@
-import { formatDuration, intervalToDuration } from "date-fns";
+import {
+  addHours,
+  formatDuration,
+  intervalToDuration,
+  startOfHour,
+} from "date-fns";
 import JSBI from "jsbi";
 import { Building } from "./generated/building";
-import { Education } from "./generated/education";
 import { GameState_Population } from "./generated/gamestate";
 import { GameData } from "./generated/game_data";
 import { GameState, Lot } from "./store";
@@ -74,7 +78,7 @@ export const countMaxEmployedByBuilding = (
   lots: GameState["lots"],
   gameData: GameData
 ): Record<Building, number | undefined> => {
-  const counts: Record<Building, number|undefined> = {
+  const counts: Record<Building, number | undefined> = {
     [Building.KITCHEN]: undefined,
     [Building.SHOP]: undefined,
     [Building.HOUSE]: undefined,
@@ -135,7 +139,7 @@ export const formatNanoTimestampToNowShort = (time: string) => {
   );
 
   if (totalSeconds <= 0) {
-    return 'now';
+    return "now";
   }
 
   const hours = Math.floor(totalSeconds / 3600);
@@ -169,18 +173,31 @@ export const parseDateNano = (ns: string) => {
 const numberFormat = new Intl.NumberFormat();
 export const formatNumber = (n: number) => numberFormat.format(n);
 
-export const getTapInfo = (lot: Lot) => {
+export const getTapInfo = (lot: Lot, now: Date) => {
   if (lot.building !== Building.KITCHEN && lot.building !== Building.SHOP) {
-    return { canTap: false, nextTapAt: 0 };
+    return { canTap: false, nextTapAt: 0, taps: 0, tapsRemaining: 0 };
   }
 
-  // convert lot.tappedAt from ns ms
+  const tapIdx = now.getUTCHours();
+  const taps = tapIdx < lot.taps.length ? lot.taps[tapIdx] : 0;
+
+  const tapBackoff = 500;
+  const tapsPerHour = 10;
+  const tapsRemaining = tapsPerHour - taps;
+
+  // convert lot.tappedAt from ns to ms
   const tappedAt = JSBI.toNumber(
     JSBI.divide(JSBI.BigInt(lot.tappedAt), JSBI.BigInt(1e6))
   );
-  const nextTapAt = tappedAt + 60_000 * 60;
-  const canTap = nextTapAt < Date.now();
 
-  return { canTap, nextTapAt };
-}
+  const nextTapAt =
+    tapsRemaining === 0
+      ? addHours(startOfHour(new Date()), 1).getTime()
+      : tappedAt + tapBackoff;
 
+  const canTap = nextTapAt < now.getTime() && tapsRemaining > 0;
+
+  return { canTap, nextTapAt, taps, tapsRemaining };
+};
+
+export const getTapIndex = (date: Date = new Date()) => date.getUTCHours();

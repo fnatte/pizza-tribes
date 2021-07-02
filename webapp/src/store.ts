@@ -22,12 +22,14 @@ import {
   ServerMessage_User,
 } from "./generated/server_message";
 import { Stats } from "./generated/stats";
-import { generateId } from "./utils";
+import { generateId, getTapIndex } from "./utils";
+import { produce } from 'immer';
 
 export type Lot = {
   building: Building;
   tappedAt: string;
   level: number;
+  taps: number[];
 };
 
 export type GameState = {
@@ -83,7 +85,7 @@ const mergeLots = (
   Object.keys(b).forEach((lotId) => {
     const lot = res[lotId];
     if (b[lotId] !== undefined) {
-      const { building, tappedAt, level, razed } = b[lotId];
+      const { building, tappedAt, level, razed, taps } = b[lotId];
 
       if (razed) {
         delete res[lotId];
@@ -91,11 +93,12 @@ const mergeLots = (
       }
 
       if (lot === undefined) {
-        res[lotId] = { building, tappedAt, level };
+        res[lotId] = { building, tappedAt, level, taps };
       } else {
         lot.building = building;
         lot.tappedAt = tappedAt;
         lot.level = level;
+        lot.taps = taps;
       }
     }
   });
@@ -167,6 +170,12 @@ export const useStore = create<State>((set, get) => ({
     }
   },
   tap: (lotId: string) => {
+    set((state) => produce(state, draftState => {
+      const lot = draftState.gameState.lots[lotId];
+      if (lot) {
+        lot.taps[getTapIndex()]++;
+      }
+    }));
     const msg = ClientMessage.create({
       id: generateId(),
       type: {
@@ -292,10 +301,10 @@ export const useStore = create<State>((set, get) => ({
     const onStateChange = (connectionState: ConnectionState) => {
       unstable_batchedUpdates(() => {
         set((state) => {
-          if (connectionState.error === 'unauthorized') {
+          if (connectionState.error === "unauthorized") {
             state = resetAuthState(state);
           }
-          return { ...state, connectionState }
+          return { ...state, connectionState };
         });
       });
     };
@@ -414,11 +423,11 @@ export const useStore = create<State>((set, get) => ({
           oneofKind: "startResearch",
           startResearch: {
             discovery,
-          }
+          },
         },
       })
     );
-  }
+  },
 }));
 
 (window as any).useStore = useStore;

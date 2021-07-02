@@ -17,6 +17,7 @@ func (gs *GameState) ToServerMessage() *ServerMessage {
 			Building: lot.Building,
 			TappedAt: lot.TappedAt,
 			Level:    lot.Level,
+			Taps:     lot.Taps,
 		}
 	}
 

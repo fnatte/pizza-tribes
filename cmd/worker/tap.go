@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -16,12 +17,11 @@ import (
 func (h *handler) handleTap(ctx context.Context, userId string, m *models.ClientMessage_Tap) error {
 	gsKey := fmt.Sprintf("user:%s:gamestate", userId)
 	lotPath := fmt.Sprintf(".lots[\"%s\"]", m.LotId)
-	popPath := ".population"
 	tappedAtPath := fmt.Sprintf("%s.tapped_at", lotPath)
+	tapsPath := fmt.Sprintf("%s.taps", lotPath)
 	now := time.Now().UnixNano()
 
 	var lot models.GameState_Lot
-	var population models.GameState_Population
 
 	txf := func() error {
 		// Get lot
@@ -33,13 +33,21 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *models.Client
 			return fmt.Errorf("failed to unmarshal lot: %w", err)
 		}
 
-		// Get population
-		str, err = internal.RedisJsonGet(h.rdb, ctx, gsKey, popPath).Result()
-		if err != nil {
-			return fmt.Errorf("failed to get population: %w", err)
+		// Get tap index
+		tapIdx := time.Now().UTC().Hour()
+
+		if lot.Taps == nil || len(lot.Taps) < 24 {
+			lot.Taps = make([]int32, 24)
 		}
-		if err = protojson.Unmarshal([]byte(str), &population); err != nil {
-			return fmt.Errorf("failed to unmarshal population: %w", err)
+
+		if lot.Taps[tapIdx] >= 10 {
+			return fmt.Errorf("tap is maxed out this hour")
+		}
+
+		// Check tap interval
+		nextTapAt := lot.TappedAt + (500 * time.Millisecond).Nanoseconds()
+		if nextTapAt > now {
+			return fmt.Errorf("tapped to soon, next tap at %d", nextTapAt)
 		}
 
 		// Determine what resource to increase and how much
@@ -48,25 +56,28 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *models.Client
 		switch lot.Building {
 		case models.Building_KITCHEN:
 			incrPath = ".resources.pizzas"
-			incrAmount = 80 * int64(internal.CountTownPopulation(&population))
+			incrAmount = 80 * int64(lot.Level+1)
 		case models.Building_SHOP:
 			incrPath = ".resources.coins"
-			incrAmount = 35 * int64(internal.CountTownPopulation(&population))
+			incrAmount = 35 * int64(lot.Level+1)
 		default:
 			return fmt.Errorf("this building cannot be tapped")
 		}
 
-		nextTapAt := lot.TappedAt + (60 * time.Minute).Nanoseconds()
-
-		if nextTapAt > now {
-			return fmt.Errorf("tapped to soon, next tap at %d", nextTapAt)
-		}
+		lot.Taps[tapIdx] = lot.Taps[tapIdx] + 1
 
 		_, err = h.rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			// Update tapped_at to now
 			err = internal.RedisJsonSet(pipe, ctx, gsKey, tappedAtPath, int64(now)).Err()
 			if err != nil {
 				return fmt.Errorf("failed to set tapped_at: %w", err)
+			}
+
+			// Update taps
+			buf, err := json.Marshal(lot.Taps)
+			err = internal.RedisJsonSet(pipe, ctx, gsKey, tapsPath, buf).Err()
+			if err != nil {
+				return fmt.Errorf("failed to set taps: %w", err)
 			}
 
 			// Increase the resource
@@ -94,14 +105,14 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *models.Client
 		return fmt.Errorf("failed to handle tap: %w", err2)
 	}
 
-	if err := h.sendTapUpdate(ctx, userId, m.LotId, lot.Building, lot.Level, now); err != nil {
+	if err := h.sendTapUpdate(ctx, userId, m.LotId, &lot, now); err != nil {
 		return fmt.Errorf("failed to send tap update: %w", err)
 	}
 
 	return nil
 }
 
-func (h *handler) sendTapUpdate(ctx context.Context, userId string, lotId string, building models.Building, level int32, tappedAt int64) error {
+func (h *handler) sendTapUpdate(ctx context.Context, userId string, lotId string, lot *models.GameState_Lot, tappedAt int64) error {
 	gsKey := fmt.Sprintf("user:%s:gamestate", userId)
 	path := ".resources"
 
@@ -118,9 +129,10 @@ func (h *handler) sendTapUpdate(ctx context.Context, userId string, lotId string
 
 	lotsPatch := map[string]*models.GameStatePatch_LotPatch{}
 	lotsPatch[lotId] = &models.GameStatePatch_LotPatch{
-		Building: building,
+		Building: lot.Building,
 		TappedAt: tappedAt,
-		Level:    level,
+		Level:    lot.Level,
+		Taps:     lot.Taps,
 	}
 
 	return h.send(ctx, userId, &models.ServerMessage{
