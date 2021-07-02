@@ -46,7 +46,8 @@ message GameState {
     Building building = 1;
     int64 tapped_at = 2;
     int32 level = 3;
-    repeated int32 taps = 4;
+    int32 taps = 4;
+    int32 streak = 5;
   }
 
   message Population {
@@ -82,7 +83,8 @@ message GameStatePatch {
     int64 tapped_at = 2;
     int32 level = 3;
     bool razed = 4;
-    repeated int32 taps = 5;
+    int32 taps = 5;
+    int32 streak = 6;
   }
 
   message PopulationPatch {

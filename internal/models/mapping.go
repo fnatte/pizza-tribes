@@ -18,6 +18,7 @@ func (gs *GameState) ToServerMessage() *ServerMessage {
 			TappedAt: lot.TappedAt,
 			Level:    lot.Level,
 			Taps:     lot.Taps,
+			Streak:   lot.Streak,
 		}
 	}
 

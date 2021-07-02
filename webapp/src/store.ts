@@ -22,14 +22,15 @@ import {
   ServerMessage_User,
 } from "./generated/server_message";
 import { Stats } from "./generated/stats";
-import { generateId, getTapIndex } from "./utils";
+import { generateId } from "./utils";
 import { produce } from 'immer';
 
 export type Lot = {
   building: Building;
   tappedAt: string;
   level: number;
-  taps: number[];
+  taps: number;
+  streak: number;
 };
 
 export type GameState = {
@@ -85,7 +86,7 @@ const mergeLots = (
   Object.keys(b).forEach((lotId) => {
     const lot = res[lotId];
     if (b[lotId] !== undefined) {
-      const { building, tappedAt, level, razed, taps } = b[lotId];
+      const { building, tappedAt, level, razed, taps, streak } = b[lotId];
 
       if (razed) {
         delete res[lotId];
@@ -93,12 +94,16 @@ const mergeLots = (
       }
 
       if (lot === undefined) {
-        res[lotId] = { building, tappedAt, level, taps };
+        res[lotId] = { building, tappedAt, level, taps, streak };
       } else {
-        lot.building = building;
-        lot.tappedAt = tappedAt;
-        lot.level = level;
-        lot.taps = taps;
+        res[lotId] = {
+          ...lot,
+          building: building,
+          tappedAt: tappedAt,
+          level: level,
+          taps: taps,
+          streak: streak,
+        };
       }
     }
   });
@@ -173,7 +178,7 @@ export const useStore = create<State>((set, get) => ({
     set((state) => produce(state, draftState => {
       const lot = draftState.gameState.lots[lotId];
       if (lot) {
-        lot.taps[getTapIndex()]++;
+        lot.taps++;
       }
     }));
     const msg = ClientMessage.create({

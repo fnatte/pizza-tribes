@@ -53,14 +53,15 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
 
   let tapResource;
   let tapGains;
+  const factor = Math.sqrt((lot.level + 1) * (lot.streak + 1));
   switch (lot.building) {
     case Building.KITCHEN:
       tapResource = "pizzas";
-      tapGains = 80 * (lot.level + 1);
+    tapGains = Math.round(80 * factor / 5) * 5;
       break;
     case Building.SHOP:
       tapResource = "coins";
-      tapGains = 35 * (lot.level + 1);
+    tapGains = Math.round(35 * factor / 5) * 5;
       break;
     default:
       return null;

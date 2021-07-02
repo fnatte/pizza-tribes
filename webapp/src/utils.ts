@@ -178,8 +178,7 @@ export const getTapInfo = (lot: Lot, now: Date) => {
     return { canTap: false, nextTapAt: 0, taps: 0, tapsRemaining: 0 };
   }
 
-  const tapIdx = now.getUTCHours();
-  const taps = tapIdx < lot.taps.length ? lot.taps[tapIdx] : 0;
+  const taps = lot.taps;
 
   const tapBackoff = 500;
   const tapsPerHour = 10;
@@ -200,4 +199,3 @@ export const getTapInfo = (lot: Lot, now: Date) => {
   return { canTap, nextTapAt, taps, tapsRemaining };
 };
 
-export const getTapIndex = (date: Date = new Date()) => date.getUTCHours();

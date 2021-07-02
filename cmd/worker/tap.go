@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal"
@@ -14,11 +14,14 @@ import (
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
+const MAX_TAP_STREAK = 12
+
 func (h *handler) handleTap(ctx context.Context, userId string, m *models.ClientMessage_Tap) error {
 	gsKey := fmt.Sprintf("user:%s:gamestate", userId)
 	lotPath := fmt.Sprintf(".lots[\"%s\"]", m.LotId)
 	tappedAtPath := fmt.Sprintf("%s.tapped_at", lotPath)
 	tapsPath := fmt.Sprintf("%s.taps", lotPath)
+	streakPath := fmt.Sprintf("%s.streak", lotPath)
 	now := time.Now().UnixNano()
 
 	var lot models.GameState_Lot
@@ -33,38 +36,53 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *models.Client
 			return fmt.Errorf("failed to unmarshal lot: %w", err)
 		}
 
-		// Get tap index
-		tapIdx := time.Now().UTC().Hour()
-
-		if lot.Taps == nil || len(lot.Taps) < 24 {
-			lot.Taps = make([]int32, 24)
-		}
-
-		if lot.Taps[tapIdx] >= 10 {
-			return fmt.Errorf("tap is maxed out this hour")
-		}
-
 		// Check tap interval
 		nextTapAt := lot.TappedAt + (500 * time.Millisecond).Nanoseconds()
 		if nextTapAt > now {
 			return fmt.Errorf("tapped to soon, next tap at %d", nextTapAt)
 		}
 
+		// Set reset time to the beginning of the next hour after TappedAt,
+		// and streak time to the hour after that.
+		resetTime := time.Unix(0, lot.TappedAt).Add(1 * time.Hour).Truncate(1 * time.Hour)
+		resetStreakTime := resetTime.Add(1 * time.Hour)
+
+		// Increase streak if previous was maxed out and we're within the next hour
+		if time.Now().After(resetStreakTime) {
+			if lot.Streak < MAX_TAP_STREAK {
+				lot.Streak = 0
+			}
+		}
+
+		// Reset taps if next hour
+		if time.Now().After(resetTime) {
+			lot.Taps = 0
+		}
+
+		if lot.Taps >= 10 {
+			return fmt.Errorf("tap is maxed out this hour")
+		}
+
 		// Determine what resource to increase and how much
 		var incrPath string
 		var incrAmount int64
+		factor := math.Sqrt(float64(lot.Level+1) * float64(lot.Streak+1))
 		switch lot.Building {
 		case models.Building_KITCHEN:
 			incrPath = ".resources.pizzas"
-			incrAmount = 80 * int64(lot.Level+1)
+			incrAmount = int64(math.Round(80*factor/5) * 5)
 		case models.Building_SHOP:
 			incrPath = ".resources.coins"
-			incrAmount = 35 * int64(lot.Level+1)
+			incrAmount = int64(math.Round(35*factor/5) * 5)
 		default:
 			return fmt.Errorf("this building cannot be tapped")
 		}
 
-		lot.Taps[tapIdx] = lot.Taps[tapIdx] + 1
+		lot.Taps = lot.Taps + 1
+
+		if lot.Taps == 10 {
+			lot.Streak = lot.Streak + 1
+		}
 
 		_, err = h.rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			// Update tapped_at to now
@@ -74,10 +92,15 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *models.Client
 			}
 
 			// Update taps
-			buf, err := json.Marshal(lot.Taps)
-			err = internal.RedisJsonSet(pipe, ctx, gsKey, tapsPath, buf).Err()
+			err = internal.RedisJsonSet(pipe, ctx, gsKey, tapsPath, lot.Taps).Err()
 			if err != nil {
 				return fmt.Errorf("failed to set taps: %w", err)
+			}
+
+			// Update streak
+			err = internal.RedisJsonSet(pipe, ctx, gsKey, streakPath, lot.Streak).Err()
+			if err != nil {
+				return fmt.Errorf("failed to set streak: %w", err)
 			}
 
 			// Increase the resource
@@ -133,6 +156,7 @@ func (h *handler) sendTapUpdate(ctx context.Context, userId string, lotId string
 		TappedAt: tappedAt,
 		Level:    lot.Level,
 		Taps:     lot.Taps,
+		Streak:   lot.Streak,
 	}
 
 	return h.send(ctx, userId, &models.ServerMessage{
