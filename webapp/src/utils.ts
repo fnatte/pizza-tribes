@@ -2,6 +2,7 @@ import {
   addHours,
   formatDuration,
   intervalToDuration,
+  isAfter,
   startOfHour,
 } from "date-fns";
 import JSBI from "jsbi";
@@ -178,16 +179,18 @@ export const getTapInfo = (lot: Lot, now: Date) => {
     return { canTap: false, nextTapAt: 0, taps: 0, tapsRemaining: 0 };
   }
 
-  const taps = lot.taps;
-
-  const tapBackoff = 500;
-  const tapsPerHour = 10;
-  const tapsRemaining = tapsPerHour - taps;
-
   // convert lot.tappedAt from ns to ms
   const tappedAt = JSBI.toNumber(
     JSBI.divide(JSBI.BigInt(lot.tappedAt), JSBI.BigInt(1e6))
   );
+
+  const resetTime = addHours(startOfHour(tappedAt), 1);
+
+  const taps = isAfter(now, resetTime) ? 0 : lot.taps;
+
+  const tapBackoff = 500;
+  const tapsPerHour = 10;
+  const tapsRemaining = tapsPerHour - taps;
 
   const nextTapAt =
     tapsRemaining === 0
