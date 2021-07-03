@@ -108,16 +108,20 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
         </span>
         <div ref={buttonConfettiRef} />
       </button>{" "}
-      {!canTap && tapsRemaining === 0 && (
-        <div>
-          Next tap in{" "}
+      {
+        <div
+          className={classnames("mt-2", "w-80", "text-center", {
+            invisible: canTap || tapsRemaining > 0,
+          })}
+        >
+          Next tap{" "}
           {formatDistanceToNow(new Date(nextTapAt), {
             includeSeconds: true,
             addSuffix: true,
           })}
         </div>
-      )}
-      <div className={classnames("mt-4")}>
+      }
+      <div className={classnames("mt-2")}>
         <div className={classnames("text-center")}>Streak:</div>
         <TapStreak value={lot.streak} max={12} />
       </div>
