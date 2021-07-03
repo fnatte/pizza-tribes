@@ -11,17 +11,14 @@ import { ReactComponent as SvgHouse } from "../../images/house.svg";
 import { ReactComponent as SvgMarketingHQ } from "../../images/marketing-hq.svg";
 import styles from "../styles";
 import { formatDistanceToNow } from "date-fns";
-import {
-  formatDurationShort,
-  formatNumber,
-  getTapInfo,
-} from "../utils";
+import { formatDurationShort, formatNumber, getTapInfo } from "../utils";
 import { Education } from "../generated/education";
 import ResearchInstitute from "./buildings/ResearchInstitute";
 import { useTimeoutFn } from "react-use";
 import { confetti } from "../confetti";
 import classes from "./town-lot.module.css";
 import classNames from "classnames";
+import TapStreak from "./TapStreak";
 
 const label = classnames("text-xs", "md:text-sm", "mr-1");
 const value = classnames("text-sm", "md:text-lg", "ml-1");
@@ -57,11 +54,11 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
   switch (lot.building) {
     case Building.KITCHEN:
       tapResource = "pizzas";
-    tapGains = Math.round(80 * factor / 5) * 5;
+      tapGains = Math.round((80 * factor) / 5) * 5;
       break;
     case Building.SHOP:
       tapResource = "coins";
-    tapGains = Math.round(35 * factor / 5) * 5;
+      tapGains = Math.round((35 * factor) / 5) * 5;
       break;
     default:
       return null;
@@ -87,7 +84,16 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
   };
 
   return (
-    <section className={classnames("m-4", "p-4", "bg-green-200", "flex", "items-center", "flex-col")}>
+    <section
+      className={classnames(
+        "m-4",
+        "p-4",
+        "bg-green-200",
+        "flex",
+        "items-center",
+        "flex-col"
+      )}
+    >
       <button
         className={classNames(styles.primaryButton, classes.tapButton, {
           [classes.hasTapsRemaining]: tapsRemaining > 0,
@@ -111,6 +117,10 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
           })}
         </div>
       )}
+      <div className={classnames("mt-4")}>
+        <div className={classnames("text-center")}>Streak:</div>
+        <TapStreak value={lot.streak} max={12} />
+      </div>
     </section>
   );
 };
