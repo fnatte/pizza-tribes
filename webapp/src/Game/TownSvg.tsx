@@ -13,86 +13,118 @@ import { ReactComponent as SvgConstructingSchool } from "../../images/constructi
 import { ReactComponent as SvgConstructingMarketingHQ } from "../../images/constructing-marketing-hq.svg";
 import { ReactComponent as SvgConstructingResearchInstitute } from "../../images/constructing-research-institute.svg";
 import { Building } from "../generated/building";
-import { classnames, TArg } from "tailwindcss-classnames";
+import { classnames } from "tailwindcss-classnames";
 import { getTapInfo } from "../utils";
 import { Construction } from "../generated/gamestate";
-import {useState} from "react";
-import {useTimeoutFn} from "react-use";
+import { useState } from "react";
+import { useTimeoutFn } from "react-use";
 
-const Badge: React.VFC = () => {
+const Badge: React.FC<{
+  position: "topleft" | "topright";
+  animation?: "bounce" | undefined;
+  background?: "red" | "white" | undefined;
+  size?: 'normal'|'big';
+}> = ({ position, animation, children, background = "red", size = "normal" }) => {
+  const { x, y } =
+    position === "topleft" ? { x: -10, y: -10 } : { x: 80, y: -5 };
+
   return (
-    <div className={classnames("w-10", "h-10", "flex", "items-center")}>
-      <div
-        className={classnames(
-          "rounded-full",
-          "flex",
-          "justify-center",
-          "items-center",
-          "bg-red-700",
-          "w-5",
-          "h-5",
-          "text-gray-50",
-          "text-xs",
-          "animate-bounce-loop" as TArg
-        )}
-      />
-    </div>
+    <foreignObject x={x} y={y} width="100" height="100" transform="scale(0.2)">
+      <div className={classnames("w-10", "h-10", "flex", "items-center")}>
+        <div
+          className={classnames(
+            "rounded-full",
+            "flex",
+            "justify-center",
+            "items-center",
+            {
+              ["animate-bounce-loop" as any]: animation === "bounce",
+              "text-gray-50": background === "red",
+              "bg-red-700": background === "red",
+              "bg-gray-300": background === "white",
+              "text-black": background === "white",
+              "text-xs": size === "normal",
+              "w-5": size === "normal",
+              "h-5": size === "normal",
+              "w-7": size === "big",
+              "h-7": size === "big",
+              "pt-0.5": size === "big"
+            }
+          )}
+        >
+          {children}
+        </div>
+      </div>
+    </foreignObject>
   );
 };
 
-const BuildingBadge: React.VFC = () => (
-  <foreignObject
-    x="-10"
-    y="-10"
-    width="100"
-    height="100"
-    transform="scale(0.2)"
-  >
-    <Badge />
-  </foreignObject>
+const NotificationBadge: React.VFC = () => (
+  <Badge position="topleft" animation="bounce" />
 );
 
-function renderBuilding(building: Building | undefined, notification: boolean) {
+const LevelBadge: React.VFC<{ level: number }> = ({ level }) => (
+  <Badge position="topright" background="white" size="big">
+    {level}
+  </Badge>
+);
+
+function renderBuilding(
+  building: Building | undefined,
+  notification: boolean,
+  level: number
+) {
   switch (building) {
     case Building.KITCHEN:
       return (
         <g transform="translate(-10, -13)">
           <SvgKitchen width={20} height={20} />
-          {notification && <BuildingBadge />}
+          {notification && <NotificationBadge />}
+          <LevelBadge level={level} />
         </g>
       );
     case Building.HOUSE:
       return (
-        <g transform="translate(-5, -8) scale(0.5)">
-          <SvgHouse width={20} height={20} />
-          {notification && <BuildingBadge />}
+        <g transform="translate(-5, -8)">
+          <g transform="scale(0.5)">
+            <SvgHouse width={20} height={20} />
+          </g>
+          <g transform="translate(-5, -2)">
+            {notification && <NotificationBadge />}
+            <LevelBadge level={level} />
+          </g>
         </g>
       );
     case Building.SHOP:
       return (
         <g transform="translate(-10, -13)">
-          <SvgShop width={20} height={20} />;{notification && <BuildingBadge />}
+          <SvgShop width={20} height={20} />
+          {notification && <NotificationBadge />}
+          <LevelBadge level={level} />
         </g>
       );
     case Building.SCHOOL:
       return (
         <g transform="translate(-10, -13)">
           <SvgSchool width={20} height={20} />
-          {notification && <BuildingBadge />}
+          {notification && <NotificationBadge />}
+          <LevelBadge level={level} />
         </g>
       );
     case Building.MARKETINGHQ:
       return (
         <g transform="translate(-10, -13)">
           <SvgMarketingHQ width={20} height={20} />
-          {notification && <BuildingBadge />}
+          {notification && <NotificationBadge />}
+          <LevelBadge level={level} />
         </g>
       );
     case Building.RESEARCH_INSTITUTE:
       return (
         <g transform="translate(-10, -13)">
           <SvgResearchInstitute width={20} height={20} />
-          {notification && <BuildingBadge />}
+          {notification && <NotificationBadge />}
+          <LevelBadge level={level} />
         </g>
       );
   }
@@ -148,9 +180,13 @@ const renderLot = (
   const lot = lots[lotId];
   const construction = constructionQueue.find((x) => x.lotId === lotId);
 
-  return (construction && !construction.razing && construction.level <= 0)
+  if (!lot) {
+    return null;
+  }
+
+  return construction && !construction.razing && construction.level <= 0
     ? renderConstructingBuilding(construction.building)
-    : renderBuilding(lot?.building, (lot && getTapInfo(lot, now).canTap) || false);
+    : renderBuilding(lot.building, getTapInfo(lot, now).canTap, lot.level + 1);
 };
 
 function SvgTown(
