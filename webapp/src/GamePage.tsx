@@ -11,7 +11,7 @@ import StatsView from "./Game/StatsView";
 import MapView from "./Game/map/MapView";
 import WorldEntryView from "./Game/world/WorldEntryView";
 import LeaderboardView from "./Game/LeaderboardView";
-import { useClickAway, useMedia } from "react-use";
+import { useClickAway, useInterval, useMedia, usePreviousDistinct } from "react-use";
 import ListReportsView from "./Game/reports/ListReportsView";
 import ShowReportView from "./Game/reports/ShowReportView";
 import { formatNumber } from "./utils";
@@ -118,18 +118,26 @@ function Navigation() {
   return (
     <nav className={classnames("flex", "justify-center", "items-center")}>
       <Link to="/map">
-        <button className={classnames(styles.primaryButton, "mr-2")}>Map</button>
+        <button className={classnames(styles.primaryButton, "mr-2")}>
+          Map
+        </button>
       </Link>
       <Link to="/town">
-        <button className={classnames(styles.primaryButton, "mr-2")}>Town</button>
+        <button className={classnames(styles.primaryButton, "mr-2")}>
+          Town
+        </button>
       </Link>
       <Link to="/stats">
-        <button className={classnames(styles.primaryButton, "mr-2")}>Stats</button>
+        <button className={classnames(styles.primaryButton, "mr-2")}>
+          Stats
+        </button>
       </Link>
       {isMinLg ? (
         <>
           <Link to="/reports">
-            <button className={classnames(styles.primaryButton, "mr-2", "relative")}>
+            <button
+              className={classnames(styles.primaryButton, "mr-2", "relative")}
+            >
               {unreads > 0 && <ButtonBadgeCount count={unreads} />}
               Reports
             </button>
@@ -140,7 +148,9 @@ function Navigation() {
             </button>
           </Link>
           <Link to="/help">
-            <button className={classnames(styles.primaryButton, "mr-2")}>Help</button>
+            <button className={classnames(styles.primaryButton, "mr-2")}>
+              Help
+            </button>
           </Link>
           <button
             className={classnames(styles.primaryButton, "mr-2")}
@@ -185,7 +195,11 @@ function Navigation() {
             >
               <Link to="/reports" onClick={() => setMenuExpaded(false)}>
                 <button
-                  className={classnames(styles.primaryButton, "mr-2", "relative")}
+                  className={classnames(
+                    styles.primaryButton,
+                    "mr-2",
+                    "relative"
+                  )}
                 >
                   {unreads > 0 && <ButtonBadgeCount count={unreads} />}
                   Reports
@@ -242,6 +256,38 @@ function SparkleEmoji() {
   return <span>✨</span>;
 }
 
+const AnimatedCounter: React.VFC<{ value: number }> = ({ value }) => {
+  const prev = usePreviousDistinct(value) ?? value;
+
+  const [animIndex, setAnimIndex] = useState(0);
+
+  const isBigJump = Math.abs(value - prev) > value * 0.05;
+  const animDuration = isBigJump ? 500 : 10_000;
+  const animInterval = 100;
+  const steps = animDuration / animInterval;
+
+  useEffect(() => {
+    if (prev !== value) {
+      setAnimIndex(0);
+    }
+  }, [prev, value]);
+
+  useInterval(
+    () => {
+      setAnimIndex((i) => i + 1);
+    },
+    animIndex < steps ? animInterval : null
+  );
+
+  const step = (value - prev) / steps;
+  const displayValue =
+    value > prev
+      ? Math.min(value, Math.ceil(prev + step * animIndex))
+      : Math.max(value, Math.floor(prev + step * animIndex));
+
+  return <span>{formatNumber(displayValue)}</span>;
+};
+
 function ResourceBar() {
   const { pizzas, coins } = useStore((state) => state.gameState.resources);
   const clock = useMouseClock();
@@ -258,10 +304,10 @@ function ResourceBar() {
       )}
     >
       <span className={classnames("px-3", "mb-2", "md:px-6")}>
-        <CoinEmoji /> {formatNumber(coins)}
+        <CoinEmoji /> <AnimatedCounter value={coins} />
       </span>
       <span className={classnames("px-3", "mb-2", "md:px-6")}>
-        <PizzaEmoji /> {formatNumber(pizzas)}
+        <PizzaEmoji /> <AnimatedCounter value={pizzas} />
       </span>
       <span className={classnames("px-3", "mb-2", "md:px-6")}>
         <span className={classnames("px-2")}>
