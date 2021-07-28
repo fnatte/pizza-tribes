@@ -268,6 +268,7 @@ There are essentially two ways to run the project locally. You either run everyt
 The easiest way to get started is to run the *docker-compose.yml*:
 
 ```sh
+cp .env.default .env
 docker-compose up --build -d
 ```
 
