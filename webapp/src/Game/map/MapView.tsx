@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useAsync, useMedia } from "react-use";
 import { classnames } from "tailwindcss-classnames";
-import { WorldEntry, WorldZone } from "../../generated/world";
+import { EntriesResponse, WorldEntry } from "../../generated/world";
 import HexGrid from "./HexGrid";
 import { ReactComponent as HeartsSvg } from "../../../images/hearts.svg";
 import { useStore } from "../../store";
-import { getIdx } from "../getIdx";
 import { useNavigate } from "react-router-dom";
 import styles from "../../styles";
 
@@ -13,11 +12,13 @@ function unique<T extends unknown>(arr: T[]): T[] {
   return [...new Set(arr)];
 }
 
+const getMapKey = (x: number, y: number) => `${x}:${y}`;
+
 function MapView() {
   const isMinLg = useMedia("(min-width: 1024px)", false);
   const townX = useStore((state) => state.gameState.townX);
   const townY = useStore((state) => state.gameState.townY);
-  const [{ x, y }, setXY] = useState({ x: -1, y: -1 });
+  const [{ x, y }, setXY] = useState({ x: townX, y: townY });
   const [size, setSize] = useState(isMinLg ? 9 : 5);
   const navigate = useNavigate();
 
@@ -29,8 +30,7 @@ function MapView() {
     setSize(isMinLg ? 9 : 5);
   }, [isMinLg]);
 
-  // TODO: store zones in store
-  const [zones, setZones] = useState<WorldZone[]>([]);
+  const [map, setMap] = useState(new Map<string, WorldEntry | null>());
 
   const [selectedEntry, setSelectedEntry] = useState<{
     entry: WorldEntry;
@@ -68,49 +68,68 @@ function MapView() {
   }, [selectedEntry]);
 
   useAsync(async () => {
-    const missingZones =
-      x >= 0 &&
-      y >= 0 &&
-      unique(
-        [
-          [x - 5, y - 5],
-          [x - 5, y + 5],
-          [x + 5, y - 5],
-          [x + 5, y + 5],
-        ]
-          .filter(([a, b]) => a > 0 && b > 0)
-          .map(([a, b]) => getIdx(a, b).zidx)
-          .filter((idx) => zones[idx] === undefined)
-      );
+    const fetchSize = size * 2;
+    const cornerDistance = Math.floor(size * 1.2);
+    const missingCorners = unique(
+      [
+        [x - cornerDistance, y - cornerDistance],
+        [x - cornerDistance, y + cornerDistance],
+        [x + cornerDistance, y - cornerDistance],
+        [x + cornerDistance, y + cornerDistance],
+      ].filter(([x, y]) => !map.has(getMapKey(x, y)))
+    );
 
-    if (!missingZones || missingZones.length === 0) {
+    if (!missingCorners || missingCorners.length === 0) {
       return;
     }
 
-    for (let idx of missingZones) {
-      const response = await fetch(`/api/world/zone?idx=${idx}`);
+    for (let [x, y] of missingCorners) {
+      const response = await fetch(`/api/world/entries?x=${x}&y=${y}&r=${fetchSize}`);
       if (
         !response.ok ||
         response.headers.get("Content-Type") !== "application/json"
       ) {
         throw new Error("Failed to get zone");
       }
-      const zone = WorldZone.fromJson(await response.json());
-      setZones((s) => {
-        const newArr = [...s];
-        newArr[idx] = zone;
-        return newArr;
-      });
+      const resp = EntriesResponse.fromJson(await response.json());
+      const newMap = new Map();
+
+      // Add all points in circle with radius r
+      const points = [];
+      const r = fetchSize;
+      for (let i = y - r; i < y + r; i++) {
+        for (
+          let j = x;
+          Math.pow(j - x, 2) + Math.pow(i - y, 2) < Math.pow(r, 2);
+          j--
+        ) {
+          points.push([j, i]);
+        }
+        for (
+          let j = x + 1;
+          (j - x) * (j - x) + (i - y) * (i - y) < r * r;
+          j++
+        ) {
+          points.push([j, i]);
+        }
+      }
+
+      for (let [x, y] of points) {
+        const entry = resp.entries[getMapKey(x, y)];
+        newMap.set(getMapKey(x, y), entry ?? null);
+      }
+
+      setMap((m) => new Map([...m, ...newMap]));
     }
-  }, [x, y]);
+  }, [x, y, size]);
 
   const onNavigate = (x: number, y: number) => {
     setXY((p) => ({ x: p.x + x, y: p.y + y }));
   };
 
-  const onClick = (x: number, y: number, zidx: number, eidx: number) => {
-    if (zones[zidx].entries[eidx]?.object?.oneofKind === "town") {
-      const entry = zones[zidx].entries[eidx];
+  const onClick = (x: number, y: number) => {
+    const entry = map.get(getMapKey(x, y));
+    if (entry?.object?.oneofKind === "town") {
       setSelectedEntry({ entry, x, y, myTown: x === townX && y === townY });
     } else {
       setSelectedEntry(null);
@@ -126,12 +145,12 @@ function MapView() {
   return (
     <div className={classnames("flex", "items-center", "flex-col", "mt-2")}>
       <h2>Map</h2>
-      {zones.length === 0 && (
+      {map.size === 0 && (
         <div className={classnames("flex", "items-center")}>
           <HeartsSvg />
         </div>
       )}
-      {zones.length > 0 && (
+      {map.size > 0 && (
         <div
           className={classnames("relative", "flex", "flex-col", "items-center")}
         >
@@ -169,7 +188,7 @@ function MapView() {
             x={x}
             y={y}
             size={size}
-            data={zones}
+            data={map}
             onNavigate={onNavigate}
             onClick={onClick}
           />

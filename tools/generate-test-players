@@ -1,0 +1,38 @@
+#!/bin/bash
+set -e
+
+PASSWORD=password
+USERNAME=player-$RANDOM
+
+TEMP_DIR=$(mktemp -d "${TMPDIR:-/tmp/}$(basename $0).XXXXXXXXXXXX")
+COOKIE_JAR=$TEMP_DIR/cookie-jar.txt
+
+printf "http://localhost:3000/api/auth/register\t"
+curl -s -o /dev/null -w "%{http_code}\n" \
+	-H "Content-Type: application/json" \
+	--data "{ \"confirm\": \"$PASSWORD\", \"password\": \"$PASSWORD\", \"username\": \"$USERNAME\" }" \
+	"http://localhost:3000/api/auth/register"
+
+printf "http://localhost:3000/api/auth/login\t"
+curl -s -o /dev/null -w "%{http_code}\n" \
+	-c "$COOKIE_JAR" \
+	-H "Content-Type: application/json" \
+	--data "{ \"password\": \"$PASSWORD\", \"username\": \"$USERNAME\" }" \
+	"http://localhost:3000/api/auth/login"
+
+printf "http://localhost:3000/api/ws\t"
+curl -s -o /dev/null -w "%{http_code}\n" \
+	-m 1 \
+	--no-buffer \
+    --header "Connection: Upgrade" \
+    --header "Upgrade: websocket" \
+    --header "Host: localhost:3000" \
+    --header "Origin: http://localhost:3000" \
+    --header "Sec-WebSocket-Key: SGVsbG8sIHdvcmxkIQ==" \
+    --header "Sec-WebSocket-Version: 13" \
+	-b "$COOKIE_JAR" \
+    "http://localhost:3000/api/ws"
+
+rm $COOKIE_JAR
+rmdir $TEMP_DIR
+

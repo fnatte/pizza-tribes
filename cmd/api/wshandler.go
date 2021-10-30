@@ -28,6 +28,7 @@ func (h *wsHandler) HandleMessage(ctx context.Context, m []byte, c *ws.Client) {
 		log.Error().Err(err).Msg("Error when pushing incoming message to redis")
 	}
 }
+
 func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 	// Please excuse me for this looong func :|
 
@@ -78,7 +79,10 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 		}
 		gs.TownX = int32(x)
 		gs.TownY = int32(y)
-		log.Info().Msg("Town acquired")
+		log.Info().
+			Int32("x", gs.TownX).
+			Int32("y", gs.TownY).
+			Msg("Town acquired")
 	}
 
 	// Make sure the user is enqueued for updates

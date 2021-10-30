@@ -20,3 +20,9 @@ func Unmarshal(b []byte, m proto.Message) error {
 func Marshal(m proto.Message) ([]byte, error) {
 	return protojson.MarshalOptions{}.Marshal(m)
 }
+
+func MarshalWithUnpopulated(m proto.Message) ([]byte, error) {
+	return protojson.MarshalOptions{
+		EmitUnpopulated: true,
+	}.Marshal(m)
+}

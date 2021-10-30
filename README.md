@@ -293,7 +293,7 @@ docker-compose up -d redis redisinsight
 make -j start # Build and run go services (see Makefile for details)
 cd webapp # in another terminal
 npm install
-npm generate
+npm run generate
 npm run dev
 ```
 

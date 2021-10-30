@@ -3,21 +3,22 @@ import classNames from "classnames";
 import { ReactComponent as TownSvg } from "../../../images/town.svg";
 
 import style from "./hexgrid.module.css";
-import { WorldZone } from "../../generated/world";
-import { getIdx } from "../getIdx";
+import { WorldEntry } from "../../generated/world";
 
 type Props = {
   x: number;
   y: number;
   size: number;
-  data: WorldZone[];
+  data: Map<string, WorldEntry|null>;
   onNavigate: (x: number, y: number) => void;
-  onClick: (x: number, y: number, zidx: number, eidx: number) => void;
+  onClick: (x: number, y: number) => void;
 };
 
 const range = (from: number, to: number) => [
   ...[...Array(to - from).keys()].map((i) => from + i),
 ];
+
+const getMapKey = (x: number, y: number) => `${x}:${y}`;
 
 const Arrow: React.FC<{
   dir: "top" | "left" | "bottom" | "right";
@@ -62,8 +63,7 @@ const HexGrid: React.FC<Props> = ({
       {range(y - sh2floor, y + sh2round).map((y) => (
         <div className={style.row} key={y}>
           {range(x - sh2floor, x + sh2round).map((x) => {
-            const { zidx, eidx } = getIdx(x, y);
-            const entry = data[zidx]?.entries[eidx];
+            const entry = data.get(getMapKey(x, y));
             const objectType = entry?.object?.oneofKind;
             return (
               <div
@@ -73,7 +73,7 @@ const HexGrid: React.FC<Props> = ({
                   objectType && style[objectType]
                 )}
                 key={x}
-                onClick={() => onClick(x, y, zidx, eidx)}
+                onClick={() => onClick(x, y)}
               >
                 {objectType === "town" && (
                   <TownSvg style={{ width: "100%", height: "100%" }} />

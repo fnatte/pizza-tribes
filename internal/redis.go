@@ -17,6 +17,11 @@ func IsRedisJsonKeyDoesNotExistError(err error) bool {
 		strings.Contains(err.Error(), "does not exist")
 }
 
+func IsRedisJsonPathDoesNotExistError(err error) bool {
+	return strings.Contains(err.Error(), "ERR path") &&
+		strings.Contains(err.Error(), "does not exist")
+}
+
 type TimeseriesDataPoint struct {
 	Timestamp int64
 	Value float64

@@ -19,7 +19,7 @@ func envOrDefault(key string, defaultVal string) string{
 
 func ensureWorld(ctx context.Context, r internal.RedisClient) error {
 	world := internal.NewWorldService(r)
-	if err := world.Initilize(ctx); err != nil {
+	if err := world.Initialize(ctx); err != nil {
 		return err
 	}
 

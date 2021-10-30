@@ -2,20 +2,18 @@ package internal
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"math"
-	"math/rand"
 	"strconv"
+	"strings"
 
+	"github.com/fnatte/pizza-tribes/internal/models"
 	. "github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
+	"github.com/fnatte/pizza-tribes/internal/spot_finder"
 	"github.com/go-redis/redis/v8"
 )
 
 const WORLD_SIZE = 110
-const WORLD_ZONE_SIZE = 10
-const WORLD_NUM_ZONES = (WORLD_SIZE / WORLD_ZONE_SIZE) * (WORLD_SIZE / WORLD_ZONE_SIZE)
 
 type xy struct{ x, y int }
 
@@ -30,42 +28,31 @@ var xyOffsets []xy = []xy{
 	{x: 0, y: -1},
 }
 
-func getEntryIdx(x, y int) int {
-	return y*WORLD_ZONE_SIZE + x
-}
-
-func getIdx(x, y int) (zidx, eidx int) {
-	zy := y / WORLD_ZONE_SIZE
-	zx := x / WORLD_ZONE_SIZE
-	zidx = zy*(WORLD_SIZE/WORLD_ZONE_SIZE) + zx
-	eidx = (y%WORLD_ZONE_SIZE)*WORLD_ZONE_SIZE + (x % WORLD_ZONE_SIZE)
-	return
-}
-
-func getZoneIdx(x, y int) int {
-	return (y/WORLD_ZONE_SIZE)*(WORLD_SIZE/WORLD_ZONE_SIZE) + (x / WORLD_ZONE_SIZE)
-}
-
-func getZoneKey(idx int) string {
-	return fmt.Sprintf("world:zone:%d", idx)
-}
-
-func countTowns(z *WorldZone) int {
-	count := 0
-	for i := range z.Entries {
-		if z.Entries[i].GetTown() != nil {
-			count++
-		}
-	}
-	return count
-}
-
-func isZoneOpen(z *WorldZone) bool {
-	return countTowns(z) < 8
-}
-
 type WorldService struct {
 	r RedisClient
+}
+
+func parseWorldKey(key string) (int, int, error) {
+	split := strings.Split(key, ":")
+	if len(split) != 2 {
+		return 0, 0, fmt.Errorf("unexpected key format: %s", key)
+	}
+
+	x, err := strconv.ParseInt(split[0], 10, 32)
+	if err != nil {
+		return 0, 0, fmt.Errorf("failed to parse x as integer: %w", err)
+	}
+
+	y, err := strconv.ParseInt(split[1], 10, 32)
+	if err != nil {
+		return 0, 0, fmt.Errorf("failed to parse y as integer: %w", err)
+	}
+
+	return int(x), int(y), nil
+}
+
+func getWorldKey(x, y int) string {
+	return fmt.Sprintf("%d:%d", x, y)
 }
 
 func NewWorldService(r RedisClient) *WorldService {
@@ -78,53 +65,81 @@ func (s *WorldService) setEntryXY(ctx context.Context, x, y int, e *WorldEntry) 
 		return err
 	}
 
-	zidx, eidx := getIdx(x, y)
-	path := fmt.Sprintf(".entries[%d]", eidx)
+	path := fmt.Sprintf(".entries[\"%d:%d\"]", x, y)
 
-	return s.r.JsonSet(ctx, getZoneKey(zidx), path, data).Err()
+	return s.r.JsonSet(ctx, "world", path, data).Err()
+}
+
+func (s *WorldService) GetEntryXY(ctx context.Context, x, y int) (*WorldEntry, error) {
+	path := fmt.Sprintf(".entries[\"%d:%d\"]", x, y)
+
+	str, err := s.r.JsonGet(ctx, "world", path).Result()
+	if err != nil {
+		if err == redis.Nil || IsRedisJsonPathDoesNotExistError(err) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to get entry at %d:%d: %w", x, y, err)
+	}
+
+	entry := &WorldEntry{}
+	protojson.Unmarshal([]byte(str), entry)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal world entry: %w", err)
+	}
+
+	return entry, nil
+}
+
+func (s *WorldService) GetEntries(ctx context.Context, x, y, radius int) (map[string]*WorldEntry, error) {
+	str, err := s.r.JsonGet(ctx, "world", ".").Result()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get entries: %w", err)
+	}
+
+	world := &World{}
+	protojson.Unmarshal([]byte(str), world)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal world entry: %w", err)
+	}
+
+	entries := map[string]*WorldEntry{}
+
+	r2 := radius * radius
+
+	var ex, ey int
+
+	for key := range world.Entries {
+		if ex, ey, err = parseWorldKey(key); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal world entry key: %w", err)
+		}
+
+		if (ex-x)*(ex-x)+(ey-y)*(ey-y) < r2 {
+			entries[key] = world.Entries[key]
+		}
+	}
+
+	return entries, nil
 }
 
 func (s *WorldService) AcquireTown(ctx context.Context, userId string) (x, y int, err error) {
-	var zidx, eidx int
-
-	// Loop until we find a spot
-	for {
-		zidxes, err := s.r.ZRange(ctx, "world:open_zones", 0, 0).Result()
+	// Find a spot for the new town
+	entries, err := s.GetEntries(ctx, WORLD_SIZE/2, WORLD_SIZE/2, WORLD_SIZE)
+	if err != nil {
+		return 0, 0, err
+	}
+	v2s := make([]spot_finder.Vec2, 0, len(entries))
+	for k, _ := range entries {
+		ex, ey, err := parseWorldKey(k)
 		if err != nil {
 			return 0, 0, err
 		}
-		if len(zidxes) != 1 {
-			return 0, 0, errors.New("no open zones")
-		}
-		zidx, err = strconv.Atoi(zidxes[0])
-		if err != nil {
-			return 0, 0, err
-		}
+		v2s = append(v2s, spot_finder.NewVec2(float64(ex), float64(ey)))
+	}
+	x, y = spot_finder.FindSpotForNewTown(v2s)
 
-		// Get random entry
-		ex := rand.Intn(WORLD_ZONE_SIZE)
-		ey := rand.Intn(WORLD_ZONE_SIZE)
-		eidx = getEntryIdx(ex, ey)
-
-		// Convert from index to x,y
-		zy := zidx / (WORLD_SIZE / WORLD_ZONE_SIZE)
-		zx := zidx % (WORLD_SIZE / WORLD_ZONE_SIZE)
-		x = zx*(WORLD_ZONE_SIZE) + ex
-		y = zy*(WORLD_ZONE_SIZE) + ey
-
-		zone, err := s.GetZoneIdx(ctx, zidx)
-		if err != nil {
-			return 0, 0, err
-		}
-
-		if zone != nil && eidx < len(zone.Entries) {
-			e := zone.Entries[eidx]
-			if e.GetTown() != nil {
-				continue
-			}
-		}
-
-		break
+	// Verify that the spot is empty
+	if entries[getWorldKey(x, y)] != nil {
+		return 0, 0, fmt.Errorf("spot_finder returned a spot that was not empty")
 	}
 
 	// Assign a town to the world entry
@@ -151,117 +166,23 @@ func (s *WorldService) AcquireTown(ctx context.Context, userId string) (x, y int
 		return 0, 0, err
 	}
 
-	// Close zone if it is fully populated
-	zone, err := s.GetZoneIdx(ctx, zidx)
-	if err != nil {
-		return 0, 0, err
-	}
-	if !isZoneOpen(zone) {
-		s.closeZone(ctx, zidx)
-	}
-
 	return
 }
 
-func (s *WorldService) GetZoneXY(ctx context.Context, x, y int) (*WorldZone, error) {
-	idx := getZoneIdx(x, y)
-	return s.GetZoneIdx(ctx, idx)
-}
-
-func (s *WorldService) GetZoneIdx(ctx context.Context, idx int) (*WorldZone, error) {
-	b, err := s.r.JsonGet(ctx, getZoneKey(idx), ".").Result()
-	if err != nil {
-		if err == redis.Nil {
-			return nil, nil
+func (s *WorldService) Initialize(ctx context.Context) error {
+	if s.r.Exists(ctx, "world").Val() == 0 {
+		world := models.World{
+			Entries: map[string]*models.WorldEntry{},
 		}
-		return nil, err
-	}
 
-	z := &WorldZone{}
-	err = protojson.Unmarshal([]byte(b), z)
-	if err != nil {
-		return nil, err
-	}
-
-	return z, nil
-}
-
-func (s *WorldService) GetEntryXY(ctx context.Context, x, y int) (*WorldEntry, error) {
-	var zone *WorldZone
-	var err error
-
-	zidx, eidx := getIdx(x, y)
-	if zone, err = s.GetZoneIdx(ctx, zidx); err != nil {
-		return nil, err
-	}
-
-	if eidx >= len(zone.Entries) {
-		return nil, errors.New("entry not found")
-	}
-
-	return zone.Entries[eidx], nil
-}
-
-func (s *WorldService) closeZone(ctx context.Context, zidx int) error {
-	return s.r.ZRem(ctx, fmt.Sprintf("world:zone:%d", zidx)).Err()
-}
-
-func (s *WorldService) tryOpenZone(ctx context.Context, zidx int, score float64) error {
-	// Check middle zone
-	zone, err := s.GetZoneIdx(ctx, zidx)
-	if err != nil {
-		return err
-	}
-
-	if zone == nil {
-		return nil
-	}
-
-	count := countTowns(zone)
-	if count == 0 {
-		s.r.ZAdd(ctx, "world:open_zones", &redis.Z{
-			Score:  score,
-			Member: zidx,
-		}).Err()
-	}
-
-	return nil
-}
-
-func (s *WorldService) Initilize(ctx context.Context) error {
-	w := WORLD_SIZE / WORLD_ZONE_SIZE
-	h := WORLD_SIZE / WORLD_ZONE_SIZE
-
-	for x := 0; x < w; x++ {
-		for y := 0; y < h; y++ {
-			idx := y*WORLD_ZONE_SIZE + x
-			b, err := protojson.Marshal(&WorldZone{
-				Entries: make([]*WorldEntry, WORLD_ZONE_SIZE*WORLD_ZONE_SIZE),
-			})
-			if err != nil {
-				return err
-			}
-
-			key := getZoneKey(idx)
-
-			if s.r.JsonGet(ctx, key, ".").Err() == redis.Nil {
-				s.r.JsonSet(ctx, key, ".", b)
-			}
+		b, err := protojson.MarshalWithUnpopulated(&world)
+		if err != nil {
+			return fmt.Errorf("failed to marshal world: %w", err)
 		}
-	}
+		err = s.r.JsonSet(ctx, "world", ".", b).Err()
 
-	// Populate open zones. A zone will only be opened if there are no towns in it.
-	// Loop through each zone and set its score to its distance from the center
-	// This makes the zones closest to the center to be filled first.
-	cx := WORLD_SIZE / WORLD_ZONE_SIZE / 2
-	cy := WORLD_SIZE / WORLD_ZONE_SIZE / 2
-	for x := 0; x < WORLD_SIZE/WORLD_ZONE_SIZE; x++ {
-		for y := 0; y < WORLD_SIZE/WORLD_ZONE_SIZE; y++ {
-			zidx, _ := getIdx(x*WORLD_ZONE_SIZE, y*WORLD_ZONE_SIZE)
-			dx := cx - x
-			dy := cy - y
-			d := math.Sqrt(float64(dx*dx + dy*dy))
-			s.tryOpenZone(ctx, zidx, d)
+		if err != nil {
+			return fmt.Errorf("failed to save world: %w", err)
 		}
 	}
 

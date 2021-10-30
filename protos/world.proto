@@ -19,6 +19,11 @@ message WorldEntry {
   }
 }
 
-message WorldZone {
-  repeated WorldEntry entries = 1;
+message EntriesResponse {
+  map<string, WorldEntry> entries = 1;
 }
+
+message World {
+  map<string, WorldEntry> entries = 1;
+}
+

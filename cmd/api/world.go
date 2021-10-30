@@ -20,59 +20,54 @@ type WorldController struct {
 func (c *WorldController) Handler() http.Handler {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/zone", func(w http.ResponseWriter, r *http.Request) {
-		err := c.auth.Authorize(r)
+	r.HandleFunc("/entries", func(w http.ResponseWriter, req *http.Request) {
+		err := c.auth.Authorize(req)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to authorize")
 			w.WriteHeader(403)
 			return
 		}
 
-		paramX := r.URL.Query().Get("x")
-		paramY := r.URL.Query().Get("y")
-		paramIdx := r.URL.Query().Get("idx")
+		paramX := req.URL.Query().Get("x")
+		paramY := req.URL.Query().Get("y")
+		paramR := req.URL.Query().Get("r")
 
-		var zone *models.WorldZone
-
-		if paramIdx != "" {
-			var idx int
-			if idx, err = strconv.Atoi(paramIdx); err != nil {
+		var x, y, radius int
+		if x, err = strconv.Atoi(paramX); err != nil {
+			w.WriteHeader(400)
+			log.Error().Err(err).Msg("Param x and y is required")
+			return
+		}
+		if y, err = strconv.Atoi(paramY); err != nil {
+			w.WriteHeader(400)
+			log.Error().Err(err).Msg("Param x and y is required")
+			return
+		}
+		if paramR != "" {
+			if radius, err = strconv.Atoi(paramR); err != nil {
 				w.WriteHeader(400)
-				log.Error().Err(err).Msg("Could not parse idx")
-				return
-			}
-
-			zone, err = c.world.GetZoneIdx(r.Context(), idx)
-			if err != nil {
-				w.WriteHeader(500)
-				log.Error().Err(err).Msg("Failed to get zone")
+				log.Error().Err(err).Msg("Failed to parse radius")
 				return
 			}
 		} else {
-			var x, y int
-			if x, err = strconv.Atoi(paramX); err != nil {
-				w.WriteHeader(400)
-				log.Error().Err(err).Msg("Param x and y, or idx is required")
-				return
-			}
-			if y, err = strconv.Atoi(paramY); err != nil {
-				w.WriteHeader(400)
-				log.Error().Err(err).Msg("Param x and y, or idx is required")
-				return
-			}
-
-			zone, err = c.world.GetZoneXY(r.Context(), x, y)
-			if err != nil {
-				w.WriteHeader(500)
-				log.Error().Err(err).Msg("Failed to get zone")
-				return
-			}
+			radius = 10
 		}
 
-		b, err := protojson.Marshal(zone)
+		entries, err := c.world.GetEntries(req.Context(), x, y, radius)
 		if err != nil {
 			w.WriteHeader(500)
-			log.Error().Err(err).Msg("Failed to marshal zone")
+			log.Error().Err(err).Msg("Failed to get zone")
+			return
+		}
+
+		resp := models.EntriesResponse{
+			Entries: entries,
+		}
+
+		b, err := protojson.Marshal(&resp)
+		if err != nil {
+			w.WriteHeader(500)
+			log.Error().Err(err).Msg("Failed to entries response")
 			return
 		}
 
