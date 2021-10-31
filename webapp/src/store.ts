@@ -168,11 +168,9 @@ export const useStore = create<State>((set, get) => ({
     set((state) => ({ ...state, gameData }));
   },
   logout: async () => {
+    get().connection?.close();
     set(resetAuthState);
-    const res = await fetch("/api/auth/logout");
-    if (res.ok) {
-      get().connection?.close();
-    }
+    await fetch("/api/auth/logout");
   },
   tap: (lotId: string) => {
     set((state) => produce(state, draftState => {
