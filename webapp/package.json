@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^2.8.2",
-    "@protobuf-ts/plugin": "^1.0.13",
+    "@protobuf-ts/plugin": "^2.0.7",
     "@svgr/core": "^5.5.0",
     "@svgr/plugin-svgo": "^5.5.0",
     "@tailwindcss/forms": "^0.3.4",
