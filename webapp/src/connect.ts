@@ -83,8 +83,9 @@ const connect = (
     conn?.close();
     conn = new WebSocket(getAddr());
     conn.onclose = (e) => {
+      const initializationError = e.code === 5001;
       const unauthorized = e.code === 4010;
-      if (unauthorized) {
+      if (unauthorized || initializationError) {
         targetState = "disconnected";
         setState({
           error: "unauthorized",
