@@ -6,13 +6,20 @@
   --arrowSize: 40px;
   --arrowOffset: 20px;
   --arrowPadding: 10px;
+  --translateOffset: 0;
 }
 
 @media (min-width: 640px) {
   :root {
-    --scale: 75vw;
+    --scale: min(75vw, 1600px);
     --arrowSize: 50px;
     --arrowOffset: 50px;
+  }
+}
+
+@media (min-width: 1600px) {
+  :root {
+    --translateOffset: -50px;
   }
 }
 
@@ -71,7 +78,7 @@
 }
 
 .root {
-  transform: rotateX(60deg) rotateZ(45deg);
+  transform: rotateX(60deg) rotateZ(45deg) translate(var(--translateOffset), var(--translateOffset));
   transform-style: preserve-3d;
 
   width: calc(var(--tilesX) * var(--tileSize));
