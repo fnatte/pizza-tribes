@@ -34,8 +34,15 @@ func calculateExtrapolateChanges(gs *models.GameState) extrapolateChanges {
 	}
 
 	now := time.Now()
-	rush, offpeak := mtime.GetRush(gs.Timestamp, now.Unix())
-	dt := float64(now.Unix() - gs.Timestamp)
+
+	then := gs.Timestamp
+	if then <= 0 {
+		then = now.Unix()
+	}
+
+	dt := float64(now.Unix() - then)
+
+	rush, offpeak := mtime.GetRush(then, now.Unix())
 
 	stats := internal.CalculateStats(gs)
 
@@ -50,9 +57,12 @@ func calculateExtrapolateChanges(gs *models.GameState) extrapolateChanges {
 		internal.MinInt32(maxSellsByMice, pizzasAvailable))
 
 	log.Debug().
+		Int32("pizzasAvailable", pizzasAvailable).
 		Int32("pizzasProduced", pizzasProduced).
 		Int32("maxSellsByMice", maxSellsByMice).
 		Int32("pizzasSold", pizzasSold).
+		Int32("demand", demand).
+		Interface("stats", &stats).
 		Msg("Game state update")
 
 	return extrapolateChanges{
