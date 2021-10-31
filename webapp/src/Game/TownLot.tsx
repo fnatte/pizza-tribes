@@ -325,7 +325,7 @@ const RazeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
 function TownLot() {
   const { id } = useParams();
 
-  const lot = useStore(useCallback((state) => state.gameState.lots[id], [id]));
+  const lot = useStore(useCallback((state) => id !== undefined && state.gameState.lots[id], [id]));
   const stats = useStore((state) => state.gameStats);
   const population = useStore((state) => state.gameState.population);
   const gameData = useStore((state) => state.gameData);
@@ -336,6 +336,10 @@ function TownLot() {
       [id]
     )
   );
+
+  if (id === undefined || !lot) {
+    return null;
+  }
 
   return (
     <div
