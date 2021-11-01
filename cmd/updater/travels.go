@@ -33,6 +33,9 @@ No thieves were caught, and they got away with {{ .Loot | mprintf "%d" }} coins.
 {{- else}}
 Our heist on {{ .TargetUsername }} was a failure. All {{ .Thieves }} thieves got caught.
 {{- end}}
+{{if gt .SleepingGuards 0}}
+{{ .SleepingGuards }} guards were sleeping during the heist and have probably been fired.
+{{- end}}
 `
 const targetReportTemplateText = `
 {{if gt .SuccessfulThieves 0}}
@@ -43,6 +46,9 @@ It looks like someone stole {{ .Loot | mprintf "%d" }} coins from us.
 {{- end}}
 {{- else}}
 {{ .CaughtThieves }} thieves were caught trying to steal from our town.
+{{- end}}
+{{if gt .SleepingGuards 0}}
+{{ .SleepingGuards }} guards were fired for sleeping during their shift.
 {{- end}}
 `
 
@@ -55,6 +61,7 @@ type reportTemplateData struct {
 	Thieves           int32
 	SuccessfulThieves int32
 	CaughtThieves     int32
+	SleepingGuards      int32
 }
 
 type pipeFn func(redis.Pipeliner) error
@@ -73,7 +80,7 @@ func init() {
 		Parse(targetReportTemplateText))
 }
 
-func completeSteal(ctx updateContext, r internal.RedisClient, world *internal.WorldService, travel *models.Travel, travelIndex int) (error) {
+func completeSteal(ctx updateContext, r internal.RedisClient, world *internal.WorldService, travel *models.Travel, travelIndex int) error {
 	gsTarget := &models.GameState{}
 	x := travel.DestinationX
 	y := travel.DestinationY
@@ -108,17 +115,27 @@ func completeSteal(ctx updateContext, r internal.RedisClient, world *internal.Wo
 	}
 
 	// Calculate outcome
-	guards := float64(gsTarget.Population.Guards)
-	thieves := float64(travel.Thieves)
+	guards := gsTarget.Population.Guards
+	guardsf := float64(guards)
 	dist := distuv.Binomial{
-		N:   thieves,
-		P:   thieves / (thieves + guards/2),
+		N:   guardsf,
+		P:   0.1,
+		Src: rand.NewSource(uint64(time.Now().UnixNano())),
+	}
+	sleepingGuards := internal.MinInt32(int32(dist.Rand()), (guards+1)/3)
+	guards = guards - sleepingGuards
+	guardsf = float64(guards)
+
+	thievesf := float64(travel.Thieves)
+	dist = distuv.Binomial{
+		N:   thievesf,
+		P:   thievesf / (thievesf + guardsf/2),
 		Src: rand.NewSource(uint64(time.Now().UnixNano())),
 	}
 	successfulThieves := int32(dist.Rand())
 	caughtThieves := travel.Thieves - successfulThieves
-	guardsProtectingLoot := float64(internal.MaxInt32(gsTarget.Population.Guards - caughtThieves, 0))
-	thiefEfficiency :=  0.5 + 0.5 / (1 + math.Pow(guardsProtectingLoot/12 ,0.7))
+	guardsProtectingLoot := float64(internal.MaxInt32(gsTarget.Population.Guards-caughtThieves, 0))
+	thiefEfficiency := 0.5 + 0.5/(1+math.Pow(guardsProtectingLoot/12, 0.7))
 
 	maxLoot := int32(float64(successfulThieves) * internal.ThiefCapacity * thiefEfficiency)
 	loot := int64(internal.MinInt32(maxLoot, gsTarget.Resources.Coins))
@@ -154,6 +171,7 @@ func completeSteal(ctx updateContext, r internal.RedisClient, world *internal.Wo
 		Thieves:           travel.Thieves,
 		SuccessfulThieves: successfulThieves,
 		CaughtThieves:     caughtThieves,
+		SleepingGuards:      sleepingGuards,
 	}
 	buf := new(bytes.Buffer)
 	if err = thiefReportTemplate.Execute(buf, &tmplData); err != nil {
@@ -192,15 +210,31 @@ func completeSteal(ctx updateContext, r internal.RedisClient, world *internal.Wo
 	ctx.patches[town.UserId].gsPatch.Resources.Coins.Value =
 		ctx.patches[town.UserId].gsPatch.Resources.Coins.Value - int32(loot)
 
+	if sleepingGuards > 0 {
+		if ctx.patches[town.UserId].gsPatch.Population.Guards == nil {
+			ctx.patches[town.UserId].gsPatch.Population.Guards = &wrapperspb.Int32Value{
+				Value: gsTarget.Population.Guards,
+			}
+		}
+		if ctx.patches[town.UserId].gsPatch.Population.Uneducated == nil {
+			ctx.patches[town.UserId].gsPatch.Population.Uneducated = &wrapperspb.Int32Value{
+				Value: gsTarget.Population.Uneducated,
+			}
+		}
+		ctx.patches[town.UserId].gsPatch.Population.Uneducated.Value =
+			ctx.patches[town.UserId].gsPatch.Population.Uneducated.Value + sleepingGuards
+		ctx.patches[town.UserId].gsPatch.Population.Guards.Value =
+			ctx.patches[town.UserId].gsPatch.Population.Guards.Value - sleepingGuards
+	}
+
 	// Append reports to patch
 	ctx.AppendReport(ctx.userId, thiefReport)
 	ctx.AppendReport(town.UserId, targetReport)
 
-
 	return nil
 }
 
-func completeStealReturn(ctx updateContext, world *internal.WorldService, travel *models.Travel, travelIndex int) (error) {
+func completeStealReturn(ctx updateContext, world *internal.WorldService, travel *models.Travel, travelIndex int) error {
 	ctx.IncrCoins(int32(travel.Coins))
 	ctx.IncrThieves(travel.Thieves)
 
@@ -212,7 +246,7 @@ func completeStealReturn(ctx updateContext, world *internal.WorldService, travel
 	return nil
 }
 
-func completeTravels(ctx updateContext, r internal.RedisClient, world *internal.WorldService) (error) {
+func completeTravels(ctx updateContext, r internal.RedisClient, world *internal.WorldService) error {
 	completedTravels := internal.GetCompletedTravels(ctx.gs)
 	if len(completedTravels) == 0 {
 		return nil
