@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"math"
 	"text/template"
 	"time"
 
@@ -116,7 +117,10 @@ func completeSteal(ctx updateContext, r internal.RedisClient, world *internal.Wo
 	}
 	successfulThieves := int32(dist.Rand())
 	caughtThieves := travel.Thieves - successfulThieves
-	maxLoot := successfulThieves * internal.ThiefCapacity
+	guardsProtectingLoot := float64(internal.MaxInt32(gsTarget.Population.Guards - caughtThieves, 0))
+	thiefEfficiency :=  0.5 + 0.5 / (1 + math.Pow(guardsProtectingLoot/12 ,0.7))
+
+	maxLoot := int32(float64(successfulThieves) * internal.ThiefCapacity * thiefEfficiency)
 	loot := int64(internal.MinInt32(maxLoot, gsTarget.Resources.Coins))
 
 	// Prepare return travel - but not if all thieves got caught
