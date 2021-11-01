@@ -6,7 +6,7 @@ import (
 	. "github.com/fnatte/pizza-tribes/internal/models"
 )
 
-const ThiefSpeed = 5 * time.Minute
+const ThiefSpeed = 6 * time.Minute
 const ThiefCapacity = 3_000
 
 var FullGameData = GameData{
