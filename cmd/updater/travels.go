@@ -24,14 +24,14 @@ var messagePrinter = message.NewPrinter(message.MatchLanguage("en"))
 
 const thiefReportTemplateText = `
 {{if gt .SuccessfulThieves 0}}
-Our heist with {{ .Thieves }} thieves on {{ .TargetUsername }}'s town was successful.
+Our heist with {{ .Thieves }} thieves on *{{ .TargetUsername }}'s* town was successful.
 {{if gt .CaughtThieves 0}}
-{{ .CaughtThieves }} thieves were caught, but {{ .SuccessfulThieves }} thieves got away with {{ .Loot | mprintf "%d" }} coins.
+**{{ .CaughtThieves }} thieves** were **caught**, but {{ .SuccessfulThieves }} thieves got away with **{{ .Loot | mprintf "%d" }} coins**.
 {{- else}}
-No thieves were caught, and they got away with {{ .Loot | mprintf "%d" }} coins.
+No thieves were caught, and they got away with **{{ .Loot | mprintf "%d" }} coins**.
 {{- end}}
 {{- else}}
-Our heist on {{ .TargetUsername }} was a failure. All {{ .Thieves }} thieves got caught.
+Our heist on *{{ .TargetUsername }}* was a failure. All **{{ .Thieves }}** thieves got **caught**.
 {{- end}}
 {{if gt .SleepingGuards 0}}
 {{ .SleepingGuards }} guards were sleeping during the heist and have probably been fired.
@@ -40,12 +40,12 @@ Our heist on {{ .TargetUsername }} was a failure. All {{ .Thieves }} thieves got
 const targetReportTemplateText = `
 {{if gt .SuccessfulThieves 0}}
 {{if gt .CaughtThieves 0}}
-{{.CaughtThieves}} thieves were caught trying to steal from our town, but {{ .SuccessfulThieves }} thieves got away with {{ .Loot | mprintf "%d" }} of our coins!
+**{{.CaughtThieves}}** thieves were **caught** trying to steal from our town, but {{ .SuccessfulThieves }} thieves got away with **{{ .Loot | mprintf "%d" }} coins**!
 {{- else}}
-It looks like someone stole {{ .Loot | mprintf "%d" }} coins from us.
+It looks like someone stole **{{ .Loot | mprintf "%d" }} coins** from us.
 {{- end}}
 {{- else}}
-{{ .CaughtThieves }} thieves were caught trying to steal from our town.
+**{{ .CaughtThieves }}** thieves were **caught** trying to steal from our town.
 {{- end}}
 {{if gt .SleepingGuards 0}}
 {{ .SleepingGuards }} guards were fired for sleeping during their shift.

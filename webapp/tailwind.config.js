@@ -28,13 +28,13 @@ module.exports = {
           },
         },
         wiggle: {
-           '0%, 100%': { transform: 'rotate(0)' },
-           '17%': { transform: 'rotate(-7deg)' },
-           '33%': { transform: 'rotate(7deg)' },
-           '47%': { transform: 'rotate(-15deg)' },
-           '66%': { transform: 'rotate(15deg)' },
-           '84%': { transform: 'rotate(-15deg)' },
-        }
+          "0%, 100%": { transform: "rotate(0)" },
+          "17%": { transform: "rotate(-7deg)" },
+          "33%": { transform: "rotate(7deg)" },
+          "47%": { transform: "rotate(-15deg)" },
+          "66%": { transform: "rotate(15deg)" },
+          "84%": { transform: "rotate(-15deg)" },
+        },
       },
       animation: {
         "bounce-loop": "bounce-loop 3s ease-in-out infinite",
@@ -50,5 +50,5 @@ module.exports = {
       cursor: ["disabled"],
     },
   },
-  plugins: [require("@tailwindcss/forms")],
+  plugins: [require("@tailwindcss/forms"), require("@tailwindcss/typography")],
 };

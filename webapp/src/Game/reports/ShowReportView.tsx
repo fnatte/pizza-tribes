@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import { useStore } from "../../store";
 import { formatISO9075 } from "date-fns";
 import { parseDateNano } from "../../utils";
+import ReactMarkdown from "react-markdown";
 
 function ShowReportView() {
   const { id } = useParams();
@@ -49,9 +50,9 @@ function ShowReportView() {
           <>
             <h3>{report.title}</h3>
             <div>{formatISO9075(parseDateNano(report.createdAt))}</div>
-            <div className={classnames("mt-4", "text-gray-700")}>
+            <ReactMarkdown className={classnames("prose" as any, "mt-6", "text-gray-700")} disallowedElements={['img']}>
               {report.content}
-            </div>
+            </ReactMarkdown>
           </>
         )}
       </div>
