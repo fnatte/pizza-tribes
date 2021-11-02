@@ -24,7 +24,8 @@
     @apply text-base my-2 font-bold;
   }
 
-  input[type=text], input[type=password] {
+  input[type="text"],
+  input[type="password"] {
     @apply p-1;
   }
 
@@ -32,7 +33,7 @@
     @apply my-8;
   }
 
-  input[type=number] {
+  input[type="number"] {
     -moz-appearance: textfield; /* Firefox number buttons are buggy */
   }
 }

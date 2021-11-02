@@ -13,7 +13,47 @@ import {
 import { classnames } from "tailwindcss-classnames";
 import { TimeseriesData } from "../generated/timeseries";
 import { useStore } from "../store";
-import {formatNumber} from "../utils";
+import { formatNumber } from "../utils";
+
+const ProgressToWin: React.FC<{ coins: number }> = ({ coins }) => {
+  return (
+    <>
+      <span className={classnames("text-gray-700")}>
+        The first tribe to reach 10 million coins wins the round.
+      </span>
+      <div className={classnames("max-w-lg", "w-full")}>
+        <div
+          className={classnames(
+            "w-full",
+            "h-8",
+            "my-2",
+            "px-2",
+            "bg-green-200",
+            "rounded",
+            "relative"
+          )}
+        >
+          <div
+            className={classnames(
+              "h-6",
+              "bg-green-700",
+              "rounded",
+              "absolute",
+              "top-0",
+              "left-0",
+              "m-1"
+            )}
+            style={{ width: `${coins / 10_000_000 * 100}%`, minWidth: 5 }}
+          />
+        </div>
+        <div className={classnames("flex", "justify-between")}>
+          <div>0</div>
+          <div>10,000,000</div>
+        </div>
+      </div>
+    </>
+  );
+};
 
 const StatsView: React.FC<{}> = () => {
   const { coins, pizzas } = useStore((state) => state.gameState.resources);
@@ -111,7 +151,7 @@ const StatsView: React.FC<{}> = () => {
           ))}
         </tbody>
       </table>
-      <h3>Resource History</h3>
+      <h3 className={classnames("mt-8")}>Resource History</h3>
       {chartData && (
         <LineChart
           width={chartSize.width}
@@ -137,6 +177,8 @@ const StatsView: React.FC<{}> = () => {
           <Legend verticalAlign="top" />
         </LineChart>
       )}
+      <h3 className={classnames("mt-8")}>Win Progress</h3>
+      <ProgressToWin coins={coins} />
     </div>
   );
 };
