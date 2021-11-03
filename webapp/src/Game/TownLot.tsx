@@ -48,7 +48,7 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
     return () => window.clearTimeout(timerId);
   }, [tapBackoff]);
 
-  let tapResource;
+  let tapResource: "pizzas" | "coins";
   let tapGains;
   const factor = Math.sqrt((lot.level + 1) * (streak + 1));
   switch (lot.building) {
@@ -76,7 +76,7 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
         spread: 35,
         duration: 2000,
         modifyElement: (element: HTMLElement) => {
-          element.textContent = "🍕";
+          element.textContent = tapResource === "coins" ? "🪙" : "🍕";
           element.style.fontSize = "25px";
         },
       });
