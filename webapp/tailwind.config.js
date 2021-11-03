@@ -9,7 +9,7 @@ module.exports = {
       ...defaultTheme.screens,
     },
     fontFamily: {
-      sans: ["Grandstander", "sans-serif"],
+      sans: ["Grandstander", "sans-serif", "Noto Color Emoji"],
     },
     extend: {
       keyframes: {
