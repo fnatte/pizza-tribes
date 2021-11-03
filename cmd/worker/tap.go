@@ -47,11 +47,9 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *models.Client
 		resetTime := time.Unix(0, lot.TappedAt).Add(1 * time.Hour).Truncate(1 * time.Hour)
 		resetStreakTime := resetTime.Add(1 * time.Hour)
 
-		// Increase streak if previous was maxed out and we're within the next hour
+		// Reset streak if we are past the reset streak time
 		if time.Now().After(resetStreakTime) {
-			if lot.Streak < MAX_TAP_STREAK {
-				lot.Streak = 0
-			}
+			lot.Streak = 0
 		}
 
 		// Reset taps if next hour

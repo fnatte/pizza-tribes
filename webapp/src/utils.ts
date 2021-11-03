@@ -176,7 +176,7 @@ export const formatNumber = (n: number) => numberFormat.format(n);
 
 export const getTapInfo = (lot: Lot, now: Date) => {
   if (lot.building !== Building.KITCHEN && lot.building !== Building.SHOP) {
-    return { canTap: false, nextTapAt: 0, taps: 0, tapsRemaining: 0 };
+    return { canTap: false, nextTapAt: 0, taps: 0, tapsRemaining: 0, streak: 0 };
   }
 
   // convert lot.tappedAt from ns to ms
@@ -185,6 +185,7 @@ export const getTapInfo = (lot: Lot, now: Date) => {
   );
 
   const resetTime = addHours(startOfHour(tappedAt), 1);
+  const resetStreakTime = addHours(resetTime, 1);
 
   const taps = isAfter(now, resetTime) ? 0 : lot.taps;
 
@@ -199,6 +200,8 @@ export const getTapInfo = (lot: Lot, now: Date) => {
 
   const canTap = nextTapAt < now.getTime() && tapsRemaining > 0;
 
-  return { canTap, nextTapAt, taps, tapsRemaining };
+  const streak = isAfter(now, resetStreakTime) ? 0 : lot.streak;
+
+  return { canTap, nextTapAt, taps, tapsRemaining, streak };
 };
 

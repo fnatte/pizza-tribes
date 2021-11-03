@@ -30,7 +30,7 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
 
   const tap = useStore((state) => state.tap);
 
-  const { nextTapAt, canTap, taps, tapsRemaining } = getTapInfo(lot, now);
+  const { nextTapAt, canTap, taps, tapsRemaining, streak } = getTapInfo(lot, now);
 
   useTimeoutFn(
     () => setNow(new Date()),
@@ -50,7 +50,7 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
 
   let tapResource;
   let tapGains;
-  const factor = Math.sqrt((lot.level + 1) * (lot.streak + 1));
+  const factor = Math.sqrt((lot.level + 1) * (streak + 1));
   switch (lot.building) {
     case Building.KITCHEN:
       tapResource = "pizzas";
@@ -123,7 +123,7 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
       }
       <div className={classnames("mt-2")}>
         <div className={classnames("text-center")}>Streak:</div>
-        <TapStreak value={lot.streak} max={12} />
+        <TapStreak value={streak} max={12} />
       </div>
     </section>
   );
