@@ -76,10 +76,10 @@ func (s *WorldService) Start(ctx context.Context) error {
 	return s.r.JsonSet(ctx, "world", ".state", b).Err()
 }
 
-func (s *WorldService) End(ctx context.Context, winnerUserId string) error {
+func (s *WorldService) End(ctx context.Context, winnerUserId string) (*WorldState, error) {
 	state, err := s.GetState(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to end world: %w", err)
+		return nil, fmt.Errorf("failed to end world: %w", err)
 	}
 
 	state.Type = &models.WorldState_Ended_{
@@ -90,10 +90,14 @@ func (s *WorldService) End(ctx context.Context, winnerUserId string) error {
 
 	b, err := protojson.Marshal(state)
 	if err != nil {
-		return fmt.Errorf("failed to end state: %w", err)
+		return nil, fmt.Errorf("failed to end state: %w", err)
 	}
 
-	return s.r.JsonSet(ctx, "world", ".state", b).Err()
+	if err := s.r.JsonSet(ctx, "world", ".state", b).Err(); err != nil {
+		return nil, err
+	}
+
+	return state, nil
 }
 
 func (s *WorldService) GetState(ctx context.Context) (*WorldState, error) {

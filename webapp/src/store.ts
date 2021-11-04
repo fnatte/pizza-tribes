@@ -23,7 +23,8 @@ import {
 } from "./generated/server_message";
 import { Stats } from "./generated/stats";
 import { generateId } from "./utils";
-import { produce } from 'immer';
+import { produce } from "immer";
+import { queryClient } from "./queryClient";
 
 export type Lot = {
   building: Building;
@@ -173,12 +174,14 @@ export const useStore = create<State>((set, get) => ({
     await fetch("/api/auth/logout");
   },
   tap: (lotId: string) => {
-    set((state) => produce(state, draftState => {
-      const lot = draftState.gameState.lots[lotId];
-      if (lot) {
-        lot.taps++;
-      }
-    }));
+    set((state) =>
+      produce(state, (draftState) => {
+        const lot = draftState.gameState.lots[lotId];
+        if (lot) {
+          lot.taps++;
+        }
+      })
+    );
     const msg = ClientMessage.create({
       id: generateId(),
       type: {
@@ -298,6 +301,9 @@ export const useStore = create<State>((set, get) => ({
           break;
         case "reports":
           handleReports(msg.payload.reports);
+          break;
+        case "worldState":
+          queryClient.setQueryData("worldState", msg.payload.worldState);
           break;
       }
     };

@@ -6,6 +6,7 @@ option go_package = "github.com/fnatte/pizza-tribes/internal/models";
 import "gamestate.proto";
 import "stats.proto";
 import "report.proto";
+import "world.proto";
 
 message ServerMessage {
   message Response {
@@ -28,6 +29,7 @@ message ServerMessage {
     Response response = 4;
     Stats stats = 5;
     Reports reports = 6;
+    WorldState worldState = 7;
   }
 }
 

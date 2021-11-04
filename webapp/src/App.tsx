@@ -1,11 +1,10 @@
 import React from "react";
-import { QueryClient, QueryClientProvider } from "react-query";
+import { QueryClientProvider } from "react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import CreateAccountPage from "./CreateAccountPage";
 import GamePage from "./GamePage";
 import LoginPage from "./LoginPage";
-
-const queryClient = new QueryClient();
+import { queryClient } from "./queryClient";
 
 function App() {
   return (

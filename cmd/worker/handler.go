@@ -6,17 +6,35 @@ import (
 
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/models"
-	"github.com/rs/zerolog/log"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
+	"github.com/rs/xid"
+	"github.com/rs/zerolog/log"
 )
 
 type handler struct {
-	rdb internal.RedisClient
+	rdb   internal.RedisClient
 	world *internal.WorldService
 }
 
 func (h *handler) Handle(ctx context.Context, senderId string, m *models.ClientMessage) {
 	var err error
+
+	state, err := h.world.GetState(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to handle message")
+		return
+	}
+
+	if _, ok := state.Type.(*models.WorldState_Started_); !ok {
+		log.Info().Msg("Announcing world state.")
+		h.send(ctx, senderId, &models.ServerMessage{
+			Id:      xid.New().String(),
+			Payload: &models.ServerMessage_WorldState{
+				WorldState: state,
+			},
+		})
+		return
+	}
 
 	switch x := m.Type.(type) {
 	case *models.ClientMessage_Tap_:

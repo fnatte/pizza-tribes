@@ -435,10 +435,19 @@ func (u *updater) postProcessPatch(ctx updateContext, userId string, p *patch) e
 	// Handle win
 	if p.gsPatch != nil && p.gsPatch.Resources.Coins != nil {
 		if p.gsPatch.Resources.Coins.Value >= 10_000_000 {
-			err := u.world.End(ctx, userId)
+			// End the world
+			worldState, err := u.world.End(ctx, userId)
 			if err != nil {
 				log.Error().Err(err).Msg("Failed to end game")
 			}
+
+			// Announce new world state to all connected players
+			err = send(ctx, u.r, "everyone", &models.ServerMessage{
+				Id: xid.New().String(),
+				Payload: &models.ServerMessage_WorldState{
+					WorldState: worldState,
+				},
+			})
 		}
 	}
 

@@ -55,7 +55,7 @@ func (h *Hub) Run() {
 		case msg := <-h.messages:
 			// TODO: should probably optimize this
 			for client := range h.clients {
-				if client.userId == msg.Recipient {
+				if client.userId == msg.Recipient || msg.Recipient == "everyone" {
 					select {
 					case client.send <- []byte(msg.Body):
 					default:
