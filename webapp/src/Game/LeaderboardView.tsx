@@ -107,7 +107,7 @@ function LeaderboardTable({ leaderboard }: { leaderboard: Leaderboard }) {
               {formatNumber(Number(row.coins))}
             </td>
             <td className={classnames("text-right", "p-1")}>
-              {formatNumber(Number(row.coins) / 10_000_000)}%
+              {formatNumber(Number(row.coins) / 10_000_000 * 100)}%
             </td>
           </tr>
         ))}
