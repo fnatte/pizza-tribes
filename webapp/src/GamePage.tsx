@@ -264,41 +264,36 @@ function SparkleEmoji() {
   return <span>✨</span>;
 }
 
-const AnimatedCounter: React.VFC<{ value: number }> = ({ value }) => {
-  const prev = usePreviousDistinct(value) ?? value;
-
-  const [animIndex, setAnimIndex] = useState(0);
-
-  const isBigJump = Math.abs(value - prev) > value * 0.05;
-  const animDuration = isBigJump ? 500 : 10_000;
-  const animInterval = 100;
-  const steps = animDuration / animInterval;
-
-  useEffect(() => {
-    if (prev !== value) {
-      setAnimIndex(0);
-    }
-  }, [prev, value]);
-
-  useInterval(
-    () => {
-      setAnimIndex((i) => i + 1);
-    },
-    animIndex < steps ? animInterval : null
-  );
-
-  const step = (value - prev) / steps;
-  const displayValue =
-    value > prev
-      ? Math.min(value, Math.ceil(prev + step * animIndex))
-      : Math.max(value, Math.floor(prev + step * animIndex));
-
-  return <span>{formatNumber(displayValue)}</span>;
-};
+const FormattedInteger: React.VFC<{ value: number }> = ({ value }) => {
+  return <span>{formatNumber(Math.floor(value))}</span>;
+}
 
 function ResourceBar() {
   const { pizzas, coins } = useStore((state) => state.gameState.resources);
+  const stats = useStore((state) => state.gameStats);
   const clock = useMouseClock();
+
+  const [displayPizzas, setDisplayPizzas] = useState(pizzas);
+  const [displayCoins, setDisplayCoins] = useState(coins);
+
+  useInterval(() => {
+    if (stats === null) {
+      return;
+    }
+    const dt = 0.1;
+
+    const demand = (clock.isRushHour ? stats.demandRushHour : stats.demandOffpeak) * dt;
+    const pizzasProduced = stats.pizzasProducedPerSecond * dt;
+    const pizzasAvailable = pizzas + pizzasProduced;
+    const maxSellsByMice = stats.maxSellsByMicePerSecond * dt;
+    const pizzasSold = Math.min(demand, maxSellsByMice, pizzasAvailable);
+
+    setDisplayCoins(c => c + pizzasSold);
+    setDisplayPizzas(p => p - pizzasSold);
+  }, 100);
+
+  useEffect(() => setDisplayCoins(coins), [coins]);
+  useEffect(() => setDisplayPizzas(pizzas), [pizzas]);
 
   return (
     <div
@@ -312,10 +307,10 @@ function ResourceBar() {
       )}
     >
       <span className={classnames("px-3", "mb-2", "md:px-6")}>
-        <CoinEmoji /> <AnimatedCounter value={coins} />
+        <CoinEmoji /> <FormattedInteger value={displayCoins} />
       </span>
       <span className={classnames("px-3", "mb-2", "md:px-6")}>
-        <PizzaEmoji /> <AnimatedCounter value={pizzas} />
+        <PizzaEmoji /> <FormattedInteger value={displayPizzas} />
       </span>
       <span className={classnames("px-3", "mb-2", "md:px-6")}>
         <span className={classnames("px-2")}>
