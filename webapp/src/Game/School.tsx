@@ -217,7 +217,7 @@ function School() {
                   </td>
                   <td className={classnames("p-2")}>
                     {formatDistanceToNow(
-                      Number(
+                      JSBI.toNumber(
                         JSBI.divide(
                           JSBI.BigInt(training.completeAt),
                           JSBI.BigInt(1e6)

@@ -307,7 +307,7 @@ func (u *updater) patchToPipe(ctx updateContext, userId string, p *patch) (pipeF
 				}
 				arr = append(arr, string(b))
 			}
-			jsonarr := "[" + strings.Join(arr, ", ") + "]";
+			jsonarr := "[" + strings.Join(arr, ", ") + "]"
 			err = internal.RedisJsonSet(
 				pipe, ctx, gsKey, ".trainingQueue", jsonarr).Err()
 			if err != nil {
@@ -325,7 +325,7 @@ func (u *updater) patchToPipe(ctx updateContext, userId string, p *patch) (pipeF
 				}
 				arr = append(arr, string(b))
 			}
-			jsonarr := "[" + strings.Join(arr, ", ") + "]";
+			jsonarr := "[" + strings.Join(arr, ", ") + "]"
 			err = internal.RedisJsonSet(
 				pipe, ctx, gsKey, ".constructionQueue", jsonarr).Err()
 			if err != nil {
@@ -343,7 +343,7 @@ func (u *updater) patchToPipe(ctx updateContext, userId string, p *patch) (pipeF
 				}
 				arr = append(arr, string(b))
 			}
-			jsonarr := "[" + strings.Join(arr, ", ") + "]";
+			jsonarr := "[" + strings.Join(arr, ", ") + "]"
 			err = internal.RedisJsonSet(
 				pipe, ctx, gsKey, ".travelQueue", jsonarr).Err()
 			if err != nil {
@@ -361,7 +361,7 @@ func (u *updater) patchToPipe(ctx updateContext, userId string, p *patch) (pipeF
 				}
 				arr = append(arr, string(b))
 			}
-			jsonarr := "[" + strings.Join(arr, ", ") + "]";
+			jsonarr := "[" + strings.Join(arr, ", ") + "]"
 			err = internal.RedisJsonSet(
 				pipe, ctx, gsKey, ".researchQueue", jsonarr).Err()
 			if err != nil {
@@ -429,6 +429,16 @@ func (u *updater) postProcessPatch(ctx updateContext, userId string, p *patch) e
 	if p.sendStats {
 		if err = sendStats(ctx, u.r, userId); err != nil {
 			log.Error().Err(err).Msg("Failed to send stats")
+		}
+	}
+
+	// Handle win
+	if p.gsPatch != nil && p.gsPatch.Resources.Coins != nil {
+		if p.gsPatch.Resources.Coins.Value >= 10_000_000 {
+			err := u.world.End(ctx, userId)
+			if err != nil {
+				log.Error().Err(err).Msg("Failed to end game")
+			}
 		}
 	}
 
@@ -636,6 +646,38 @@ func envOrDefault(key string, defaultVal string) string {
 	return defaultVal
 }
 
+func handleStarted(ctx context.Context, u *updater) {
+	userId, err := u.next(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get next")
+		time.Sleep(1 * time.Second)
+		return
+	}
+	if userId == "" {
+		// TODO: could be smarter about how long to sleep here
+		time.Sleep(10 * time.Millisecond)
+		return
+	}
+
+	u.update(ctx, userId)
+	time.Sleep(1 * time.Millisecond)
+}
+
+func handleStarting(ctx context.Context, world *internal.WorldService, worldState *models.WorldState) {
+	if time.Now().Unix() >= worldState.StartTime {
+		log.Info().Msg("Starting new round")
+		// Let's get this game started.
+		err := world.Start(ctx)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to start world")
+			time.Sleep(1 * time.Second)
+			return
+		}
+	} else {
+		time.Sleep(1 * time.Second)
+	}
+}
+
 func main() {
 	log.Info().Msg("Starting updater")
 
@@ -659,21 +701,23 @@ func main() {
 	ctx := context.Background()
 
 	for {
-		userId, err := u.next(ctx)
+		worldState, err := world.GetState(ctx)
 		if err != nil {
-			log.Error().Err(err).Msg("Failed to get next")
+			log.Error().Err(err).Msg("Failed to get world state")
 			time.Sleep(1 * time.Second)
 			continue
 		}
-		if userId == "" {
-			// TODO: could be smarter about how long to sleep here
-			time.Sleep(10 * time.Millisecond)
-			continue
+
+		switch worldState.Type.(type) {
+		case *models.WorldState_Started_:
+			handleStarted(ctx, &u)
+			break
+		case *models.WorldState_Starting_:
+			handleStarting(ctx, world, worldState)
+			break
+		case *models.WorldState_Ended_:
+			time.Sleep(1 * time.Second)
+			break
 		}
-
-		u.update(ctx, userId)
-		time.Sleep(1 * time.Millisecond)
 	}
-
 }
-

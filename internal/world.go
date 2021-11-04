@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/fnatte/pizza-tribes/internal/models"
 	. "github.com/fnatte/pizza-tribes/internal/models"
@@ -57,6 +58,57 @@ func getWorldKey(x, y int) string {
 
 func NewWorldService(r RedisClient) *WorldService {
 	return &WorldService{r: r}
+}
+
+func (s *WorldService) Start(ctx context.Context) error {
+	state, err := s.GetState(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to start world: %w", err)
+	}
+
+	state.Type = &models.WorldState_Started_{}
+
+	b, err := protojson.Marshal(state)
+	if err != nil {
+		return fmt.Errorf("failed to start state: %w", err)
+	}
+
+	return s.r.JsonSet(ctx, "world", ".state", b).Err()
+}
+
+func (s *WorldService) End(ctx context.Context, winnerUserId string) error {
+	state, err := s.GetState(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to end world: %w", err)
+	}
+
+	state.Type = &models.WorldState_Ended_{
+		Ended: &WorldState_Ended{
+			WinnerUserId: winnerUserId,
+		},
+	}
+
+	b, err := protojson.Marshal(state)
+	if err != nil {
+		return fmt.Errorf("failed to end state: %w", err)
+	}
+
+	return s.r.JsonSet(ctx, "world", ".state", b).Err()
+}
+
+func (s *WorldService) GetState(ctx context.Context) (*WorldState, error) {
+	str, err := s.r.JsonGet(ctx, "world", ".state").Result()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get state: %w", err)
+	}
+
+	state := &WorldState{}
+	protojson.Unmarshal([]byte(str), state)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal world state: %w", err)
+	}
+
+	return state, nil
 }
 
 func (s *WorldService) setEntryXY(ctx context.Context, x, y int, e *WorldEntry) error {
@@ -173,6 +225,10 @@ func (s *WorldService) Initialize(ctx context.Context) error {
 	if s.r.Exists(ctx, "world").Val() == 0 {
 		world := models.World{
 			Entries: map[string]*models.WorldEntry{},
+			State: &models.WorldState{
+				Type:      &WorldState_Starting_{},
+				StartTime: time.Now().Truncate(24 * time.Hour).Add(36 * time.Hour).Unix(),
+			},
 		}
 
 		b, err := protojson.MarshalWithUnpopulated(&world)

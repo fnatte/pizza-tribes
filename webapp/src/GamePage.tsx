@@ -11,11 +11,19 @@ import StatsView from "./Game/StatsView";
 import MapView from "./Game/map/MapView";
 import WorldEntryView from "./Game/world/WorldEntryView";
 import LeaderboardView from "./Game/LeaderboardView";
-import { useClickAway, useInterval, useMedia, usePreviousDistinct } from "react-use";
+import {
+  useClickAway,
+  useInterval,
+  useMedia,
+  usePreviousDistinct,
+} from "react-use";
 import ListReportsView from "./Game/reports/ListReportsView";
 import ShowReportView from "./Game/reports/ShowReportView";
 import { formatNumber } from "./utils";
 import HelpView from "./Game/HelpView";
+import { useWorldState } from "./queries/useWorldState";
+import { WorldStarting } from "./WorldStarting";
+import {WorldEnded} from "./WorldEnded";
 
 type ClockState = {
   formatted: string;
@@ -406,6 +414,8 @@ function GamePage(): JSX.Element {
     start();
   }, []);
 
+  const { isLoading, data } = useWorldState();
+
   if (connectionState?.error === "unauthorized") {
     return <Navigate to="/login" replace />;
   }
@@ -419,6 +429,18 @@ function GamePage(): JSX.Element {
 
   if (user === null) {
     return <Loading />;
+  }
+
+  if (isLoading) {
+    return <Loading />;
+  }
+
+  if (data && data.type.oneofKind === "starting") {
+    return <WorldStarting state={data} />;
+  }
+
+  if (data && data.type.oneofKind === "ended") {
+    return <WorldEnded state={data} />;
   }
 
   return (

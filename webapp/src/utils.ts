@@ -127,18 +127,7 @@ export const formatDurationShort = (time: number) =>
     )
   );
 
-export const formatNanoTimestampToNowShort = (time: string) => {
-  const now = Date.now();
-  const totalSeconds = JSBI.toNumber(
-    JSBI.divide(
-      JSBI.subtract(
-        JSBI.BigInt(time),
-        JSBI.multiply(JSBI.BigInt(now), JSBI.BigInt(1e6))
-      ),
-      JSBI.BigInt(1e9)
-    )
-  );
-
+export const formatTotalSeconds = (totalSeconds: number) => {
   if (totalSeconds <= 0) {
     return "now";
   }
@@ -154,6 +143,27 @@ export const formatNanoTimestampToNowShort = (time: string) => {
   } else {
     return `in ${seconds} sec`;
   }
+}
+
+export const formatUnixToNowShort = (time: number) => {
+  const now = Date.now() / 1e3;
+  const totalSeconds = time - now;
+  return formatTotalSeconds(totalSeconds);
+};
+
+export const formatNanoTimestampToNowShort = (time: string) => {
+  const now = Date.now();
+  const totalSeconds = JSBI.toNumber(
+    JSBI.divide(
+      JSBI.subtract(
+        JSBI.BigInt(time),
+        JSBI.multiply(JSBI.BigInt(now), JSBI.BigInt(1e6))
+      ),
+      JSBI.BigInt(1e9)
+    )
+  );
+
+  return formatTotalSeconds(totalSeconds);
 };
 
 export const generateId = () => {

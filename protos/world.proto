@@ -3,6 +3,23 @@ package pizzatribes;
 
 option go_package = "github.com/fnatte/pizza-tribes/internal/models";
 
+message WorldState {
+  message Starting {}
+  message Started {}
+  message Ended {
+    string winnerUserId = 1;
+    int64 endedAt = 2;
+  }
+
+  int64 startTime = 1;
+
+  oneof type {
+    Starting starting = 2;
+    Started started = 3;
+    Ended ended = 4;
+  }
+}
+
 message WorldEntry {
   enum LandType {
     GRASS = 0;
@@ -25,5 +42,6 @@ message EntriesResponse {
 
 message World {
   map<string, WorldEntry> entries = 1;
+  WorldState state = 2;
 }
 

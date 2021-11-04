@@ -20,6 +20,33 @@ type WorldController struct {
 func (c *WorldController) Handler() http.Handler {
 	r := mux.NewRouter()
 
+	r.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
+		err := c.auth.Authorize(req)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to authorize")
+			w.WriteHeader(403)
+			return
+		}
+
+		state, err := c.world.GetState(req.Context())
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to get state")
+			w.WriteHeader(500)
+			return
+		}
+
+		b, err := protojson.Marshal(state)
+		if err != nil {
+			w.WriteHeader(500)
+			log.Error().Err(err).Msg("Failed to entries response")
+			return
+		}
+
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(200)
+		w.Write(b)
+	})
+
 	r.HandleFunc("/entries", func(w http.ResponseWriter, req *http.Request) {
 		err := c.auth.Authorize(req)
 		if err != nil {
