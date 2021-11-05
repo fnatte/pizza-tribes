@@ -7,6 +7,7 @@ import styles from "./styles";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import {RemoveIndex} from "./utils";
+import {API_BASE_URL} from "./config";
 
 const schema = yup.object().shape({
   username: yup.string().required(),
@@ -29,7 +30,7 @@ const CreateAccountPage: React.VFC<{}> = () => {
   const navigate = useNavigate();
 
   const onSubmit = async (data: FormFields) => {
-    const res = await fetch('/api/auth/register', {
+    const res = await fetch(`${API_BASE_URL}/auth/register`, {
       method: 'POST',
       body: JSON.stringify(data),
     });

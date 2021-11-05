@@ -1,11 +1,12 @@
 import { useQuery } from "react-query";
+import {API_BASE_URL} from "../config";
 import { WorldState } from "../generated/world";
 
 export const useWorldState = () => {
   const queryResult = useQuery(
     "worldState",
     async (): Promise<WorldState> => {
-      const res = await fetch("/api/world/");
+      const res = await fetch(API_BASE_URL + "/world/");
       const json = await res.json();
       return WorldState.fromJson(json);
     },

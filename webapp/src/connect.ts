@@ -1,3 +1,4 @@
+import {WS_URL} from "./config";
 import { ClientMessage } from "./generated/client_message";
 import { ServerMessage } from "./generated/server_message";
 
@@ -14,11 +15,6 @@ export type ConnectionApi = {
   reconnect: () => void;
   send: (msg: ClientMessage) => void;
   close: () => void;
-};
-
-const getAddr = () => {
-  const isSecure = window.location.protocol === "https:";
-  return `${isSecure ? "wss" : "ws"}://${window.location.host}/api/ws`;
 };
 
 const connect = (
@@ -81,7 +77,7 @@ const connect = (
     setState({ connecting: true });
 
     conn?.close();
-    conn = new WebSocket(getAddr());
+    conn = new WebSocket(WS_URL);
     conn.onclose = (e) => {
       const initializationError = e.code === 5001;
       const unauthorized = e.code === 4010;

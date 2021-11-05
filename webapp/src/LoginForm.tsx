@@ -4,6 +4,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { RemoveIndex } from "./utils";
 import { useForm } from "react-hook-form";
+import {API_BASE_URL} from "./config";
 
 type Props = {
   onLogin: () => void;
@@ -30,7 +31,7 @@ const LoginForm: React.FC<Props> = ({ onLogin }) => {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
-      response = await fetch("/api/auth/login", {
+      response = await fetch(API_BASE_URL + "/auth/login", {
         method: "POST",
         body: JSON.stringify(data),
         headers: {

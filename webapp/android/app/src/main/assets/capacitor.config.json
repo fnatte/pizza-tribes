@@ -1,0 +1,13 @@
+{
+	"appId": "dev.teus.pizzatribes",
+	"appName": "Pizza Tribes",
+	"webDir": "dist",
+	"bundledWebRuntime": false,
+	"server": {
+		"url": "http://10.0.2.2:3000",
+		"cleartext": true
+	},
+	"android": {
+		"flavor": "dev"
+	}
+}

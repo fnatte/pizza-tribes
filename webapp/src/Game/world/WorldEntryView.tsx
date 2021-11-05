@@ -7,6 +7,7 @@ import WorldTownView from "./WorldTownView";
 import { useStore } from "../../store";
 import WorldMyTownView from "./WorldMyTownView";
 import { EntriesResponse, WorldEntry } from "../../generated/world";
+import {API_BASE_URL} from "../../config";
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -29,7 +30,7 @@ function WorldEntryView() {
       return;
     }
 
-    const response = await fetch(`/api/world/entries?x=${x}&y=${y}`);
+    const response = await fetch(`${API_BASE_URL}/world/entries?x=${x}&y=${y}`);
     if (
       !response.ok ||
       response.headers.get("Content-Type") !== "application/json"

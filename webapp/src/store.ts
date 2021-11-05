@@ -25,6 +25,7 @@ import { Stats } from "./generated/stats";
 import { generateId } from "./utils";
 import { produce } from "immer";
 import { queryClient } from "./queryClient";
+import {API_BASE_URL} from "./config";
 
 export type Lot = {
   building: Building;
@@ -156,7 +157,7 @@ export const useStore = create<State>((set, get) => ({
   reports: [],
   fetchGameData: async () => {
     set((state) => ({ ...state, gameDataLoading: true }));
-    const response = await fetch("/api/gamedata");
+    const response = await fetch(API_BASE_URL + "/gamedata");
     if (
       !response.ok ||
       response.headers.get("Content-Type") !== "application/json"
@@ -171,7 +172,7 @@ export const useStore = create<State>((set, get) => ({
   logout: async () => {
     get().connection?.close();
     set(resetAuthState);
-    await fetch("/api/auth/logout");
+    await fetch(API_BASE_URL + "/auth/logout");
   },
   tap: (lotId: string) => {
     set((state) =>

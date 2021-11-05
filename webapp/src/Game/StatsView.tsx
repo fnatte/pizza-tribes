@@ -11,6 +11,7 @@ import {
   YAxis,
 } from "recharts";
 import { classnames } from "tailwindcss-classnames";
+import {API_BASE_URL} from "../config";
 import { TimeseriesData } from "../generated/timeseries";
 import { useStore } from "../store";
 import { formatNumber } from "../utils";
@@ -88,7 +89,7 @@ const StatsView: React.FC<{}> = () => {
     [];
 
   const tsData = useAsync(async () => {
-    const response = await fetch("/api/timeseries/data");
+    const response = await fetch(`${API_BASE_URL}/timeseries/data`);
     if (
       !response.ok ||
       response.headers.get("Content-Type") !== "application/json"

@@ -5,6 +5,7 @@ import { useAsync } from "react-use";
 import { ReactComponent as HeartsSvg } from "../../images/hearts.svg";
 import { Leaderboard } from "../generated/leaderboard";
 import { formatNumber } from "../utils";
+import {API_BASE_URL} from "../config";
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -121,7 +122,7 @@ function LeaderboardView() {
   const skip = parseInt(query.get("skip") ?? "") || 0;
 
   const data = useAsync(async () => {
-    const response = await fetch(`/api/leaderboard/?skip=${skip}`);
+    const response = await fetch(`${API_BASE_URL}/leaderboard/?skip=${skip}`);
     if (
       !response.ok ||
       response.headers.get("Content-Type") !== "application/json"
