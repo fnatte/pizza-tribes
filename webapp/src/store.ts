@@ -25,7 +25,7 @@ import { Stats } from "./generated/stats";
 import { generateId } from "./utils";
 import { produce } from "immer";
 import { queryClient } from "./queryClient";
-import {API_BASE_URL} from "./config";
+import { API_BASE_URL } from "./config";
 
 export type Lot = {
   building: Building;
@@ -77,6 +77,10 @@ type State = {
   steal: (x: number, y: number, amount: number) => void;
   readReport: (id: string) => void;
   startResearch: (discovery: ResearchDiscovery) => void;
+};
+
+const resetQueryDataState = () => {
+  queryClient.setQueriesData({}, () => undefined);
 };
 
 const mergeLots = (
@@ -172,6 +176,7 @@ export const useStore = create<State>((set, get) => ({
   logout: async () => {
     get().connection?.close();
     set(resetAuthState);
+    resetQueryDataState();
     await fetch(API_BASE_URL + "/auth/logout");
   },
   tap: (lotId: string) => {
@@ -312,6 +317,7 @@ export const useStore = create<State>((set, get) => ({
       unstable_batchedUpdates(() => {
         set((state) => {
           if (connectionState.error === "unauthorized") {
+            resetQueryDataState();
             state = resetAuthState(state);
           }
           return { ...state, connectionState };

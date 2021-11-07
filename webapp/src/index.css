@@ -36,4 +36,8 @@
   input[type="number"] {
     -moz-appearance: textfield; /* Firefox number buttons are buggy */
   }
+
+  body.platform-ios #root {
+    @apply fixed top-4 h-full w-full overflow-scroll pb-4;
+  }
 }
