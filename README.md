@@ -285,8 +285,14 @@ The following is exposed:
 
 ### For development (pick and choose)
 
-If you want to make changes you might want to benefit from HMR (Hot Module Replacement) in the web app and faster build times for the Go apps. If that's the case, you might want to run redis using docker-compose, and then run the services and web app on your host OS:
+If you want to make changes you might want to benefit from HMR (Hot Module Replacement) in the web app and faster build times for the Go apps. If that's the case, you might want to run redis using docker-compose, and then run the services and web app on your host OS.
 
+Install the following dependencies:
+- Go (https://golang.org/doc/install)
+- protobuf
+- protoc-gen-go (`go install google.golang.org/protobuf/cmd/protoc-gen-go@latest`)
+
+And then run:
 ```
 printf "HOST=:8080\nORIGIN=http://localhost:3000\nJWT_SIGNING_KEY=secret" > .env
 docker-compose up -d redis redisinsight
