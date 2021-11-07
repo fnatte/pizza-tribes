@@ -12,6 +12,9 @@ endif
 internal/%.pb.go: protos/%.proto
 	protoc -I=protos/ --go_out=./ --go_opt=module=$(GO_MODULE) --experimental_allow_proto3_optional $?
 
+.PHONY: generate
+generate: $(PBGO)
+
 .PHONY: build-api
 build-api: $(PBGO)
 	go build $(GO_FLAGS) -o out/pizza-tribes-api github.com/fnatte/pizza-tribes/cmd/api
