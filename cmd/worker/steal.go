@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"firebase.google.com/go/messaging"
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
@@ -104,6 +105,19 @@ func (h *handler) handleSteal(ctx context.Context, senderId string, m *models.Cl
 	}
 
 	h.sendFullStateUpdate(ctx, senderId)
+
+	_, err = internal.SchedulePushNotification(ctx, h.rdb, &messaging.Message{
+		Data: map[string]string{
+			"userId": town.UserId,
+		},
+		Notification: &messaging.Notification{
+			Title: "Incoming heist",
+			Body:  "Boss! We have heard rumours about a planned heist on our town.",
+		},
+	}, time.Now())
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to schedule push notification for a heist")
+	}
 
 	return nil
 }

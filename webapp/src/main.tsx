@@ -6,6 +6,10 @@ import { platform } from "./config";
 
 document.body.classList.add(`platform-${platform}`);
 
+if (platform === "ios") {
+  import("./push-notifications");
+}
+
 ReactDOM.render(
   <React.StrictMode>
     <App />

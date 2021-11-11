@@ -15,6 +15,11 @@ const devConfig: CapacitorConfig = {
   android: {
     flavor: "dev",
   },
+  plugins: {
+    Keyboard: {
+      resize: "native",
+    },
+  },
 };
 
 const prodConfig: CapacitorConfig = {
