@@ -11,6 +11,7 @@ import (
 	"github.com/fnatte/pizza-tribes/cmd/api/ws"
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/go-redis/redis/v8"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -74,7 +75,12 @@ func main() {
 	go poller.run(ctx)
 
 	// Start HTTP server
-	err = http.ListenAndServe(fmt.Sprintf(":%d", port), r)
+	h := handlers.CORS(
+		handlers.AllowedOrigins(origins),
+		handlers.AllowCredentials(),
+		handlers.AllowedHeaders([]string{"Accept", "Accept-Language", "Content-Language", "Content-Type", "Origin"}),
+	)(r)
+	err = http.ListenAndServe(fmt.Sprintf(":%d", port), h)
 	if err != nil {
 		log.Fatal().Err(err).Msg("ListenAndServe")
 	}
@@ -87,7 +93,6 @@ func envOrDefault(key string, defaultVal string) string {
 	}
 	return defaultVal
 }
-
 
 func registerSubrouter(r *mux.Router, prefix string, handler http.Handler) {
 	r.PathPrefix(prefix).Handler(http.StripPrefix(prefix, handler))
