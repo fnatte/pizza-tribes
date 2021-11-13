@@ -38,6 +38,6 @@
   }
 
   body.platform-ios #root {
-    @apply fixed top-4 h-full w-full overflow-scroll pb-4;
+    @apply fixed top-4 h-screen w-screen overflow-scroll pb-4;
   }
 }
