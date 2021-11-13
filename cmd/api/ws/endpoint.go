@@ -25,13 +25,15 @@ type WsEndpoint struct {
 	handler  WsHandler
 }
 
-func NewEndpoint(authFunc AuthFunc, hub *Hub, handler WsHandler, origin string) *WsEndpoint {
+func NewEndpoint(authFunc AuthFunc, hub *Hub, handler WsHandler, origins []string) *WsEndpoint {
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
 		CheckOrigin: func(r *http.Request) bool {
-			if r.Header.Get("Origin") == origin {
-				return true
+			for _, origin := range origins {
+				if r.Header.Get("Origin") == origin {
+					return true
+				}
 			}
 
 			log.Warn().Msg(r.Header.Get("Origin") + " is not allowed")

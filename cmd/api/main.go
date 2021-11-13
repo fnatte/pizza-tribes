@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/fnatte/pizza-tribes/cmd/api/ws"
 	"github.com/fnatte/pizza-tribes/internal"
@@ -31,7 +32,7 @@ func main() {
 		log.Error().Err(err).Msg("Failed to parse port")
 		return
 	}
-	origin := envOrDefault("ORIGIN", "http://localhost:8080")
+	origins := strings.Split(envOrDefault("ORIGIN", "http://localhost:8080"), " ")
 
 	// Setup redis client
 	rc := internal.NewRedisClient(redis.NewClient(&redis.Options{
@@ -46,7 +47,7 @@ func main() {
 	leaderboard := internal.NewLeaderboardService(rc)
 	wsHub := ws.NewHub()
 	handler := wsHandler{rc: rc, world: world}
-	wsEndpoint := ws.NewEndpoint(auth.Authorize, wsHub, &handler, origin)
+	wsEndpoint := ws.NewEndpoint(auth.Authorize, wsHub, &handler, origins)
 	poller := poller{rdb: rc, hub: wsHub}
 	ts := &TimeseriesService{r: rc, auth: auth}
 	worldController := &WorldController{auth: auth, world: world}
