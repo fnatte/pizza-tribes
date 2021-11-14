@@ -7,7 +7,7 @@ import { initApi } from "./api";
 
 document.body.classList.add(`platform-${platform}`);
 
-if (platform === "ios") {
+if (platform === "ios" || platform === "android") {
   import("./push-notifications");
 }
 
