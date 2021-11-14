@@ -10,11 +10,11 @@ const baseConfig: CapacitorConfig = {
 
 const liveReload = {
   url: "http://localhost:3000",
-  cleartext: true,
 };
 
 const devConfig: CapacitorConfig = {
   server: {
+    cleartext: true,
     ...(process.env.LIVE_RELOAD === "1" ? liveReload : {}),
   },
   android: {
