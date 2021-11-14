@@ -179,7 +179,6 @@ func getAccessToken(r *http.Request) (string, error) {
 		const accessTokenPrefix = "accessToken."
 		p = strings.TrimSpace(p)
 		if strings.HasPrefix(p, accessTokenPrefix) {
-			log.Info().Str("accessToken", p[len(accessTokenPrefix):]).Msg("read access token")
 			return p[len(accessTokenPrefix):], nil
 		}
 	}
