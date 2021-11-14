@@ -1,9 +1,0 @@
-{
-	"appId": "dev.teus.pizzatribes",
-	"appName": "Pizza Tribes",
-	"webDir": "dist",
-	"bundledWebRuntime": false,
-	"android": {
-		"flavor": "dev"
-	}
-}
