@@ -43,6 +43,10 @@ type loginRequest struct {
 	Password string `json:"password"`
 }
 
+type loginResponse struct {
+	AccessToken string `json:"accessToken"`
+}
+
 type userDbo struct {
 	Id             string `redis:"id"`
 	Username       string `redis:"username"`
@@ -70,6 +74,10 @@ func init() {
 
 func getJwtSigningKeyFunc(*jwt.Token) (interface{}, error) {
 	return jwtSigningKey, nil
+}
+
+func useCookieAuth(req *http.Request) bool {
+	return !strings.Contains(req.UserAgent(), "pizzatribes")
 }
 
 func (a *AuthService) Register(ctx context.Context, username, password string) error {
@@ -133,15 +141,59 @@ func (a *AuthService) CreateToken(userId string) (string, error) {
 	return tokenString, nil
 }
 
-func (a *AuthService) Authorize(r *http.Request) error {
+// Read access token from Authorization header, cookie, or web socket protocol header:
+// - Authorization header is read with auth scheme "Bearer". For example, it will read from "Authorization: Bearer {token}".
+// - The cookie is simply named "token". For example, it will read from "Cookie: token={token}"
+// - For web sockets, which do not support custom headers, we take horrific usage of the Sec-WebSocket-Protcol header,
+//   and will read tokens from protocols that start with "accessToken.". For example: "Sec-WebSocket-Protocol: pizzatribes, accessToken.{token}".
+func getAccessToken(r *http.Request) (string, error) {
+	// From Authorization header
+	authHeader := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
+	if authHeader[0] == "Bearer" {
+		if len(authHeader) < 2 {
+			return "", nil
+		}
+		return authHeader[1], nil
+	}
+
+	// From cookie
 	cookie, err := r.Cookie("token")
+	if err != nil && !errors.Is(err, http.ErrNoCookie) {
+		return "", err
+	}
+	if err == nil {
+		return cookie.Value, nil
+	}
+
+	// From Sec-WebSocket-Protocol
+	// Yes, this is weird, but a quick workaround to do cross-origin websocket authorization.
+	// Some background:
+	// - https://stackoverflow.com/q/4361173/86298
+	// - https://github.com/whatwg/html/issues/3062
+	//
+	// Further, note that Sec-WebSocket-Protocol may not include any character:
+	// - https://github.com/WebKit/webkit/blob/main/Source/WebCore/Modules/websockets/WebSocket.cpp#L83
+	// - https://datatracker.ietf.org/doc/html/draft-ietf-hybi-thewebsocketprotocol-10#section-5.1
+	wsProtocolHeaders := strings.Split(r.Header.Get("Sec-WebSocket-Protocol"), ",")
+	for _, p := range wsProtocolHeaders {
+		const accessTokenPrefix = "accessToken."
+		p = strings.TrimSpace(p)
+		if strings.HasPrefix(p, accessTokenPrefix) {
+			log.Info().Str("accessToken", p[len(accessTokenPrefix):]).Msg("read access token")
+			return p[len(accessTokenPrefix):], nil
+		}
+	}
+
+	return "", nil
+}
+
+func (a *AuthService) Authorize(r *http.Request) error {
+	token, err := getAccessToken(r)
 	if err != nil {
 		return err
 	}
-
-	token := cookie.Value
 	if token == "" {
-		return errors.New("Not authenticated")
+		return errors.New("not authenticated")
 	}
 
 	// Now parse the token
@@ -152,11 +204,11 @@ func (a *AuthService) Authorize(r *http.Request) error {
 
 	alg := parsedToken.Header["alg"]
 	if alg != jwt.SigningMethodHS256.Alg() {
-		return fmt.Errorf("Error validating token algorithm: %s", alg)
+		return fmt.Errorf("error validating token algorithm: %s", alg)
 	}
 
 	if !parsedToken.Valid {
-		return errors.New("Token is invalid")
+		return errors.New("token is invalid")
 	}
 
 	claims := parsedToken.Claims.(*jwt.StandardClaims)
@@ -224,17 +276,31 @@ func (a *AuthService) Handler() http.Handler {
 			return
 		}
 
-		http.SetCookie(w, &http.Cookie{
-			Name:     "token",
-			Value:    jwt,
-			HttpOnly: true,
-			Path:     "/",
-			MaxAge:   3600 * 72,
-			SameSite: http.SameSiteStrictMode,
-		})
+		if useCookieAuth(r) {
+			http.SetCookie(w, &http.Cookie{
+				Name:     "token",
+				Value:    jwt,
+				HttpOnly: true,
+				Path:     "/",
+				MaxAge:   3600 * 72,
+				SameSite: http.SameSiteStrictMode,
+			})
+			w.WriteHeader(200)
+			w.Write([]byte("{}"))
+		} else {
+			b, err := json.Marshal(&loginResponse{
+				AccessToken: jwt,
+			})
+			if err != nil {
+				log.Error().Err(err).Msg("Failed to marshal login response")
+				w.WriteHeader(500)
+				return
+			}
 
-		w.WriteHeader(200)
-		w.Write([]byte("{}"))
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(200)
+			w.Write(b)
+		}
 	})
 
 	r.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {

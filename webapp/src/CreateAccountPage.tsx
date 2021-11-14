@@ -6,8 +6,8 @@ import Header from "./Header";
 import styles from "./styles";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import {RemoveIndex} from "./utils";
-import {API_BASE_URL} from "./config";
+import { RemoveIndex } from "./utils";
+import { apiFetch } from "./api";
 
 const schema = yup.object().shape({
   username: yup.string().required(),
@@ -30,16 +30,18 @@ const CreateAccountPage: React.VFC<{}> = () => {
   const navigate = useNavigate();
 
   const onSubmit = async (data: FormFields) => {
-    const res = await fetch(`${API_BASE_URL}/auth/register`, {
-      method: 'POST',
+    const res = await apiFetch("/auth/register", {
+      method: "POST",
       body: JSON.stringify(data),
     });
     if (!res.ok) {
-      console.error(`Request to register user failed. Status code was ${res.status}`);
+      console.error(
+        `Request to register user failed. Status code was ${res.status}`
+      );
       return;
     }
 
-    navigate('/login');
+    navigate("/login");
   };
 
   return (
@@ -63,7 +65,9 @@ const CreateAccountPage: React.VFC<{}> = () => {
           disabled={isSubmitting}
           {...register("username")}
         />
-        {errors.username && <span className="pb-2">{errors.username.message}</span>}
+        {errors.username && (
+          <span className="pb-2">{errors.username.message}</span>
+        )}
         <input
           type="password"
           placeholder="Password"
@@ -71,7 +75,9 @@ const CreateAccountPage: React.VFC<{}> = () => {
           disabled={isSubmitting}
           {...register("password")}
         />
-        {errors.password && <span className="pb-2">{errors.password.message}</span>}
+        {errors.password && (
+          <span className="pb-2">{errors.password.message}</span>
+        )}
         <input
           type="password"
           placeholder="Confirm password"
@@ -79,8 +85,14 @@ const CreateAccountPage: React.VFC<{}> = () => {
           disabled={isSubmitting}
           {...register("confirm")}
         />
-        {errors.confirm && <span className="pb-2">{errors.confirm.message}</span>}
-        <button type="submit" className={styles.primaryButton} disabled={isSubmitting}>
+        {errors.confirm && (
+          <span className="pb-2">{errors.confirm.message}</span>
+        )}
+        <button
+          type="submit"
+          className={styles.primaryButton}
+          disabled={isSubmitting}
+        >
           Create Account
         </button>
       </form>

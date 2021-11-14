@@ -53,7 +53,9 @@ func NewEndpoint(authFunc AuthFunc, hub *Hub, handler WsHandler, origins []strin
 func (e *WsEndpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Debug().Msg("WS Request Started")
 
-	ws, err := e.upgrader.Upgrade(w, r, nil)
+	ws, err := e.upgrader.Upgrade(w, r, http.Header{
+		"Sec-WebSocket-Protocol": []string{"pizzatribes"},
+	})
 	if err != nil {
 		if _, ok := err.(websocket.HandshakeError); !ok {
 			log.Error().Err(err).Msg("")

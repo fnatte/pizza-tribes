@@ -5,6 +5,7 @@ const baseConfig: CapacitorConfig = {
   appName: "Pizza Tribes",
   webDir: "dist",
   bundledWebRuntime: false,
+  appendUserAgent: "pizzatribes",
 };
 
 const devConfig: CapacitorConfig = {

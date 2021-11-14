@@ -78,7 +78,7 @@ func main() {
 	h := handlers.CORS(
 		handlers.AllowedOrigins(origins),
 		handlers.AllowCredentials(),
-		handlers.AllowedHeaders([]string{"Accept", "Accept-Language", "Content-Language", "Content-Type", "Origin"}),
+		handlers.AllowedHeaders([]string{"Accept", "Accept-Language", "Authorization", "Content-Language", "Content-Type", "Origin"}),
 	)(r)
 	err = http.ListenAndServe(fmt.Sprintf(":%d", port), h)
 	if err != nil {

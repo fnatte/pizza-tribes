@@ -9,7 +9,7 @@ import * as yup from "yup";
 import { RemoveIndex } from "../../utils";
 import styles from "../../styles";
 import { useStore } from "../../store";
-import {API_BASE_URL} from "../../config";
+import { apiFetch } from "../../api";
 
 type Props = {
   town: WorldEntry_Town;
@@ -28,7 +28,7 @@ const WorldTownView: React.FC<Props> = ({ x, y, town }) => {
     if (town === null) {
       return null;
     }
-    const response = await fetch(`${API_BASE_URL}/user/${town?.userId}`);
+    const response = await apiFetch(`/user/${town?.userId}`);
     if (
       !response.ok ||
       response.headers.get("Content-Type") !== "application/json"

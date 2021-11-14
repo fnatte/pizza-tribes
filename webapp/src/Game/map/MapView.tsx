@@ -7,7 +7,7 @@ import { ReactComponent as HeartsSvg } from "../../../images/hearts.svg";
 import { useStore } from "../../store";
 import { useNavigate } from "react-router-dom";
 import styles from "../../styles";
-import {API_BASE_URL} from "../../config";
+import { apiFetch } from "../../api";
 
 function unique<T extends unknown>(arr: T[]): T[] {
   return [...new Set(arr)];
@@ -56,7 +56,7 @@ function MapView() {
       return null;
     }
 
-    const response = await fetch(`${API_BASE_URL}/user/${town.userId}`);
+    const response = await apiFetch(`/user/${town.userId}`);
     if (
       !response.ok ||
       response.headers.get("Content-Type") !== "application/json"
@@ -85,7 +85,9 @@ function MapView() {
     }
 
     for (let [x, y] of missingCorners) {
-      const response = await fetch(`${API_BASE_URL}/world/entries?x=${x}&y=${y}&r=${fetchSize}`);
+      const response = await apiFetch(
+        `/world/entries?x=${x}&y=${y}&r=${fetchSize}`
+      );
       if (
         !response.ok ||
         response.headers.get("Content-Type") !== "application/json"

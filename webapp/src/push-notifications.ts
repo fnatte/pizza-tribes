@@ -4,7 +4,7 @@ import {
   PushNotifications,
   Token,
 } from "@capacitor/push-notifications";
-import { API_BASE_URL } from "./config";
+import { apiFetch } from "./api";
 
 // Request permission to use push notifications
 // iOS will prompt user and return if they granted permission or not
@@ -21,10 +21,9 @@ PushNotifications.requestPermissions().then((result) => {
 // On success, we should be able to receive notifications
 PushNotifications.addListener("registration", async (token: Token) => {
   console.log("Push registration success, token: ", token.value);
-  const response = await fetch(API_BASE_URL + "/push_notifications/register", {
+  const response = await apiFetch("/push_notifications/register", {
     method: "POST",
     body: JSON.stringify({ token: token.value }),
-    credentials: "include",
   });
   if (!response.ok) {
     console.error("Failed to register fcm token");
