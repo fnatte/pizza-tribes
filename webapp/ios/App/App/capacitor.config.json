@@ -4,10 +4,6 @@
 	"webDir": "dist",
 	"bundledWebRuntime": false,
 	"appendUserAgent": "pizzatribes",
-	"server": {
-		"url": "http://localhost:3000",
-		"cleartext": true
-	},
 	"android": {
 		"flavor": "dev"
 	},
