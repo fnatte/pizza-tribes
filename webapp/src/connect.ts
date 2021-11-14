@@ -1,3 +1,5 @@
+import { getAccessToken } from "./api";
+import { WS_URL } from "./config";
 import { ClientMessage } from "./generated/client_message";
 import { ServerMessage } from "./generated/server_message";
 
@@ -14,11 +16,6 @@ export type ConnectionApi = {
   reconnect: () => void;
   send: (msg: ClientMessage) => void;
   close: () => void;
-};
-
-const getAddr = () => {
-  const isSecure = window.location.protocol === "https:";
-  return `${isSecure ? "wss" : "ws"}://${window.location.host}/api/ws`;
 };
 
 const connect = (
@@ -80,8 +77,21 @@ const connect = (
 
     setState({ connecting: true });
 
+    // Wait what? Why are we setting the websocket protocol to "accessToken.${accessToken}"?
+    // Yes, it's a dirty hack, but we live with it to avoid a complex authorization flow for
+    // web sockets. In short, "Sec-WebSocket-Protocol" is the only header we can send stuff via
+    // because web sockets do not allow custom headers such as "Authorization".
+    //
+    // Also, note that this is only used when we do not rely on cookie authorization, that is,
+    // we only send the access token over Sec-WebSocket-Protocol for cross-origin usages (as of now,
+    // mobile apps).
+    const accessToken = getAccessToken();
+    const protocols = accessToken
+      ? ["pizzatribes", `accessToken.${accessToken}`]
+      : "pizzatribes";
+
     conn?.close();
-    conn = new WebSocket(getAddr());
+    conn = new WebSocket(WS_URL, protocols);
     conn.onclose = (e) => {
       const initializationError = e.code === 5001;
       const unauthorized = e.code === 4010;

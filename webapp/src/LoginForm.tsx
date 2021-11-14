@@ -4,6 +4,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { RemoveIndex } from "./utils";
 import { useForm } from "react-hook-form";
+import { apiFetch, setAccessToken } from "./api";
 
 type Props = {
   onLogin: () => void;
@@ -30,14 +31,13 @@ const LoginForm: React.FC<Props> = ({ onLogin }) => {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
-      response = await fetch("/api/auth/login", {
+      response = await apiFetch("/auth/login", {
         method: "POST",
         body: JSON.stringify(data),
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        credentials: "include",
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
@@ -46,6 +46,16 @@ const LoginForm: React.FC<Props> = ({ onLogin }) => {
     }
 
     if (response.status === 200) {
+      // In case we get a access token in the response we store it ourselves, note however that for regular web browser users
+      // the access token will be sent as a (http-only) cookie and thus we just rely on the browser to store and transfer cookie.
+      // We avoid cookies for cross-origin usages (such as mobile apps) simply because it's easier as it avoids some headaches with
+      // same-origin rules and different browser vendors doing things differently.
+      if (response.headers.get("Content-Type") === "application/json") {
+        const json = await response.json();
+        if (typeof json === "object" && typeof json.accessToken === "string") {
+          setAccessToken(json.accessToken);
+        }
+      }
       setBadCredentials(false);
       onLogin();
     } else if (response.status === 403) {

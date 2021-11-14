@@ -11,6 +11,7 @@ import {
   YAxis,
 } from "recharts";
 import { classnames } from "tailwindcss-classnames";
+import { apiFetch } from "../api";
 import { TimeseriesData } from "../generated/timeseries";
 import { useStore } from "../store";
 import { formatNumber } from "../utils";
@@ -43,7 +44,7 @@ const ProgressToWin: React.FC<{ coins: number }> = ({ coins }) => {
               "left-0",
               "m-1"
             )}
-            style={{ width: `${coins / 10_000_000 * 100}%`, minWidth: 5 }}
+            style={{ width: `${(coins / 10_000_000) * 100}%`, minWidth: 5 }}
           />
         </div>
         <div className={classnames("flex", "justify-between")}>
@@ -88,7 +89,7 @@ const StatsView: React.FC<{}> = () => {
     [];
 
   const tsData = useAsync(async () => {
-    const response = await fetch("/api/timeseries/data");
+    const response = await apiFetch(`/timeseries/data`);
     if (
       !response.ok ||
       response.headers.get("Content-Type") !== "application/json"

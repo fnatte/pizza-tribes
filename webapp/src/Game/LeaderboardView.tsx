@@ -5,6 +5,7 @@ import { useAsync } from "react-use";
 import { ReactComponent as HeartsSvg } from "../../images/hearts.svg";
 import { Leaderboard } from "../generated/leaderboard";
 import { formatNumber } from "../utils";
+import { apiFetch } from "../api";
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -50,7 +51,10 @@ function TopThree({ rows }: { rows: { username: string; coins: string }[] }) {
                   "left-0",
                   "m-1"
                 )}
-                style={{ width: `${Number(coins) / 10_000_000 * 100}%`, minWidth: 5 }}
+                style={{
+                  width: `${(Number(coins) / 10_000_000) * 100}%`,
+                  minWidth: 5,
+                }}
               />
             </div>
           </React.Fragment>
@@ -107,7 +111,7 @@ function LeaderboardTable({ leaderboard }: { leaderboard: Leaderboard }) {
               {formatNumber(Number(row.coins))}
             </td>
             <td className={classnames("text-right", "p-1")}>
-              {formatNumber(Number(row.coins) / 10_000_000 * 100)}%
+              {formatNumber((Number(row.coins) / 10_000_000) * 100)}%
             </td>
           </tr>
         ))}
@@ -121,7 +125,7 @@ function LeaderboardView() {
   const skip = parseInt(query.get("skip") ?? "") || 0;
 
   const data = useAsync(async () => {
-    const response = await fetch(`/api/leaderboard/?skip=${skip}`);
+    const response = await apiFetch(`/leaderboard/?skip=${skip}`);
     if (
       !response.ok ||
       response.headers.get("Content-Type") !== "application/json"

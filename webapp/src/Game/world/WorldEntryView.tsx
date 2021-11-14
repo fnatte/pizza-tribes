@@ -7,6 +7,7 @@ import WorldTownView from "./WorldTownView";
 import { useStore } from "../../store";
 import WorldMyTownView from "./WorldMyTownView";
 import { EntriesResponse, WorldEntry } from "../../generated/world";
+import { apiFetch } from "../../api";
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -21,7 +22,11 @@ function WorldEntryView() {
   const townY = useStore((state) => state.gameState.townY);
 
   // TODO: store zones in store
-  const [data, setData] = useState<{ entry: WorldEntry|null, x: number, y: number} | null>(null);
+  const [data, setData] = useState<{
+    entry: WorldEntry | null;
+    x: number;
+    y: number;
+  } | null>(null);
 
   useAsync(async () => {
     if (isNaN(x) || isNaN(y)) {
@@ -29,7 +34,7 @@ function WorldEntryView() {
       return;
     }
 
-    const response = await fetch(`/api/world/entries?x=${x}&y=${y}`);
+    const response = await apiFetch(`/world/entries?x=${x}&y=${y}`);
     if (
       !response.ok ||
       response.headers.get("Content-Type") !== "application/json"
@@ -41,7 +46,8 @@ function WorldEntryView() {
   }, [x, y]);
 
   const town =
-    (data?.entry?.object.oneofKind === "town" && data.entry.object.town) || null;
+    (data?.entry?.object.oneofKind === "town" && data.entry.object.town) ||
+    null;
 
   if (isNaN(x) || isNaN(y)) {
     return <div>Bad coordinates</div>;

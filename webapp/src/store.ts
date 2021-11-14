@@ -25,6 +25,7 @@ import { Stats } from "./generated/stats";
 import { generateId } from "./utils";
 import { produce } from "immer";
 import { queryClient } from "./queryClient";
+import { apiFetch } from "./api";
 
 export type Lot = {
   building: Building;
@@ -76,6 +77,10 @@ type State = {
   steal: (x: number, y: number, amount: number) => void;
   readReport: (id: string) => void;
   startResearch: (discovery: ResearchDiscovery) => void;
+};
+
+const resetQueryDataState = () => {
+  queryClient.setQueriesData({}, () => undefined);
 };
 
 const mergeLots = (
@@ -156,7 +161,7 @@ export const useStore = create<State>((set, get) => ({
   reports: [],
   fetchGameData: async () => {
     set((state) => ({ ...state, gameDataLoading: true }));
-    const response = await fetch("/api/gamedata");
+    const response = await apiFetch("/gamedata");
     if (
       !response.ok ||
       response.headers.get("Content-Type") !== "application/json"
@@ -171,7 +176,8 @@ export const useStore = create<State>((set, get) => ({
   logout: async () => {
     get().connection?.close();
     set(resetAuthState);
-    await fetch("/api/auth/logout");
+    resetQueryDataState();
+    await apiFetch("/auth/logout");
   },
   tap: (lotId: string) => {
     set((state) =>
@@ -311,6 +317,7 @@ export const useStore = create<State>((set, get) => ({
       unstable_batchedUpdates(() => {
         set((state) => {
           if (connectionState.error === "unauthorized") {
+            resetQueryDataState();
             state = resetAuthState(state);
           }
           return { ...state, connectionState };

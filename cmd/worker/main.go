@@ -5,6 +5,8 @@ import (
 	"os"
 	"time"
 
+	firebase "firebase.google.com/go"
+	"firebase.google.com/go/messaging"
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
@@ -44,6 +46,33 @@ func main() {
 
 	ctx := context.Background()
 
+	useFirebase := envOrDefault("FEATURE_FIREBASE", "0") == "1"
+	usePushNotifications := envOrDefault("FEATURE_PUSH_NOTIFICATIONS", "0") == "1"
+
+	var fapp *firebase.App
+	var msgClient *messaging.Client
+	if useFirebase {
+		var err error
+		fapp, err = firebase.NewApp(context.Background(), nil)
+		if err != nil {
+			log.Fatal().Err(err).Msg("Error when initializing firebase app")
+		}
+
+		msgClient, err = fapp.Messaging(ctx)
+		if err != nil {
+			log.Fatal().Err(err).Msg("Error when initializing messaging client")
+		}
+	}
+
+	if usePushNotifications {
+		if !useFirebase {
+			log.Warn().Msg("Push notifications are not supported without enabling firebase")
+		} else {
+			log.Info().Msg("Starting Push Notification worker")
+			go pushNotificationsWorker(ctx, msgClient, rc)
+		}
+	}
+
 	for {
 		res, err := rdb.BLPop(ctx, 30*time.Second, "wsin").Result()
 		if err != nil {
@@ -72,4 +101,3 @@ func main() {
 	}
 
 }
-

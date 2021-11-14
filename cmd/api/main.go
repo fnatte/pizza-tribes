@@ -6,10 +6,12 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/fnatte/pizza-tribes/cmd/api/ws"
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/go-redis/redis/v8"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -31,7 +33,7 @@ func main() {
 		log.Error().Err(err).Msg("Failed to parse port")
 		return
 	}
-	origin := envOrDefault("ORIGIN", "http://localhost:8080")
+	origins := strings.Split(envOrDefault("ORIGIN", "http://localhost:8080"), " ")
 
 	// Setup redis client
 	rc := internal.NewRedisClient(redis.NewClient(&redis.Options{
@@ -46,7 +48,7 @@ func main() {
 	leaderboard := internal.NewLeaderboardService(rc)
 	wsHub := ws.NewHub()
 	handler := wsHandler{rc: rc, world: world}
-	wsEndpoint := ws.NewEndpoint(auth.Authorize, wsHub, &handler, origin)
+	wsEndpoint := ws.NewEndpoint(auth.Authorize, wsHub, &handler, origins)
 	poller := poller{rdb: rc, hub: wsHub}
 	ts := &TimeseriesService{r: rc, auth: auth}
 	worldController := &WorldController{auth: auth, world: world}
@@ -54,6 +56,9 @@ func main() {
 	leaderboardController := &LeaderboardController{
 		auth:        auth,
 		leaderboard: leaderboard}
+	pushNotificationsController := &PushNotificationsController{
+		auth: auth,
+		r:    rc}
 
 	r := mux.NewRouter()
 	r.Handle("/ws", wsEndpoint)
@@ -63,13 +68,19 @@ func main() {
 	registerSubrouter(r, "/world", worldController.Handler())
 	registerSubrouter(r, "/user", userController.Handler())
 	registerSubrouter(r, "/leaderboard", leaderboardController.Handler())
+	registerSubrouter(r, "/push_notifications", pushNotificationsController.Handler())
 
 	// Start web socket loop
 	go wsHub.Run()
 	go poller.run(ctx)
 
 	// Start HTTP server
-	err = http.ListenAndServe(fmt.Sprintf(":%d", port), r)
+	h := handlers.CORS(
+		handlers.AllowedOrigins(origins),
+		handlers.AllowCredentials(),
+		handlers.AllowedHeaders([]string{"Accept", "Accept-Language", "Authorization", "Content-Language", "Content-Type", "Origin"}),
+	)(r)
+	err = http.ListenAndServe(fmt.Sprintf(":%d", port), h)
 	if err != nil {
 		log.Fatal().Err(err).Msg("ListenAndServe")
 	}
@@ -82,7 +93,6 @@ func envOrDefault(key string, defaultVal string) string {
 	}
 	return defaultVal
 }
-
 
 func registerSubrouter(r *mux.Router, prefix string, handler http.Handler) {
 	r.PathPrefix(prefix).Handler(http.StripPrefix(prefix, handler))
