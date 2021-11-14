@@ -3,10 +3,6 @@
 	"appName": "Pizza Tribes",
 	"webDir": "dist",
 	"bundledWebRuntime": false,
-	"server": {
-		"url": "http://localhost:3000",
-		"cleartext": true
-	},
 	"android": {
 		"flavor": "dev"
 	}
