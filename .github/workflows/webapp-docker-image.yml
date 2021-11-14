@@ -7,8 +7,6 @@ on:
       - "README.md"
       - "cmd/**"
       - "internal/**"
-  pull_request:
-    branches: [main]
 
 jobs:
   build-and-push-webapp-docker-image:

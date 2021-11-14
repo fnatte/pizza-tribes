@@ -6,8 +6,6 @@ on:
     paths:
       - "Caddyfile"
       - "Dockerfile"
-  pull_request:
-    branches: [main]
 
 jobs:
   build-and-push-front-docker-image:
