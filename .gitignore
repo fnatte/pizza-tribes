@@ -3,3 +3,4 @@ internal/models/*.pb.go
 .env
 .ipynb_checkpoints
 .DS_Store
+.vscode
