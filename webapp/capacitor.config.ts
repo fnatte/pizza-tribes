@@ -8,10 +8,14 @@ const baseConfig: CapacitorConfig = {
   appendUserAgent: "pizzatribes",
 };
 
+const liveReload = {
+  url: "http://localhost:3000",
+  cleartext: true,
+};
+
 const devConfig: CapacitorConfig = {
   server: {
-    url: "http://localhost:3000",
-    cleartext: true,
+    ...(process.env.LIVE_RELOAD === "1" ? liveReload : {}),
   },
   android: {
     flavor: "dev",
