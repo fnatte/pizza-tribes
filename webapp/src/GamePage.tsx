@@ -289,7 +289,7 @@ function ResourceBar() {
     const pizzasSold = Math.min(demand, maxSellsByMice, pizzasAvailable);
 
     setDisplayCoins(c => c + pizzasSold);
-    setDisplayPizzas(p => p - pizzasSold);
+    setDisplayPizzas(p => Math.max(p - pizzasSold, 0));
   }, 100);
 
   useEffect(() => setDisplayCoins(coins), [coins]);
