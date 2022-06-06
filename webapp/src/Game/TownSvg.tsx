@@ -16,7 +16,7 @@ import { Building } from "../generated/building";
 import classnames from "classnames";
 import { getTapInfo } from "../utils";
 import { Construction } from "../generated/gamestate";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTimeoutFn } from "react-use";
 /*
       <div className={classnames("w-10", "h-10", "flex", "items-center")}>
@@ -58,33 +58,45 @@ const Badge: React.FC<{
   background = "red",
   size = "normal",
 }) => {
-  const { x, y } =
-    position === "topleft" ? { x: -10, y: -10 } : { x: 80, y: -5 };
+  const { x, y } = position === "topleft" ? { x: -2, y: -2 } : { x: 18, y: -1 };
+  const offset = useMemo(() => Math.random(), [])
 
   return (
-    <circle
-      x={x}
-      y={y}
-      cx="50"
-      cy="50"
-      r={size === "normal" ? "5" : "7"}
-      className={classnames({
-        "text-gray-50": background === "red",
-        "fill-red-700": background === "red",
-        "fill-gray-300": background === "white",
-        "text-black": background === "white",
-      })}
-    >
+    <g transform={`translate(${x}, ${y})`}>
       {animation === "bounce" && (
-        <animate
-          attributeName="cy"
-          values="0;5;0"
-          dur="10s"
+        <animateTransform
+          attributeName="transform"
+          begin={`${(offset * 2.5).toFixed(2)}s`}
+          dur="2.5s"
+          type="translate"
           repeatCount="indefinite"
+          fill="freeze"
+          calcMode="spline"
+          keySplines="0 0 1 1; 0.4 0 0.2 1; 0.4 0 0.2 1"
+          keyTimes="0; .8; .85; 1"
+          values={`${x} ${y}; ${x} ${y}; ${x} ${y-2}; ${x} ${y}`}
         />
       )}
-      {children}
-    </circle>
+      <circle
+        r={size === "normal" ? "3" : "4"}
+        className={classnames({
+          "fill-red-700": background === "red",
+          "fill-gray-300": background === "white",
+        })}
+      />
+      <text
+        textAnchor="middle"
+        dominantBaseline="central"
+        className={classnames({
+          "text-[4px]": size === "normal",
+          "text-[5px]": size === "big",
+          "text-gray-50": background === "red",
+          "text-black": background === "white",
+        })}
+      >
+        {children}
+      </text>
+    </g>
   );
 };
 
