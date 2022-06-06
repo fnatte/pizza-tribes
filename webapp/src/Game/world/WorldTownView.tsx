@@ -3,7 +3,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useAsync } from "react-use";
-import { classnames } from "tailwindcss-classnames";
+import classnames from "classnames";
 import { WorldEntry_Town } from "../../generated/world";
 import * as yup from "yup";
 import { RemoveIndex } from "../../utils";

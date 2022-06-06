@@ -1,5 +1,5 @@
 import React from "react";
-import { classnames } from "tailwindcss-classnames";
+import classnames from "classnames";
 import { ReactComponent as SvgLogoWide } from "../images/logo-wide.svg";
 
 function Header() {

@@ -1,5 +1,5 @@
 import React from "react";
-import { classnames } from "tailwindcss-classnames";
+import classnames from "classnames";
 import {useStore} from "../../store";
 
 type Props = {

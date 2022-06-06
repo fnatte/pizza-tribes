@@ -1,6 +1,6 @@
 import React from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { classnames } from "tailwindcss-classnames";
+import classnames from "classnames";
 import Header from "./Header";
 import LoginForm from "./LoginForm";
 import { useStore } from "./store";

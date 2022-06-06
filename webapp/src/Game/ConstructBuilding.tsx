@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { classnames } from "tailwindcss-classnames";
+import classnames from "classnames";
 import { Building } from "../generated/building";
 import { useStore } from "../store";
 import styles from "../styles";

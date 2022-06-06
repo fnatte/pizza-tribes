@@ -1,7 +1,7 @@
 import { formatISO9075 } from "date-fns";
 import React from "react";
 import { Link } from "react-router-dom";
-import { classnames } from "tailwindcss-classnames";
+import classnames from "classnames";
 import { useStore } from "../../store";
 import { parseDateNano } from "../../utils";
 

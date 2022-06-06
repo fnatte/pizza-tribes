@@ -1,5 +1,5 @@
 import React from "react";
-import { classnames, TArg, TClasses } from "tailwindcss-classnames";
+import classnames from "classnames";
 import { useStore } from "../store";
 import TravelQueueTable from "./TravelQueueTable";
 
@@ -11,7 +11,7 @@ const TravelQueue: React.FC<{ className?: string, minimized: boolean, onToggleCl
   }
 
   return (
-    <div className={classnames("bg-white", "p-2", className as TArg)}>
+    <div className={classnames("bg-white", "p-2", className)}>
       <div
         className={classnames(
           "flex",
@@ -23,7 +23,7 @@ const TravelQueue: React.FC<{ className?: string, minimized: boolean, onToggleCl
         <h4
           className={classnames({
             hidden: minimized,
-            ["xs:inline" as TClasses]: minimized,
+            "xs:inline": minimized,
             "mr-2": true,
           })}
         >

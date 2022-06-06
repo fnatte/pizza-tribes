@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { classnames, TArg } from "tailwindcss-classnames";
+import classnames from "classnames";
 import Header from "./Header";
 import styles from "./styles";
 import { yupResolver } from "@hookform/resolvers/yup";

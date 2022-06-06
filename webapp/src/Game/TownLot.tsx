@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { classnames, TArg } from "tailwindcss-classnames";
+import classnames from "classnames";
 import { Building } from "../generated/building";
 import { Lot, useStore } from "../store";
 import ConstructBuilding from "./ConstructBuilding";
@@ -190,32 +190,32 @@ const UpgradeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
       <table>
         <tbody>
           <tr>
-            <td className={classnames(label as TArg, "pr-2")}>Cost:</td>
-            <td className={classnames(value as TArg, "pr-2")}>
+            <td className={classnames(label, "pr-2")}>Cost:</td>
+            <td className={classnames(value, "pr-2")}>
               {formatNumber(cost)} coins
             </td>
           </tr>
           <tr>
-            <td className={classnames(label as TArg, "pr-2")}>Build time:</td>
-            <td className={classnames(value as TArg, "pr-2")}>
+            <td className={classnames(label, "pr-2")}>Build time:</td>
+            <td className={classnames(value, "pr-2")}>
               {formatDurationShort(constructionTime)}
             </td>
           </tr>
           {increasedPopulation > 0 && (
             <tr>
-              <td className={classnames(label as TArg, "pr-2")}>Population:</td>
-              <td className={classnames(value as TArg, "pr-2")}>
+              <td className={classnames(label, "pr-2")}>Population:</td>
+              <td className={classnames(value, "pr-2")}>
                 +{formatNumber(increasedPopulation)}
               </td>
             </tr>
           )}
           {increasesWorkforce > 0 && (
             <tr>
-              <td className={classnames(label as TArg, "pr-2")}>
+              <td className={classnames(label, "pr-2")}>
                 {employsChefs && "Chef positions:"}
                 {employsSalesmice && "Salesmouse positions:"}
               </td>
-              <td className={classnames(value as TArg, "pr-2")}>
+              <td className={classnames(value, "pr-2")}>
                 +{formatNumber(increasesWorkforce)}
               </td>
             </tr>
@@ -292,14 +292,14 @@ const RazeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
       <table>
         <tbody>
           <tr>
-            <td className={classnames(label as TArg, "pr-2")}>Raze Cost:</td>
-            <td className={classnames(value as TArg, "pr-2")}>
+            <td className={classnames(label, "pr-2")}>Raze Cost:</td>
+            <td className={classnames(value, "pr-2")}>
               {formatNumber(cost)} coins
             </td>
           </tr>
           <tr>
-            <td className={classnames(label as TArg, "pr-2")}>Raze time:</td>
-            <td className={classnames(value as TArg, "pr-2")}>
+            <td className={classnames(label, "pr-2")}>Raze time:</td>
+            <td className={classnames(value, "pr-2")}>
               {formatDurationShort(constructionTime)}
             </td>
           </tr>

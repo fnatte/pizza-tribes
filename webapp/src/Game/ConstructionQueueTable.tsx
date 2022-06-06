@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useInterval } from "react-use";
-import { classnames } from "tailwindcss-classnames";
+import classnames from "classnames";
 import { useStore } from "../store";
 import { formatNanoTimestampToNowShort } from "../utils";
 

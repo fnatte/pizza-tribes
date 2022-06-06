@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useEffect, useRef } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useLocalStorage, useMedia } from "react-use";
-import { classnames, TArg } from "tailwindcss-classnames";
+import classnames from "classnames";
 import { useStore } from "../store";
 import ConstructionQueue from "./ConstructionQueue";
 import Population from "./Population";
@@ -113,7 +113,7 @@ function Town() {
       >
         <TownSvg
           ref={ref}
-          className={classnames("w-full", "h-auto", classes.svg as TArg)}
+          className={classnames("w-full", "h-auto", classes.svg)}
           lots={lots}
           constructionQueue={constructionQueue}
         />

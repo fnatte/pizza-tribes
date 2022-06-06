@@ -2,7 +2,7 @@ import { formatDistanceToNow } from "date-fns";
 import JSBI from "jsbi";
 import React, { useState } from "react";
 import { useInterval } from "react-use";
-import { classnames } from "tailwindcss-classnames";
+import classnames from "classnames";
 import { Education } from "../generated/education";
 import { useStore } from "../store";
 import styles from "../styles";

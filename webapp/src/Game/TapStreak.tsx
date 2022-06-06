@@ -1,6 +1,6 @@
 import React from "react";
 import { usePrevious } from "react-use";
-import { classnames, TArg } from "tailwindcss-classnames";
+import classnames from "classnames";
 
 const TapStreak: React.VFC<{ value: number; max: number, className?: string|undefined }> = ({
   value,
@@ -11,7 +11,7 @@ const TapStreak: React.VFC<{ value: number; max: number, className?: string|unde
   const prevValue = usePrevious(value);
 
   return (
-    <div className={classnames("flex", "space-x-0.5", "justify-center", className as TArg)}>
+    <div className={classnames("flex", "space-x-0.5", "justify-center", className)}>
       {Array.from({ length: max}, (_, i) => {
         return (
           <div

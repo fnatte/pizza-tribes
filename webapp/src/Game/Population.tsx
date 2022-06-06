@@ -1,5 +1,5 @@
 import React from "react";
-import { classnames, TArg, TClasses } from "tailwindcss-classnames";
+import classnames from "classnames";
 import PopulationTable from "./PopulationTable";
 
 const Population: React.FC<{
@@ -14,14 +14,14 @@ const Population: React.FC<{
         "bg-white",
         "p-2",
         "pointer-events-auto",
-        className as TArg
+        className
       )}
     >
       <div className={classnames("flex", "items-center", "justify-between")}>
         <h4
           className={classnames({
             hidden: minimized,
-            ["xs:inline" as TClasses]: minimized,
+            "xs:inline": minimized,
             "mr-2": true,
           })}
         >

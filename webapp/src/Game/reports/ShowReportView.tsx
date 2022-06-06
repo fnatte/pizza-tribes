@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect } from "react";
-import { classnames } from "tailwindcss-classnames";
+import classnames from "classnames";
 import { useParams } from "react-router-dom";
 import { useStore } from "../../store";
 import { formatISO9075 } from "date-fns";
