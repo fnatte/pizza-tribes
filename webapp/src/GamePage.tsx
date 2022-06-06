@@ -276,6 +276,7 @@ function ResourceBar() {
   const [displayPizzas, setDisplayPizzas] = useState(pizzas);
   const [displayCoins, setDisplayCoins] = useState(coins);
 
+
   useInterval(() => {
     if (stats === null) {
       return;
@@ -387,7 +388,6 @@ function Loading() {
         "fixed",
         "left-1/2",
         "top-1/2",
-        "transform" as TArg,
         "-translate-y-1/2",
         "-translate-x-1/2"
       )}

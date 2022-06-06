@@ -18,18 +18,7 @@ import { getTapInfo } from "../utils";
 import { Construction } from "../generated/gamestate";
 import { useState } from "react";
 import { useTimeoutFn } from "react-use";
-
-const Badge: React.FC<{
-  position: "topleft" | "topright";
-  animation?: "bounce" | undefined;
-  background?: "red" | "white" | undefined;
-  size?: 'normal'|'big';
-}> = ({ position, animation, children, background = "red", size = "normal" }) => {
-  const { x, y } =
-    position === "topleft" ? { x: -10, y: -10 } : { x: 80, y: -5 };
-
-  return (
-    <foreignObject x={x} y={y} width="100" height="100" transform="scale(0.2)">
+/*
       <div className={classnames("w-10", "h-10", "flex", "items-center")}>
         <div
           className={classnames(
@@ -38,7 +27,7 @@ const Badge: React.FC<{
             "justify-center",
             "items-center",
             {
-              ["animate-bounce-loop" as any]: animation === "bounce",
+              // ["animate-bounce-loop" as any]: animation === "bounce",
               "text-gray-50": background === "red",
               "bg-red-700": background === "red",
               "bg-gray-300": background === "white",
@@ -48,14 +37,54 @@ const Badge: React.FC<{
               "h-5": size === "normal",
               "w-7": size === "big",
               "h-7": size === "big",
-              "pt-0.5": size === "big"
+              "pt-0.5": size === "big",
             }
           )}
         >
           {children}
         </div>
       </div>
-    </foreignObject>
+  */
+
+const Badge: React.FC<{
+  position: "topleft" | "topright";
+  animation?: "bounce" | undefined;
+  background?: "red" | "white" | undefined;
+  size?: "normal" | "big";
+}> = ({
+  position,
+  animation,
+  children,
+  background = "red",
+  size = "normal",
+}) => {
+  const { x, y } =
+    position === "topleft" ? { x: -10, y: -10 } : { x: 80, y: -5 };
+
+  return (
+    <circle
+      x={x}
+      y={y}
+      cx="50"
+      cy="50"
+      r={size === "normal" ? "5" : "7"}
+      className={classnames({
+        "text-gray-50": background === "red",
+        "fill-red-700": background === "red",
+        "fill-gray-300": background === "white",
+        "text-black": background === "white",
+      })}
+    >
+      {animation === "bounce" && (
+        <animate
+          attributeName="cy"
+          values="0;5;0"
+          dur="10s"
+          repeatCount="indefinite"
+        />
+      )}
+      {children}
+    </circle>
   );
 };
 
