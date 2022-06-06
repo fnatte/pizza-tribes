@@ -1,5 +1,5 @@
 import React from "react";
-import { classnames } from "tailwindcss-classnames";
+import classnames from "classnames";
 import { useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
 import { ReactComponent as HeartsSvg } from "../../images/hearts.svg";

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { classnames, TArg } from "tailwindcss-classnames";
+import classnames from "classnames";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { RemoveIndex } from "./utils";
@@ -103,7 +103,7 @@ const LoginForm: React.FC<Props> = ({ onLogin }) => {
           "px-8",
           "text-white",
           "bg-green-600",
-          "disabled:bg-gray-600" as TArg
+          "disabled:bg-gray-600"
         )}
         disabled={isSubmitting}
       >

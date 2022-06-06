@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, Navigate, Route, Routes, useNavigate } from "react-router-dom";
-import { classnames, TArg } from "tailwindcss-classnames";
+import classnames from "classnames";
 import Town from "./Game/Town";
 import TownLot from "./Game/TownLot";
 import { useStore } from "./store";
@@ -82,7 +82,7 @@ const BadgeCount: React.VFC<{ className?: string; count: number }> = ({
         "w-7",
         "h-7",
         "text-white",
-        className as TArg
+        className
       )}
     >
       {count}
@@ -95,7 +95,6 @@ const ButtonBadgeCount: React.FC<{ count: number }> = ({ count }) => {
     <BadgeCount
       count={count}
       className={classnames(
-        "transform" as TArg,
         "translate-x-1",
         "-translate-y-3"
       )}
@@ -178,7 +177,6 @@ function Navigation() {
               <BadgeCount
                 count={unreads}
                 className={classnames(
-                  "transform" as TArg,
                   "translate-x-5",
                   "-translate-y-4"
                 )}
@@ -193,7 +191,6 @@ function Navigation() {
                 "flex-col",
                 "bg-green-200",
                 "z-10",
-                "transform" as TArg,
                 "sm:-translate-x-1/2",
                 "sm:right-auto",
                 "translate-y-2",
@@ -361,7 +358,6 @@ const ConnectionPopup: React.VFC<{ connectionState: ConnectionState }> = ({
         "fixed",
         "top-1/2",
         "left-1/2",
-        "transform" as TArg,
         "-translate-x-1/2",
         "-translate-y-1/2",
         "p-4",

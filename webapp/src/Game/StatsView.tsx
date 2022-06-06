@@ -10,7 +10,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { classnames } from "tailwindcss-classnames";
+import classnames from "classnames";
 import { apiFetch } from "../api";
 import { TimeseriesData } from "../generated/timeseries";
 import { useStore } from "../store";

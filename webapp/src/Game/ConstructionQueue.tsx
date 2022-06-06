@@ -1,5 +1,5 @@
 import React from "react";
-import { classnames, TArg, TClasses } from "tailwindcss-classnames";
+import classnames from "classnames";
 import { useStore } from "../store";
 import ConstructionQueueTable from "./ConstructionQueueTable";
 
@@ -21,7 +21,7 @@ const ConstructionQueue: React.FC<{
       className={classnames(
         "bg-white",
         "p-2",
-        className as TArg,
+        className,
         "pointer-events-auto"
       )}
     >
@@ -29,7 +29,7 @@ const ConstructionQueue: React.FC<{
         <h4
           className={classnames({
             hidden: minimized,
-            ["xs:inline" as TClasses]: minimized,
+            "xs:inline": minimized,
             "mr-2": true,
           })}
         >

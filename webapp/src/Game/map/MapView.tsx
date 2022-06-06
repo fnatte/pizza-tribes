@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAsync, useMedia } from "react-use";
-import { classnames } from "tailwindcss-classnames";
+import classnames from "classnames";
 import { EntriesResponse, WorldEntry } from "../../generated/world";
 import HexGrid from "./HexGrid";
 import { ReactComponent as HeartsSvg } from "../../../images/hearts.svg";

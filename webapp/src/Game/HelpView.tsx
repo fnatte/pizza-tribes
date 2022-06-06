@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocalStorage } from "react-use";
-import { classnames } from "tailwindcss-classnames";
+import classnames from "classnames";
 import howToConstructBuildingImage from "../../images/how-to-construct-building-1.jpg";
 import howToEducate1Image from "../../images/how-to-educate-1.jpg";
 import howToEducate2Image from "../../images/how-to-educate-2.jpg";

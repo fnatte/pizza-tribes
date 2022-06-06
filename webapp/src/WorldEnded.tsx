@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
-import { classnames } from "tailwindcss-classnames";
+import classnames from "classnames";
 import { WorldState } from "./generated/world";
 import Header from "./Header";
 import { useUser } from "./queries/useUser";

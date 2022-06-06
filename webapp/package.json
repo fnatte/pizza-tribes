@@ -31,7 +31,6 @@
     "react-router-dom": "^6.0.2",
     "react-use": "^17.3.1",
     "recharts": "2.1.6",
-    "tailwindcss-classnames": "^3.0.5",
     "yup": "^0.32.11",
     "zustand": "^3.6.5"
   },

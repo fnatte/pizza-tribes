@@ -13,7 +13,7 @@ import { ReactComponent as SvgConstructingSchool } from "../../images/constructi
 import { ReactComponent as SvgConstructingMarketingHQ } from "../../images/constructing-marketing-hq.svg";
 import { ReactComponent as SvgConstructingResearchInstitute } from "../../images/constructing-research-institute.svg";
 import { Building } from "../generated/building";
-import { classnames } from "tailwindcss-classnames";
+import classnames from "classnames";
 import { getTapInfo } from "../utils";
 import { Construction } from "../generated/gamestate";
 import { useState } from "react";

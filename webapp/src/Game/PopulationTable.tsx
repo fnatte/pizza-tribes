@@ -1,5 +1,5 @@
 import React from "react";
-import { classnames } from "tailwindcss-classnames";
+import classnames from "classnames";
 import { Education } from "../generated/education";
 import { GameState_Population } from "../generated/gamestate";
 import { useStore } from "../store";
