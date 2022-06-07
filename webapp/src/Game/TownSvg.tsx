@@ -18,33 +18,6 @@ import { getTapInfo } from "../utils";
 import { Construction } from "../generated/gamestate";
 import { useMemo, useState } from "react";
 import { useTimeoutFn } from "react-use";
-/*
-      <div className={classnames("w-10", "h-10", "flex", "items-center")}>
-        <div
-          className={classnames(
-            "rounded-full",
-            "flex",
-            "justify-center",
-            "items-center",
-            {
-              // ["animate-bounce-loop" as any]: animation === "bounce",
-              "text-gray-50": background === "red",
-              "bg-red-700": background === "red",
-              "bg-gray-300": background === "white",
-              "text-black": background === "white",
-              "text-xs": size === "normal",
-              "w-5": size === "normal",
-              "h-5": size === "normal",
-              "w-7": size === "big",
-              "h-7": size === "big",
-              "pt-0.5": size === "big",
-            }
-          )}
-        >
-          {children}
-        </div>
-      </div>
-  */
 
 const Badge: React.FC<{
   position: "topleft" | "topright";

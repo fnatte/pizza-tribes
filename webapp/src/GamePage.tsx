@@ -23,7 +23,8 @@ import { formatNumber } from "./utils";
 import HelpView from "./Game/HelpView";
 import { useWorldState } from "./queries/useWorldState";
 import { WorldStarting } from "./WorldStarting";
-import {WorldEnded} from "./WorldEnded";
+import { WorldEnded } from "./WorldEnded";
+import { Clock, Coin, Pizza, Sparkles } from "./icons";
 
 type ClockState = {
   formatted: string;
@@ -94,10 +95,7 @@ const ButtonBadgeCount: React.FC<{ count: number }> = ({ count }) => {
   return (
     <BadgeCount
       count={count}
-      className={classnames(
-        "translate-x-1",
-        "-translate-y-3"
-      )}
+      className={classnames("translate-x-1", "-translate-y-3")}
     />
   );
 };
@@ -176,10 +174,7 @@ function Navigation() {
             {unreads > 0 && !menuExpanded && (
               <BadgeCount
                 count={unreads}
-                className={classnames(
-                  "translate-x-5",
-                  "-translate-y-4"
-                )}
+                className={classnames("translate-x-5", "-translate-y-4")}
               />
             )}
           </div>
@@ -245,25 +240,9 @@ function GameTitle() {
   );
 }
 
-function CoinEmoji() {
-  return <span>🪙</span>;
-}
-
-function PizzaEmoji() {
-  return <span>🍕</span>;
-}
-
-function ClockEmoji() {
-  return <span>🕓</span>;
-}
-
-function SparkleEmoji() {
-  return <span>✨</span>;
-}
-
 const FormattedInteger: React.VFC<{ value: number }> = ({ value }) => {
   return <span>{formatNumber(Math.floor(value))}</span>;
-}
+};
 
 function ResourceBar() {
   const { pizzas, coins } = useStore((state) => state.gameState.resources);
@@ -273,21 +252,21 @@ function ResourceBar() {
   const [displayPizzas, setDisplayPizzas] = useState(pizzas);
   const [displayCoins, setDisplayCoins] = useState(coins);
 
-
   useInterval(() => {
     if (stats === null) {
       return;
     }
     const dt = 0.1;
 
-    const demand = (clock.isRushHour ? stats.demandRushHour : stats.demandOffpeak) * dt;
+    const demand =
+      (clock.isRushHour ? stats.demandRushHour : stats.demandOffpeak) * dt;
     const pizzasProduced = stats.pizzasProducedPerSecond * dt;
     const pizzasAvailable = pizzas + pizzasProduced;
     const maxSellsByMice = stats.maxSellsByMicePerSecond * dt;
     const pizzasSold = Math.min(demand, maxSellsByMice, pizzasAvailable);
 
-    setDisplayCoins(c => c + pizzasSold);
-    setDisplayPizzas(p => Math.max(p - pizzasSold, 0));
+    setDisplayCoins((c) => c + pizzasSold);
+    setDisplayPizzas((p) => Math.max(p - pizzasSold, 0));
   }, 100);
 
   useEffect(() => setDisplayCoins(coins), [coins]);
@@ -305,21 +284,24 @@ function ResourceBar() {
       )}
     >
       <span className={classnames("px-3", "mb-2", "md:px-6")}>
-        <CoinEmoji /> <FormattedInteger value={displayCoins} />
+        <Coin className={classnames("inline h-[1.25em] w-[1.25em]")} />{" "}
+        <FormattedInteger value={displayCoins} />
       </span>
       <span className={classnames("px-3", "mb-2", "md:px-6")}>
-        <PizzaEmoji /> <FormattedInteger value={displayPizzas} />
+        <Pizza className={classnames("inline h-[1.25em] w-[1.25em]")} />{" "}
+        <FormattedInteger value={displayPizzas} />
       </span>
       <span className={classnames("px-3", "mb-2", "md:px-6")}>
         <span className={classnames("px-2")}>
-          <ClockEmoji />{" "}
+          <Clock className={classnames("inline h-[1.25em] w-[1.25em]")} />{" "}
           <span style={{ minWidth: 60, display: "inline-block" }}>
             {clock.formatted}
           </span>
         </span>
         {clock.isRushHour && (
           <span className={classnames("px-2")}>
-            <SparkleEmoji /> Rush Hour!
+            <Sparkles className={classnames("inline h-[1.25em] w-[1.25em]")} />{" "}
+            Rush Hour!
           </span>
         )}
       </span>
