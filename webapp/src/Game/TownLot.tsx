@@ -19,6 +19,8 @@ import { confetti } from "../confetti";
 import classes from "./town-lot.module.css";
 import classNames from "classnames";
 import TapStreak from "./TapStreak";
+import ReactDOM from "react-dom";
+import { Coin, Pizza } from "../icons";
 
 const label = classnames("text-xs", "md:text-sm", "mr-1");
 const value = classnames("text-sm", "md:text-lg", "ml-1");
@@ -30,7 +32,10 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
 
   const tap = useStore((state) => state.tap);
 
-  const { nextTapAt, canTap, taps, tapsRemaining, streak } = getTapInfo(lot, now);
+  const { nextTapAt, canTap, taps, tapsRemaining, streak } = getTapInfo(
+    lot,
+    now
+  );
 
   useTimeoutFn(
     () => setNow(new Date()),
@@ -76,8 +81,14 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
         spread: 35,
         duration: 2000,
         modifyElement: (element: HTMLElement) => {
-          element.textContent = tapResource === "coins" ? "🪙" : "🍕";
-          element.style.fontSize = "25px";
+          ReactDOM.render(
+            tapResource === "pizzas" ? (
+              <Pizza className={classnames("w-12 h-12")} />
+            ) : (
+              <Coin className={classnames("w-12 h-12")} />
+            ),
+            element
+          );
         },
       });
     }
@@ -325,7 +336,12 @@ const RazeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
 function TownLot() {
   const { id } = useParams();
 
-  const lot = useStore(useCallback((state) => id !== undefined ? state.gameState.lots[id] : undefined, [id]));
+  const lot = useStore(
+    useCallback(
+      (state) => (id !== undefined ? state.gameState.lots[id] : undefined),
+      [id]
+    )
+  );
   const stats = useStore((state) => state.gameStats);
   const population = useStore((state) => state.gameState.population);
   const gameData = useStore((state) => state.gameData);
