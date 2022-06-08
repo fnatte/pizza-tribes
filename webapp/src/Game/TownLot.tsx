@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useParams } from "react-router-dom";
 import classnames from "classnames";
 import { Building } from "../generated/building";
@@ -69,7 +75,19 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
       return null;
   }
 
-  const onClick = () => {
+  const pizzaElement = useMemo(() => {
+    const div = document.createElement("div");
+    ReactDOM.render(<Pizza className={classnames("w-12 h-12")} />, div);
+    return div;
+  }, []);
+
+  const coinElement = useMemo(() => {
+    const div = document.createElement("div");
+    ReactDOM.render(<Coin className={classnames("w-12 h-12")} />, div);
+    return div;
+  }, []);
+
+  const onClick = useCallback(() => {
     tap(lotId);
     setTapBackoff(true);
 
@@ -80,19 +98,14 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
         startVelocity: 27,
         spread: 35,
         duration: 2000,
-        modifyElement: (element: HTMLElement) => {
-          ReactDOM.render(
-            tapResource === "pizzas" ? (
-              <Pizza className={classnames("w-12 h-12")} />
-            ) : (
-              <Coin className={classnames("w-12 h-12")} />
-            ),
-            element
-          );
+        createElement: () => {
+          return (tapResource === "pizzas"
+            ? pizzaElement.cloneNode(true)
+            : coinElement.cloneNode(true)) as HTMLElement;
         },
       });
     }
-  };
+  }, [lotId, lot, pizzaElement, coinElement]);
 
   return (
     <section

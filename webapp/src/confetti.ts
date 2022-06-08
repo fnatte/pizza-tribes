@@ -7,8 +7,10 @@
  * Changes:
  *  - 2021-07-01: add modifyElement option
  *  - 2021-07-02: convert to typescript
+ *  - 2022-06-08: add createElement option
  */
 
+type CreateElementFn = () => HTMLElement;
 type ModifyElementFn = (element: HTMLElement) => any;
 type RandomFn = () => number;
 
@@ -45,14 +47,15 @@ interface ConfettiConfig {
     colors?: string[];
     random?: () => number;
     modifyElement?: (element: HTMLElement) => any;
+    createElement?: () => HTMLElement;
 }
 
 
 const defaultColors = ["#a864fd", "#29cdff", "#78ff44", "#ff718d", "#fdff6a"];
 
-function createElements(root: HTMLElement, elementCount: number, colors: string[], width: string, height: string, modifyElement: ModifyElementFn|undefined) {
+function createElements(root: HTMLElement, elementCount: number, colors: string[], width: string, height: string, createElement: CreateElementFn | undefined, modifyElement: ModifyElementFn|undefined) {
   return Array.from({ length: elementCount }).map((_, index) => {
-    const element = document.createElement("div");
+    const element = createElement ? createElement() : document.createElement("div");
     const color = colors[index % colors.length];
     element.style.backgroundColor = color;
     element.style.width = width;
@@ -155,6 +158,7 @@ const defaults = {
   random: Math.random,
   elementTextContent: null,
   modifyElement: null,
+  createElement: null,
 };
 
 export function confetti(root: HTMLElement, config: ConfettiConfig = {}) {
@@ -173,9 +177,10 @@ export function confetti(root: HTMLElement, config: ConfettiConfig = {}) {
     stagger,
     random,
     modifyElement,
+    createElement,
   } = Object.assign({}, defaults, config);
   root.style.perspective = perspective;
-  const elements = createElements(root, elementCount, colors, width, height, modifyElement);
+  const elements = createElements(root, elementCount, colors, width, height, createElement, modifyElement);
   const fettis = elements.map(element => ({
     element,
     physics: randomPhysics(angle, spread, startVelocity, random)
