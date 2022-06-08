@@ -1,5 +1,6 @@
 .tapButton {
   position: relative;
+  user-select: none;
 }
 
 .tapButton > span {
