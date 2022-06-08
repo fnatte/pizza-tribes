@@ -8,6 +8,7 @@
  *  - 2021-07-01: add modifyElement option
  *  - 2021-07-02: convert to typescript
  *  - 2022-06-08: add createElement option
+ *  - 2022-06-08: set pointerEvents to none
  */
 
 type CreateElementFn = () => HTMLElement;
@@ -62,7 +63,8 @@ function createElements(root: HTMLElement, elementCount: number, colors: string[
     element.style.height = height;
     element.style.position = "absolute";
     element.style.willChange = "transform, opacity";
-    element.style.visibility = "hidden";
+    element.style.opacity = "0"
+    element.style.pointerEvents = "none";
     if (typeof modifyElement === 'function') {
       modifyElement(element);
     }
@@ -108,7 +110,6 @@ function updateFetti(fetti: Fetti, progress: number, dragFriction: number, decay
   const wobbleY = y + 10 * Math.sin(wobble);
   const transform = `translate3d(${wobbleX}px, ${wobbleY}px, ${z}px) rotate3d(1, 1, 1, ${tiltAngle}rad)`;
 
-  fetti.element.style.visibility = "visible";
   fetti.element.style.transform = transform;
   fetti.element.style.opacity = (1 - progress).toString();
 

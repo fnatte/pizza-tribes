@@ -31,6 +31,12 @@ import { Coin, Pizza } from "../icons";
 const label = classnames("text-xs", "md:text-sm", "mr-1");
 const value = classnames("text-sm", "md:text-lg", "ml-1");
 
+const pizzaElement = document.createElement("div");
+ReactDOM.render(<Pizza className={classnames("w-12 h-12")} />, pizzaElement);
+
+const coinElement = document.createElement("div");
+ReactDOM.render(<Coin className={classnames("w-12 h-12")} />, coinElement);
+
 const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
   const [now, setNow] = useState(new Date());
   const [tapBackoff, setTapBackoff] = useState(false);
@@ -75,18 +81,6 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
       return null;
   }
 
-  const pizzaElement = useMemo(() => {
-    const div = document.createElement("div");
-    ReactDOM.render(<Pizza className={classnames("w-12 h-12")} />, div);
-    return div;
-  }, []);
-
-  const coinElement = useMemo(() => {
-    const div = document.createElement("div");
-    ReactDOM.render(<Coin className={classnames("w-12 h-12")} />, div);
-    return div;
-  }, []);
-
   const onClick = useCallback(() => {
     tap(lotId);
     setTapBackoff(true);
@@ -130,7 +124,10 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
           <br />
           {taps} of 10
         </span>
-        <div ref={buttonConfettiRef} />
+        <div
+          ref={buttonConfettiRef}
+          className={classnames("pointer-events-none")}
+        />
       </button>{" "}
       {
         <div
