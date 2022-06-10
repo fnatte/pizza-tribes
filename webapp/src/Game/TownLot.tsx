@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import classnames from "classnames";
 import { Building } from "../generated/building";
@@ -49,10 +43,14 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
     now
   );
 
-  useTimeoutFn(
+  const { 2: reset } = useTimeoutFn(
     () => setNow(new Date()),
     Math.max(Math.min(nextTapAt - Date.now(), 10_000), 16)
   );
+
+  useEffect(() => {
+    reset();
+  }, [nextTapAt]);
 
   useEffect(() => {
     let timerId = -1;
