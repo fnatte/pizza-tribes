@@ -16,7 +16,16 @@ const HelpView: React.VFC<{}> = () => {
 
   return (
     <div
-      className={classnames("flex", "items-center", "flex-col", "mt-2", "p-2")}
+      className={classnames(
+        "container",
+        "max-w-screen-md",
+        "mx-auto",
+        "flex",
+        "items-center",
+        "flex-col",
+        "mt-2",
+        "p-2"
+      )}
     >
       <h2>Game Help</h2>
 
@@ -26,8 +35,8 @@ const HelpView: React.VFC<{}> = () => {
           <p>
             You are in charge of building and expanding your town by building
             and assigning roles to your mice population. Your pizza empire will
-            earn coins by selling pizzas. The player with the most coins is
-            proclaimed as the winner.
+            earn coins by selling pizzas. The player that is first to reach
+            10&nbsp;million coins is proclaimed as the winner.
           </p>
 
           <p>
@@ -39,7 +48,7 @@ const HelpView: React.VFC<{}> = () => {
 
           <p>You should start of by constructing some buildings:</p>
           <ul
-            className={classnames("list-disc", "list-inside", "ml-4", "my-2")}
+            className={classnames("list-disc", "list-inside", "ml-4", "my-8")}
           >
             <li>A house &mdash; so that mice will move in to your town</li>
             <li>A school &mdash; so that you can educate your mice</li>
