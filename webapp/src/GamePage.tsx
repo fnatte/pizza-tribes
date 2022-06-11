@@ -257,7 +257,7 @@ function ResourceBar() {
     const pizzasSold = Math.min(demand, maxSellsByMice, pizzasAvailable);
 
     setDisplayCoins((c) => c + pizzasSold);
-    setDisplayPizzas((p) => Math.max(p - pizzasSold, 0));
+    setDisplayPizzas((p) => Math.max(p + pizzasProduced - pizzasSold, 0));
   }, 100);
 
   useEffect(() => setDisplayCoins(coins), [coins]);
@@ -295,9 +295,7 @@ function ResourceBar() {
         </div>
       </div>
       <div className="flex gap-1">
-        <Pizza
-          className={"h-[1.25em] w-[1.25em]"}
-        />
+        <Pizza className={"h-[1.25em] w-[1.25em]"} />
         <div
           className={classnames(
             pizzasWidth,
@@ -316,7 +314,7 @@ function ResourceBar() {
             {clock.formatted}
           </div>
         </div>
-        {(clock.isRushHour || true) && (
+        {clock.isRushHour && (
           <div className="flex gap-1">
             <Sparkles className="h-[1.25em] w-[1.25em]" />
             <div>Rush Hour!</div>
