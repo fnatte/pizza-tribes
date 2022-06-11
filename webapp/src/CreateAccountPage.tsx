@@ -27,6 +27,8 @@ const CreateAccountPage: React.VFC<{}> = () => {
     formState: { errors, isSubmitting },
   } = useForm<FormFields>({ resolver: yupResolver(schema) });
 
+  const [serverErrorMessage, setServerErrorMessage] = useState<string>();
+
   const navigate = useNavigate();
 
   const onSubmit = async (data: FormFields) => {
@@ -35,6 +37,9 @@ const CreateAccountPage: React.VFC<{}> = () => {
       body: JSON.stringify(data),
     });
     if (!res.ok) {
+      const errorMessage = await res.text();
+      setServerErrorMessage(errorMessage);
+
       console.error(
         `Request to register user failed. Status code was ${res.status}`
       );
@@ -95,6 +100,9 @@ const CreateAccountPage: React.VFC<{}> = () => {
         >
           Create Account
         </button>
+        {serverErrorMessage && (
+          <div className={classnames("text-red-900")}>{serverErrorMessage}</div>
+        )}
       </form>
 
       <nav className={classnames("mt-10", "flex", "justify-center")}>

@@ -63,6 +63,8 @@ func NewAuthService(rdb redis.UniversalClient) *AuthService {
 	}
 }
 
+var ErrUsernameTaken = errors.New("username is taken")
+
 var jwtSigningKey = []byte{}
 
 func init() {
@@ -85,6 +87,15 @@ func (a *AuthService) Register(ctx context.Context, username, password string) e
 	usernameKey := fmt.Sprintf("username:%s", strings.ToLower(username))
 	userKey := fmt.Sprintf("user:%s", id)
 
+	// Check for existing user with this username
+	res, err := a.rdb.Exists(ctx, usernameKey).Result()
+	if err != nil && err != redis.Nil {
+		return err
+	}
+	if res != 0 {
+		return ErrUsernameTaken
+	}
+
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
@@ -92,6 +103,7 @@ func (a *AuthService) Register(ctx context.Context, username, password string) e
 
 	txf := func(tx *redis.Tx) error {
 		_, err := tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+
 			pipe.Set(ctx, usernameKey, id, 0)
 			pipe.HSet(ctx, userKey, "id", id, "username", username, "hashed_password", hash)
 			return nil
@@ -233,7 +245,11 @@ func (a *AuthService) Handler() http.Handler {
 		err = a.Register(r.Context(), req.Username, req.Password)
 		if err != nil {
 			log.Error().Err(err).Msg("Error when registering user")
-			http.Error(w, "Failed to register", http.StatusInternalServerError)
+			if errors.Is(err, ErrUsernameTaken) {
+				http.Error(w, "Username taken", http.StatusBadRequest)
+			} else {
+				http.Error(w, "Failed to register", http.StatusInternalServerError)
+			}
 			return
 		}
 
