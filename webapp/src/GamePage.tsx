@@ -11,12 +11,7 @@ import StatsView from "./Game/StatsView";
 import MapView from "./Game/map/MapView";
 import WorldEntryView from "./Game/world/WorldEntryView";
 import LeaderboardView from "./Game/LeaderboardView";
-import {
-  useClickAway,
-  useInterval,
-  useMedia,
-  usePreviousDistinct,
-} from "react-use";
+import { useClickAway, useInterval, useMedia } from "react-use";
 import ListReportsView from "./Game/reports/ListReportsView";
 import ShowReportView from "./Game/reports/ShowReportView";
 import { formatNumber } from "./utils";
@@ -240,10 +235,6 @@ function GameTitle() {
   );
 }
 
-const FormattedInteger: React.VFC<{ value: number }> = ({ value }) => {
-  return <span>{formatNumber(Math.floor(value))}</span>;
-};
-
 function ResourceBar() {
   const { pizzas, coins } = useStore((state) => state.gameState.resources);
   const stats = useStore((state) => state.gameStats);
@@ -272,6 +263,12 @@ function ResourceBar() {
   useEffect(() => setDisplayCoins(coins), [coins]);
   useEffect(() => setDisplayPizzas(pizzas), [pizzas]);
 
+  const pizzasDisplayText = formatNumber(Math.floor(displayPizzas));
+  const pizzasWidth = getTextWidthClass(pizzasDisplayText);
+
+  const coinsDisplayText = formatNumber(Math.floor(displayCoins));
+  const coinsWidth = getTextWidthClass(coinsDisplayText);
+
   return (
     <div
       className={classnames(
@@ -280,33 +277,66 @@ function ResourceBar() {
         "flex-wrap",
         "text-xl",
         "sm:text-2xl",
-        "mt-2"
+        "mt-2",
+        "gap-2"
       )}
     >
-      <span className={classnames("px-3", "mb-2", "md:px-6")}>
-        <Coin className={classnames("inline h-[1.25em] w-[1.25em]")} />{" "}
-        <FormattedInteger value={displayCoins} />
-      </span>
-      <span className={classnames("px-3", "mb-2", "md:px-6")}>
-        <Pizza className={classnames("inline h-[1.25em] w-[1.25em]")} />{" "}
-        <FormattedInteger value={displayPizzas} />
-      </span>
-      <span className={classnames("px-3", "mb-2", "md:px-6")}>
-        <span className={classnames("px-2")}>
-          <Clock className={classnames("inline h-[1.25em] w-[1.25em]")} />{" "}
-          <span style={{ minWidth: 60, display: "inline-block" }}>
+      <div className="flex gap-1">
+        <Coin className={"h-[1.25em] w-[1.25em]"} />
+        <div
+          className={classnames(
+            coinsWidth,
+            "h-[1.25em]",
+            "overflow-hidden",
+            "[contain:strict]"
+          )}
+        >
+          {coinsDisplayText}
+        </div>
+      </div>
+      <div className="flex gap-1">
+        <Pizza
+          className={"h-[1.25em] w-[1.25em]"}
+        />
+        <div
+          className={classnames(
+            pizzasWidth,
+            "h-[1.25em]",
+            "overflow-hidden",
+            "[contain:strict]"
+          )}
+        >
+          {pizzasDisplayText}
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <div className="flex gap-1">
+          <Clock className="h-[1.25em] w-[1.25em]" />
+          <div className="w-16 h-[1.25em] overflow-hidden [contain:strict]">
             {clock.formatted}
-          </span>
-        </span>
-        {clock.isRushHour && (
-          <span className={classnames("px-2")}>
-            <Sparkles className={classnames("inline h-[1.25em] w-[1.25em]")} />{" "}
-            Rush Hour!
-          </span>
+          </div>
+        </div>
+        {(clock.isRushHour || true) && (
+          <div className="flex gap-1">
+            <Sparkles className="h-[1.25em] w-[1.25em]" />
+            <div>Rush Hour!</div>
+          </div>
         )}
-      </span>
+      </div>
     </div>
   );
+}
+
+function getTextWidthClass(text: string) {
+  if (text.length < 3) {
+    return "w-[3ch]";
+  } else if (text.length < 5) {
+    return "w-[5ch]";
+  } else if (text.length < 8) {
+    return "w-[8ch]";
+  } else {
+    return "w-[10ch]";
+  }
 }
 
 function Separator() {
