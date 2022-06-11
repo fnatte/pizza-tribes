@@ -194,13 +194,15 @@ const renderLot = (
   const lot = lots[lotId];
   const construction = constructionQueue.find((x) => x.lotId === lotId);
 
-  if (!lot) {
-    return null;
+  if (construction && !construction.razing && construction.level <= 0) {
+    return renderConstructingBuilding(construction.building);
   }
 
-  return construction && !construction.razing && construction.level <= 0
-    ? renderConstructingBuilding(construction.building)
-    : renderBuilding(lot.building, getTapInfo(lot, now).canTap, lot.level + 1);
+  if (lot) {
+    return renderBuilding(lot.building, getTapInfo(lot, now).canTap, lot.level + 1);
+  }
+
+  return null;
 };
 
 function SvgTown(
