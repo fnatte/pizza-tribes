@@ -26,21 +26,34 @@ export const WorldStarting: React.FC<{ state: WorldState }> = ({ state }) => {
       )}
     >
       <Header />
-      <div className={classnames("p-2", "prose" as any)}>
+      <div
+        className={classnames(
+          "container",
+          "mx-auto",
+          "mt-4",
+          "p-4",
+          "max-w-md",
+          "bg-green-50",
+          "prose"
+        )}
+      >
         <h2>The round has not yet started.</h2>
         <p>Ready for a round of Pizza Tribes? We are almost ready to go!</p>
         <p>
           The game will start at{" "}
-          {formatISO9075(new Date(Number(state.startTime) * 1e3))}.
+          <span className="font-bold">
+            {formatISO9075(new Date(Number(state.startTime) * 1e3))}
+          </span>
+          .
         </p>
-        <div className={classnames("mt-8")}>
-          <button
-            className={classnames(styles.primaryButton, "mr-2")}
-            onClick={() => onClickLogout()}
-          >
-            Logout
-          </button>{" "}
-        </div>
+      </div>
+      <div className={classnames("mt-8")}>
+        <button
+          className={classnames(styles.primaryButton, "mr-2")}
+          onClick={() => onClickLogout()}
+        >
+          Logout
+        </button>{" "}
       </div>
     </div>
   );
