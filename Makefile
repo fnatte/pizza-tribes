@@ -31,7 +31,11 @@ build-updater: $(PBGO)
 build-migrator: $(PBGO)
 	go build $(GO_FLAGS) -o out/pizza-tribes-migrator github.com/fnatte/pizza-tribes/cmd/migrator
 
-build: build-api build-worker build-updater build-migrator
+.PHONY: build-admin
+build-admin: $(PBGO)
+	go build $(GO_FLAGS) -o out/pizza-tribes-admin github.com/fnatte/pizza-tribes/cmd/admin
+
+build: build-api build-worker build-updater build-migrator build-admin
 
 start-migrator: build-migrator
 	out/pizza-tribes-migrator

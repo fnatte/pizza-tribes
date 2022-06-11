@@ -23,6 +23,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/rs/xid v1.3.0
 	github.com/rs/zerolog v1.26.0
+	github.com/spf13/cobra v1.4.0 // indirect
 	golang.org/x/crypto v0.0.0-20211108221036-ceb1ce70b4fa
 	golang.org/x/exp v0.0.0-20211111183329-cb5df436b1a8
 	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect

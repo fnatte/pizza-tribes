@@ -76,6 +76,13 @@ COPY --from=builder /app/out/pizza-tribes-migrator /app/pizza-tribes-migrator
 CMD ["/app/pizza-tribes-migrator"]
 
 #
+# Admin
+#
+FROM base-runner AS admin
+COPY --from=builder /app/out/pizza-tribes-admin /app/pizza-tribes-admin
+CMD ["/app/pizza-tribes-admin"]
+
+#
 # Web App
 #
 FROM nginx AS webapp

@@ -76,6 +76,10 @@ func (s *WorldService) Start(ctx context.Context) error {
 	return s.r.JsonSet(ctx, "world", ".state", b).Err()
 }
 
+func (s *WorldService) SetStartTime(ctx context.Context, startTime int64) error {
+	return s.r.JsonSet(ctx, "world", ".state.startTime", startTime).Err()
+}
+
 func (s *WorldService) End(ctx context.Context, winnerUserId string) (*WorldState, error) {
 	state, err := s.GetState(ctx)
 	if err != nil {

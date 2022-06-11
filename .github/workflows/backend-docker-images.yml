@@ -48,3 +48,10 @@ jobs:
           target: migrator
           push: true
           tags: ghcr.io/fnatte/pizza-tribes-migrator:latest
+      - name: Build and push - Admin
+        id: docker_build_admin
+        uses: docker/build-push-action@v2
+        with:
+          target: admin
+          push: true
+          tags: ghcr.io/fnatte/pizza-tribes-admin:latest
