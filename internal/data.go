@@ -16,14 +16,21 @@ var FullGameData = GameData{
 			TitlePlural: "Kitchens",
 			LevelInfos: []*BuildingInfo_LevelInfo{
 				{
-					Cost:             2_500,
+					Cost:             7_500,
 					ConstructionTime: 200,
 					Employer: &Employer{
 						MaxWorkforce: 2,
 					},
 				},
 				{
-					Cost:             5_000,
+					Cost:             750,
+					ConstructionTime: 200,
+					Employer: &Employer{
+						MaxWorkforce: 3,
+					},
+				},
+				{
+					Cost:             3_000,
 					ConstructionTime: 450,
 					Employer: &Employer{
 						MaxWorkforce: 4,
@@ -85,14 +92,21 @@ var FullGameData = GameData{
 			TitlePlural: "Shops",
 			LevelInfos: []*BuildingInfo_LevelInfo{
 				{
-					Cost:             3_500,
+					Cost:             16_500,
 					ConstructionTime: 360,
 					Employer: &Employer{
 						MaxWorkforce: 2,
 					},
 				},
 				{
-					Cost:             10_500,
+					Cost:             1_000,
+					ConstructionTime: 250,
+					Employer: &Employer{
+						MaxWorkforce: 3,
+					},
+				},
+				{
+					Cost:             8_500,
 					ConstructionTime: 1 * 1200,
 					Employer: &Employer{
 						MaxWorkforce: 5,
@@ -140,21 +154,28 @@ var FullGameData = GameData{
 			TitlePlural: "Houses",
 			LevelInfos: []*BuildingInfo_LevelInfo{
 				{
-					Cost:             3_000,
+					Cost:             8_000,
 					ConstructionTime: 90,
 					Residence: &Residence{
 						Beds: 3,
 					},
 				},
 				{
-					Cost:             7_500,
+					Cost:             500,
+					ConstructionTime: 200,
+					Residence: &Residence{
+						Beds: 4,
+					},
+				},
+				{
+					Cost:             3_000,
 					ConstructionTime: 200,
 					Residence: &Residence{
 						Beds: 6,
 					},
 				},
 				{
-					Cost:             16_000,
+					Cost:             14_000,
 					ConstructionTime: 450,
 					Residence: &Residence{
 						Beds: 10,
@@ -212,35 +233,35 @@ var FullGameData = GameData{
 			TitlePlural: "Marketing HQs",
 			LevelInfos: []*BuildingInfo_LevelInfo{
 				{
-					Cost:             1 * 35_000,
+					Cost:             1 * 30_000,
 					ConstructionTime: 1 * 3600,
 					Employer: &Employer{
 						MaxWorkforce: 3,
 					},
 				},
 				{
-					Cost:             2 * 35_000,
+					Cost:             2 * 30_000,
 					ConstructionTime: 2 * 3600,
 					Employer: &Employer{
 						MaxWorkforce: 6,
 					},
 				},
 				{
-					Cost:             4 * 35_000,
+					Cost:             5 * 30_000,
 					ConstructionTime: 8 * 3600,
 					Employer: &Employer{
 						MaxWorkforce: 12,
 					},
 				},
 				{
-					Cost:             10 * 35_000,
+					Cost:             12 * 30_000,
 					ConstructionTime: 20 * 3600,
 					Employer: &Employer{
 						MaxWorkforce: 25,
 					},
 				},
 				{
-					Cost:             24 * 35_000,
+					Cost:             30 * 30_000,
 					ConstructionTime: 48 * 3600,
 					Employer: &Employer{
 						MaxWorkforce: 55,
