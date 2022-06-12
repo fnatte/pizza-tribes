@@ -36,6 +36,13 @@ message Travel {
   int64 coins = 6;
 }
 
+message Mouse {
+  string name = 1;
+  bool isEducated = 2;
+  bool isBeingEducated = 3;
+  Education education = 4;
+}
+
 message GameState {
   message Resources {
     int32 coins = 1;
@@ -70,6 +77,7 @@ message GameState {
   repeated Travel travelQueue = 9;
   repeated ResearchDiscovery discoveries = 10;
   repeated OngoingResearch researchQueue = 11;
+  map<string, Mouse> mice = 12;
 }
 
 message GameStatePatch {
@@ -96,6 +104,18 @@ message GameStatePatch {
     google.protobuf.Int32Value publicists = 6;
   }
 
+  message EducationPatch {
+    Education value = 1;
+  }
+
+  message MousePatch {
+    bool isNew = 1;
+    google.protobuf.StringValue name = 2;
+    google.protobuf.BoolValue isEducated = 3;
+    google.protobuf.BoolValue isBeingEducated = 4;
+    EducationPatch education = 5;
+  }
+
   ResourcesPatch resources = 1;
   map<string, LotPatch> lots = 2;
   PopulationPatch population = 3;
@@ -112,5 +132,6 @@ message GameStatePatch {
   repeated ResearchDiscovery discoveries = 14;
   bool researchQueuePatched = 15;
   repeated OngoingResearch researchQueue = 16;
+  map<string, MousePatch> mice = 17;
 }
 

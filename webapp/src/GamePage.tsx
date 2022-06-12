@@ -20,6 +20,7 @@ import { useWorldState } from "./queries/useWorldState";
 import { WorldStarting } from "./WorldStarting";
 import { WorldEnded } from "./WorldEnded";
 import { Clock, Coin, Pizza, Sparkles } from "./icons";
+import MouseView from "./Game/MouseView";
 
 type ClockState = {
   formatted: string;
@@ -459,6 +460,7 @@ function GamePage(): JSX.Element {
         <Route path="leaderboard" element={<LeaderboardView />} />
         <Route path="reports" element={<ListReportsView />} />
         <Route path="reports/:id" element={<ShowReportView />} />
+        <Route path="mouse/:id" element={<MouseView />} />
         <Route path="help" element={<HelpView />} />
         <Route path="/" element={<Navigate to="/town" replace />} />
       </Routes>

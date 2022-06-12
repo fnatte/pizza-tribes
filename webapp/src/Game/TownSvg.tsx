@@ -6,6 +6,7 @@ import { ReactComponent as SvgShop } from "../../images/shop.svg";
 import { ReactComponent as SvgSchool } from "../../images/school.svg";
 import { ReactComponent as SvgMarketingHQ } from "../../images/marketing-hq.svg";
 import { ReactComponent as SvgResearchInstitute } from "../../images/research-institute.svg";
+import { ReactComponent as SvgTownCentre } from "../../images/town-centre.svg";
 import { ReactComponent as SvgConstructingKitchen } from "../../images/constructing-kitchen.svg";
 import { ReactComponent as SvgConstructingHouse } from "../../images/constructing-house.svg";
 import { ReactComponent as SvgConstructingShop } from "../../images/constructing-shop.svg";
@@ -137,6 +138,14 @@ function renderBuilding(
       return (
         <g transform="translate(-10, -13)">
           <SvgResearchInstitute width={20} height={20} />
+          {notification && <NotificationBadge />}
+          <LevelBadge level={level} />
+        </g>
+      );
+    case Building.TOWN_CENTRE:
+      return (
+        <g transform="translate(-10, -13)">
+          <SvgTownCentre width={20} height={20} />
           {notification && <NotificationBadge />}
           <LevelBadge level={level} />
         </g>

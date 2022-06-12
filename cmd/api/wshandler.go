@@ -54,6 +54,11 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 		if err != redis.Nil {
 			return err
 		}
+
+		// Initialize game state for user
+		gs.Lots["2"] = &models.GameState_Lot{
+			Building: models.Building_TOWN_CENTRE,
+		}
 		b, err := protojson.MarshalOptions{
 			EmitUnpopulated: true,
 		}.Marshal(&gs)

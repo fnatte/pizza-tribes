@@ -55,6 +55,10 @@ func (h *handler) Handle(ctx context.Context, senderId string, m *models.ClientM
 		err = h.handleCancelRazeBuilding(ctx, senderId, x.CancelRazeBuilding)
 	case *models.ClientMessage_StartResearch_:
 		err = h.handleStartResearch(ctx, senderId, x.StartResearch)
+	case *models.ClientMessage_ReschoolMouse_:
+		err = h.handleReschoolMouse(ctx, senderId, x.ReschoolMouse)
+	case *models.ClientMessage_RenameMouse_:
+		err = h.handleRenameMouse(ctx, senderId, x.RenameMouse)
 	default:
 		log.Info().Str("senderId", senderId).Msg("Received message")
 	}

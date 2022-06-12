@@ -42,6 +42,18 @@ func (h *handler) handleTrain(ctx context.Context, senderId string, m *models.Cl
 			return errors.New("Too few uneducated")
 		}
 
+		// Ids of mice that will go to school
+		miceIds := []string{}
+		for id, mouse := range gs.Mice {
+			if !mouse.IsEducated {
+				miceIds = append(miceIds, id)
+
+				if len(miceIds) >= int(m.Amount) {
+					break
+				}
+			}
+		}
+
 		eduInfo := internal.FullGameData.Educations[int32(m.Education)]
 		trainTime := int64(eduInfo.TrainTime)
 		cost := eduInfo.Cost * m.Amount
@@ -60,6 +72,23 @@ func (h *handler) handleTrain(ctx context.Context, senderId string, m *models.Cl
 			if err != nil {
 				log.Error().Err(err).Msg("Failed to decrease uneducated")
 				return err
+			}
+
+			for _, id := range miceIds {
+				log.Info().Str("key",
+					fmt.Sprintf(".mice[\"%s\"].isBeingEducated", id)).
+					Str("id", id).
+					Send()
+				_, err := internal.RedisJsonSet(
+					pipe,
+					ctx,
+					gameStateKey,
+					fmt.Sprintf(".mice[\"%s\"].isBeingEducated", id),
+					"true").Result()
+				if err != nil {
+					log.Error().Err(err).Msg("Failed to mark mouse as educated")
+					return err
+				}
 			}
 
 			_, err = internal.RedisJsonNumIncrBy(

@@ -21,6 +21,7 @@ import classNames from "classnames";
 import TapStreak from "./TapStreak";
 import ReactDOM from "react-dom";
 import { Coin, Pizza } from "../icons";
+import { TownCentre } from "./buildings/TownCentre";
 
 const label = classnames("text-xs", "md:text-sm", "mr-1");
 const value = classnames("text-sm", "md:text-lg", "ml-1");
@@ -471,6 +472,7 @@ function TownLot() {
         </>
       )}
       {lot?.building === Building.RESEARCH_INSTITUTE && <ResearchInstitute />}
+      {lot?.building === Building.TOWN_CENTRE && <TownCentre />}
       {lot?.building === Building.SCHOOL && <School />}
     </div>
   );

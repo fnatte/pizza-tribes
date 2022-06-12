@@ -17,6 +17,7 @@ import { ReactComponent as SvgHouse } from "../../images/house.svg";
 import { ReactComponent as SvgSchool } from "../../images/school.svg";
 import { ReactComponent as SvgMarketingHQ } from "../../images/marketing-hq.svg";
 import { ReactComponent as SvgResearchInstitute } from "../../images/research-institute.svg";
+import { ReactComponent as SvgTownCentre } from "../../images/town-centre.svg";
 
 const title = classnames("text-lg", "md:text-xl", "mb-2");
 const label = classnames("text-xs", "md:text-sm", "mr-1");
@@ -32,6 +33,7 @@ const svgs: Record<
   [Building.SCHOOL]: SvgSchool,
   [Building.MARKETINGHQ]: SvgMarketingHQ,
   [Building.RESEARCH_INSTITUTE]: SvgResearchInstitute,
+  [Building.TOWN_CENTRE]: SvgTownCentre,
 };
 
 type Props = {
@@ -97,12 +99,9 @@ const ConstructBuilding = ({ lotId }: Props) => {
             );
           }
 
-          // Can only build one school, marketing hq, and research institute
-          if (
-            (id === Building.SCHOOL && buildingCounts[id] > 0) ||
-            (id === Building.MARKETINGHQ && buildingCounts[id] > 0) ||
-            (id === Building.RESEARCH_INSTITUTE && buildingCounts[id] > 0)
-          ) {
+          const { maxCount } = buildings[id]
+
+          if (maxCount !== undefined && buildingCounts[id] >= maxCount.value) {
             return null;
           }
 

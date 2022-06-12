@@ -12,6 +12,8 @@ import {
   Training,
   Travel,
   OngoingResearch,
+  Mouse,
+  GameStatePatch_MousePatch,
 } from "./generated/gamestate";
 import { GameData } from "./generated/game_data";
 import { Report } from "./generated/report";
@@ -49,6 +51,7 @@ export type GameState = {
   townY: number;
   discoveries: Array<ResearchDiscovery>;
   researchQueue: Array<OngoingResearch>;
+  mice: Record<string, Mouse>;
 };
 
 type User = {
@@ -77,6 +80,8 @@ type State = {
   steal: (x: number, y: number, amount: number) => void;
   readReport: (id: string) => void;
   startResearch: (discovery: ResearchDiscovery) => void;
+  reschool: (mouseId: string) => void;
+  renameMouse: (mouseId: string, name: string) => void;
 };
 
 const resetQueryDataState = () => {
@@ -117,6 +122,48 @@ const mergeLots = (
   return res;
 };
 
+function updateMice(
+  mice: Record<string, Mouse>,
+  updatedMice: { [key: string]: GameStatePatch_MousePatch }
+): Record<string, Mouse> {
+  const entries = Object.entries(mice)
+    .map(([id, m]) => {
+      const m2: Mouse = { ...m };
+      const update = updatedMice[id];
+      if (update) {
+        if (update.name) {
+          m2.name = update.name.value;
+        }
+        if (update.education) {
+          m2.education = update.education.value;
+        }
+        if (update.isEducated) {
+          m2.isEducated = update.isEducated.value;
+        }
+        if (update.isBeingEducated) {
+          m2.isBeingEducated = update.isBeingEducated.value;
+        }
+      }
+      return [id, m2] as const;
+    })
+    .filter(([id]) => updatedMice[id] !== null)
+    .concat(
+      Object.keys(updatedMice)
+        .filter((id) => !mice[id])
+        .map((id) => {
+          const m: Mouse = {
+            name: updatedMice[id].name?.value ?? "",
+            isEducated: updatedMice[id].isEducated?.value ?? false,
+            isBeingEducated: updatedMice[id].isBeingEducated?.value ?? false,
+            education: updatedMice[id].education?.value ?? Education.CHEF,
+          };
+          return [id, m];
+        })
+    );
+
+  return Object.fromEntries(entries);
+}
+
 const initialGameState: GameState = {
   resources: {
     pizzas: 0,
@@ -138,6 +185,7 @@ const initialGameState: GameState = {
   townY: 0,
   discoveries: [],
   researchQueue: [],
+  mice: {},
 };
 
 const resetAuthState = (state: State) => ({
@@ -260,6 +308,7 @@ export const useStore = create<State>((set, get) => ({
             researchQueue: stateChange.researchQueuePatched
               ? stateChange.researchQueue
               : state.gameState.researchQueue,
+            mice: updateMice(state.gameState.mice, stateChange.mice),
           },
         }));
       });
@@ -439,6 +488,33 @@ export const useStore = create<State>((set, get) => ({
           oneofKind: "startResearch",
           startResearch: {
             discovery,
+          },
+        },
+      })
+    );
+  },
+  reschool: (mouseId) => {
+    get().connection?.send(
+      ClientMessage.create({
+        id: generateId(),
+        type: {
+          oneofKind: "reschoolMouse",
+          reschoolMouse: {
+            mouseId,
+          },
+        },
+      })
+    );
+  },
+  renameMouse: (mouseId, name) => {
+    get().connection?.send(
+      ClientMessage.create({
+        id: generateId(),
+        type: {
+          oneofKind: "renameMouse",
+          renameMouse: {
+            mouseId,
+            name,
           },
         },
       })

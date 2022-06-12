@@ -33,6 +33,7 @@ export const countBuildings = (
     3: 0,
     4: 0,
     5: 0,
+    6: 0,
   };
 
   Object.keys(lots).forEach((lotId) => {
@@ -60,6 +61,7 @@ export const countBuildingsUnderConstruction = (
       3: 0,
       4: 0,
       5: 0,
+      6: 0,
     }
   );
 };
@@ -86,6 +88,7 @@ export const countMaxEmployedByBuilding = (
     [Building.SCHOOL]: undefined,
     [Building.MARKETINGHQ]: undefined,
     [Building.RESEARCH_INSTITUTE]: undefined,
+    [Building.TOWN_CENTRE]: undefined,
   };
 
   Object.keys(lots).map((lotId) => {

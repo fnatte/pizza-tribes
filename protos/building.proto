@@ -3,6 +3,8 @@ package pizzatribes;
 
 option go_package = "github.com/fnatte/pizza-tribes/internal/models";
 
+import "google/protobuf/wrappers.proto";
+
 enum Building {
   KITCHEN = 0;
   SHOP = 1;
@@ -10,6 +12,7 @@ enum Building {
   SCHOOL = 3;
   MARKETINGHQ = 4;
   RESEARCH_INSTITUTE = 5;
+  TOWN_CENTRE = 6;
 }
 
 message Employer {
@@ -30,4 +33,5 @@ message BuildingInfo {
   string title = 1;
   string titlePlural = 2;
   repeated LevelInfo levelInfos = 3;
+  google.protobuf.Int32Value maxCount = 4;
 }

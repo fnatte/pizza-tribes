@@ -51,6 +51,15 @@ message ClientMessage {
     ResearchDiscovery discovery = 1;
   }
 
+  message ReschoolMouse {
+    string mouseId = 1;
+  }
+
+  message RenameMouse {
+    string mouseId = 1;
+    string name = 2;
+  }
+
   string id = 1;
   oneof type {
     Tap tap = 2;
@@ -63,6 +72,8 @@ message ClientMessage {
     RazeBuilding razeBuilding = 9;
     StartResearch startResearch = 10;
     CancelRazeBuilding cancelRazeBuilding = 11;
+    ReschoolMouse reschoolMouse = 12;
+    RenameMouse renameMouse = 13;
   }
 }
 

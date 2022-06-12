@@ -4,6 +4,7 @@ import (
 	"time"
 
 	. "github.com/fnatte/pizza-tribes/internal/models"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 const ThiefSpeed = 6 * time.Minute
@@ -221,16 +222,18 @@ var FullGameData = GameData{
 		int32(Building_SCHOOL): {
 			Title:       "School",
 			TitlePlural: "Schools",
+			MaxCount: wrapperspb.Int32(1),
 			LevelInfos: []*BuildingInfo_LevelInfo{
 				{
 					Cost:             30_000,
-					ConstructionTime: 3600,
+					ConstructionTime: 1500,
 				},
 			},
 		},
 		int32(Building_MARKETINGHQ): {
 			Title:       "Marketing HQ",
 			TitlePlural: "Marketing HQs",
+			MaxCount: wrapperspb.Int32(1),
 			LevelInfos: []*BuildingInfo_LevelInfo{
 				{
 					Cost:             1 * 30_000,
@@ -272,10 +275,22 @@ var FullGameData = GameData{
 		int32(Building_RESEARCH_INSTITUTE): {
 			Title:       "Research Institute",
 			TitlePlural: "Research Institutes",
+			MaxCount: wrapperspb.Int32(1),
 			LevelInfos: []*BuildingInfo_LevelInfo{
 				{
 					Cost:             200_000,
 					ConstructionTime: 9600,
+				},
+			},
+		},
+		int32(Building_TOWN_CENTRE): {
+			Title:       "Town Centre",
+			TitlePlural: "Town Centres",
+			MaxCount: wrapperspb.Int32(1),
+			LevelInfos: []*BuildingInfo_LevelInfo{
+				{
+					Cost:             0,
+					ConstructionTime: 0,
 				},
 			},
 		},

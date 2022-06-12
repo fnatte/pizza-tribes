@@ -33,6 +33,13 @@ func (gs *GameState) ToServerMessage() *ServerMessage {
 		pop.Publicists = &wrapperspb.Int32Value{Value: gs.Population.Publicists}
 	}
 
+	mice := map[string]*GameStatePatch_MousePatch{}
+	if gs.Mice != nil {
+		for id, m := range gs.Mice {
+			mice[id] = m.ToPatch(false)
+		}
+	}
+
 	p := &GameStatePatch{
 		Lots: lotsPatch,
 		Resources: &GameStatePatch_ResourcesPatch{
@@ -52,6 +59,7 @@ func (gs *GameState) ToServerMessage() *ServerMessage {
 		Discoveries:              gs.Discoveries,
 		ResearchQueuePatched:     true,
 		ResearchQueue:            gs.ResearchQueue,
+		Mice:                     mice,
 	}
 
 	return &ServerMessage{

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -386,6 +387,71 @@ func (u *updater) patchToPipe(ctx updateContext, userId string, p *patch) (pipeF
 			}
 		}
 
+		// Write mice
+		if p.gsPatch.Mice != nil {
+			for id, m := range p.gsPatch.Mice {
+				mkey := fmt.Sprintf(".mice[\"%s\"]", id)
+
+				log.Info().Str("mkey", mkey).Send()
+
+				// Handle removal
+				if m == nil {
+					log.Info().Str("mkey", mkey).Msg("Handle removal")
+					err = internal.RedisJsonDel(pipe, ctx, gsKey, mkey).Err()
+					if err != nil {
+						return fmt.Errorf("failed to remove mouse: %w", err)
+					}
+					continue
+				}
+
+				if m.IsNew {
+					// Handle new
+					log.Info().Str("mkey", mkey).Msg("Handle new")
+					var b []byte
+					if b, err = protojson.Marshal(m.ToMouse()); err != nil {
+						return fmt.Errorf("failed marshal mouse: %w", err)
+					}
+					err = internal.RedisJsonSet(pipe, ctx, gsKey, mkey, b).Err()
+					if err != nil {
+						return fmt.Errorf("failed to add new mouse: %w", err)
+					}
+				} else {
+					// Handle existing
+					log.Info().Str("mkey", mkey).Msg("Handle update")
+					if m.Name != nil {
+						err = internal.RedisJsonSet(pipe, ctx, gsKey, fmt.Sprintf("%s.name", mkey), m.Name.Value).Err()
+						if err != nil {
+							return fmt.Errorf("failed to update mouse name: %w", err)
+						}
+					}
+					if m.IsBeingEducated != nil {
+						k := fmt.Sprintf("%s.isBeingEducated", mkey)
+						v := strconv.FormatBool(m.IsBeingEducated.Value)
+						err = internal.RedisJsonSet(pipe, ctx, gsKey, k, v).Err()
+						if err != nil {
+							return fmt.Errorf("failed to update mouse isBeingEducated: %w", err)
+						}
+					}
+					if m.IsEducated != nil {
+						k := fmt.Sprintf("%s.isEducated", mkey)
+						v := strconv.FormatBool(m.IsEducated.Value)
+						err = internal.RedisJsonSet(pipe, ctx, gsKey, k, v).Err()
+						if err != nil {
+							return fmt.Errorf("failed to update mouse isEducated: %w", err)
+						}
+					}
+					if m.Education != nil {
+						k := fmt.Sprintf("%s.education", mkey)
+						v := fmt.Sprintf("\"%s\"", m.Education.Value.String())
+						err = internal.RedisJsonSet(pipe, ctx, gsKey, k, v).Err()
+						if err != nil {
+							return fmt.Errorf("failed to update mouse education: %w", err)
+						}
+					}
+				}
+			}
+		}
+
 		return nil
 	}, nil
 }
@@ -551,6 +617,9 @@ func (u *updater) restorePopulation(ctx context.Context, userId string) error {
 		s, err := internal.RedisJsonGet(u.r, ctx, gsKey, ".").Result()
 		if err != nil && err != redis.Nil {
 			return err
+		}
+		if err == redis.Nil {
+			return nil
 		}
 		if err = protojson.Unmarshal([]byte(s), gs); err != nil {
 			return err
