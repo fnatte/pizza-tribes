@@ -75,10 +75,6 @@ func (h *handler) handleTrain(ctx context.Context, senderId string, m *models.Cl
 			}
 
 			for _, id := range miceIds {
-				log.Info().Str("key",
-					fmt.Sprintf(".mice[\"%s\"].isBeingEducated", id)).
-					Str("id", id).
-					Send()
 				_, err := internal.RedisJsonSet(
 					pipe,
 					ctx,

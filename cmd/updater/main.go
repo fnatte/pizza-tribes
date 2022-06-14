@@ -458,7 +458,6 @@ func (u *updater) patchToPipe(ctx updateContext, userId string, p *patch) (pipeF
 
 				if q.IsNew {
 					// Handle new
-					log.Info().Str("qpath", qpath).Msg("Handle new")
 					var b []byte
 					if b, err = protojson.Marshal(q.ToQuestState()); err != nil {
 						return fmt.Errorf("failed marshal quest: %w", err)

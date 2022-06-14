@@ -437,7 +437,7 @@ var FullGameData = GameData{
 		{
 			Id:          "2",
 			Title:       "Workforce",
-			Description: "We mice to move to our town. Let's build:\n- A *House*\n- A *School",
+			Description: "We mice to move to our town. Let's build:\n- A *House*\n- A *School*",
 			Reward: &models.Quest_Reward{
 				Coins:  325,
 				Pizzas: 0,
