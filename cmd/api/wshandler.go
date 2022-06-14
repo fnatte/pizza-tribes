@@ -44,6 +44,8 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 		Resources:   &models.GameState_Resources{},
 		Lots:        map[string]*models.GameState_Lot{},
 		Discoveries: []models.ResearchDiscovery{},
+		Mice: map[string]*models.Mouse{},
+		Quests: map[string]*models.QuestState{},
 	}
 
 	log.Info().Str("userId", c.UserId()).Msg("Client connected")
@@ -59,6 +61,10 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 		gs.Lots["2"] = &models.GameState_Lot{
 			Building: models.Building_TOWN_CENTRE,
 		}
+		for _, qid := range internal.GetAvailableQuestIds(&gs) {
+			gs.Quests[qid] = &models.QuestState{}
+		}
+
 		b, err := protojson.MarshalOptions{
 			EmitUnpopulated: true,
 		}.Marshal(&gs)

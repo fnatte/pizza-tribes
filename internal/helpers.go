@@ -132,3 +132,15 @@ func GetCompletedTravels(gs *GameState) (res []*Travel) {
 	return res
 }
 
+func HasBuildingMinLevel(gs *GameState, b Building, minLvl int) bool {
+	for _, lot := range gs.Lots {
+		if lot.Building == b {
+			if lot.Level >= int32(minLvl - 1) {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+

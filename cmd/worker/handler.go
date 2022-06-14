@@ -59,6 +59,12 @@ func (h *handler) Handle(ctx context.Context, senderId string, m *models.ClientM
 		err = h.handleReschoolMouse(ctx, senderId, x.ReschoolMouse)
 	case *models.ClientMessage_RenameMouse_:
 		err = h.handleRenameMouse(ctx, senderId, x.RenameMouse)
+	case *models.ClientMessage_OpenQuest_:
+		err = h.handleOpenQuest(ctx, senderId, x.OpenQuest)
+	case *models.ClientMessage_ClaimQuestReward_:
+		err = h.handleClaimQuestReward(ctx, senderId, x.ClaimQuestReward)
+	case *models.ClientMessage_CompleteVisitHelpPageQuest_:
+		err = h.handleCompleteVisitHelpPageQuest(ctx, senderId, x.CompleteVisitHelpPageQuest)
 	default:
 		log.Info().Str("senderId", senderId).Msg("Received message")
 	}

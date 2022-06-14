@@ -43,6 +43,12 @@ message Mouse {
   Education education = 4;
 }
 
+message QuestState {
+  bool opened = 1;
+  bool completed = 2;
+  bool claimedReward = 3;
+}
+
 message GameState {
   message Resources {
     int32 coins = 1;
@@ -78,6 +84,7 @@ message GameState {
   repeated ResearchDiscovery discoveries = 10;
   repeated OngoingResearch researchQueue = 11;
   map<string, Mouse> mice = 12;
+  map<string, QuestState> quests = 13;
 }
 
 message GameStatePatch {
@@ -116,6 +123,13 @@ message GameStatePatch {
     EducationPatch education = 5;
   }
 
+  message QuestStatePatch {
+    bool isNew = 1;
+    google.protobuf.BoolValue opened = 2;
+    google.protobuf.BoolValue completed = 3;
+    google.protobuf.BoolValue claimedReward = 4;
+  }
+
   ResourcesPatch resources = 1;
   map<string, LotPatch> lots = 2;
   PopulationPatch population = 3;
@@ -133,5 +147,6 @@ message GameStatePatch {
   bool researchQueuePatched = 15;
   repeated OngoingResearch researchQueue = 16;
   map<string, MousePatch> mice = 17;
+  map<string, QuestStatePatch> quests = 18;
 }
 

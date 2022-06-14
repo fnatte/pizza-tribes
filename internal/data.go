@@ -3,6 +3,7 @@ package internal
 import (
 	"time"
 
+	"github.com/fnatte/pizza-tribes/internal/models"
 	. "github.com/fnatte/pizza-tribes/internal/models"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
@@ -222,7 +223,7 @@ var FullGameData = GameData{
 		int32(Building_SCHOOL): {
 			Title:       "School",
 			TitlePlural: "Schools",
-			MaxCount: wrapperspb.Int32(1),
+			MaxCount:    wrapperspb.Int32(1),
 			LevelInfos: []*BuildingInfo_LevelInfo{
 				{
 					Cost:             30_000,
@@ -233,7 +234,7 @@ var FullGameData = GameData{
 		int32(Building_MARKETINGHQ): {
 			Title:       "Marketing HQ",
 			TitlePlural: "Marketing HQs",
-			MaxCount: wrapperspb.Int32(1),
+			MaxCount:    wrapperspb.Int32(1),
 			LevelInfos: []*BuildingInfo_LevelInfo{
 				{
 					Cost:             1 * 30_000,
@@ -275,7 +276,7 @@ var FullGameData = GameData{
 		int32(Building_RESEARCH_INSTITUTE): {
 			Title:       "Research Institute",
 			TitlePlural: "Research Institutes",
-			MaxCount: wrapperspb.Int32(1),
+			MaxCount:    wrapperspb.Int32(1),
 			LevelInfos: []*BuildingInfo_LevelInfo{
 				{
 					Cost:             200_000,
@@ -286,7 +287,7 @@ var FullGameData = GameData{
 		int32(Building_TOWN_CENTRE): {
 			Title:       "Town Centre",
 			TitlePlural: "Town Centres",
-			MaxCount: wrapperspb.Int32(1),
+			MaxCount:    wrapperspb.Int32(1),
 			LevelInfos: []*BuildingInfo_LevelInfo{
 				{
 					Cost:             0,
@@ -420,6 +421,71 @@ var FullGameData = GameData{
 						},
 					},
 				},
+			},
+		},
+	},
+	Quests: []*models.Quest{
+		{
+			Id:          "1",
+			Title:       "Bake and sell",
+			Description: "We need to get this business going. Let's build:\n- A *Kitchen*\n- A *Shop*",
+			Reward: &models.Quest_Reward{
+				Coins:  250,
+				Pizzas: 0,
+			},
+		},
+		{
+			Id:          "2",
+			Title:       "Workforce",
+			Description: "We mice to move to our town. Let's build:\n- A *House*\n- A *School",
+			Reward: &models.Quest_Reward{
+				Coins:  325,
+				Pizzas: 0,
+			},
+		},
+		{
+			Id:          "3",
+			Title:       "Education",
+			Description: "We need cooks in our kitchens and salesmice in our shops. Let's educate:\n- 1 *Chef*\n- 1 *Salesmice*",
+			Reward: &models.Quest_Reward{
+				Coins:  375,
+				Pizzas: 50,
+			},
+		},
+		{
+			Id:          "4",
+			Title:       "It takes all kinds to make a tribe",
+			Description: "Your tribe is made up of individuals. Find the Town Centre, visit a mouse and change its name.",
+			Reward: &models.Quest_Reward{
+				Coins:  450,
+				Pizzas: 75,
+			},
+		},
+		{
+			Id:          "5",
+			Title:       "Upgrades",
+			Description: "While we could build another house, in most cases it's more efficient to upgrade your current ones.\n\nFind your house and upgrade it to level 2.",
+			Reward: &models.Quest_Reward{
+				Coins:  500,
+				Pizzas: 0,
+			},
+		},
+		{
+			Id:          "6",
+			Title:       "Knowledge",
+			Description: "If you ever get stuck or need some information on the game, there's a help page. Go find it!",
+			Reward: &models.Quest_Reward{
+				Coins:  750,
+				Pizzas: 0,
+			},
+		},
+		{
+			Id:          "7",
+			Title:       "Scale up!",
+			Description: "We need to ramp up our production. Let's upgrade:\n- Kitchen to level 2\n- Shop to level 2",
+			Reward: &models.Quest_Reward{
+				Coins:  500,
+				Pizzas: 500,
 			},
 		},
 	},

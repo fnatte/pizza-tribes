@@ -1,18 +1,37 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useLocalStorage } from "react-use";
 import classnames from "classnames";
 import howToConstructBuildingImage from "../../images/how-to-construct-building-1.jpg";
 import howToEducate1Image from "../../images/how-to-educate-1.jpg";
 import howToEducate2Image from "../../images/how-to-educate-2.jpg";
+import { useStore } from "../store";
+
+const HELP_QUEST_ID = "6";
 
 const HelpView: React.VFC<{}> = () => {
   const [hasSeenHelpPage, setHasSeenHelpPage] = useLocalStorage(
     "hasSeenHelpPage",
     false
   );
-  if (!hasSeenHelpPage) {
-    setHasSeenHelpPage(true);
-  }
+
+  const completeVisitHelpPageQuest = useStore(
+    (state) => state.completeVisitHelpPageQuest
+  );
+  const helpQuestState = useStore(
+    (state) => state.gameState.quests[HELP_QUEST_ID]
+  );
+
+  useEffect(() => {
+    if (!hasSeenHelpPage) {
+      setHasSeenHelpPage(true);
+    }
+  }, [hasSeenHelpPage]);
+
+  useEffect(() => {
+    if (helpQuestState && !helpQuestState.completed) {
+      completeVisitHelpPageQuest();
+    }
+  }, [helpQuestState, completeVisitHelpPageQuest]);
 
   return (
     <div

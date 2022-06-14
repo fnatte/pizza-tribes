@@ -117,6 +117,9 @@ func (u *updater) update(ctx context.Context, userId string) {
 		if err = completeResearchs(uctx); err != nil {
 			return err
 		}
+		if err = completeQuests(uctx); err != nil {
+			return err
+		}
 
 		// Prepare redis pipes from patches
 		pipeFns := []pipeFn{}
@@ -392,11 +395,8 @@ func (u *updater) patchToPipe(ctx updateContext, userId string, p *patch) (pipeF
 			for id, m := range p.gsPatch.Mice {
 				mkey := fmt.Sprintf(".mice[\"%s\"]", id)
 
-				log.Info().Str("mkey", mkey).Send()
-
 				// Handle removal
 				if m == nil {
-					log.Info().Str("mkey", mkey).Msg("Handle removal")
 					err = internal.RedisJsonDel(pipe, ctx, gsKey, mkey).Err()
 					if err != nil {
 						return fmt.Errorf("failed to remove mouse: %w", err)
@@ -406,7 +406,6 @@ func (u *updater) patchToPipe(ctx updateContext, userId string, p *patch) (pipeF
 
 				if m.IsNew {
 					// Handle new
-					log.Info().Str("mkey", mkey).Msg("Handle new")
 					var b []byte
 					if b, err = protojson.Marshal(m.ToMouse()); err != nil {
 						return fmt.Errorf("failed marshal mouse: %w", err)
@@ -417,7 +416,6 @@ func (u *updater) patchToPipe(ctx updateContext, userId string, p *patch) (pipeF
 					}
 				} else {
 					// Handle existing
-					log.Info().Str("mkey", mkey).Msg("Handle update")
 					if m.Name != nil {
 						err = internal.RedisJsonSet(pipe, ctx, gsKey, fmt.Sprintf("%s.name", mkey), m.Name.Value).Err()
 						if err != nil {
@@ -446,6 +444,55 @@ func (u *updater) patchToPipe(ctx updateContext, userId string, p *patch) (pipeF
 						err = internal.RedisJsonSet(pipe, ctx, gsKey, k, v).Err()
 						if err != nil {
 							return fmt.Errorf("failed to update mouse education: %w", err)
+						}
+					}
+				}
+			}
+
+		}
+
+		// Write quests
+		if p.gsPatch.Quests != nil {
+			for qid, q := range p.gsPatch.Quests {
+				qpath := fmt.Sprintf(".quests[\"%s\"]", qid)
+
+				if q.IsNew {
+					// Handle new
+					log.Info().Str("qpath", qpath).Msg("Handle new")
+					var b []byte
+					if b, err = protojson.Marshal(q.ToQuestState()); err != nil {
+						return fmt.Errorf("failed marshal quest: %w", err)
+					}
+					err = internal.RedisJsonSet(pipe, ctx, gsKey, qpath, b).Err()
+					if err != nil {
+						return fmt.Errorf("failed to add new mouse: %w", err)
+					}
+				} else {
+					// Handle existing
+					if q.ClaimedReward != nil {
+						k := fmt.Sprintf("%s.claimedReward", qpath)
+						v := strconv.FormatBool(q.ClaimedReward.Value)
+						err = internal.RedisJsonSet(pipe, ctx, gsKey, k, v).Err()
+						if err != nil {
+							return fmt.Errorf("failed to update quest claimed reward: %w", err)
+						}
+					}
+
+					if q.Completed != nil {
+						k := fmt.Sprintf("%s.completed", qpath)
+						v := strconv.FormatBool(q.Completed.Value)
+						err = internal.RedisJsonSet(pipe, ctx, gsKey, k, v).Err()
+						if err != nil {
+							return fmt.Errorf("failed to update quest completed: %w", err)
+						}
+					}
+
+					if q.Opened != nil {
+						k := fmt.Sprintf("%s.opened", qpath)
+						v := strconv.FormatBool(q.Opened.Value)
+						err = internal.RedisJsonSet(pipe, ctx, gsKey, k, v).Err()
+						if err != nil {
+							return fmt.Errorf("failed to update quest opened: %w", err)
 						}
 					}
 				}

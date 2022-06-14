@@ -32,6 +32,15 @@ func (m *Mouse) ToPatch(isNew bool) *GameStatePatch_MousePatch {
 	}
 }
 
+func (q *QuestState) ToPatch(isNew bool) *GameStatePatch_QuestStatePatch {
+	return &GameStatePatch_QuestStatePatch{
+		IsNew: isNew,
+		Opened: wrapperspb.Bool(q.Opened),
+		Completed: wrapperspb.Bool(q.Completed),
+		ClaimedReward: wrapperspb.Bool(q.ClaimedReward),
+	}
+}
+
 func (p *GameStatePatch_MousePatch) ToMouse() *Mouse {
 	m := &Mouse{}
 
@@ -49,4 +58,20 @@ func (p *GameStatePatch_MousePatch) ToMouse() *Mouse {
 	}
 
 	return m
+}
+
+func (p *GameStatePatch_QuestStatePatch) ToQuestState() *QuestState {
+	q := &QuestState{}
+
+	if p.Opened != nil {
+		q.Opened = p.Opened.Value
+	}
+	if p.Completed != nil {
+		q.Completed = p.Completed.Value
+	}
+	if p.ClaimedReward != nil {
+		q.ClaimedReward = p.ClaimedReward.Value
+	}
+
+	return q
 }

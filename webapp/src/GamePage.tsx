@@ -21,6 +21,7 @@ import { WorldStarting } from "./WorldStarting";
 import { WorldEnded } from "./WorldEnded";
 import { Clock, Coin, Pizza, Sparkles } from "./icons";
 import MouseView from "./Game/MouseView";
+import QuestsView from "./Game/QuestsView";
 
 type ClockState = {
   formatted: string;
@@ -97,7 +98,9 @@ const ButtonBadgeCount: React.FC<{ count: number }> = ({ count }) => {
 };
 
 function Navigation() {
+  const isMinMd = useMedia("(min-width: 767px)", false);
   const isMinLg = useMedia("(min-width: 1024px)", false);
+  const isMinXl = useMedia("(min-width: 1280px)", false);
   const menuRef = useRef(null);
   const logout = useStore((state) => state.logout);
   const navigate = useNavigate();
@@ -105,6 +108,18 @@ function Navigation() {
 
   const unreads = useStore((state) =>
     state.reports.reduce((count, report) => count + (report.unread ? 1 : 0), 0)
+  );
+
+  const questBadgeCount = useStore((state) =>
+    Object.values(state.gameState.quests).reduce(
+      (count, questState) =>
+        count +
+        ((questState.completed && !questState.claimedReward) ||
+        !questState.opened
+          ? 1
+          : 0),
+      0
+    )
   );
 
   useClickAway(menuRef, () => {
@@ -128,21 +143,31 @@ function Navigation() {
           Town
         </button>
       </Link>
-      <Link to="/stats">
-        <button className={classnames(styles.primaryButton, "mr-2")}>
-          Stats
+      <Link to="/quests">
+        <button className={classnames(styles.primaryButton, "mr-2", "relative")}>
+          {questBadgeCount > 0 && <ButtonBadgeCount count={questBadgeCount} />}
+          Quests
         </button>
       </Link>
-      {isMinLg ? (
+      {isMinMd && (
+        <Link to="/stats">
+          <button className={classnames(styles.primaryButton, "mr-2")}>
+            Stats
+          </button>
+        </Link>
+      )}
+      {isMinLg && (
+        <Link to="/reports">
+          <button
+            className={classnames(styles.primaryButton, "mr-2", "relative")}
+          >
+            {unreads > 0 && <ButtonBadgeCount count={unreads} />}
+            Reports
+          </button>
+        </Link>
+      )}
+      {isMinXl && (
         <>
-          <Link to="/reports">
-            <button
-              className={classnames(styles.primaryButton, "mr-2", "relative")}
-            >
-              {unreads > 0 && <ButtonBadgeCount count={unreads} />}
-              Reports
-            </button>
-          </Link>
           <Link to="/leaderboard">
             <button className={classnames(styles.primaryButton, "mr-2")}>
               Leaderboard
@@ -160,7 +185,8 @@ function Navigation() {
             Logout
           </button>{" "}
         </>
-      ) : (
+      )}
+      {!isMinXl && (
         <div className={classnames("relative", "ml-8")} ref={menuRef}>
           <div
             className={classnames("relative", "cursor-pointer")}
@@ -189,18 +215,27 @@ function Navigation() {
                 "right-0"
               )}
             >
-              <Link to="/reports" onClick={() => setMenuExpaded(false)}>
-                <button
-                  className={classnames(
-                    styles.primaryButton,
-                    "mr-2",
-                    "relative"
-                  )}
-                >
-                  {unreads > 0 && <ButtonBadgeCount count={unreads} />}
-                  Reports
-                </button>
-              </Link>
+              {!isMinMd && (
+                <Link to="/stats">
+                  <button className={classnames(styles.primaryButton, "mr-2")}>
+                    Stats
+                  </button>
+                </Link>
+              )}
+              {!isMinLg && (
+                <Link to="/reports" onClick={() => setMenuExpaded(false)}>
+                  <button
+                    className={classnames(
+                      styles.primaryButton,
+                      "mr-2",
+                      "relative"
+                    )}
+                  >
+                    {unreads > 0 && <ButtonBadgeCount count={unreads} />}
+                    Reports
+                  </button>
+                </Link>
+              )}
               <Link to="/leaderboard" onClick={() => setMenuExpaded(false)}>
                 <button className={classnames(styles.primaryButton, "mr-2")}>
                   Leaderboard
@@ -219,7 +254,7 @@ function Navigation() {
                 }}
               >
                 Logout
-              </button>{" "}
+              </button>
             </div>
           )}
         </div>
@@ -455,6 +490,7 @@ function GamePage(): JSX.Element {
         <Route path="map" element={<MapView />} />
         <Route path="town/:id" element={<TownLot />} />
         <Route path="town" element={<Town />} />
+        <Route path="quests" element={<QuestsView />} />
         <Route path="stats" element={<StatsView />} />
         <Route path="world/entry" element={<WorldEntryView />} />
         <Route path="leaderboard" element={<LeaderboardView />} />

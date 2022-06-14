@@ -40,6 +40,13 @@ func (gs *GameState) ToServerMessage() *ServerMessage {
 		}
 	}
 
+	quests := map[string]*GameStatePatch_QuestStatePatch{}
+	if gs.Quests != nil {
+		for id, q := range gs.Quests {
+			quests[id] = q.ToPatch(false)
+		}
+	}
+
 	p := &GameStatePatch{
 		Lots: lotsPatch,
 		Resources: &GameStatePatch_ResourcesPatch{
@@ -60,6 +67,7 @@ func (gs *GameState) ToServerMessage() *ServerMessage {
 		ResearchQueuePatched:     true,
 		ResearchQueue:            gs.ResearchQueue,
 		Mice:                     mice,
+		Quests:                   quests,
 	}
 
 	return &ServerMessage{

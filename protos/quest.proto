@@ -1,0 +1,18 @@
+syntax = "proto3";
+package pizzatribes;
+
+option go_package = "github.com/fnatte/pizza-tribes/internal/models";
+
+
+message Quest {
+  message Reward {
+    int32 coins = 1;  
+    int32 pizzas = 2;  
+  }
+
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  Reward reward = 4;
+}
+

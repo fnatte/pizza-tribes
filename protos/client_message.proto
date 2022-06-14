@@ -60,6 +60,17 @@ message ClientMessage {
     string name = 2;
   }
 
+  message OpenQuest {
+    string questId = 1;
+  }
+
+  message ClaimQuestReward {
+    string questId = 2;
+  }
+
+  message CompleteVisitHelpPageQuest {
+  }
+
   string id = 1;
   oneof type {
     Tap tap = 2;
@@ -74,6 +85,9 @@ message ClientMessage {
     CancelRazeBuilding cancelRazeBuilding = 11;
     ReschoolMouse reschoolMouse = 12;
     RenameMouse renameMouse = 13;
+    OpenQuest openQuest = 14;
+    ClaimQuestReward claimQuestReward = 15;
+    CompleteVisitHelpPageQuest completeVisitHelpPageQuest = 16;
   }
 }
 

@@ -10,12 +10,15 @@ import classes from "./town.module.css";
 import TownExpandMenu from "./TownExpandMenu";
 import TownSvg from "./TownSvg";
 import TravelQueue from "./TravelQueue";
+import { ReactComponent as SvgQuestMouse } from "../../images/pizza-mouse-1.svg";
 
 function Town() {
   const ref = useRef<SVGSVGElement>(null);
   const navigate = useNavigate();
   const lots = useStore((state) => state.gameState.lots);
-  const constructionQueue = useStore((state) => state.gameState.constructionQueue);
+  const constructionQueue = useStore(
+    (state) => state.gameState.constructionQueue
+  );
 
   const onLotClick = (lotId: string) => {
     navigate(`/town/${lotId.replace("lot", "")}`);
@@ -83,10 +86,7 @@ function Town() {
     };
   }, [ref.current]);
 
-  const [hasSeenHelpPage] = useLocalStorage(
-    "hasSeenHelpPage",
-    false
-  );
+  const [hasSeenHelpPage] = useLocalStorage("hasSeenHelpPage", false);
 
   if (hasSeenHelpPage === false) {
     return <Navigate to="/help" replace />;
@@ -127,7 +127,7 @@ function Town() {
             "justify-between",
             "items-start",
             "pointer-events-none",
-            "gap-5",
+            "gap-5"
           )}
         >
           {isMinSm ? (

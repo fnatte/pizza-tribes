@@ -14,6 +14,8 @@ import {
   OngoingResearch,
   Mouse,
   GameStatePatch_MousePatch,
+  QuestState,
+  GameStatePatch_QuestStatePatch,
 } from "./generated/gamestate";
 import { GameData } from "./generated/game_data";
 import { Report } from "./generated/report";
@@ -52,6 +54,7 @@ export type GameState = {
   discoveries: Array<ResearchDiscovery>;
   researchQueue: Array<OngoingResearch>;
   mice: Record<string, Mouse>;
+  quests: Record<string, QuestState | undefined>;
 };
 
 type User = {
@@ -82,6 +85,9 @@ type State = {
   startResearch: (discovery: ResearchDiscovery) => void;
   reschool: (mouseId: string) => void;
   renameMouse: (mouseId: string, name: string) => void;
+  openQuest: (questId: string) => void;
+  claimQuestReward: (questId: string) => void;
+  completeVisitHelpPageQuest: () => void;
 };
 
 const resetQueryDataState = () => {
@@ -164,6 +170,44 @@ function updateMice(
   return Object.fromEntries(entries);
 }
 
+function updateQuests(
+  questStates: Record<string, QuestState>,
+  questPatches: { [key: string]: GameStatePatch_QuestStatePatch }
+): Record<string, QuestState> {
+  const entries = Object.entries(questStates)
+    .map(([id, q]) => {
+      const q2: QuestState = { ...q };
+      const patch = questPatches[id];
+      if (patch) {
+        if (patch.opened) {
+          q2.opened = patch.opened.value;
+        }
+        if (patch.completed) {
+          q2.completed = patch.completed.value;
+        }
+        if (patch.claimedReward) {
+          q2.claimedReward = patch.claimedReward.value;
+        }
+      }
+      return [id, q2] as const;
+    })
+    .filter(([id]) => questStates[id] !== null)
+    .concat(
+      Object.keys(questPatches)
+        .filter((id) => !questStates[id])
+        .map((id) => {
+          const q: QuestState = {
+            opened: questPatches[id].opened?.value ?? false,
+            claimedReward: questPatches[id].claimedReward?.value ?? false,
+            completed: questPatches[id].completed?.value ?? false,
+          };
+          return [id, q];
+        })
+    );
+
+  return Object.fromEntries(entries);
+}
+
 const initialGameState: GameState = {
   resources: {
     pizzas: 0,
@@ -186,6 +230,7 @@ const initialGameState: GameState = {
   discoveries: [],
   researchQueue: [],
   mice: {},
+  quests: {},
 };
 
 const resetAuthState = (state: State) => ({
@@ -309,6 +354,7 @@ export const useStore = create<State>((set, get) => ({
               ? stateChange.researchQueue
               : state.gameState.researchQueue,
             mice: updateMice(state.gameState.mice, stateChange.mice),
+            quests: updateQuests(state.gameState.quests, stateChange.quests),
           },
         }));
       });
@@ -516,6 +562,43 @@ export const useStore = create<State>((set, get) => ({
             mouseId,
             name,
           },
+        },
+      })
+    );
+  },
+  openQuest: (questId) => {
+    get().connection?.send(
+      ClientMessage.create({
+        id: generateId(),
+        type: {
+          oneofKind: "openQuest",
+          openQuest: {
+            questId,
+          },
+        },
+      })
+    );
+  },
+  claimQuestReward: (questId) => {
+    get().connection?.send(
+      ClientMessage.create({
+        id: generateId(),
+        type: {
+          oneofKind: "claimQuestReward",
+          claimQuestReward: {
+            questId,
+          },
+        },
+      })
+    );
+  },
+  completeVisitHelpPageQuest: () => {
+    get().connection?.send(
+      ClientMessage.create({
+        id: generateId(),
+        type: {
+          oneofKind: "completeVisitHelpPageQuest",
+          completeVisitHelpPageQuest: {},
         },
       })
     );

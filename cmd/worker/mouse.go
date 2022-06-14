@@ -148,6 +148,17 @@ func (h *handler) handleRenameMouse(ctx context.Context, senderId string, m *mod
 				return fmt.Errorf("failed to set name: %w", err)
 			}
 
+			// Change name quest
+			if q, ok := gs.Quests["4"]; ok && !q.Completed {
+				path := ".quests[\"4\"].completed"
+				value := "true"
+				err := internal.RedisJsonSet(pipe, ctx, gsKey, path, value).Err()
+				if err != nil {
+					return fmt.Errorf("failed to set claimed reward to true: %w", err)
+				}
+
+			}
+
 			return nil
 		})
 		return err
