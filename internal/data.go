@@ -32,7 +32,7 @@ var FullGameData = GameData{
 					},
 				},
 				{
-					Cost:             3_000,
+					Cost:             3_500,
 					ConstructionTime: 450,
 					Employer: &Employer{
 						MaxWorkforce: 4,
@@ -108,28 +108,28 @@ var FullGameData = GameData{
 					},
 				},
 				{
-					Cost:             8_500,
+					Cost:             5_500,
 					ConstructionTime: 1 * 1200,
 					Employer: &Employer{
 						MaxWorkforce: 5,
 					},
 				},
 				{
-					Cost:             22_500,
+					Cost:             18_500,
 					ConstructionTime: 3 * 1200,
 					Employer: &Employer{
 						MaxWorkforce: 9,
 					},
 				},
 				{
-					Cost:             45_000,
+					Cost:             40_000,
 					ConstructionTime: 8 * 1200,
 					Employer: &Employer{
 						MaxWorkforce: 15,
 					},
 				},
 				{
-					Cost:             99_000,
+					Cost:             95_000,
 					ConstructionTime: 14 * 3600,
 					Employer: &Employer{
 						MaxWorkforce: 25,
@@ -166,21 +166,21 @@ var FullGameData = GameData{
 					Cost:             500,
 					ConstructionTime: 200,
 					Residence: &Residence{
-						Beds: 4,
+						Beds: 5,
 					},
 				},
 				{
 					Cost:             3_000,
 					ConstructionTime: 200,
 					Residence: &Residence{
-						Beds: 6,
+						Beds: 7,
 					},
 				},
 				{
 					Cost:             14_000,
 					ConstructionTime: 450,
 					Residence: &Residence{
-						Beds: 10,
+						Beds: 11,
 					},
 				},
 				{
