@@ -23,6 +23,8 @@ var FullGameData = GameData{
 					Employer: &Employer{
 						MaxWorkforce: 2,
 					},
+					FirstCost: wrapperspb.Int32(0),
+					FirstConstructionTime: wrapperspb.Int32(8),
 				},
 				{
 					Cost:             750,
@@ -99,6 +101,8 @@ var FullGameData = GameData{
 					Employer: &Employer{
 						MaxWorkforce: 2,
 					},
+					FirstCost: wrapperspb.Int32(0),
+					FirstConstructionTime: wrapperspb.Int32(12),
 				},
 				{
 					Cost:             1_000,
@@ -161,6 +165,8 @@ var FullGameData = GameData{
 					Residence: &Residence{
 						Beds: 3,
 					},
+					FirstCost: wrapperspb.Int32(100),
+					FirstConstructionTime: wrapperspb.Int32(10),
 				},
 				{
 					Cost:             500,
@@ -228,6 +234,8 @@ var FullGameData = GameData{
 				{
 					Cost:             30_000,
 					ConstructionTime: 1500,
+					FirstCost: wrapperspb.Int32(200),
+					FirstConstructionTime: wrapperspb.Int32(15),
 				},
 			},
 		},
@@ -430,7 +438,7 @@ var FullGameData = GameData{
 			Title:       "Bake and sell",
 			Description: "We need to get this business going. Let's build:\n- A *Kitchen*\n- A *Shop*",
 			Reward: &models.Quest_Reward{
-				Coins:  250,
+				Coins:  550,
 				Pizzas: 0,
 			},
 		},

@@ -23,6 +23,10 @@ export function isNotNull<T>(v: T | null): v is T {
   return v !== null;
 }
 
+export function isNonNullable<T>(v: T): v is NonNullable<T> {
+  return v !== null && v !== undefined;
+}
+
 export const countBuildings = (
   lots: Record<string, Lot | undefined>
 ): Record<Building, number> => {

@@ -81,25 +81,21 @@ const ConstructBuilding = ({ lotId }: Props) => {
         .map(toBuildingId)
         .filter(isNotNull)
         .map((id) => {
-          let discountText: string | null = null;
-          let discountCost: number | null = null;
-          let reducedTime: number | null = null;
+          let discountText: string | undefined;
+          let discountCost: number | undefined;
+          let reducedTime: number | undefined;
 
-          // First construction of all building types are free except for
-          // marketing hq and research institute
-          if (
-            id !== Building.MARKETINGHQ &&
-            id !== Building.RESEARCH_INSTITUTE &&
-            buildingCounts[id] + buildingConstrCounts[id] === 0
-          ) {
-            discountCost = 0;
-            discountText = "First one is free and fast!";
-            reducedTime = Math.ceil(
-              buildings[id].levelInfos[0].constructionTime / 100
-            );
+          // First construction of a building types can have a discount
+          if (buildingCounts[id] + buildingConstrCounts[id] === 0) {
+            discountCost = buildings[id].levelInfos[0].firstCost?.value;
+            reducedTime =
+              buildings[id].levelInfos[0].firstConstructionTime?.value;
+            if (discountCost !== undefined || reducedTime !== undefined) {
+              discountText = "First one is free and fast!";
+            }
           }
 
-          const { maxCount } = buildings[id]
+          const { maxCount } = buildings[id];
 
           if (maxCount !== undefined && buildingCounts[id] >= maxCount.value) {
             return null;
@@ -128,7 +124,7 @@ const ConstructBuilding = ({ lotId }: Props) => {
                       </td>
                       <td>
                         <span className={value}>
-                          {discountCost !== null ? (
+                          {discountCost !== undefined ? (
                             <>
                               <span
                                 className={classnames(
@@ -161,7 +157,7 @@ const ConstructBuilding = ({ lotId }: Props) => {
                       </td>
                       <td>
                         <span className={value}>
-                          {reducedTime !== null ? (
+                          {reducedTime !== undefined ? (
                             <>
                               <span
                                 className={classnames(
@@ -187,28 +183,16 @@ const ConstructBuilding = ({ lotId }: Props) => {
                   </tbody>
                 </table>
                 <div className={classnames("my-2")}>
-                  <div>
+                  <div className="flex flex-col gap-2">
                     {discountText && (
-                      <span
-                        className={classnames(
-                          "mx-4",
-                          "text-sm",
-                          "text-red-800"
-                        )}
-                      >
+                      <div className={classnames("text-sm", "text-red-800")}>
                         {discountText}
-                      </span>
+                      </div>
                     )}
                     {!canAfford && (
-                      <span
-                        className={classnames(
-                          "mx-4",
-                          "text-sm",
-                          "text-red-800"
-                        )}
-                      >
+                      <div className={classnames("text-sm", "text-red-800")}>
                         Not enough coins
-                      </span>
+                      </div>
                     )}
                   </div>
                   <button

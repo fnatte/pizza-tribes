@@ -1,10 +1,4 @@
-import React, {
-  ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { ReactNode, useEffect, useMemo, useState } from "react";
 import classnames from "classnames";
 import { useStore } from "../store";
 import { Quest } from "../generated/quest";
@@ -12,6 +6,7 @@ import ReactMarkdown from "react-markdown";
 import { Coin, Pizza } from "../icons";
 import { QuestState } from "../generated/gamestate";
 import { primaryButton } from "../styles";
+import { isNonNullable } from "../utils";
 
 function Container({ children }: { children?: ReactNode | undefined }) {
   return (
@@ -45,7 +40,7 @@ export default function QuestsView() {
   const questStates = useStore((state) => state.gameState.quests);
   const gameData = useStore((state) => state.gameData);
   const claimQuestReward = useStore((state) => state.claimQuestReward);
-  const openQuest = useStore(state=>state.openQuest);
+  const openQuest = useStore((state) => state.openQuest);
 
   const quests = useMemo(() => {
     const map = new Map<string, Quest>();
@@ -53,10 +48,12 @@ export default function QuestsView() {
     return map;
   }, [gameData]);
 
-  const sortedQuestStates = Object.entries(questStates).reverse().sort(
-    ([_a, a], [_b, b]) =>
-      getQuestStateImportance(b) - getQuestStateImportance(a)
-  );
+  const sortedQuestStates = Object.entries(questStates)
+    .reverse()
+    .sort(
+      ([_a, a], [_b, b]) =>
+        getQuestStateImportance(b) - getQuestStateImportance(a)
+    );
 
   const [expanded, setExpanded] = useState<string>();
 
@@ -65,17 +62,15 @@ export default function QuestsView() {
   useEffect(() => {
     if (!expanded && !didSetInitialExpanded && sortedQuestStates.length > 0) {
       setDidSetInitialExpanded(true);
-      setExpanded(sortedQuestStates[0][0]);
+      setExpanded(sortedQuestStates[0]![0]);
     }
   }, [questStates, expanded, didSetInitialExpanded]);
 
-  console.log(questStates)
-
   useEffect(() => {
-    if (expanded && !questStates[expanded].opened) {
+    if (expanded && questStates[expanded]?.opened === false) {
       openQuest(expanded);
     }
-  }, [expanded, questStates])
+  }, [expanded, questStates]);
 
   if (!gameData) {
     return null;

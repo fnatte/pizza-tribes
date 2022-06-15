@@ -29,6 +29,8 @@ message BuildingInfo {
     int32 constructionTime = 2;
     Employer employer = 3;
     Residence residence = 4;
+    google.protobuf.Int32Value firstCost = 5;
+    google.protobuf.Int32Value firstConstructionTime = 6;
   }
   string title = 1;
   string titlePlural = 2;

@@ -45,13 +45,14 @@ func (h *handler) handleConstructBuilding(ctx context.Context, senderId string, 
 			}
 		}
 
-		// The first building of all types except markting hq and research institute
-		// are free and built 100 times faster
-		if m.Building != models.Building_MARKETINGHQ &&
-			m.Building != models.Building_RESEARCH_INSTITUTE &&
-			buildingCount[int32(m.Building)]+buildingConstrCount[int32(m.Building)] == 0 {
-			cost = 0
-			constructionTime = int32(float64(constructionTime)/100.0) + 1
+		// The first building of a type can have a discount
+		if buildingCount[int32(m.Building)]+buildingConstrCount[int32(m.Building)] == 0 {
+			if buildingInfo.LevelInfos[0].FirstCost != nil {
+				cost = buildingInfo.LevelInfos[0].FirstCost.Value
+			}
+			if buildingInfo.LevelInfos[0].FirstConstructionTime != nil {
+				constructionTime = buildingInfo.LevelInfos[0].FirstConstructionTime.Value
+			}
 		}
 
 		if gs.Resources.Coins < cost {

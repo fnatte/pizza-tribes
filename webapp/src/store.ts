@@ -54,7 +54,7 @@ export type GameState = {
   discoveries: Array<ResearchDiscovery>;
   researchQueue: Array<OngoingResearch>;
   mice: Record<string, Mouse>;
-  quests: Record<string, QuestState | undefined>;
+  quests: Record<string, QuestState>;
 };
 
 type User = {
