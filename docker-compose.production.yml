@@ -1,7 +1,7 @@
 version: '3.4'
 services:
   redis:
-    image: "redis/redis-stack:latest"
+    image: "redis/redis-stack-server:latest"
     volumes:
       - redis_data:/data
     ports:
@@ -11,45 +11,27 @@ services:
       REDIS_ARGS: "--appendonly yes --aof-use-rdb-preamble yes"
   api:
     image: "ghcr.io/fnatte/pizza-tribes-api:latest"
-    build:
-      context: .
-      target: api
     env_file: .env
     environment:
       PORT: 8080
       REDIS_ADDR: "redis:6379"
   worker:
     image: "ghcr.io/fnatte/pizza-tribes-worker:latest"
-    build:
-      context: .
-      target: worker
     environment:
       REDIS_ADDR: "redis:6379"
   updater:
     image: "ghcr.io/fnatte/pizza-tribes-updater:latest"
-    build:
-      context: .
-      target: updater
     environment:
       REDIS_ADDR: "redis:6379"
   webapp:
     image: "ghcr.io/fnatte/pizza-tribes-webapp:latest"
-    build:
-      context: .
-      target: webapp
   migrator:
     image: "ghcr.io/fnatte/pizza-tribes-migrator:latest"
-    build:
-      context: .
-      target: migrator
     environment:
       REDIS_ADDR: "redis:6379"
   front:
     image: "ghcr.io/fnatte/pizza-tribes-front:latest"
     env_file: .env
-    build:
-      context: .
-      target: front
     ports:
       - "8080:8080"
     volumes:
