@@ -5,6 +5,7 @@ import * as yup from "yup";
 import { RemoveIndex } from "./utils";
 import { useForm } from "react-hook-form";
 import { apiFetch, setAccessToken } from "./api";
+import { ViewFilled, ViewOffFilled } from "./icons";
 
 type Props = {
   onLogin: () => void;
@@ -25,6 +26,8 @@ const LoginForm: React.FC<Props> = ({ onLogin }) => {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<FormFields>({ resolver: yupResolver(schema) });
+
+  const [viewPassword, setViewPassword] = useState(false);
 
   const onSubmit = async (data: FormFields) => {
     let response: Response;
@@ -85,13 +88,26 @@ const LoginForm: React.FC<Props> = ({ onLogin }) => {
       {errors.username && (
         <span className="pb-2 text-red-900">{errors.username.message}</span>
       )}
-      <input
-        type="password"
-        placeholder="Password"
-        className={classnames("my-1")}
-        disabled={isSubmitting}
-        {...register("password")}
-      />
+      <div className="relative">
+        <input
+          type={viewPassword ? "text" : "password"}
+          placeholder="Password"
+          className={classnames("my-1")}
+          disabled={isSubmitting}
+          {...register("password")}
+        />
+        {!viewPassword ? (
+          <ViewOffFilled
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5"
+            onClick={() => setViewPassword(true)}
+          />
+        ) : (
+          <ViewFilled
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5"
+            onClick={() => setViewPassword(false)}
+          />
+        )}
+      </div>
       {errors.password && (
         <span className="pb-2 text-red-900">{errors.password.message}</span>
       )}

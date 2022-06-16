@@ -8,6 +8,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { RemoveIndex } from "./utils";
 import { apiFetch } from "./api";
+import { ViewFilled, ViewOffFilled } from "./icons";
 
 const schema = yup.object().shape({
   username: yup.string().required(),
@@ -26,6 +27,9 @@ const CreateAccountPage: React.VFC<{}> = () => {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<FormFields>({ resolver: yupResolver(schema) });
+
+  const [viewPassword1, setViewPassword1] = useState(false);
+  const [viewPassword2, setViewPassword2] = useState(false);
 
   const [serverErrorMessage, setServerErrorMessage] = useState<string>();
 
@@ -73,23 +77,49 @@ const CreateAccountPage: React.VFC<{}> = () => {
         {errors.username && (
           <span className="pb-2">{errors.username.message}</span>
         )}
-        <input
-          type="password"
-          placeholder="Password"
-          className={classnames("my-1")}
-          disabled={isSubmitting}
-          {...register("password")}
-        />
-        {errors.password && (
-          <span className="pb-2">{errors.password.message}</span>
-        )}
-        <input
-          type="password"
-          placeholder="Confirm password"
-          className={classnames("my-1")}
-          disabled={isSubmitting}
-          {...register("confirm")}
-        />
+        <div className="relative">
+          <input
+            type={viewPassword1 ? "text" : "password"}
+            placeholder="Password"
+            className={classnames("my-1")}
+            disabled={isSubmitting}
+            {...register("password")}
+          />
+          {errors.password && (
+            <span className="pb-2">{errors.password.message}</span>
+          )}
+          {!viewPassword1 ? (
+            <ViewOffFilled
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5"
+              onClick={() => setViewPassword1(true)}
+            />
+          ) : (
+            <ViewFilled
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5"
+              onClick={() => setViewPassword1(false)}
+            />
+          )}
+        </div>
+        <div className="relative">
+          <input
+            type={viewPassword2 ? "text" : "password"}
+            placeholder="Confirm password"
+            className={classnames("my-1")}
+            disabled={isSubmitting}
+            {...register("confirm")}
+          />
+          {!viewPassword2 ? (
+            <ViewOffFilled
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5"
+              onClick={() => setViewPassword2(true)}
+            />
+          ) : (
+            <ViewFilled
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5"
+              onClick={() => setViewPassword2(false)}
+            />
+          )}
+        </div>
         {errors.confirm && (
           <span className="pb-2">{errors.confirm.message}</span>
         )}
