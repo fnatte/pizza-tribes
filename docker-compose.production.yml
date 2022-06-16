@@ -4,9 +4,6 @@ services:
     image: "redis/redis-stack-server:latest"
     volumes:
       - redis_data:/data
-    ports:
-      - "6379:6379"
-      - "8001:8001"
     environment:
       REDIS_ARGS: "--appendonly yes --aof-use-rdb-preamble yes"
   api:
@@ -17,8 +14,11 @@ services:
       REDIS_ADDR: "redis:6379"
   worker:
     image: "ghcr.io/fnatte/pizza-tribes-worker:latest"
+    env_file: .env
     environment:
       REDIS_ADDR: "redis:6379"
+    volumes:
+     - ./service-account-file.json:/service-account-file.json
   updater:
     image: "ghcr.io/fnatte/pizza-tribes-updater:latest"
     environment:
@@ -33,7 +33,7 @@ services:
     image: "ghcr.io/fnatte/pizza-tribes-front:latest"
     env_file: .env
     ports:
-      - "8080:8080"
+      - "443:443"
     volumes:
       - caddy_data:/data
 
