@@ -100,7 +100,7 @@ func (e *WsEndpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Err(err).
 			Str("userId", userId).
-			Msg("Failed to websocket client initialzier failed")
+			Msg("Failed to initialize websocket")
 
 		ws.WriteControl(
 			websocket.CloseMessage,
