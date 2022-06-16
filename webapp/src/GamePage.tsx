@@ -451,7 +451,13 @@ function GamePage(): JSX.Element {
     start();
   }, []);
 
-  const { isLoading, data } = useWorldState();
+  const { isLoading, data, error, refetch } = useWorldState();
+
+  useEffect(() => {
+    if (user && error) {
+      refetch();
+    }
+  }, [refetch, user, error])
 
   if (connectionState?.error === "unauthorized") {
     return <Navigate to="/login" replace />;
@@ -468,7 +474,7 @@ function GamePage(): JSX.Element {
     return <Loading />;
   }
 
-  if (isLoading) {
+  if (isLoading || (error && user)) {
     return <Loading />;
   }
 
