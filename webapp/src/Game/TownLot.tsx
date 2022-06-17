@@ -111,23 +111,25 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
         "flex-col"
       )}
     >
-      <button
-        className={classNames(styles.primaryButton, classes.tapButton, {
-          [classes.hasTapsRemaining]: tapsRemaining > 0,
-        })}
-        disabled={!canTap || tapBackoff}
-        onClick={onClick}
-      >
-        <span>
-          +{tapGains} {tapResource}
-          <br />
-          {taps} of 10
-        </span>
+      <div className="relative select-none">
+        <button
+          className={classNames(styles.primaryButton, classes.tapButton, {
+            [classes.hasTapsRemaining]: tapsRemaining > 0,
+          })}
+          disabled={!canTap || tapBackoff}
+          onClick={onClick}
+        >
+          <span>
+            +{tapGains} {tapResource}
+            <br />
+            {taps} of 10
+          </span>
+        </button>
         <div
           ref={buttonConfettiRef}
           className={classnames("pointer-events-none")}
         />
-      </button>{" "}
+      </div>
       {
         <div
           className={classnames("mt-2", "w-80", "text-center", {
