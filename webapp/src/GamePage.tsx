@@ -11,7 +11,7 @@ import StatsView from "./Game/StatsView";
 import MapView from "./Game/map/MapView";
 import WorldEntryView from "./Game/world/WorldEntryView";
 import LeaderboardView from "./Game/LeaderboardView";
-import { useClickAway, useInterval, useMedia } from "react-use";
+import { useClickAway, useDebounce, useInterval, useMedia } from "react-use";
 import ListReportsView from "./Game/reports/ListReportsView";
 import ShowReportView from "./Game/reports/ShowReportView";
 import { formatNumber } from "./utils";
@@ -459,6 +459,18 @@ function GamePage(): JSX.Element {
     }
   }, [refetch, user, error])
 
+
+  // Delay showing connection popup for 2s, but remove it instantly if connection is restored
+  const [showConnectionPopup, setShowConnectionPopup] = useState(false);
+  useDebounce(() => {
+    setShowConnectionPopup(connectionState?.connecting ?? false);
+  }, 2000, [connectionState?.connecting])
+  useEffect(() => {
+    if (!connectionState?.connecting) {
+      setShowConnectionPopup(false);
+    }
+  }, [connectionState?.connecting]);
+
   if (connectionState?.error === "unauthorized") {
     return <Navigate to="/login" replace />;
   }
@@ -506,7 +518,7 @@ function GamePage(): JSX.Element {
         <Route path="help" element={<HelpView />} />
         <Route path="/" element={<Navigate to="/town" replace />} />
       </Routes>
-      {connectionState?.connecting && (
+      {showConnectionPopup && (
         <div
           className={classnames(
             "fixed",
