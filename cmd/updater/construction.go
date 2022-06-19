@@ -26,10 +26,18 @@ func completedConstructions(ctx updateContext) (error) {
 				Razed: true,
 			}
 		} else {
-			ctx.patch.gsPatch.Lots[constr.LotId] = &models.GameStatePatch_LotPatch{
+			p := &models.GameStatePatch_LotPatch{
 				Building: constr.Building,
 				Level:    constr.Level,
 			}
+
+			if lot := ctx.gs.Lots[constr.LotId]; lot != nil {
+				p.Streak = lot.Streak
+				p.TappedAt = lot.TappedAt
+				p.Taps = lot.Taps
+			}
+
+			ctx.patch.gsPatch.Lots[constr.LotId] = p
 		}
 
 		buildInfo := internal.FullGameData.Buildings[int32(constr.Building)]
