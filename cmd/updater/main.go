@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/rand"
 	"os"
 	"strconv"
 	"strings"
@@ -160,7 +161,7 @@ func (u *updater) update(ctx context.Context, userId string) {
 		return
 	}
 	if err := txf(); err != nil {
-		log.Error().Err(err).Msg("Failed to update")
+		log.Error().Err(err).Str("userId", userId).Msg("Failed to update")
 	}
 	if ok, err := mutex.Unlock(); !ok || err != nil {
 		log.Error().Err(err).Msg("Failed to unlock")
@@ -800,6 +801,10 @@ func handleStarting(ctx context.Context, world *internal.WorldService, worldStat
 	} else {
 		time.Sleep(1 * time.Second)
 	}
+}
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
 }
 
 func main() {
