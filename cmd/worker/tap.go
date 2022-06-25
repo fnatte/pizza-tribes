@@ -2,14 +2,15 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math"
 	"time"
 
-	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/gamestate"
 	"github.com/fnatte/pizza-tribes/internal/models"
+	"github.com/fnatte/pizza-tribes/internal/persist"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
-	"github.com/go-redis/redis/v8"
 	"github.com/rs/xid"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
@@ -17,23 +18,14 @@ import (
 const MAX_TAP_STREAK = 12
 
 func (h *handler) handleTap(ctx context.Context, userId string, m *models.ClientMessage_Tap) error {
-	gsKey := fmt.Sprintf("user:%s:gamestate", userId)
-	lotPath := fmt.Sprintf(".lots[\"%s\"]", m.LotId)
-	tappedAtPath := fmt.Sprintf("%s.tapped_at", lotPath)
-	tapsPath := fmt.Sprintf("%s.taps", lotPath)
-	streakPath := fmt.Sprintf("%s.streak", lotPath)
 	now := time.Now().UnixNano()
 
-	var lot models.GameState_Lot
+	r := persist.NewGameStateRepository(h.rdb)
 
-	txf := func() error {
-		// Get lot
-		str, err := internal.RedisJsonGet(h.rdb, ctx, gsKey, lotPath).Result()
-		if err != nil {
-			return fmt.Errorf("failed to get lot: %w", err)
-		}
-		if err = protojson.Unmarshal([]byte(str), &lot); err != nil {
-			return fmt.Errorf("failed to unmarshal lot: %w", err)
+	tx, err := gamestate.PerformUpdate(ctx, r, userId, func(gs *models.GameState, tx *gamestate.GameTx) (error) {
+		lot := gs.Lots[m.LotId]
+		if lot == nil {
+			return fmt.Errorf("invalid lot: %s", m.LotId)
 		}
 
 		// Check tap interval
@@ -52,82 +44,87 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *models.Client
 			lot.Streak = 0
 		}
 
+		taps := gs.Lots[m.LotId].Taps
+		streak := gs.Lots[m.LotId].Streak
+
 		// Reset taps if next hour
 		if time.Now().After(resetTime) {
-			lot.Taps = 0
+			taps = 0
 		}
 
-		if lot.Taps >= 10 {
+		if taps >= 10 {
 			return fmt.Errorf("tap is maxed out this hour")
 		}
 
+
 		// Determine what resource to increase and how much
-		var incrPath string
-		var incrAmount int64
+		var incrType string
+		var incrAmount int32
 		factor := math.Sqrt(float64(lot.Level+1) * float64(lot.Streak+1))
 		switch lot.Building {
 		case models.Building_KITCHEN:
-			incrPath = ".resources.pizzas"
-			incrAmount = int64(math.Round(80*factor/5) * 5)
+			incrType = "pizzas"
+			incrAmount = int32(math.Round(80*factor/5) * 5)
 		case models.Building_SHOP:
-			incrPath = ".resources.coins"
-			incrAmount = int64(math.Round(35*factor/5) * 5)
+			incrType = "coins"
+			incrAmount = int32(math.Round(35*factor/5) * 5)
 		default:
 			return fmt.Errorf("this building cannot be tapped")
 		}
 
-		lot.Taps = lot.Taps + 1
+		taps = taps + 1
 
-		if lot.Taps == 10 {
-			lot.Streak = lot.Streak + 1
+		if taps == 10 {
+			streak = streak + 1
 		}
 
-		_, err = h.rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
-			// Update tapped_at to now
-			err = internal.RedisJsonSet(pipe, ctx, gsKey, tappedAtPath, int64(now)).Err()
+		u := tx.Users[userId]
+		u.SetTappedAt(m.LotId, int64(now))
+		u.SetTaps(m.LotId, taps)
+		u.SetStreak(m.LotId, streak)
+
+		switch incrType {
+		case "pizzas":
+			u.SetPizzas(gs.Resources.Pizzas + incrAmount)
+		case "coins":
+			u.SetCoins(gs.Resources.Coins + incrAmount)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("failed to perform update: %w", err)
+	}
+
+	for uid, u := range(tx.Users) {
+		jsonPatch := []*models.JsonPatchOp{}
+		for _, op := range(u.GsPatch.Ops) {
+			val, err := json.Marshal(op.Value)
 			if err != nil {
-				return fmt.Errorf("failed to set tapped_at: %w", err)
+				return err
 			}
 
-			// Update taps
-			err = internal.RedisJsonSet(pipe, ctx, gsKey, tapsPath, lot.Taps).Err()
-			if err != nil {
-				return fmt.Errorf("failed to set taps: %w", err)
-			}
+			jsonPatch = append(jsonPatch, &models.JsonPatchOp{
+				From: op.From,
+				Op: op.Op,
+				Path: op.Path,
+				Value: string(val),
+			})
+		}
 
-			// Update streak
-			err = internal.RedisJsonSet(pipe, ctx, gsKey, streakPath, lot.Streak).Err()
-			if err != nil {
-				return fmt.Errorf("failed to set streak: %w", err)
-			}
+		if err != nil {
+			return err
+		}
 
-			// Increase the resource
-			err = internal.RedisJsonNumIncrBy(
-				pipe, ctx, gsKey, incrPath, incrAmount).Err()
-			if err != nil {
-				return fmt.Errorf("failed to increase resource: %w", err)
-			}
-
-			return nil
+		h.send(ctx, uid, &models.ServerMessage{
+			Id: xid.New().String(),
+			Payload: &models.ServerMessage_StateChange2{
+				StateChange2: &models.ServerMessage_GameStatePatch2{
+					JsonPatch: jsonPatch,
+				},
+			},
 		})
-
-		return err
-	}
-
-	mutex := h.rdb.NewMutex("lock:" + gsKey)
-	if err := mutex.Lock(); err != nil {
-		return fmt.Errorf("failed to obtain lock: %w", err)
-	}
-	err2 := txf()
-	if ok, err := mutex.Unlock(); !ok || err != nil {
-		return fmt.Errorf("failed to unlock: %w", err)
-	}
-	if err2 != nil {
-		return fmt.Errorf("failed to handle tap: %w", err2)
-	}
-
-	if err := h.sendTapUpdate(ctx, userId, m.LotId, &lot, now); err != nil {
-		return fmt.Errorf("failed to send tap update: %w", err)
 	}
 
 	return nil

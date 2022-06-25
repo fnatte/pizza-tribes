@@ -150,3 +150,10 @@ message GameStatePatch {
   map<string, QuestStatePatch> quests = 18;
 }
 
+message JsonPatchOp {
+  string op = 1;
+  string path = 2;
+  string value = 3;
+  string from = 4;
+}
+

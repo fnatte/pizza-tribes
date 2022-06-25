@@ -22,6 +22,10 @@ message ServerMessage {
     repeated Report reports = 1;
   }
 
+  message GameStatePatch2 {
+    repeated JsonPatchOp jsonPatch = 1;
+  }
+
   string id = 1;
   oneof payload {
     GameStatePatch stateChange = 2;
@@ -30,6 +34,7 @@ message ServerMessage {
     Stats stats = 5;
     Reports reports = 6;
     WorldState worldState = 7;
+    GameStatePatch2 stateChange2 = 8;
   }
 }
 

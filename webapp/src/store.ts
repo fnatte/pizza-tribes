@@ -16,20 +16,24 @@ import {
   GameStatePatch_MousePatch,
   QuestState,
   GameStatePatch_QuestStatePatch,
+  JsonPatchOp,
 } from "./generated/gamestate";
 import { GameData } from "./generated/game_data";
 import { Report } from "./generated/report";
 import { ResearchDiscovery } from "./generated/research";
 import {
   ServerMessage,
+  ServerMessage_GameStatePatch2,
   ServerMessage_Reports,
   ServerMessage_User,
 } from "./generated/server_message";
 import { Stats } from "./generated/stats";
 import { generateId } from "./utils";
-import { produce } from "immer";
+import { applyPatches, enablePatches, produce } from "immer";
 import { queryClient } from "./queryClient";
 import { apiFetch } from "./api";
+
+enablePatches();
 
 export type Lot = {
   building: Building;
@@ -360,6 +364,31 @@ export const useStore = create<State>((set, get) => ({
       });
     };
 
+    const isSupportedJsonPatchOp = (
+      p: JsonPatchOp
+    ): p is Omit<JsonPatchOp, "op"> & { op: "replace" | "remove" | "add" } => {
+      return p.op === "replace" || p.op === "remove" || p.op === "add";
+    };
+
+    const handleStateChange2 = (stateChange: ServerMessage_GameStatePatch2) => {
+      unstable_batchedUpdates(() => {
+        set((state) => ({
+          gameState:
+            (
+            applyPatches(
+              state.gameState,
+              stateChange.jsonPatch.filter(isSupportedJsonPatchOp).map((p) => {
+                return {
+                  path: p.path.split("/").filter((x) => x),
+                  op: p.op,
+                  value: JSON.parse(p.value),
+                };
+              })
+            )),
+        }));
+      });
+    };
+
     const handleUserMessage = (msg: ServerMessage_User) => {
       unstable_batchedUpdates(() => {
         set((state) => ({
@@ -393,6 +422,9 @@ export const useStore = create<State>((set, get) => ({
       switch (msg.payload.oneofKind) {
         case "stateChange":
           handleStateChange(msg.payload.stateChange);
+          break;
+        case "stateChange2":
+          handleStateChange2(msg.payload.stateChange2);
           break;
         case "user":
           handleUserMessage(msg.payload.user);

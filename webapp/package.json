@@ -13,7 +13,7 @@
     "@capacitor/push-notifications": "^1.0.7",
     "@capacitor/storage": "^1.2.3",
     "@hookform/resolvers": "^2.8.3",
-    "@protobuf-ts/plugin": "^2.0.7",
+    "@protobuf-ts/plugin": "^2.7.0",
     "@svgr/core": "^5.5.0",
     "@svgr/plugin-svgo": "^5.5.0",
     "@tailwindcss/forms": "^0.5.2",
