@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -228,22 +229,33 @@ type redisDebugHook struct{}
 var _ redis.Hook = redisDebugHook{}
 
 func (redisDebugHook) BeforeProcess(ctx context.Context, cmd redis.Cmder) (context.Context, error) {
-	log.Debug().Interface("cmd", cmd).Msg("starting processing")
+	log.Debug().Str("cmd", cmd.String()).Msg("starting processing")
 	return ctx, nil
 }
 
 func (redisDebugHook) AfterProcess(ctx context.Context, cmd redis.Cmder) error {
-	log.Debug().Interface("cmd", cmd).Msg("finished processing")
+	log.Debug().Str("cmd", cmd.String()).Msg("finished processing")
 	return nil
 }
 
 func (redisDebugHook) BeforeProcessPipeline(ctx context.Context, cmds []redis.Cmder) (context.Context, error) {
-	log.Debug().Interface("cmd", cmds).Msg("pipeline starting processing")
+	ev := log.Debug()
+	for i, cmd := range(cmds) {
+		ev.Str(fmt.Sprintf("cmd[%d]", i), cmd.String())
+	}
+	ev.Msg("pipeline starting processing")
 	return ctx, nil
 }
 
 func (redisDebugHook) AfterProcessPipeline(ctx context.Context, cmds []redis.Cmder) error {
-	log.Debug().Interface("cmd", cmds).Msg("pipeline finished processing")
+	errs := []error{}
+	ev := log.Debug()
+	for i, cmd := range(cmds) {
+		ev.Str(fmt.Sprintf("cmd[%d]", i), cmd.String())
+		errs = append(errs, cmd.Err())
+	}
+	ev.Errs("errors", errs)
+	ev.Msg("pipeline finished processing")
 	return nil
 }
 

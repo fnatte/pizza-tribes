@@ -155,7 +155,7 @@ const UpgradeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
   lot,
   lotId,
 }) => {
-  const coins = useStore((state) => state.gameState.resources.coins);
+  const coins = useStore((state) => state.gameState.resources?.coins ?? 0);
   const constructionQueue = useStore(
     (state) => state.gameState.constructionQueue
   );
@@ -265,7 +265,7 @@ const RazeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
   lot,
   lotId,
 }) => {
-  const coins = useStore((state) => state.gameState.resources.coins);
+  const coins = useStore((state) => state.gameState.resources?.coins ?? 0);
   const constructionQueue = useStore(
     (state) => state.gameState.constructionQueue
   );
@@ -407,7 +407,7 @@ function TownLot() {
             </span>{" "}
             in your town out of your{" "}
             <span className={classnames("font-bold", "text-gray-900")}>
-              {population.chefs} educated chefs
+              {population?.chefs ?? 0} educated chefs
             </span>
             .
           </p>
@@ -451,7 +451,7 @@ function TownLot() {
             </span>{" "}
             in your town out of your{" "}
             <span className={classnames("font-bold", "text-gray-900")}>
-              {population.salesmice} educated salesmice
+              {population?.salesmice ?? 0} educated salesmice
             </span>
             .
           </p>

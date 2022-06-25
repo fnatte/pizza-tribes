@@ -3,11 +3,12 @@ package main
 import (
 	"time"
 
+	"github.com/fnatte/pizza-tribes/internal/gamestate"
 	"github.com/fnatte/pizza-tribes/internal/models"
 )
 
-func completeResearchs(ctx updateContext) error {
-	completedResearchs := getCompletedResearchs(ctx.gs)
+func completeResearchs(userId string, gs *models.GameState, tx *gamestate.GameTx) error {
+	completedResearchs := getCompletedResearchs(gs)
 
 	// Exit early if there are no completed researchs
 	if len(completedResearchs) == 0 {
@@ -15,23 +16,17 @@ func completeResearchs(ctx updateContext) error {
 	}
 
 	// Update patch
-	ctx.patch.gsPatch.ResearchQueue = ctx.gs.ResearchQueue[len(completedResearchs):]
-	ctx.patch.gsPatch.ResearchQueuePatched = true
-
-	if ctx.patch.gsPatch.Discoveries == nil {
-		ctx.patch.gsPatch.Discoveries = ctx.gs.Discoveries
-	}
+	u := tx.Users[userId]
+	u.SetResearchQueue(gs.ResearchQueue[len(completedResearchs):])
 
 	for _, r := range completedResearchs {
-		if !ctx.patch.gsPatch.HasDiscovery(r.Discovery) {
-			ctx.patch.gsPatch.DiscoveriesPatched = true
-			ctx.patch.gsPatch.Discoveries =
-				append(ctx.patch.gsPatch.Discoveries, r.Discovery)
+		if !gs.HasDiscovery(r.Discovery) {
+			u.AppendDiscovery(r.Discovery)
 		}
 	}
 
 	// Completion of research can affect the stats
-	ctx.patch.sendStats = true
+	u.StatsInvalidated = true
 
 	return nil
 }

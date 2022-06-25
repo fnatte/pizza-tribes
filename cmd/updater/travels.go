@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"math"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/gamestate"
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/go-redis/redis/v8"
@@ -17,7 +19,6 @@ import (
 	"golang.org/x/exp/rand"
 	"golang.org/x/text/message"
 	"gonum.org/v1/gonum/stat/distuv"
-	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 var messagePrinter = message.NewPrinter(message.MatchLanguage("en"))
@@ -80,7 +81,7 @@ func init() {
 		Parse(targetReportTemplateText))
 }
 
-func completeSteal(ctx updateContext, r internal.RedisClient, world *internal.WorldService, travel *models.Travel, travelIndex int) error {
+func completeSteal(ctx context.Context, userId string, gs *models.GameState, tx *gamestate.GameTx, r internal.RedisClient, world *internal.WorldService, travel *models.Travel, travelIndex int) error {
 	gsTarget := &models.GameState{}
 	x := travel.DestinationX
 	y := travel.DestinationY
@@ -94,7 +95,7 @@ func completeSteal(ctx updateContext, r internal.RedisClient, world *internal.Wo
 	if town == nil {
 		return fmt.Errorf("no town at %d, %d", x, y)
 	}
-	if town.UserId == ctx.userId {
+	if town.UserId == userId {
 		return errors.New("can't steal from own town")
 	}
 
@@ -144,7 +145,7 @@ func completeSteal(ctx updateContext, r internal.RedisClient, world *internal.Wo
 	if successfulThieves > 0 {
 		arrivalAt := internal.CalculateArrivalTime(
 			travel.DestinationX, travel.DestinationY,
-			ctx.gs.TownX, ctx.gs.TownY,
+			gs.TownX, gs.TownY,
 			internal.ThiefSpeed,
 		)
 
@@ -161,7 +162,7 @@ func completeSteal(ctx updateContext, r internal.RedisClient, world *internal.Wo
 		}
 
 		// Update patch with return travel
-		ctx.patch.gsPatch.TravelQueue = append(ctx.patch.gsPatch.TravelQueue, &returnTravel)
+		tx.Users[userId].SetTravelQueue(append(gs.TravelQueue, &returnTravel))
 	}
 
 	// Build reports
@@ -201,73 +202,57 @@ func completeSteal(ctx updateContext, r internal.RedisClient, world *internal.Wo
 	}
 
 	// Prepare patch to target user (whoms coins was stoled)
-	ctx.initPatch(town.UserId)
-	if ctx.patches[town.UserId].gsPatch.Resources.Coins == nil {
-		ctx.patches[town.UserId].gsPatch.Resources.Coins = &wrapperspb.Int32Value{
-			Value: gsTarget.Resources.Coins,
-		}
-	}
-	ctx.patches[town.UserId].gsPatch.Resources.Coins.Value =
-		ctx.patches[town.UserId].gsPatch.Resources.Coins.Value - int32(loot)
+	tx.InitUser(town.UserId, gsTarget)
+	tx.Users[town.UserId].IncrCoins(-int32(loot))
 
 	if sleepingGuards > 0 {
-		if ctx.patches[town.UserId].gsPatch.Population.Guards == nil {
-			ctx.patches[town.UserId].gsPatch.Population.Guards = &wrapperspb.Int32Value{
-				Value: gsTarget.Population.Guards,
-			}
-		}
-		if ctx.patches[town.UserId].gsPatch.Population.Uneducated == nil {
-			ctx.patches[town.UserId].gsPatch.Population.Uneducated = &wrapperspb.Int32Value{
-				Value: gsTarget.Population.Uneducated,
-			}
-		}
-		ctx.patches[town.UserId].gsPatch.Population.Uneducated.Value =
-			ctx.patches[town.UserId].gsPatch.Population.Uneducated.Value + sleepingGuards
-		ctx.patches[town.UserId].gsPatch.Population.Guards.Value =
-			ctx.patches[town.UserId].gsPatch.Population.Guards.Value - sleepingGuards
+		// TODO: update mice
+		tx.Users[town.UserId].IncrUneducated(sleepingGuards)
+		tx.Users[town.UserId].IncrGuards(-sleepingGuards)
 	}
 
 	// Append reports to patch
-	ctx.AppendReport(ctx.userId, thiefReport)
-	ctx.AppendReport(town.UserId, targetReport)
+	tx.Users[userId].AppendReport(thiefReport)
+	tx.Users[town.UserId].AppendReport(targetReport)
 
 	return nil
 }
 
-func completeStealReturn(ctx updateContext, world *internal.WorldService, travel *models.Travel, travelIndex int) error {
-	ctx.IncrCoins(int32(travel.Coins))
-	ctx.IncrThieves(travel.Thieves)
+func completeStealReturn(userId string, gs *models.GameState, tx *gamestate.GameTx, world *internal.WorldService, travel *models.Travel, travelIndex int) error {
+	u := tx.Users[userId]
+	u.IncrCoins(int32(travel.Coins))
+	u.IncrThieves(travel.Thieves)
 
 	log.Info().
-		Str("userId", ctx.userId).
+		Str("userId", userId).
 		Int64("loot", travel.Coins).
 		Msg("Steal return completed")
 
 	return nil
 }
 
-func completeTravels(ctx updateContext, r internal.RedisClient, world *internal.WorldService) error {
-	completedTravels := internal.GetCompletedTravels(ctx.gs)
+func completeTravels(ctx context.Context, userId string, gs *models.GameState, tx *gamestate.GameTx, r internal.RedisClient, world *internal.WorldService) error {
+	completedTravels := internal.GetCompletedTravels(gs)
 	if len(completedTravels) == 0 {
 		return nil
 	}
 
 	// Update patch
-	ctx.patch.gsPatch.TravelQueue = ctx.gs.TravelQueue[len(completedTravels):]
-	ctx.patch.gsPatch.TravelQueuePatched = true
+	u := tx.Users[userId]
+	u.SetTravelQueue(gs.TravelQueue[len(completedTravels):])
 
 	// Complete travels
 	for travelIndex, travel := range completedTravels {
 		if travel.Returning {
 			if travel.Thieves > 0 {
-				err := completeStealReturn(ctx, world, travel, travelIndex)
+				err := completeStealReturn(userId, gs, tx, world, travel, travelIndex)
 				if err != nil {
 					return err
 				}
 			}
 		} else {
 			if travel.Thieves > 0 {
-				err := completeSteal(ctx, r, world, travel, travelIndex)
+				err := completeSteal(ctx, userId, gs, tx, r, world, travel, travelIndex)
 				if err != nil {
 					return err
 				}
@@ -277,3 +262,4 @@ func completeTravels(ctx updateContext, r internal.RedisClient, world *internal.
 
 	return nil
 }
+

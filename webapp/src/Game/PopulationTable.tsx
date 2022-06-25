@@ -35,7 +35,7 @@ const PopulationTable: React.FC<{
   const educations = gameData?.educations ?? {};
   const maxEmployed = gameData && countMaxEmployedByBuilding(lots, gameData);
 
-  const populationCount = sum(Object.values(population));
+  const populationCount = population ? sum(Object.values(population)) : 0;
 
   return (
     <table className={className}>
@@ -49,13 +49,13 @@ const PopulationTable: React.FC<{
       <tbody>
         <tr>
           <td className={classnames("p-2")}>Uneducated</td>
-          <td className={classnames("p-2")}>{population["uneducated"]}</td>
+          <td className={classnames("p-2")}>{population?.uneducated ?? 0}</td>
         </tr>
         {Object.keys(educations)
           .map(Number)
           .map((id) => {
             const popKey = getPopulationKey(id);
-            const pop = (popKey && population[popKey]) ?? 0;
+            const pop = (popKey && population?.[popKey]) ?? 0;
             const education = educations[id];
             const max =
               (maxEmployed &&
