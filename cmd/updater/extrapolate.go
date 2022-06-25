@@ -4,10 +4,10 @@ import (
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/gamestate"
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/mtime"
 	"github.com/rs/zerolog/log"
-	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 type extrapolateChanges struct {
@@ -16,13 +16,13 @@ type extrapolateChanges struct {
 	pizzas    int32
 }
 
-func extrapolate(ctx updateContext) error {
-	changes := calculateExtrapolateChanges(ctx.gs)
+func extrapolate(userId string, gs *models.GameState, tx *gamestate.GameTx) error {
+	changes := calculateExtrapolateChanges(gs)
 
-	// Update patch
-	ctx.IncrCoins(changes.coins)
-	ctx.IncrPizzas(changes.pizzas)
-	ctx.patch.gsPatch.Timestamp = &wrapperspb.Int64Value{Value: changes.timestamp}
+	u := tx.Users[userId]
+	u.SetCoins(gs.Resources.Coins + changes.coins)
+	u.SetPizzas(gs.Resources.Pizzas + changes.pizzas)
+	u.SetTimestamp(changes.timestamp)
 
 	return nil
 }

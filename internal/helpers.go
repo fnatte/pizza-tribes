@@ -144,3 +144,13 @@ func HasBuildingMinLevel(gs *GameState, b Building, minLvl int) bool {
 	return false
 }
 
+func FindMouseIdWithEducation(mice map[string]*Mouse, edu Education) string {
+	for id, m := range mice {
+		if m.IsEducated && m.Education == edu {
+			return id
+		}
+	}
+
+	return ""
+}
+
