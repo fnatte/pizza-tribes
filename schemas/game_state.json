@@ -1,0 +1,322 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$ref": "#/definitions/GameState",
+  "definitions": {
+    "GameState": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "resources": {
+          "$ref": "#/definitions/Resources"
+        },
+        "lots": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/Lot"
+          }
+        },
+        "population": {
+          "$ref": "#/definitions/Population"
+        },
+        "timestamp": {
+          "type": "string"
+        },
+        "trainingQueue": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Training"
+          }
+        },
+        "constructionQueue": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConstructionQueue"
+          }
+        },
+        "townX": {
+          "type": "integer"
+        },
+        "townY": {
+          "type": "integer"
+        },
+        "travelQueue": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Travel"
+          }
+        },
+        "researchQueue": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ResearchQueue"
+          }
+        },
+        "mice": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/Mouse"
+          }
+        },
+        "quests": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/QuestState"
+          }
+        },
+        "stats": {
+          "$ref": "#/definitions/Stats"
+        },
+        "discoveries": {
+          "type": "array",
+          "items": {
+            "$ref": "research_discovery.json#/definitions/ResearchDiscovery"
+          }
+        }
+      },
+      "required": [
+        "constructionQueue",
+        "lots",
+        "mice",
+        "population",
+        "quests",
+        "researchQueue",
+        "resources",
+        "stats",
+        "timestamp",
+        "townX",
+        "townY",
+        "trainingQueue",
+        "travelQueue",
+        "discoveries"
+      ],
+      "title": "GameState"
+    },
+    "ConstructionQueue": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "building": {
+          "$ref": "building.json#/definitions/Building"
+        },
+        "completeAt": {
+          "type": "string"
+        },
+        "lotId": {
+          "type": "string"
+        },
+        "level": {
+          "type": "integer"
+        },
+        "razing": {
+          "type": "boolean"
+        }
+      },
+      "required": ["building", "completeAt", "level", "lotId", "razing"],
+      "title": "ConstructionQueue"
+    },
+    "Lot": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "building": {
+          "$ref": "building.json#/definitions/Building"
+        },
+        "tappedAt": {
+          "type": "integer"
+        },
+        "level": {
+          "type": "integer"
+        },
+        "taps": {
+          "type": "integer"
+        },
+        "streak": {
+          "type": "integer"
+        }
+      },
+      "required": ["building", "level", "streak", "tappedAt", "taps"],
+      "title": "Lot"
+    },
+    "Mouse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "education": {
+          "$ref": "education.json#/definitions/Education"
+        },
+        "isEducated": {
+          "type": "boolean"
+        },
+        "isBeingEducated": {
+          "type": "boolean"
+        }
+      },
+      "required": ["isBeingEducated", "isEducated", "name"],
+      "title": "Mouse"
+    },
+    "Population": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "uneducated": {
+          "type": "integer"
+        },
+        "chefs": {
+          "type": "integer"
+        },
+        "salesmice": {
+          "type": "integer"
+        },
+        "guards": {
+          "type": "integer"
+        },
+        "thieves": {
+          "type": "integer"
+        },
+        "publicists": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "chefs",
+        "guards",
+        "publicists",
+        "salesmice",
+        "thieves",
+        "uneducated"
+      ],
+      "title": "Population"
+    },
+    "QuestState": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "opened": {
+          "type": "boolean"
+        },
+        "completed": {
+          "type": "boolean"
+        },
+        "claimedReward": {
+          "type": "boolean"
+        }
+      },
+      "required": ["claimedReward", "completed", "opened"],
+      "title": "QuestState"
+    },
+    "ResearchQueue": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dicovery": {
+          "$ref": "research_discovery.json#/definitions/ResearchDiscovery"
+        },
+        "completeAt": {
+          "type": "string"
+        }
+      },
+      "required": ["completeAt"],
+      "title": "ResearchQueue"
+    },
+    "Resources": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "coins": {
+          "type": "integer"
+        },
+        "pizzas": {
+          "type": "integer"
+        }
+      },
+      "required": ["coins", "pizzas"],
+      "title": "Resources"
+    },
+    "Stats": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "employedChefs": {
+          "type": "integer"
+        },
+        "employedSalesmice": {
+          "type": "integer"
+        },
+        "maxSellsByMicePerSecond": {
+          "type": "number"
+        },
+        "pizzasProducedPerSecond": {
+          "type": "number"
+        },
+        "demandOffpeak": {
+          "type": "number"
+        },
+        "demandRushHour": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "demandOffpeak",
+        "demandRushHour",
+        "employedChefs",
+        "employedSalesmice",
+        "maxSellsByMicePerSecond",
+        "pizzasProducedPerSecond"
+      ],
+      "title": "Stats"
+    },
+    "Training": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "education": {
+          "$ref": "education.json#/definitions/Education"
+        },
+        "completeAt": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "integer"
+        }
+      },
+      "required": ["amount", "completeAt"],
+      "title": "Training"
+    },
+    "Travel": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "arrivalAt": {
+          "type": "string"
+        },
+        "destinationX": {
+          "type": "integer"
+        },
+        "destinationY": {
+          "type": "integer"
+        },
+        "returning": {
+          "type": "boolean"
+        },
+        "thieves": {
+          "type": "integer"
+        },
+        "coins": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "arrivalAt",
+        "coins",
+        "destinationX",
+        "destinationY",
+        "returning",
+        "thieves"
+      ],
+      "title": "Travel"
+    }
+  }
+}

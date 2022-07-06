@@ -1,7 +1,7 @@
 package internal
 
 import (
-	. "github.com/fnatte/pizza-tribes/internal/models/gamestate"
+	. "github.com/fnatte/pizza-tribes/internal/models2"
 )
 
 const CHEF_PIZZAS_PER_SECOND = 0.2
@@ -12,22 +12,22 @@ const DEMAND_RUSH_HOUR_BONUS = 0.55
 func calculateTasteScore(gs *GameState) float64 {
 	score := 1.0
 
-	if gs.HasDiscovery(ResearchDiscoveryDurumWheat) {
+	if gs.HasDiscovery(DurumWheat) {
 		score = score + 0.05
 	}
-	if gs.HasDiscovery(ResearchDiscoveryDoubleZeroFlour) {
+	if gs.HasDiscovery(DoubleZeroFlour) {
 		score = score + 0.05
 	}
-	if gs.HasDiscovery(ResearchDiscoverySanMarzanoTomatoes) {
+	if gs.HasDiscovery(SANMarzanoTomatoes) {
 		score = score + 0.05
 	}
-	if gs.HasDiscovery(ResearchDiscoveryOcimumBasilicum) {
+	if gs.HasDiscovery(OcimumBasilicum) {
 		score = score + 0.05
 	}
-	if gs.HasDiscovery(ResearchDiscoveryExtraVirgin) {
+	if gs.HasDiscovery(ExtraVirgin) {
 		score = score + 0.05
 	}
-	if gs.HasDiscovery(ResearchDiscoveryMasonryOven) {
+	if gs.HasDiscovery(MasonryOven) {
 		score = score + 0.1
 	}
 
@@ -37,10 +37,10 @@ func calculateTasteScore(gs *GameState) float64 {
 func calculatePopularity(gs *GameState) float64 {
 	popularityBonus := 1.0
 
-	if gs.HasDiscovery(ResearchDiscoveryWebsite) {
+	if gs.HasDiscovery(Website) {
 		popularityBonus = popularityBonus + 0.1
 	}
-	if gs.HasDiscovery(ResearchDiscoveryMobileApp) {
+	if gs.HasDiscovery(MobileApp) {
 		popularityBonus = popularityBonus + 0.1
 	}
 
@@ -52,7 +52,7 @@ func calculatePopularity(gs *GameState) float64 {
 func calculateSalesBonus(gs *GameState) float64 {
 	bonus := 1.0
 
-	if gs.HasDiscovery(ResearchDiscoveryDigitalOrderingSystem) {
+	if gs.HasDiscovery(DigitalOrderingSystem) {
 		bonus = bonus + 0.2
 	}
 
@@ -62,10 +62,10 @@ func calculateSalesBonus(gs *GameState) float64 {
 func calculateBakeBonus(gs *GameState) float64 {
 	bonus := 1.0
 
-	if gs.HasDiscovery(ResearchDiscoveryGasOven) {
+	if gs.HasDiscovery(GasOven) {
 		bonus = bonus + 0.1
 	}
-	if gs.HasDiscovery(ResearchDiscoveryHybridOven) {
+	if gs.HasDiscovery(HybridOven) {
 		bonus = bonus + 0.1
 	}
 
@@ -79,12 +79,12 @@ func CalculateStats(gs *GameState) *Stats {
 
 	maxEmployed := CountMaxEmployed(gs)
 
-	employedChefs := MinInt32(gs.Population.Chefs, maxEmployed[string(BuildingKitchen)])
+	employedChefs := Min(gs.Population.Chefs, maxEmployed[string(Kitchen)])
 	pizzasProducedPerSecond := float64(employedChefs) *
 		CHEF_PIZZAS_PER_SECOND *
 		calculateBakeBonus(gs)
 
-	employedSalesmice := MinInt32(gs.Population.Salesmice, maxEmployed[string(BuildingShop)])
+	employedSalesmice := Min(gs.Population.Salesmice, maxEmployed[string(Shop)])
 	maxSellsByMicePerSecond := float64(employedSalesmice) *
 		SALESMICE_SELLS_PER_SECOND *
 		calculateSalesBonus(gs)

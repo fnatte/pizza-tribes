@@ -1,0 +1,214 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$ref": "#/definitions/GameData",
+  "definitions": {
+    "GameData": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "buildings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/BuildingInfo"
+          }
+        },
+        "educations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EducationInfo"
+          }
+        },
+        "researchTracks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ResearchTrack"
+          }
+        },
+        "quests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/QuestInfo"
+          }
+        }
+      },
+      "required": ["buildings", "educations", "quests"],
+      "title": "GameData"
+    },
+    "BuildingInfo": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "titlePlural": {
+          "type": "string"
+        },
+        "maxCount": {
+          "type": ["integer", "null"]
+        },
+        "levelInfos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LevelInfo"
+          }
+        }
+      },
+      "required": ["id", "levelInfos", "maxCount", "title", "titlePlural"],
+      "title": "BuildingInfo"
+    },
+    "LevelInfo": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cost": {
+          "type": "integer"
+        },
+        "constructionTime": {
+          "type": "integer"
+        },
+        "firstCost": {
+          "type": ["integer", "null"]
+        },
+        "firstConstructionTime": {
+          "type": ["integer", "null"]
+        },
+        "employer": {
+          "$ref": "#/definitions/Employer"
+        },
+        "residence": {
+          "$ref": "#/definitions/Residence"
+        }
+      },
+      "required": [
+        "constructionTime",
+        "cost",
+        "firstConstructionTime",
+        "firstCost"
+      ],
+      "title": "LevelInfo"
+    },
+    "Employer": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "maxWorkforce": {
+          "type": "integer"
+        }
+      },
+      "required": ["maxWorkforce"],
+      "title": "Employer"
+    },
+    "Residence": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "beds": {
+          "type": "integer"
+        }
+      },
+      "required": ["beds"],
+      "title": "Residence"
+    },
+    "EducationInfo": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "titlePlural": {
+          "type": "string"
+        },
+        "cost": {
+          "type": "integer"
+        },
+        "trainTime": {
+          "type": "integer"
+        },
+        "employer": {
+          "type": ["string", "null"]
+        }
+      },
+      "required": [
+        "cost",
+        "employer",
+        "id",
+        "title",
+        "titlePlural",
+        "trainTime"
+      ],
+      "title": "EducationInfo"
+    },
+    "QuestInfo": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "reward": {
+          "$ref": "#/definitions/QuestReward"
+        }
+      },
+      "required": ["description", "id", "reward", "title"],
+      "title": "QuestInfo"
+    },
+    "QuestReward": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "coins": {
+          "type": "integer"
+        },
+        "pizzas": {
+          "type": "integer"
+        }
+      },
+      "required": ["coins", "pizzas"],
+      "title": "QuestReward"
+    },
+    "ResearchNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": { "type": "string" },
+        "discovery": {
+          "$ref": "research_discovery.json#/definitions/ResearchDiscovery"
+        },
+        "cost": { "type": "integer" },
+        "research_time": { "type": "integer" },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ResearchNode"
+          }
+        }
+      },
+      "required": ["title", "discovery", "cost", "research_time"],
+      "title": "ResearchNode"
+    },
+    "ResearchTrack": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": { "type": "string" },
+        "rootNode": { "$ref": "#/definitions/ResearchNode" }
+      },
+      "required": ["title", "rootNode"],
+      "title": "ResearchTrack"
+    }
+  }
+}

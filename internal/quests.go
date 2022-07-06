@@ -1,7 +1,7 @@
 package internal
 
 import (
-	. "github.com/fnatte/pizza-tribes/internal/models/gamestate"
+	. "github.com/fnatte/pizza-tribes/internal/models2"
 )
 
 func GetAvailableQuestIds(gs *GameState) []string {
@@ -45,14 +45,14 @@ func GetNewCompletedQuests(gs *GameState) []string {
 
 		switch qid {
 		case "1":
-			if HasBuildingMinLevel(gs, BuildingKitchen, 1) &&
-				HasBuildingMinLevel(gs, BuildingShop, 1) {
+			if HasBuildingMinLevel(gs, Kitchen, 1) &&
+				HasBuildingMinLevel(gs, Shop, 1) {
 				solved = append(solved, qid)
 			}
 			break
 		case "2":
-			if HasBuildingMinLevel(gs, BuildingHouse, 1) &&
-				HasBuildingMinLevel(gs, BuildingSchool, 1) {
+			if HasBuildingMinLevel(gs, House, 1) &&
+				HasBuildingMinLevel(gs, School, 1) {
 				solved = append(solved, qid)
 			}
 			break
@@ -65,7 +65,7 @@ func GetNewCompletedQuests(gs *GameState) []string {
 			// Change name quest is solved on handling changeName client message
 			break
 		case "5":
-			if HasBuildingMinLevel(gs, BuildingHouse, 2) {
+			if HasBuildingMinLevel(gs, House, 2) {
 				solved = append(solved, qid)
 			}
 			break
@@ -73,8 +73,8 @@ func GetNewCompletedQuests(gs *GameState) []string {
 			// "Check out help page" is solved using special message
 			break
 		case "7":
-			if HasBuildingMinLevel(gs, BuildingKitchen, 2) &&
-				HasBuildingMinLevel(gs, BuildingShop, 2) {
+			if HasBuildingMinLevel(gs, Kitchen, 2) &&
+				HasBuildingMinLevel(gs, Shop, 2) {
 				solved = append(solved, qid)
 			}
 			break

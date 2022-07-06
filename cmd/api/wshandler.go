@@ -7,8 +7,7 @@ import (
 
 	"github.com/fnatte/pizza-tribes/cmd/api/ws"
 	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/fnatte/pizza-tribes/internal/models"
-	. "github.com/fnatte/pizza-tribes/internal/models/gamestate"
+	models "github.com/fnatte/pizza-tribes/internal/models2"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/xid"
@@ -41,13 +40,13 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 		return fmt.Errorf("failed to get username: %w", err)
 	}
 
-	gs := GameState{
-		Population:  GameStatePopulation{},
-		Resources:   GameStateResources{},
-		Lots:        map[string]GameStateLot{},
-		Discoveries: []ResearchDiscovery{},
-		Mice:        map[string]GameStateMouse{},
-		Quests:      map[string]GameStateQuest{},
+	gs := models.GameState{
+		Population:  models.Population{},
+		Resources:   models.Resources{},
+		Lots:        map[string]models.Lot{},
+		Discoveries: []models.ResearchDiscovery{},
+		Mice:        map[string]models.Mouse{},
+		Quests:      map[string]models.QuestState{},
 	}
 
 	log.Info().Str("userId", c.UserId()).Msg("Client connected")
@@ -60,11 +59,11 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 		}
 
 		// Initialize game state for user
-		gs.Lots["2"] = GameStateLot{
-			Building: BuildingTownCentre,
+		gs.Lots["2"] = models.Lot{
+			Building: models.TownCentre,
 		}
 		for _, qid := range internal.GetAvailableQuestIds(&gs) {
-			gs.Quests[qid] = GameStateQuest{}
+			gs.Quests[qid] = models.QuestState{}
 		}
 
 		b, err := json.Marshal(&gs)
@@ -88,11 +87,11 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 		if err != nil {
 			return fmt.Errorf("failed to acquire town: %w", err)
 		}
-		gs.TownX = int32(x)
-		gs.TownY = int32(y)
+		gs.TownX = int64(x)
+		gs.TownY = int64(y)
 		log.Info().
-			Int32("x", gs.TownX).
-			Int32("y", gs.TownY).
+			Int64("x", gs.TownX).
+			Int64("y", gs.TownY).
 			Msg("Town acquired")
 	}
 

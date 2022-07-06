@@ -1,0 +1,45 @@
+{
+  "buildings": [
+    {
+      "id": "string",
+      "title": "string",
+      "titlePlural": "string",
+      "maxCount": 0,
+      "levelInfos": [
+        {
+          "cost": 0,
+          "constructionTime": 0,
+          "firstCost": 0,
+          "firstConstructionTime": 0,
+          "employer": {
+            "maxWorkforce": 0
+          },
+          "residence": {
+            "beds": 0
+          }
+        }
+      ]
+    }
+  ],
+  "educations": [
+    {
+      "id": "string",
+      "title": "string",
+      "titlePlural": "string",
+      "cost": 0,
+      "trainTime": 0,
+      "employer": "string"
+    }
+  ],
+  "quests": [
+    {
+      "id": "string",
+      "title": "string",
+      "description": "string",
+      "reward": {
+        "coins": 0,
+        "pizzas": 0
+      }
+    }
+  ]
+}

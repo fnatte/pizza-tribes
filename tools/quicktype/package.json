@@ -1,0 +1,11 @@
+{
+  "name": "pizzatribes-quicktype",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "quicktype": "^15.0.261"
+  }
+}

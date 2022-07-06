@@ -3,10 +3,10 @@ package internal
 import (
 	"time"
 
-	. "github.com/fnatte/pizza-tribes/internal/models/gamedata"
+	. "github.com/fnatte/pizza-tribes/internal/models2"
 )
 
-func int32Ptr(i int32) *int32 {
+func int64Ptr(i int64) *int64 {
 	return &i
 }
 
@@ -23,76 +23,76 @@ var FullGameData = GameData{
 			ID:          "kitchen",
 			Title:       "Kitchen",
 			TitlePlural: "Kitchens",
-			LevelInfos: []BuildingInfoLevelInfo{
+			LevelInfos: []LevelInfo{
 				{
 					Cost:             7_500,
 					ConstructionTime: 200,
-					Employer: &BuildingInfoLevelInfoEmployer{
+					Employer: &Employer{
 						MaxWorkforce: 2,
 					},
-					FirstCost:             int32Ptr(0),
-					FirstConstructionTime: int32Ptr(8),
+					FirstCost:             int64Ptr(0),
+					FirstConstructionTime: int64Ptr(8),
 				},
 				{
 					Cost:             750,
 					ConstructionTime: 200,
-					Employer: &BuildingInfoLevelInfoEmployer{
+					Employer: &Employer{
 						MaxWorkforce: 3,
 					},
 				},
 				{
 					Cost:             3_500,
 					ConstructionTime: 450,
-					Employer: &BuildingInfoLevelInfoEmployer{
+					Employer: &Employer{
 						MaxWorkforce: 4,
 					},
 				},
 				{
 					Cost:             10_000,
 					ConstructionTime: 900,
-					Employer: &BuildingInfoLevelInfoEmployer{
+					Employer: &Employer{
 						MaxWorkforce: 7,
 					},
 				},
 				{
 					Cost:             20_000,
 					ConstructionTime: 3600,
-					Employer: &BuildingInfoLevelInfoEmployer{
+					Employer: &Employer{
 						MaxWorkforce: 12,
 					},
 				},
 				{
 					Cost:             40_000,
 					ConstructionTime: 2 * 3600,
-					Employer: &BuildingInfoLevelInfoEmployer{
+					Employer: &Employer{
 						MaxWorkforce: 20,
 					},
 				},
 				{
 					Cost:             85_000,
 					ConstructionTime: 6 * 3600,
-					Employer: &BuildingInfoLevelInfoEmployer{
+					Employer: &Employer{
 						MaxWorkforce: 35,
 					},
 				},
 				{
 					Cost:             180_000,
 					ConstructionTime: 14 * 3600,
-					Employer: &BuildingInfoLevelInfoEmployer{
+					Employer: &Employer{
 						MaxWorkforce: 60,
 					},
 				},
 				{
 					Cost:             370_000,
 					ConstructionTime: 24 * 3600,
-					Employer: &BuildingInfoLevelInfoEmployer{
+					Employer: &Employer{
 						MaxWorkforce: 110,
 					},
 				},
 				{
 					Cost:             750_000,
 					ConstructionTime: 36 * 3600,
-					Employer: &BuildingInfoLevelInfoEmployer{
+					Employer: &Employer{
 						MaxWorkforce: 200,
 					},
 				},
@@ -102,62 +102,62 @@ var FullGameData = GameData{
 			ID:          "shop",
 			Title:       "Shop",
 			TitlePlural: "Shops",
-			LevelInfos: []BuildingInfoLevelInfo{
+			LevelInfos: []LevelInfo{
 				{
 					Cost:             16_500,
 					ConstructionTime: 360,
-					Employer: &BuildingInfoLevelInfoEmployer{
+					Employer: &Employer{
 						MaxWorkforce: 2,
 					},
-					FirstCost:             int32Ptr(0),
-					FirstConstructionTime: int32Ptr(12),
+					FirstCost:             int64Ptr(0),
+					FirstConstructionTime: int64Ptr(12),
 				},
 				{
 					Cost:             1_000,
 					ConstructionTime: 250,
-					Employer: &BuildingInfoLevelInfoEmployer{
+					Employer: &Employer{
 						MaxWorkforce: 3,
 					},
 				},
 				{
 					Cost:             5_500,
 					ConstructionTime: 1 * 1200,
-					Employer: &BuildingInfoLevelInfoEmployer{
+					Employer: &Employer{
 						MaxWorkforce: 5,
 					},
 				},
 				{
 					Cost:             18_500,
 					ConstructionTime: 3 * 1200,
-					Employer: &BuildingInfoLevelInfoEmployer{
+					Employer: &Employer{
 						MaxWorkforce: 9,
 					},
 				},
 				{
 					Cost:             40_000,
 					ConstructionTime: 8 * 1200,
-					Employer: &BuildingInfoLevelInfoEmployer{
+					Employer: &Employer{
 						MaxWorkforce: 15,
 					},
 				},
 				{
 					Cost:             95_000,
 					ConstructionTime: 14 * 3600,
-					Employer: &BuildingInfoLevelInfoEmployer{
+					Employer: &Employer{
 						MaxWorkforce: 25,
 					},
 				},
 				{
 					Cost:             200_000,
 					ConstructionTime: 25 * 3600,
-					Employer: &BuildingInfoLevelInfoEmployer{
+					Employer: &Employer{
 						MaxWorkforce: 40,
 					},
 				},
 				{
 					Cost:             420_000,
 					ConstructionTime: 40 * 3600,
-					Employer: &BuildingInfoLevelInfoEmployer{
+					Employer: &Employer{
 						MaxWorkforce: 70,
 					},
 				},
@@ -167,69 +167,69 @@ var FullGameData = GameData{
 			ID:          "house",
 			Title:       "House",
 			TitlePlural: "Houses",
-			LevelInfos: []BuildingInfoLevelInfo{
+			LevelInfos: []LevelInfo{
 				{
 					Cost:             8_000,
 					ConstructionTime: 90,
-					Residence: &BuildingInfoLevelInfoResidence{
+					Residence: &Residence{
 						Beds: 3,
 					},
-					FirstCost:             int32Ptr(100),
-					FirstConstructionTime: int32Ptr(10),
+					FirstCost:             int64Ptr(100),
+					FirstConstructionTime: int64Ptr(10),
 				},
 				{
 					Cost:             500,
 					ConstructionTime: 200,
-					Residence: &BuildingInfoLevelInfoResidence{
+					Residence: &Residence{
 						Beds: 5,
 					},
 				},
 				{
 					Cost:             3_000,
 					ConstructionTime: 200,
-					Residence: &BuildingInfoLevelInfoResidence{
+					Residence: &Residence{
 						Beds: 7,
 					},
 				},
 				{
 					Cost:             14_000,
 					ConstructionTime: 450,
-					Residence: &BuildingInfoLevelInfoResidence{
+					Residence: &Residence{
 						Beds: 11,
 					},
 				},
 				{
 					Cost:             35_000,
 					ConstructionTime: 900,
-					Residence: &BuildingInfoLevelInfoResidence{
+					Residence: &Residence{
 						Beds: 18,
 					},
 				},
 				{
 					Cost:             75_000,
 					ConstructionTime: 1800,
-					Residence: &BuildingInfoLevelInfoResidence{
+					Residence: &Residence{
 						Beds: 30,
 					},
 				},
 				{
 					Cost:             165_000,
 					ConstructionTime: 4000,
-					Residence: &BuildingInfoLevelInfoResidence{
+					Residence: &Residence{
 						Beds: 50,
 					},
 				},
 				{
 					Cost:             360_000,
 					ConstructionTime: 7200,
-					Residence: &BuildingInfoLevelInfoResidence{
+					Residence: &Residence{
 						Beds: 80,
 					},
 				},
 				{
 					Cost:             800_000,
 					ConstructionTime: 2 * 7200,
-					Residence: &BuildingInfoLevelInfoResidence{
+					Residence: &Residence{
 						Beds: 120,
 					},
 				},
@@ -239,13 +239,13 @@ var FullGameData = GameData{
 			ID:          "school",
 			Title:       "School",
 			TitlePlural: "Schools",
-			MaxCount:    int32Ptr(1),
-			LevelInfos: []BuildingInfoLevelInfo{
+			MaxCount:    int64Ptr(1),
+			LevelInfos: []LevelInfo{
 				{
 					Cost:                  30_000,
 					ConstructionTime:      1500,
-					FirstCost:             int32Ptr(200),
-					FirstConstructionTime: int32Ptr(15),
+					FirstCost:             int64Ptr(200),
+					FirstConstructionTime: int64Ptr(15),
 				},
 			},
 		},
@@ -253,40 +253,40 @@ var FullGameData = GameData{
 			ID:          "marketinghq",
 			Title:       "Marketing HQ",
 			TitlePlural: "Marketing HQs",
-			MaxCount:    int32Ptr(1),
-			LevelInfos: []BuildingInfoLevelInfo{
+			MaxCount:    int64Ptr(1),
+			LevelInfos: []LevelInfo{
 				{
 					Cost:             1 * 30_000,
 					ConstructionTime: 1 * 3600,
-					Employer: &BuildingInfoLevelInfoEmployer{
+					Employer: &Employer{
 						MaxWorkforce: 3,
 					},
 				},
 				{
 					Cost:             2 * 30_000,
 					ConstructionTime: 2 * 3600,
-					Employer: &BuildingInfoLevelInfoEmployer{
+					Employer: &Employer{
 						MaxWorkforce: 6,
 					},
 				},
 				{
 					Cost:             5 * 30_000,
 					ConstructionTime: 8 * 3600,
-					Employer: &BuildingInfoLevelInfoEmployer{
+					Employer: &Employer{
 						MaxWorkforce: 12,
 					},
 				},
 				{
 					Cost:             12 * 30_000,
 					ConstructionTime: 20 * 3600,
-					Employer: &BuildingInfoLevelInfoEmployer{
+					Employer: &Employer{
 						MaxWorkforce: 25,
 					},
 				},
 				{
 					Cost:             30 * 30_000,
 					ConstructionTime: 48 * 3600,
-					Employer: &BuildingInfoLevelInfoEmployer{
+					Employer: &Employer{
 						MaxWorkforce: 55,
 					},
 				},
@@ -296,8 +296,8 @@ var FullGameData = GameData{
 			ID:          "research_institute",
 			Title:       "Research Institute",
 			TitlePlural: "Research Institutes",
-			MaxCount:    int32Ptr(1),
-			LevelInfos: []BuildingInfoLevelInfo{
+			MaxCount:    int64Ptr(1),
+			LevelInfos: []LevelInfo{
 				{
 					Cost:             200_000,
 					ConstructionTime: 9600,
@@ -308,8 +308,8 @@ var FullGameData = GameData{
 			ID:          "town_centre",
 			Title:       "Town Centre",
 			TitlePlural: "Town Centres",
-			MaxCount:    int32Ptr(1),
-			LevelInfos: []BuildingInfoLevelInfo{
+			MaxCount:    int64Ptr(1),
+			LevelInfos: []LevelInfo{
 				{
 					Cost:             0,
 					ConstructionTime: 0,
@@ -450,7 +450,7 @@ var FullGameData = GameData{
 			},
 		},
 	},
-	Quests: []Quest{
+	Quests: []QuestInfo{
 		{
 			ID:          "1",
 			Title:       "Bake and sell",

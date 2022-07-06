@@ -86,3 +86,4 @@ func (stats *Stats) ToServerMessage() *ServerMessage {
 		},
 	}
 }
+

@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	. "github.com/fnatte/pizza-tribes/internal/models/gamestate"
+	. "github.com/fnatte/pizza-tribes/internal/models2"
 	"github.com/go-redis/redis/v8"
 )
 

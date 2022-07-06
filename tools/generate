@@ -1,0 +1,5 @@
+#!/bin/sh
+cd tools/quicktype
+./node_modules/.bin/quicktype -l go --package models2 \
+	--src-lang schema \
+	../../schemas/*.json > ../../internal/models2/models.go

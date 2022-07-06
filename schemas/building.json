@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$ref": "#/definitions/Building",
+  "definitions": {
+    "Building": {
+      "type": "string",
+      "enum": [
+        "kitchen",
+        "shop",
+        "house",
+        "school",
+        "marketinghq",
+        "research_institute",
+        "town_centre"
+      ],
+      "title": "Building"
+    }
+  }
+}

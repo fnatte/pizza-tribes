@@ -1,0 +1,76 @@
+{
+  "resources": {
+    "coins": 0,
+    "pizzas": 0
+  },
+  "lots": [
+    {
+      "tappedAt": 0,
+      "level": 0,
+      "taps": 0,
+      "streak": 0
+    }
+  ],
+  "population": {
+    "uneducated": 0,
+    "chefs": 0,
+    "salesmice": 0,
+    "guards": 0,
+    "thieves": 0,
+    "publicists": 0
+  },
+  "timestamp": "string",
+  "trainingQueue": [
+    {
+      "completeAt": "string",
+      "amount": 0
+    }
+  ],
+  "constructionQueue": [
+    {
+      "completeAt": "string",
+      "lotId": "string",
+      "level": 0,
+      "razing": true
+    }
+  ],
+  "townX": 0,
+  "townY": 0,
+  "travelQueue": [
+    {
+      "arrivalAt": "string",
+      "destinationX": 0,
+      "destinationY": 0,
+      "returning": true,
+      "thieves": 0,
+      "coins": "string"
+    }
+  ],
+  "researchQueue": [
+    {
+      "completeAt": "string"
+    }
+  ],
+  "mice": [
+    {
+      "name": "string",
+      "isEducated": true,
+      "isBeingEducated": true
+    }
+  ],
+  "quests": [
+    {
+      "opened": true,
+      "completed": true,
+      "claimedReward": true
+    }
+  ],
+  "stats": {
+    "employedChefs": 0,
+    "employedSalesmice": 0,
+    "maxSellsByMicePerSecond": 1.0,
+    "pizzasProducedPerSecond": 1.0,
+    "demandOffpeak": 1.0,
+    "demandRushHour": 1.0
+  }
+}

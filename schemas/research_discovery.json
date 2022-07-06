@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$ref": "#/definitions/ResearchDiscovery",
+  "definitions": {
+    "ResearchDiscovery": {
+      "type": "string",
+      "enum": [
+        "website",
+        "digital_ordering_system",
+        "mobile_app",
+        "masonry_oven",
+        "gas_oven",
+        "hybrid_oven",
+        "durum_wheat",
+        "double_zero_flour",
+        "san_marzano_tomatoes",
+        "ocimum_basilicum",
+        "extra_virgin"
+      ]
+    }
+  }
+}
