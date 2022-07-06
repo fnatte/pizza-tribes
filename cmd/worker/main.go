@@ -39,6 +39,7 @@ func main() {
 	})
 
 	rc := internal.NewRedisClient(rdb)
+	rc.AddDebugHook()
 
 	world := internal.NewWorldService(rc)
 

@@ -10,7 +10,6 @@ import classes from "./town.module.css";
 import TownExpandMenu from "./TownExpandMenu";
 import TownSvg from "./TownSvg";
 import TravelQueue from "./TravelQueue";
-import { ReactComponent as SvgQuestMouse } from "../../images/pizza-mouse-1.svg";
 
 function Town() {
   const ref = useRef<SVGSVGElement>(null);

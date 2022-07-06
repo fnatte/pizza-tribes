@@ -1,6 +1,10 @@
 package models
 
-import wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
+import (
+	"github.com/fnatte/pizza-tribes/internal/protojson"
+	"github.com/rs/zerolog/log"
+	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
+)
 
 func (gs *GameState) HasDiscovery(d ResearchDiscovery) bool {
 	for _, x := range gs.Discoveries {
@@ -75,3 +79,10 @@ func (p *GameStatePatch_QuestStatePatch) ToQuestState() *QuestState {
 
 	return q
 }
+
+func (t *Training) MarshalBinary() (data []byte, err error) {
+	b, err := protojson.Marshal(t)
+	log.Info().Str("str", string(b)).Send()
+	return b, err
+}
+

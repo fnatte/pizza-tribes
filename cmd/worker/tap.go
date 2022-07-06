@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"math"
 	"time"
@@ -10,9 +9,6 @@ import (
 	"github.com/fnatte/pizza-tribes/internal/gamestate"
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/persist"
-	"github.com/fnatte/pizza-tribes/internal/protojson"
-	"github.com/rs/xid"
-	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 const MAX_TAP_STREAK = 12
@@ -28,6 +24,9 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *models.Client
 			return fmt.Errorf("invalid lot: %s", m.LotId)
 		}
 
+		taps := gs.Lots[m.LotId].Taps
+		streak := gs.Lots[m.LotId].Streak
+
 		// Check tap interval
 		nextTapAt := lot.TappedAt + (500 * time.Millisecond).Nanoseconds()
 		if nextTapAt > now {
@@ -41,11 +40,8 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *models.Client
 
 		// Reset streak if we are past the reset streak time
 		if time.Now().After(resetStreakTime) {
-			lot.Streak = 0
+			streak = 0
 		}
-
-		taps := gs.Lots[m.LotId].Taps
-		streak := gs.Lots[m.LotId].Streak
 
 		// Reset taps if next hour
 		if time.Now().After(resetTime) {
@@ -55,7 +51,6 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *models.Client
 		if taps >= 10 {
 			return fmt.Errorf("tap is maxed out this hour")
 		}
-
 
 		// Determine what resource to increase and how much
 		var incrType string
@@ -97,73 +92,8 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *models.Client
 		return fmt.Errorf("failed to perform update: %w", err)
 	}
 
-	for uid, u := range(tx.Users) {
-		jsonPatch := []*models.JsonPatchOp{}
-		for _, op := range(u.GsPatch.Ops) {
-			val, err := json.Marshal(op.Value)
-			if err != nil {
-				return err
-			}
-
-			jsonPatch = append(jsonPatch, &models.JsonPatchOp{
-				From: op.From,
-				Op: op.Op,
-				Path: op.Path,
-				Value: string(val),
-			})
-		}
-
-		if err != nil {
-			return err
-		}
-
-		h.send(ctx, uid, &models.ServerMessage{
-			Id: xid.New().String(),
-			Payload: &models.ServerMessage_StateChange2{
-				StateChange2: &models.ServerMessage_GameStatePatch2{
-					JsonPatch: jsonPatch,
-				},
-			},
-		})
-	}
+	h.sendGameTx(ctx, tx)
 
 	return nil
 }
 
-func (h *handler) sendTapUpdate(ctx context.Context, userId string, lotId string, lot *models.GameState_Lot, tappedAt int64) error {
-	gsKey := fmt.Sprintf("user:%s:gamestate", userId)
-	path := ".resources"
-
-	s, err := h.rdb.JsonGet(ctx, gsKey, path).Result()
-	if err != nil {
-		return fmt.Errorf("failed to get resources: %w", err)
-	}
-
-	res := models.GameState_Resources{}
-	protojson.Unmarshal([]byte(s), &res)
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal resources: %w", err)
-	}
-
-	lotsPatch := map[string]*models.GameStatePatch_LotPatch{}
-	lotsPatch[lotId] = &models.GameStatePatch_LotPatch{
-		Building: lot.Building,
-		TappedAt: tappedAt,
-		Level:    lot.Level,
-		Taps:     lot.Taps,
-		Streak:   lot.Streak,
-	}
-
-	return h.send(ctx, userId, &models.ServerMessage{
-		Id: xid.New().String(),
-		Payload: &models.ServerMessage_StateChange{
-			StateChange: &models.GameStatePatch{
-				Lots: lotsPatch,
-				Resources: &models.GameStatePatch_ResourcesPatch{
-					Coins:  &wrapperspb.Int32Value{Value: res.Coins},
-					Pizzas: &wrapperspb.Int32Value{Value: res.Pizzas},
-				},
-			},
-		},
-	})
-}

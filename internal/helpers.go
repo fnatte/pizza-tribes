@@ -1,26 +1,28 @@
 package internal
 
 import (
+	"strconv"
 	"time"
 
-	. "github.com/fnatte/pizza-tribes/internal/models"
+	. "github.com/fnatte/pizza-tribes/internal/models/gamedata"
+	. "github.com/fnatte/pizza-tribes/internal/models/gamestate"
 )
 
 func NewInt64(i int64) *int64    { return &i }
 func NewString(s string) *string { return &s }
 
-func CountBuildings(gs *GameState) (counts map[int32]int32) {
-	counts = map[int32]int32{}
+func CountBuildings(gs *GameState) (counts map[string]int32) {
+	counts = map[string]int32{}
 	for _, lot := range gs.Lots {
-		counts[int32(lot.Building)] = counts[int32(lot.Building)] + 1
+		counts[string(lot.Building)] = counts[string(lot.Building)] + 1
 	}
 	return counts
 }
 
-func CountBuildingsUnderConstruction(gs *GameState) (counts map[int32]int32) {
-	counts = map[int32]int32{}
+func CountBuildingsUnderConstruction(gs *GameState) (counts map[string]int32) {
+	counts = map[string]int32{}
 	for _, c := range gs.ConstructionQueue {
-		counts[int32(c.Building)] = counts[int32(c.Building)] + 1
+		counts[string(c.Building)] = counts[string(c.Building)] + 1
 	}
 	return counts
 }
@@ -53,12 +55,22 @@ func MaxInt32(a, b int32) int32 {
 	return b
 }
 
-func CountMaxEmployed(gs *GameState) (counts map[int32]int32) {
-	counts = map[int32]int32{}
+func GetBuildingInfo(id Building) *BuildingInfo {
+	for _, b := range FullGameData.Buildings {
+		if b.ID == string(id) {
+			return &b
+		}
+	}
+
+	return nil
+}
+
+func CountMaxEmployed(gs *GameState) (counts map[string]int32) {
+	counts = map[string]int32{}
 	for _, lot := range gs.Lots {
-		info := FullGameData.Buildings[int32(lot.Building)]
+		info := GetBuildingInfo(lot.Building)
 		if info != nil && info.LevelInfos[lot.Level].Employer != nil {
-			counts[int32(lot.Building)] = counts[int32(lot.Building)] +
+			counts[string(lot.Building)] = counts[string(lot.Building)] +
 				info.LevelInfos[lot.Level].Employer.MaxWorkforce
 		}
 	}
@@ -67,7 +79,7 @@ func CountMaxEmployed(gs *GameState) (counts map[int32]int32) {
 
 func CountMaxPopulation(gs *GameState) (count int32) {
 	for _, lot := range gs.Lots {
-		info := FullGameData.Buildings[int32(lot.Building)]
+		info := GetBuildingInfo(lot.Building)
 		if info != nil && info.LevelInfos[lot.Level].Residence != nil {
 			count = count +
 				info.LevelInfos[lot.Level].Residence.Beds
@@ -76,7 +88,7 @@ func CountMaxPopulation(gs *GameState) (count int32) {
 	return
 }
 
-func CountTownPopulation(population *GameState_Population) int32 {
+func CountTownPopulation(population *GameStatePopulation) int32 {
 	if population == nil {
 		return 0
 	}
@@ -89,7 +101,7 @@ func CountTownPopulation(population *GameState_Population) int32 {
 		population.Publicists)
 }
 
-func CountTravellingPopulation(travelQueue []*Travel) int32 {
+func CountTravellingPopulation(travelQueue []Travel) int32 {
 	var count int32 = 0
 	for _, t := range travelQueue {
 		count = count + t.Thieves
@@ -98,7 +110,7 @@ func CountTravellingPopulation(travelQueue []*Travel) int32 {
 	return count
 }
 
-func CountTrainingPopulation(trainingQueue []*Training) int32 {
+func CountTrainingPopulation(trainingQueue []Training) int32 {
 	var count int32 = 0
 	for _, t := range trainingQueue {
 		count = count + t.Amount
@@ -112,7 +124,7 @@ func CountAllPopulation(gs *GameState) int32 {
 		return 0
 	}
 
-	return CountTownPopulation(gs.Population) +
+	return CountTownPopulation(&gs.Population) +
 		CountTravellingPopulation(gs.TravelQueue) +
 		CountTrainingPopulation(gs.TrainingQueue)
 
@@ -122,11 +134,16 @@ func GetCompletedTravels(gs *GameState) (res []*Travel) {
 	now := time.Now().UnixNano()
 
 	for _, t := range gs.TravelQueue {
-		if t.ArrivalAt > now {
+		arrivalAt, err := strconv.ParseInt(t.ArrivalAt, 10, 64)
+		if err != nil {
+			panic("Falied to parse ArrivalAt as int64")
+		}
+
+		if arrivalAt > now {
 			break
 		}
 
-		res = append(res, t)
+		res = append(res, &t)
 	}
 
 	return res

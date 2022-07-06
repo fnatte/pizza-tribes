@@ -82,8 +82,8 @@ func RedisJsonDel(c RedisProcesser, ctx context.Context, key string, path string
 	return cmd
 }
 
-func RedisJsonArrAppend(c RedisProcesser, ctx context.Context, key string, path string, value interface{}) *redis.StatusCmd {
-	cmd := redis.NewStatusCmd(ctx, "JSON.ARRAPPEND", key, path, value)
+func RedisJsonArrAppend(c RedisProcesser, ctx context.Context, key string, path string, value interface{}) *redis.Cmd {
+	cmd := redis.NewCmd(ctx, "JSON.ARRAPPEND", key, path, value)
 	_ = c.Process(ctx, cmd)
 	return cmd
 }

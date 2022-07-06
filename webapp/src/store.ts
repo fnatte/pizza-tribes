@@ -1,23 +1,9 @@
 import { unstable_batchedUpdates } from "react-dom";
 import create from "zustand";
 import connect, { ConnectionApi, ConnectionState } from "./connect";
-import { Building } from "./generated/building";
 import { ClientMessage } from "./generated/client_message";
 import { Education } from "./generated/education";
-import {
-  Construction,
-  GameStatePatch,
-  GameStatePatch_LotPatch,
-  GameState_Population,
-  Training,
-  Travel,
-  OngoingResearch,
-  Mouse,
-  GameStatePatch_MousePatch,
-  QuestState,
-  GameStatePatch_QuestStatePatch,
-  JsonPatchOp,
-} from "./generated/gamestate";
+import { JsonPatchOp } from "./generated/gamestate";
 import { GameData } from "./generated/game_data";
 import { Report } from "./generated/report";
 import { ResearchDiscovery } from "./generated/research";
@@ -32,34 +18,11 @@ import { generateId } from "./utils";
 import { applyPatches, enablePatches, produce } from "immer";
 import { queryClient } from "./queryClient";
 import { apiFetch } from "./api";
+import { Building, GameState } from "./schemas";
 
 enablePatches();
 
-export type Lot = {
-  building: Building;
-  tappedAt: string;
-  level: number;
-  taps: number;
-  streak: number;
-};
-
-export type GameState = {
-  resources: {
-    pizzas: number;
-    coins: number;
-  };
-  lots: Record<string, Lot | undefined>;
-  population: GameState_Population;
-  trainingQueue: Array<Training>;
-  constructionQueue: Array<Construction>;
-  travelQueue: Array<Travel>;
-  townX: number;
-  townY: number;
-  discoveries: Array<ResearchDiscovery>;
-  researchQueue: Array<OngoingResearch>;
-  mice: Record<string, Mouse>;
-  quests: Record<string, QuestState>;
-};
+export type Lot = GameState['lots']['']
 
 type User = {
   username: string;
@@ -98,6 +61,7 @@ const resetQueryDataState = () => {
   queryClient.setQueriesData({}, () => undefined);
 };
 
+/*
 const mergeLots = (
   a: GameState["lots"],
   b: Record<string, GameStatePatch_LotPatch>
@@ -131,6 +95,7 @@ const mergeLots = (
 
   return res;
 };
+
 
 function updateMice(
   mice: Record<string, Mouse>,
@@ -211,6 +176,7 @@ function updateQuests(
 
   return Object.fromEntries(entries);
 }
+*/
 
 const initialGameState: GameState = {
   resources: {
@@ -226,6 +192,7 @@ const initialGameState: GameState = {
     thieves: 0,
     publicists: 0,
   },
+  timestamp: 0,
   trainingQueue: [],
   constructionQueue: [],
   travelQueue: [],
@@ -297,6 +264,7 @@ export const useStore = create<State>((set, get) => ({
   start: () => {
     get().connection?.close();
 
+    /*
     const handleStateChange = (stateChange: GameStatePatch) => {
       const resources: Partial<State["gameState"]["resources"]> = {};
       if (stateChange.resources?.coins?.value !== undefined) {
@@ -363,6 +331,7 @@ export const useStore = create<State>((set, get) => ({
         }));
       });
     };
+    */
 
     const isSupportedJsonPatchOp = (
       p: JsonPatchOp
@@ -373,18 +342,16 @@ export const useStore = create<State>((set, get) => ({
     const handleStateChange2 = (stateChange: ServerMessage_GameStatePatch2) => {
       unstable_batchedUpdates(() => {
         set((state) => ({
-          gameState:
-            (
-            applyPatches(
-              state.gameState,
-              stateChange.jsonPatch.filter(isSupportedJsonPatchOp).map((p) => {
-                return {
-                  path: p.path.split("/").filter((x) => x),
-                  op: p.op,
-                  value: JSON.parse(p.value),
-                };
-              })
-            )),
+          gameState: applyPatches(
+            state.gameState,
+            stateChange.jsonPatch.filter(isSupportedJsonPatchOp).map((p) => {
+              return {
+                path: p.path.split("/").filter((x) => x),
+                op: p.op,
+                value: JSON.parse(p.value),
+              };
+            })
+          ),
         }));
       });
     };
@@ -421,7 +388,8 @@ export const useStore = create<State>((set, get) => ({
     const onMessage = (msg: ServerMessage) => {
       switch (msg.payload.oneofKind) {
         case "stateChange":
-          handleStateChange(msg.payload.stateChange);
+          console.log("Unhandled state change message");
+          // handleStateChange(msg.payload.stateChange);
           break;
         case "stateChange2":
           handleStateChange2(msg.payload.stateChange2);

@@ -2,22 +2,32 @@ package internal
 
 import (
 	"context"
+	"strconv"
 	"time"
 
-	. "github.com/fnatte/pizza-tribes/internal/models"
+	. "github.com/fnatte/pizza-tribes/internal/models/gamestate"
 	"github.com/go-redis/redis/v8"
 )
+
+func strToInt64(str string) int64 {
+	i, err := strconv.ParseInt(str, 10, 64)
+	if err != nil {
+		panic(err)
+	}
+
+	return i
+}
 
 func GetNextUpdateTimestamp(gs *GameState) int64 {
 	t := time.Now().Add(10 * time.Second).UnixNano()
 	for i := range gs.ConstructionQueue {
-		t = Min(t, gs.ConstructionQueue[i].CompleteAt)
+		t = Min(t, strToInt64(gs.ConstructionQueue[i].CompleteAt))
 	}
 	for i := range gs.TrainingQueue {
-		t = Min(t, gs.TrainingQueue[i].CompleteAt)
+		t = Min(t, strToInt64(gs.TrainingQueue[i].CompleteAt))
 	}
 	for i := range gs.TravelQueue {
-		t = Min(t, gs.TravelQueue[i].ArrivalAt)
+		t = Min(t, strToInt64(gs.TravelQueue[i].ArrivalAt))
 	}
 
 	// Make the update time at least 100ms in the future to avoid

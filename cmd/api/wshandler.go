@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/fnatte/pizza-tribes/cmd/api/ws"
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/models"
+	. "github.com/fnatte/pizza-tribes/internal/models/gamestate"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/xid"
@@ -39,13 +41,13 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 		return fmt.Errorf("failed to get username: %w", err)
 	}
 
-	gs := models.GameState{
-		Population:  &models.GameState_Population{},
-		Resources:   &models.GameState_Resources{},
-		Lots:        map[string]*models.GameState_Lot{},
-		Discoveries: []models.ResearchDiscovery{},
-		Mice: map[string]*models.Mouse{},
-		Quests: map[string]*models.QuestState{},
+	gs := GameState{
+		Population:  GameStatePopulation{},
+		Resources:   GameStateResources{},
+		Lots:        map[string]GameStateLot{},
+		Discoveries: []ResearchDiscovery{},
+		Mice:        map[string]GameStateMouse{},
+		Quests:      map[string]GameStateQuest{},
 	}
 
 	log.Info().Str("userId", c.UserId()).Msg("Client connected")
@@ -58,16 +60,14 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 		}
 
 		// Initialize game state for user
-		gs.Lots["2"] = &models.GameState_Lot{
-			Building: models.Building_TOWN_CENTRE,
+		gs.Lots["2"] = GameStateLot{
+			Building: BuildingTownCentre,
 		}
 		for _, qid := range internal.GetAvailableQuestIds(&gs) {
-			gs.Quests[qid] = &models.QuestState{}
+			gs.Quests[qid] = GameStateQuest{}
 		}
 
-		b, err := protojson.MarshalOptions{
-			EmitUnpopulated: true,
-		}.Marshal(&gs)
+		b, err := json.Marshal(&gs)
 		if err != nil {
 			return err
 		}
@@ -77,7 +77,7 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 		}
 		log.Info().Msg("Initilized new game state for user")
 	} else {
-		if err = protojson.Unmarshal([]byte(s), &gs); err != nil {
+		if err = json.Unmarshal([]byte(s), &gs); err != nil {
 			return err
 		}
 	}
@@ -123,13 +123,31 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 	})()
 
 	go (func() {
-		msg := gs.ToStateChangeMessage()
-		b, err := protojson.Marshal(msg)
+		b, err := json.Marshal(gs)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to send init game state patch")
 			return
 		}
 
+		msg := &models.ServerMessage{
+			Id: xid.New().String(),
+			Payload: &models.ServerMessage_StateChange2{
+				StateChange2: &models.ServerMessage_GameStatePatch2{
+					JsonPatch: []*models.JsonPatchOp{
+						{
+							Op:    "replace",
+							Path:  "/",
+							Value: string(b),
+						},
+					},
+				},
+			},
+		}
+		b, err = protojson.Marshal(msg)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to send init game state patch")
+			return
+		}
 		c.Send(b)
 
 		msg = internal.CalculateStats(&gs).ToServerMessage()

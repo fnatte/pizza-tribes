@@ -1,10 +1,10 @@
 package internal
 
 import (
-	"github.com/fnatte/pizza-tribes/internal/models"
+	. "github.com/fnatte/pizza-tribes/internal/models/gamestate"
 )
 
-func GetAvailableQuestIds(gs *models.GameState) []string {
+func GetAvailableQuestIds(gs *GameState) []string {
 	quests := []string{"1"}
 
 	if q, ok := gs.Quests["1"]; ok && q.Completed {
@@ -34,7 +34,7 @@ func GetAvailableQuestIds(gs *models.GameState) []string {
 	return quests
 }
 
-func GetNewCompletedQuests(gs *models.GameState) []string {
+func GetNewCompletedQuests(gs *GameState) []string {
 	solved := []string{}
 
 	for qid, q := range gs.Quests {
@@ -45,14 +45,14 @@ func GetNewCompletedQuests(gs *models.GameState) []string {
 
 		switch qid {
 		case "1":
-			if HasBuildingMinLevel(gs, models.Building_KITCHEN, 1) &&
-				HasBuildingMinLevel(gs, models.Building_SHOP, 1) {
+			if HasBuildingMinLevel(gs, BuildingKitchen, 1) &&
+				HasBuildingMinLevel(gs, BuildingShop, 1) {
 				solved = append(solved, qid)
 			}
 			break
 		case "2":
-			if HasBuildingMinLevel(gs, models.Building_HOUSE, 1) &&
-				HasBuildingMinLevel(gs, models.Building_SCHOOL, 1) {
+			if HasBuildingMinLevel(gs, BuildingHouse, 1) &&
+				HasBuildingMinLevel(gs, BuildingSchool, 1) {
 				solved = append(solved, qid)
 			}
 			break
@@ -65,7 +65,7 @@ func GetNewCompletedQuests(gs *models.GameState) []string {
 			// Change name quest is solved on handling changeName client message
 			break
 		case "5":
-			if HasBuildingMinLevel(gs, models.Building_HOUSE, 2) {
+			if HasBuildingMinLevel(gs, BuildingHouse, 2) {
 				solved = append(solved, qid)
 			}
 			break
@@ -73,8 +73,8 @@ func GetNewCompletedQuests(gs *models.GameState) []string {
 			// "Check out help page" is solved using special message
 			break
 		case "7":
-			if HasBuildingMinLevel(gs, models.Building_KITCHEN, 2) &&
-				HasBuildingMinLevel(gs, models.Building_SHOP, 2) {
+			if HasBuildingMinLevel(gs, BuildingKitchen, 2) &&
+				HasBuildingMinLevel(gs, BuildingShop, 2) {
 				solved = append(solved, qid)
 			}
 			break

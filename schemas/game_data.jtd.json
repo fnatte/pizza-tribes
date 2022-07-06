@@ -1,0 +1,94 @@
+{
+  "properties": {
+    "buildings": {
+      "elements": {
+        "ref": "building_info"
+      }
+    },
+    "educations": {
+      "elements": {
+        "ref": "education_info"
+      }
+    },
+    "researchTracks": {
+      "elements": {
+        "ref": "research_track"
+      }
+    },
+    "quests": {
+      "elements": {
+        "ref": "quest"
+      }
+    }
+  },
+  "definitions": {
+    "building_info": {
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "titlePlural": { "type": "string" },
+        "maxCount": { "type": "int32", "nullable": true },
+        "levelInfos": {
+          "elements": {
+            "properties": {
+              "cost": { "type": "int32" },
+              "constructionTime": { "type": "int32" },
+              "firstCost": { "type": "int32", "nullable": true },
+              "firstConstructionTime": { "type": "int32", "nullable": true }
+            },
+            "optionalProperties": {
+              "employer": {
+                "properties": { "maxWorkforce": { "type": "int32" } }
+              },
+              "residence": {
+                "properties": { "beds": { "type": "int32" } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "education_info": {
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "titlePlural": { "type": "string" },
+        "cost": { "type": "int32" },
+        "trainTime": { "type": "int32" },
+        "employer": { "type": "string", "nullable": true }
+      }
+    },
+    "research_node": {
+      "properties": {
+        "title": { "type": "string" },
+        "cost": { "type": "int32" },
+        "researchTime": { "type": "int32" },
+        "discovery": { "type": "string" },
+        "nodes": {
+          "elements": {
+            "ref": "research_node"
+          }
+        }
+      }
+    },
+    "research_track": {
+      "properties": {
+        "title": { "type": "string" },
+        "rootNode": { "ref": "research_node" }
+      }
+    },
+    "quest": {
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "reward": {
+          "properties": {
+            "coins": { "type": "int32" },
+            "pizzas": { "type": "int32" }
+          }
+        }
+      }
+    }
+  }
+}

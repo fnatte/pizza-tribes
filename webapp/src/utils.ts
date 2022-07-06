@@ -6,10 +6,9 @@ import {
   startOfHour,
 } from "date-fns";
 import JSBI from "jsbi";
-import { Building } from "./generated/building";
 import { GameState_Population } from "./generated/gamestate";
 import { GameData } from "./generated/game_data";
-import { GameState, Lot } from "./store";
+import { Building, GameState, Lot } from "./schemas";
 
 export type RemoveIndex<T> = {
   [P in keyof T as string extends P
@@ -27,23 +26,25 @@ export function isNonNullable<T>(v: T): v is NonNullable<T> {
   return v !== null && v !== undefined;
 }
 
+const makeBuildingRecord = <T>(v: T): Record<Building, T> => ({
+    'shop': v,
+    'house': v,
+    'school': v,
+    'kitchen': v,
+    'marketinghq': v,
+    'town_centre': v,
+    'research_institute': v,
+})
+
 export const countBuildings = (
   lots: Record<string, Lot | undefined>
-): Record<Building, number> => {
-  const counts = {
-    0: 0,
-    1: 0,
-    2: 0,
-    3: 0,
-    4: 0,
-    5: 0,
-    6: 0,
-  };
+): Record<Building, number | undefined> => {
+  const counts= makeBuildingRecord(0);
 
   Object.keys(lots).forEach((lotId) => {
     const lot = lots[lotId];
     if (lot) {
-      counts[lot.building]++;
+      counts[lot.building]++
     }
   });
 
@@ -58,15 +59,7 @@ export const countBuildingsUnderConstruction = (
       counts[item.building]++;
       return counts;
     },
-    {
-      0: 0,
-      1: 0,
-      2: 0,
-      3: 0,
-      4: 0,
-      5: 0,
-      6: 0,
-    }
+  makeBuildingRecord(0)
   );
 };
 
@@ -85,15 +78,7 @@ export const countMaxEmployedByBuilding = (
   lots: GameState["lots"],
   gameData: GameData
 ): Record<Building, number | undefined> => {
-  const counts: Record<Building, number | undefined> = {
-    [Building.KITCHEN]: undefined,
-    [Building.SHOP]: undefined,
-    [Building.HOUSE]: undefined,
-    [Building.SCHOOL]: undefined,
-    [Building.MARKETINGHQ]: undefined,
-    [Building.RESEARCH_INSTITUTE]: undefined,
-    [Building.TOWN_CENTRE]: undefined,
-  };
+  const counts: Record<Building, number | undefined> = makeBuildingRecord(undefined);
 
   Object.keys(lots).map((lotId) => {
     const lot = lots[lotId];
@@ -150,7 +135,7 @@ export const formatTotalSeconds = (totalSeconds: number) => {
   } else {
     return `in ${seconds} sec`;
   }
-}
+};
 
 export const formatUnixToNowShort = (time: number) => {
   const now = Date.now() / 1e3;
@@ -193,7 +178,13 @@ export const formatNumber = (n: number) => numberFormat.format(n);
 
 export const getTapInfo = (lot: Lot, now: Date) => {
   if (lot.building !== Building.KITCHEN && lot.building !== Building.SHOP) {
-    return { canTap: false, nextTapAt: 0, taps: 0, tapsRemaining: 0, streak: 0 };
+    return {
+      canTap: false,
+      nextTapAt: 0,
+      taps: 0,
+      tapsRemaining: 0,
+      streak: 0,
+    };
   }
 
   // convert lot.tappedAt from ns to ms
@@ -221,4 +212,3 @@ export const getTapInfo = (lot: Lot, now: Date) => {
 
   return { canTap, nextTapAt, taps, tapsRemaining, streak };
 };
-

@@ -1,7 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import classnames from "classnames";
-import { Building } from "../generated/building";
 import { useStore } from "../store";
 import styles from "../styles";
 import {
@@ -18,6 +17,7 @@ import { ReactComponent as SvgSchool } from "../../images/school.svg";
 import { ReactComponent as SvgMarketingHQ } from "../../images/marketing-hq.svg";
 import { ReactComponent as SvgResearchInstitute } from "../../images/research-institute.svg";
 import { ReactComponent as SvgTownCentre } from "../../images/town-centre.svg";
+import { Building } from "../schemas";
 
 const title = classnames("text-lg", "md:text-xl", "mb-2");
 const label = classnames("text-xs", "md:text-sm", "mr-1");
@@ -27,26 +27,17 @@ const svgs: Record<
   Building,
   React.VFC<React.SVGProps<SVGSVGElement>> | undefined
 > = {
-  [Building.KITCHEN]: SvgKitchen,
-  [Building.SHOP]: SvgShop,
-  [Building.HOUSE]: SvgHouse,
-  [Building.SCHOOL]: SvgSchool,
-  [Building.MARKETINGHQ]: SvgMarketingHQ,
-  [Building.RESEARCH_INSTITUTE]: SvgResearchInstitute,
-  [Building.TOWN_CENTRE]: SvgTownCentre,
+  ['kitchen']: SvgKitchen,
+  ['shop']: SvgShop,
+  ['house']: SvgHouse,
+  ['school']: SvgSchool,
+  ['marketinghq']: SvgMarketingHQ,
+  ['research_institute']: SvgResearchInstitute,
+  ['town_centre']: SvgTownCentre,
 };
 
 type Props = {
   lotId: string;
-};
-
-const toBuildingId = (key: string) => {
-  const n = Number(key);
-  if (n in Building) {
-    return n as Building;
-  }
-
-  return null;
 };
 
 const numberFormat = new Intl.NumberFormat();
@@ -78,7 +69,6 @@ const ConstructBuilding = ({ lotId }: Props) => {
     >
       <h2>Construct Building</h2>
       {Object.keys(buildings)
-        .map(toBuildingId)
         .filter(isNotNull)
         .map((id) => {
           let discountText: string | undefined;

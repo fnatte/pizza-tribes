@@ -1,0 +1,147 @@
+{
+  "properties": {
+    "resources": {
+      "properties": {
+        "coins": { "type": "int32" },
+        "pizzas": { "type": "int32" }
+      }
+    },
+    "lots": {
+      "values": {
+        "properties": {
+          "building": { "ref": "building" },
+          "tappedAt": { "type": "int32" },
+          "level": { "type": "int32" },
+          "taps": { "type": "int32" },
+          "streak": { "type": "int32" }
+        }
+      }
+    },
+    "population": {
+      "properties": {
+        "uneducated": { "type": "int32" },
+        "chefs": { "type": "int32" },
+        "salesmice": { "type": "int32" },
+        "guards": { "type": "int32" },
+        "thieves": { "type": "int32" },
+        "publicists": { "type": "int32" }
+      }
+    },
+    "timestamp": { "type": "string" },
+    "trainingQueue": {
+      "elements": {
+        "ref": "training"
+      }
+    },
+    "constructionQueue": {
+      "elements": {
+        "properties": {
+          "completeAt": { "type": "string" },
+          "lotId": { "type": "string" },
+          "building": { "ref": "building" },
+          "level": { "type": "int32" },
+          "razing": { "type": "boolean" }
+        }
+      }
+    },
+    "townX": { "type": "int32" },
+    "townY": { "type": "int32" },
+    "travelQueue": {
+      "elements": {
+        "ref": "travel"
+      }
+    },
+    "discoveries": {
+      "elements": {
+        "ref": "research_discovery"
+      }
+    },
+    "researchQueue": {
+      "elements": {
+        "properties": {
+          "completeAt": { "type": "string" },
+          "discovery": { "ref": "research_discovery" }
+        }
+      }
+    },
+    "mice": {
+      "values": {
+        "properties": {
+          "name": { "type": "string" },
+          "isEducated": { "type": "boolean" },
+          "isBeingEducated": { "type": "boolean" },
+          "education": { "ref": "education" }
+        }
+      }
+    },
+    "quests": {
+      "values": {
+        "properties": {
+          "opened": { "type": "boolean" },
+          "completed": { "type": "boolean" },
+          "claimedReward": { "type": "boolean" }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "building": {
+      "enum": [
+        "kitchen",
+        "shop",
+        "house",
+        "school",
+        "marketinghq",
+        "research_institute",
+        "town_centre"
+      ]
+    },
+    "education": {
+      "enum": ["chef", "salesmouse", "guard", "thief", "publicist"]
+    },
+    "research_discovery": {
+      "enum": [
+        "website",
+        "digital_ordering_system",
+        "mobile_app",
+        "masonry_oven",
+        "gas_oven",
+        "hybrid_oven",
+        "durum_wheat",
+        "double_zero_flour",
+        "san_marzano_tomatoes",
+        "ocimum_basilicum",
+        "extra_virgin"
+      ]
+    },
+    "travel": {
+      "properties": {
+        "arrivalAt": { "type": "string" },
+        "destinationX": { "type": "int32" },
+        "destinationY": { "type": "int32" },
+        "returning": { "type": "boolean" },
+        "thieves": { "type": "int32" },
+        "coins": { "type": "string" }
+      }
+    },
+    "training": {
+      "properties": {
+        "completeAt": { "type": "string" },
+        "education": {
+          "ref": "education"
+        },
+        "amount": { "type": "int32" }
+      }
+    },
+    "stats": {
+      "properties": {
+        "employedChefs": { "type": "int32" },
+        "employedSalesmice": { "type": "int32" },
+        "maxSellsByMicePerSecond": { "type": "float64" },
+        "pizzasProducedPerSecond": { "type": "float64" },
+        "demandOffpeak": { "type": "float64" },
+        "demandRushHour": { "type": "float64" }
+      }
+    }
+  }
+}

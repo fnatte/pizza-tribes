@@ -1,0 +1,5 @@
+#!/bin/sh
+DOWNLOAD_URL="https://github.com/jsontypedef/json-typedef-codegen/releases/download/v0.4.1/x86_64-unknown-linux-gnu.zip"
+curl -L $DOWNLOAD_URL | bsdtar -xvf - -C ./tools/
+chmod +x ./tools/jtd-codegen
+

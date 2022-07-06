@@ -13,12 +13,11 @@ import { ReactComponent as SvgConstructingShop } from "../../images/constructing
 import { ReactComponent as SvgConstructingSchool } from "../../images/constructing-school.svg";
 import { ReactComponent as SvgConstructingMarketingHQ } from "../../images/constructing-marketing-hq.svg";
 import { ReactComponent as SvgConstructingResearchInstitute } from "../../images/constructing-research-institute.svg";
-import { Building } from "../generated/building";
 import classnames from "classnames";
 import { getTapInfo } from "../utils";
-import { Construction } from "../generated/gamestate";
 import { useMemo, useState } from "react";
 import { useTimeoutFn } from "react-use";
+import { Building, Construction } from "../schemas";
 
 const Badge: React.FC<{
   position: "topleft" | "topright";
@@ -90,7 +89,7 @@ function renderBuilding(
   level: number
 ) {
   switch (building) {
-    case Building.KITCHEN:
+    case 'kitchen':
       return (
         <g transform="translate(-10, -13)">
           <SvgKitchen width={20} height={20} />
@@ -98,7 +97,7 @@ function renderBuilding(
           <LevelBadge level={level} />
         </g>
       );
-    case Building.HOUSE:
+    case 'house':
       return (
         <g transform="translate(-5, -8)">
           <g transform="scale(0.5)">
@@ -110,7 +109,7 @@ function renderBuilding(
           </g>
         </g>
       );
-    case Building.SHOP:
+    case 'shop':
       return (
         <g transform="translate(-10, -13)">
           <SvgShop width={20} height={20} />
@@ -118,7 +117,7 @@ function renderBuilding(
           <LevelBadge level={level} />
         </g>
       );
-    case Building.SCHOOL:
+    case 'school':
       return (
         <g transform="translate(-10, -13)">
           <SvgSchool width={20} height={20} />
@@ -126,7 +125,7 @@ function renderBuilding(
           <LevelBadge level={level} />
         </g>
       );
-    case Building.MARKETINGHQ:
+    case 'marketinghq':
       return (
         <g transform="translate(-10, -13)">
           <SvgMarketingHQ width={20} height={20} />
@@ -134,7 +133,7 @@ function renderBuilding(
           <LevelBadge level={level} />
         </g>
       );
-    case Building.RESEARCH_INSTITUTE:
+    case 'research_institute':
       return (
         <g transform="translate(-10, -13)">
           <SvgResearchInstitute width={20} height={20} />
@@ -142,7 +141,7 @@ function renderBuilding(
           <LevelBadge level={level} />
         </g>
       );
-    case Building.TOWN_CENTRE:
+    case 'town_centre':
       return (
         <g transform="translate(-10, -13)">
           <SvgTownCentre width={20} height={20} />
@@ -155,37 +154,37 @@ function renderBuilding(
 
 const renderConstructingBuilding = (building: Building | undefined) => {
   switch (building) {
-    case Building.KITCHEN:
+    case 'kitchen':
       return (
         <g transform="translate(-10, -13)">
           <SvgConstructingKitchen width={20} height={20} />
         </g>
       );
-    case Building.HOUSE:
+    case 'house':
       return (
         <g transform="translate(-5, -8) scale(0.5)">
           <SvgConstructingHouse width={20} height={20} />
         </g>
       );
-    case Building.SHOP:
+    case 'shop':
       return (
         <g transform="translate(-10, -13)">
           <SvgConstructingShop width={20} height={20} />;
         </g>
       );
-    case Building.SCHOOL:
+    case 'school':
       return (
         <g transform="translate(-10, -13)">
           <SvgConstructingSchool width={20} height={20} />
         </g>
       );
-    case Building.MARKETINGHQ:
+    case 'marketinghq':
       return (
         <g transform="translate(-10, -13)">
           <SvgConstructingMarketingHQ width={20} height={20} />
         </g>
       );
-    case Building.RESEARCH_INSTITUTE:
+    case 'research_institute':
       return (
         <g transform="translate(-10, -13)">
           <SvgConstructingResearchInstitute width={20} height={20} />
@@ -220,7 +219,7 @@ function SvgTown(
     constructionQueue,
     ...props
   }: React.SVGProps<SVGSVGElement> & {
-    lots: Record<string, Lot | undefined>;
+    lots: Record<string, Lot>;
     constructionQueue: Construction[];
   },
   svgRef?: React.Ref<SVGSVGElement>

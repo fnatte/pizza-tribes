@@ -42,7 +42,13 @@ func JsonPointerToJsonPath(s string) string {
 	b.WriteRune('$')
 
 	parts := strings.Split(s, "/")
-	for _, part := range parts {
+	for i, part := range parts {
+		if i == len(parts) - 1 && part == "-" {
+			// The - character can be used to indicate the insertion at the end of an array.
+			// This has no equivalent in JsonPath.
+			continue
+		}
+
 		if len(part) > 0 {
 			b.WriteRune('.')
 			b.WriteString(part)
