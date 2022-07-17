@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/gamestate"
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/rs/xid"
@@ -114,6 +115,62 @@ func (h *handler) sendFullStateUpdate(ctx context.Context, senderId string) {
 		log.Error().Err(err).Msg("Failed to send stats message")
 		return
 	}
+}
+
+func (h *handler) sendGameTx(ctx context.Context, tx *gamestate.GameTx) error {
+	errs := []error{}
+
+	for uid, u := range tx.Users {
+		/*
+		jsonPatch := []*models.JsonPatchOp{}
+		for _, op := range u.GsPatch.Ops {
+			val, err := json.Marshal(op.Value)
+			if err != nil {
+				return err
+			}
+
+			jsonPatch = append(jsonPatch, &models.JsonPatchOp{
+				From:  op.From,
+				Op:    op.Op,
+				Path:  op.Path,
+				Value: string(val),
+			})
+		}
+*/
+
+		err := h.send(ctx, uid, &models.ServerMessage{
+			Id: xid.New().String(),
+			Payload: &models.ServerMessage_StateChange2{
+				StateChange2: &models.ServerMessage_GameStatePatch2{
+					JsonPatch: u.GsPatch.Ops,
+				},
+			},
+		})
+		if err != nil {
+			errs = append(errs, err)
+		}
+
+		if u.StatsInvalidated {
+			msg := internal.CalculateStats(u.Gs).ToServerMessage()
+			err = h.send(ctx, uid, msg)
+			if err != nil {
+				errs = append(errs, err)
+			}
+		}
+
+		if u.NextUpdateInvalidated {
+			_, err = internal.SetNextUpdate(h.rdb, ctx, uid, u.Gs)
+			if err != nil {
+				errs = append(errs, err)
+			}
+		}
+	}
+
+	if len(errs) > 0 {
+		return fmt.Errorf("errors when sending game tx")
+	}
+
+	return nil
 }
 
 func (h *handler) send(ctx context.Context, senderId string, m *models.ServerMessage) error {

@@ -3,6 +3,7 @@ package pizzatribes;
 
 option go_package = "github.com/fnatte/pizza-tribes/internal/models";
 
+import "google/protobuf/struct.proto";
 import "google/protobuf/wrappers.proto";
 import "education.proto";
 import "building.proto";
@@ -153,7 +154,7 @@ message GameStatePatch {
 message JsonPatchOp {
   string op = 1;
   string path = 2;
-  string value = 3;
+  google.protobuf.Value value = 3;
   string from = 4;
 }
 

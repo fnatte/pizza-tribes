@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"math"
 	"time"
@@ -98,6 +97,7 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *models.Client
 	}
 
 	for uid, u := range(tx.Users) {
+		/*
 		jsonPatch := []*models.JsonPatchOp{}
 		for _, op := range(u.GsPatch.Ops) {
 			val, err := json.Marshal(op.Value)
@@ -112,6 +112,7 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *models.Client
 				Value: string(val),
 			})
 		}
+		*/
 
 		if err != nil {
 			return err
@@ -121,7 +122,7 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *models.Client
 			Id: xid.New().String(),
 			Payload: &models.ServerMessage_StateChange2{
 				StateChange2: &models.ServerMessage_GameStatePatch2{
-					JsonPatch: jsonPatch,
+					JsonPatch: u.GsPatch.Ops,
 				},
 			},
 		})

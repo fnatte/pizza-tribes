@@ -32,6 +32,7 @@ import { generateId } from "./utils";
 import { applyPatches, enablePatches, produce } from "immer";
 import { queryClient } from "./queryClient";
 import { apiFetch } from "./api";
+import { Value } from "./generated/google/protobuf/struct";
 
 enablePatches();
 
@@ -161,7 +162,7 @@ function updateMice(
       Object.keys(updatedMice)
         .filter((id) => !mice[id])
         .map((id) => {
-          const m: Mouse = {
+       const m: Mouse = {
             name: updatedMice[id].name?.value ?? "",
             isEducated: updatedMice[id].isEducated?.value ?? false,
             isBeingEducated: updatedMice[id].isBeingEducated?.value ?? false,
@@ -370,21 +371,40 @@ export const useStore = create<State>((set, get) => ({
       return p.op === "replace" || p.op === "remove" || p.op === "add";
     };
 
+    const getValue = (val: Value | undefined): any => {
+      if (val === undefined) {
+        return undefined;
+      }
+
+      switch (val.kind.oneofKind) {
+        case "boolValue":
+          return val.kind.boolValue;
+        case "stringValue":
+          return val.kind.stringValue;
+        case "numberValue":
+          return val.kind.numberValue;
+        case "nullValue":
+          return null;
+        case "structValue":
+          return val.kind.structValue.fields;
+        case "listValue":
+          return val.kind.listValue.values.map((v) => getValue(v));
+      }
+    };
+
     const handleStateChange2 = (stateChange: ServerMessage_GameStatePatch2) => {
       unstable_batchedUpdates(() => {
         set((state) => ({
-          gameState:
-            (
-            applyPatches(
-              state.gameState,
-              stateChange.jsonPatch.filter(isSupportedJsonPatchOp).map((p) => {
-                return {
-                  path: p.path.split("/").filter((x) => x),
-                  op: p.op,
-                  value: JSON.parse(p.value),
-                };
-              })
-            )),
+          gameState: applyPatches(
+            state.gameState,
+            stateChange.jsonPatch.filter(isSupportedJsonPatchOp).map((p) => {
+              return {
+                path: p.path.split("/").filter((x) => x),
+                op: p.op,
+                value: getValue(p.value),
+              };
+            })
+          ),
         }));
       });
     };

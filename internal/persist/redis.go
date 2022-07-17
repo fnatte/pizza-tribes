@@ -67,7 +67,7 @@ func (r *gameStateRepo) Patch(ctx context.Context, userId string, patch *Patch) 
 		path := JsonPointerToJsonPath(op.Path)
 		switch op.Op {
 		case "replace":
-			err := internal.RedisJsonSet(pipe, ctx, gsKey, path, op.Value).Err()
+			err := internal.RedisJsonSet(pipe, ctx, gsKey, path, jsonValue(op.Value)).Err()
 			if err != nil {
 				return fmt.Errorf("failed to set %s: %w", op.Path, err)
 			}
@@ -81,3 +81,16 @@ func (r *gameStateRepo) Patch(ctx context.Context, userId string, patch *Patch) 
 
 	return nil
 }
+
+func jsonValue(v interface{}) interface{} {
+	switch v := v.(type) {
+	case bool:
+		if v {
+			return "true"
+		}
+		return "false"
+	default:
+		return v
+	}
+}
+
