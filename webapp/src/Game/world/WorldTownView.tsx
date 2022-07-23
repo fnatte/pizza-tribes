@@ -40,7 +40,7 @@ const WorldTownView: React.FC<Props> = ({ x, y, town }) => {
     return data.username as string;
   }, [town]);
 
-  const thieves = useStore((state) => state.gameState.population.thieves);
+  const thieves = useStore((state) => state.gameState.population?.thieves ?? 0);
   const thievesAvailable = thieves; // TODO: subtract thieves on mission
   const steal = useStore((state) => state.steal);
 

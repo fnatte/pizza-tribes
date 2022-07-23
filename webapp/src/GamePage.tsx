@@ -272,7 +272,7 @@ function GameTitle() {
 }
 
 function ResourceBar() {
-  const { pizzas, coins } = useStore((state) => state.gameState.resources);
+  const { pizzas, coins } = useStore((state) => state.gameState.resources ?? { coins: 0, pizzas: 0 });
   const stats = useStore((state) => state.gameStats);
   const clock = useMouseClock();
 

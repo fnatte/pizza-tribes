@@ -6,30 +6,32 @@ import { ClientMessage } from "./generated/client_message";
 import { Education } from "./generated/education";
 import {
   Construction,
-  GameStatePatch,
-  GameStatePatch_LotPatch,
   GameState_Population,
   Training,
   Travel,
   OngoingResearch,
   Mouse,
-  GameStatePatch_MousePatch,
   QuestState,
-  GameStatePatch_QuestStatePatch,
+  GameState,
 } from "./generated/gamestate";
 import { GameData } from "./generated/game_data";
 import { Report } from "./generated/report";
 import { ResearchDiscovery } from "./generated/research";
 import {
   ServerMessage,
+  ServerMessage_GameStatePatch3,
   ServerMessage_Reports,
   ServerMessage_User,
 } from "./generated/server_message";
 import { Stats } from "./generated/stats";
 import { generateId } from "./utils";
-import { produce } from "immer";
+import { enablePatches, produce } from "immer";
 import { queryClient } from "./queryClient";
 import { apiFetch } from "./api";
+import { extractMessage } from "./protobuf/extractMessage";
+import { reflectionMergePartial } from "./protobuf/protobuf-ts/reflectionMergePartial";
+
+enablePatches();
 
 export type Lot = {
   building: Building;
@@ -39,23 +41,7 @@ export type Lot = {
   streak: number;
 };
 
-export type GameState = {
-  resources: {
-    pizzas: number;
-    coins: number;
-  };
-  lots: Record<string, Lot | undefined>;
-  population: GameState_Population;
-  trainingQueue: Array<Training>;
-  constructionQueue: Array<Construction>;
-  travelQueue: Array<Travel>;
-  townX: number;
-  townY: number;
-  discoveries: Array<ResearchDiscovery>;
-  researchQueue: Array<OngoingResearch>;
-  mice: Record<string, Mouse>;
-  quests: Record<string, QuestState>;
-};
+export { GameState };
 
 type User = {
   username: string;
@@ -94,120 +80,6 @@ const resetQueryDataState = () => {
   queryClient.setQueriesData({}, () => undefined);
 };
 
-const mergeLots = (
-  a: GameState["lots"],
-  b: Record<string, GameStatePatch_LotPatch>
-): GameState["lots"] => {
-  const res = { ...a };
-
-  Object.keys(b).forEach((lotId) => {
-    const lot = res[lotId];
-    if (b[lotId] !== undefined) {
-      const { building, tappedAt, level, razed, taps, streak } = b[lotId];
-
-      if (razed) {
-        delete res[lotId];
-        return;
-      }
-
-      if (lot === undefined) {
-        res[lotId] = { building, tappedAt, level, taps, streak };
-      } else {
-        res[lotId] = {
-          ...lot,
-          building: building,
-          tappedAt: tappedAt,
-          level: level,
-          taps: taps,
-          streak: streak,
-        };
-      }
-    }
-  });
-
-  return res;
-};
-
-function updateMice(
-  mice: Record<string, Mouse>,
-  updatedMice: { [key: string]: GameStatePatch_MousePatch }
-): Record<string, Mouse> {
-  const entries = Object.entries(mice)
-    .map(([id, m]) => {
-      const m2: Mouse = { ...m };
-      const update = updatedMice[id];
-      if (update) {
-        if (update.name) {
-          m2.name = update.name.value;
-        }
-        if (update.education) {
-          m2.education = update.education.value;
-        }
-        if (update.isEducated) {
-          m2.isEducated = update.isEducated.value;
-        }
-        if (update.isBeingEducated) {
-          m2.isBeingEducated = update.isBeingEducated.value;
-        }
-      }
-      return [id, m2] as const;
-    })
-    .filter(([id]) => updatedMice[id] !== null)
-    .concat(
-      Object.keys(updatedMice)
-        .filter((id) => !mice[id])
-        .map((id) => {
-          const m: Mouse = {
-            name: updatedMice[id].name?.value ?? "",
-            isEducated: updatedMice[id].isEducated?.value ?? false,
-            isBeingEducated: updatedMice[id].isBeingEducated?.value ?? false,
-            education: updatedMice[id].education?.value ?? Education.CHEF,
-          };
-          return [id, m];
-        })
-    );
-
-  return Object.fromEntries(entries);
-}
-
-function updateQuests(
-  questStates: Record<string, QuestState>,
-  questPatches: { [key: string]: GameStatePatch_QuestStatePatch }
-): Record<string, QuestState> {
-  const entries = Object.entries(questStates)
-    .map(([id, q]) => {
-      const q2: QuestState = { ...q };
-      const patch = questPatches[id];
-      if (patch) {
-        if (patch.opened) {
-          q2.opened = patch.opened.value;
-        }
-        if (patch.completed) {
-          q2.completed = patch.completed.value;
-        }
-        if (patch.claimedReward) {
-          q2.claimedReward = patch.claimedReward.value;
-        }
-      }
-      return [id, q2] as const;
-    })
-    .filter(([id]) => questStates[id] !== null)
-    .concat(
-      Object.keys(questPatches)
-        .filter((id) => !questStates[id])
-        .map((id) => {
-          const q: QuestState = {
-            opened: questPatches[id].opened?.value ?? false,
-            claimedReward: questPatches[id].claimedReward?.value ?? false,
-            completed: questPatches[id].completed?.value ?? false,
-          };
-          return [id, q];
-        })
-    );
-
-  return Object.fromEntries(entries);
-}
-
 const initialGameState: GameState = {
   resources: {
     pizzas: 0,
@@ -231,6 +103,7 @@ const initialGameState: GameState = {
   researchQueue: [],
   mice: {},
   quests: {},
+  timestamp: "",
 };
 
 const resetAuthState = (state: State) => ({
@@ -293,70 +166,21 @@ export const useStore = create<State>((set, get) => ({
   start: () => {
     get().connection?.close();
 
-    const handleStateChange = (stateChange: GameStatePatch) => {
-      const resources: Partial<State["gameState"]["resources"]> = {};
-      if (stateChange.resources?.coins?.value !== undefined) {
-        resources.coins = stateChange.resources.coins.value;
-      }
-      if (stateChange.resources?.pizzas?.value !== undefined) {
-        resources.pizzas = stateChange.resources.pizzas.value;
-      }
-
-      const population: Partial<State["gameState"]["population"]> = {};
-      if (stateChange.population?.uneducated) {
-        population.uneducated = stateChange.population.uneducated.value;
-      }
-      if (stateChange.population?.chefs) {
-        population.chefs = stateChange.population.chefs.value;
-      }
-      if (stateChange.population?.salesmice) {
-        population.salesmice = stateChange.population.salesmice.value;
-      }
-      if (stateChange.population?.guards) {
-        population.guards = stateChange.population.guards.value;
-      }
-      if (stateChange.population?.thieves) {
-        population.thieves = stateChange.population.thieves.value;
-      }
-      if (stateChange.population?.publicists) {
-        population.publicists = stateChange.population.publicists.value;
-      }
-
+    const handleStateChange3 = (stateChange: ServerMessage_GameStatePatch3) => {
       unstable_batchedUpdates(() => {
-        set((state) => ({
-          ...state,
-          gameState: {
-            ...state.gameState,
-            resources: {
-              ...state.gameState.resources,
-              ...resources,
-            },
-            lots: mergeLots(state.gameState.lots, stateChange.lots),
-            population: {
-              ...state.gameState.population,
-              ...population,
-            },
-            trainingQueue: stateChange.trainingQueuePatched
-              ? stateChange.trainingQueue
-              : state.gameState.trainingQueue,
-            constructionQueue: stateChange.constructionQueuePatched
-              ? stateChange.constructionQueue
-              : state.gameState.constructionQueue,
-            travelQueue: stateChange.travelQueuePatched
-              ? stateChange.travelQueue
-              : state.gameState.travelQueue,
-            townX: stateChange.townX?.value ?? state.gameState.townX,
-            townY: stateChange.townY?.value ?? state.gameState.townY,
-            discoveries: stateChange.discoveriesPatched
-              ? stateChange.discoveries
-              : state.gameState.discoveries,
-            researchQueue: stateChange.researchQueuePatched
-              ? stateChange.researchQueue
-              : state.gameState.researchQueue,
-            mice: updateMice(state.gameState.mice, stateChange.mice),
-            quests: updateQuests(state.gameState.quests, stateChange.quests),
-          },
-        }));
+        set((state) =>
+          produce(state, (draftState) => {
+            if (stateChange.gameState && stateChange.patchMask) {
+              const partial = extractMessage(
+                stateChange.gameState,
+                stateChange.patchMask.paths
+              );
+              reflectionMergePartial(GameState, draftState.gameState, partial)
+            } else if (stateChange.gameState) {
+              draftState.gameState = stateChange.gameState;
+            }
+          })
+        );
       });
     };
 
@@ -391,8 +215,8 @@ export const useStore = create<State>((set, get) => ({
 
     const onMessage = (msg: ServerMessage) => {
       switch (msg.payload.oneofKind) {
-        case "stateChange":
-          handleStateChange(msg.payload.stateChange);
+        case "stateChange3":
+          handleStateChange3(msg.payload.stateChange3);
           break;
         case "user":
           handleUserMessage(msg.payload.user);

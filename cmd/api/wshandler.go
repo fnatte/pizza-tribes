@@ -123,7 +123,7 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 	})()
 
 	go (func() {
-		msg := gs.ToStateChangeMessage()
+		msg := gs.ToServerMessage()
 		b, err := protojson.Marshal(msg)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to send init game state patch")

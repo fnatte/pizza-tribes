@@ -3,6 +3,7 @@ package pizzatribes;
 
 option go_package = "github.com/fnatte/pizza-tribes/internal/models";
 
+import "google/protobuf/struct.proto";
 import "google/protobuf/wrappers.proto";
 import "education.proto";
 import "building.proto";
@@ -85,68 +86,5 @@ message GameState {
   repeated OngoingResearch researchQueue = 11;
   map<string, Mouse> mice = 12;
   map<string, QuestState> quests = 13;
-}
-
-message GameStatePatch {
-  message ResourcesPatch {
-    google.protobuf.Int32Value coins = 1;
-    google.protobuf.Int32Value pizzas = 2;
-  }
-
-  message LotPatch {
-    Building building = 1;
-    int64 tapped_at = 2;
-    int32 level = 3;
-    bool razed = 4;
-    int32 taps = 5;
-    int32 streak = 6;
-  }
-
-  message PopulationPatch {
-    google.protobuf.Int32Value uneducated = 1;
-    google.protobuf.Int32Value chefs = 2;
-    google.protobuf.Int32Value salesmice = 3;
-    google.protobuf.Int32Value guards = 4;
-    google.protobuf.Int32Value thieves = 5;
-    google.protobuf.Int32Value publicists = 6;
-  }
-
-  message EducationPatch {
-    Education value = 1;
-  }
-
-  message MousePatch {
-    bool isNew = 1;
-    google.protobuf.StringValue name = 2;
-    google.protobuf.BoolValue isEducated = 3;
-    google.protobuf.BoolValue isBeingEducated = 4;
-    EducationPatch education = 5;
-  }
-
-  message QuestStatePatch {
-    bool isNew = 1;
-    google.protobuf.BoolValue opened = 2;
-    google.protobuf.BoolValue completed = 3;
-    google.protobuf.BoolValue claimedReward = 4;
-  }
-
-  ResourcesPatch resources = 1;
-  map<string, LotPatch> lots = 2;
-  PopulationPatch population = 3;
-  google.protobuf.Int64Value timestamp = 4;
-  bool trainingQueuePatched = 5;
-  repeated Training trainingQueue = 6;
-  bool constructionQueuePatched = 7;
-  repeated Construction constructionQueue = 8;
-  google.protobuf.Int32Value townX = 9;
-  google.protobuf.Int32Value townY = 10;
-  bool travelQueuePatched = 11;
-  repeated Travel travelQueue = 12;
-  bool discoveriesPatched = 13;
-  repeated ResearchDiscovery discoveries = 14;
-  bool researchQueuePatched = 15;
-  repeated OngoingResearch researchQueue = 16;
-  map<string, MousePatch> mice = 17;
-  map<string, QuestStatePatch> quests = 18;
 }
 

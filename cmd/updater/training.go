@@ -1,12 +1,14 @@
 package main
 
 import (
+	"errors"
 	"time"
 
+	"github.com/fnatte/pizza-tribes/internal/gamestate"
 	"github.com/fnatte/pizza-tribes/internal/models"
 )
 
-func completeTrainings(ctx updateContext) error {
+func completeTrainings(userId string, gs *models.GameState, tx *gamestate.GameTx) error {
 	// Setup a internal completion struct to hold completed trainings.
 	// By using the internal data structure it will be easier to apply
 	// the changes in the Redis pipeline. Also, we avoid doing stuff
@@ -21,7 +23,7 @@ func completeTrainings(ctx updateContext) error {
 
 	// Append a completion for every completed training
 	now := time.Now().UnixNano()
-	for i, t := range ctx.gs.TrainingQueue {
+	for i, t := range gs.TrainingQueue {
 		if t.CompleteAt > now {
 			continue
 		}
@@ -49,31 +51,47 @@ func completeTrainings(ctx updateContext) error {
 	}
 
 	// Update patch
-	ctx.patch.gsPatch.TrainingQueue = ctx.gs.TrainingQueue
-	ctx.patch.gsPatch.TrainingQueuePatched = true
+	u := tx.Users[userId]
+
+
+	q := gs.TrainingQueue
 	for _, c := range completions {
-		// Remove completion index from training queue
-		ctx.patch.gsPatch.TrainingQueue = append(
-			ctx.patch.gsPatch.TrainingQueue[:c.queueIdx],
-			ctx.patch.gsPatch.TrainingQueue[c.queueIdx+1:]...,
+		// Remove completion by index from training queue
+		q = append(
+			q[:c.queueIdx],
+			q[c.queueIdx+1:]...,
 		)
+
+		var mouseId string
+		for id, m := range u.Gs.Mice {
+			if m.IsBeingEducated {
+				mouseId = id
+				break
+			}
+		}
+		if mouseId == "" {
+			return errors.New("could not find mouse being educated")
+		}
+		u.SetMouseEducation(mouseId, c.education)
 
 		switch c.education {
 		case models.Education_CHEF:
-			ctx.IncrChefs(c.amount)
+			u.IncrChefs(c.amount)
 		case models.Education_SALESMOUSE:
-			ctx.IncrSalesmice(c.amount)
+			u.IncrSalesmice(c.amount)
 		case models.Education_GUARD:
-			ctx.IncrGuards(c.amount)
+			u.IncrGuards(c.amount)
 		case models.Education_THIEF:
-			ctx.IncrThieves(c.amount)
+			u.IncrThieves(c.amount)
 		case models.Education_PUBLICIST:
-			ctx.IncrPublicists(c.amount)
+			u.IncrPublicists(c.amount)
 		}
 	}
 
+	u.SetTrainingQueue(q)
+
 	// Since we have changed the population we should send a new stats message
-	ctx.patch.sendStats = true
+	u.StatsInvalidated = true
 
 	return nil
 }

@@ -57,7 +57,9 @@ const ProgressToWin: React.FC<{ coins: number }> = ({ coins }) => {
 };
 
 const StatsView: React.FC<{}> = () => {
-  const { coins, pizzas } = useStore((state) => state.gameState.resources);
+  const { coins, pizzas } = useStore(
+    (state) => state.gameState.resources ?? { coins: 0, pizzas: 0 }
+  );
   const stats = useStore((state) => state.gameStats);
 
   const [now, setNow] = useState(Date.now());

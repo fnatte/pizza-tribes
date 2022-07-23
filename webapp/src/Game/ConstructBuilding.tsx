@@ -54,7 +54,7 @@ const numberFormat = new Intl.NumberFormat();
 const ConstructBuilding = ({ lotId }: Props) => {
   const constructBuilding = useStore((state) => state.constructBuilding);
   const buildings = useStore((state) => state.gameData?.buildings) ?? [];
-  const coins = useStore((state) => state.gameState.resources.coins);
+  const coins = useStore((state) => state.gameState.resources?.coins ?? 0);
   const lots = useStore((state) => state.gameState.lots);
   const constructionQueue = useStore(
     (state) => state.gameState.constructionQueue

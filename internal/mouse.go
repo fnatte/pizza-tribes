@@ -1,4 +1,4 @@
-package main
+package internal
 
 import (
 	"math/rand"
@@ -36,3 +36,4 @@ func GetNewMouseName(existingMice map[string]*models.Mouse) string {
 		return name
 	}
 }
+

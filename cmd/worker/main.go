@@ -9,6 +9,7 @@ import (
 	"firebase.google.com/go/messaging"
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/models"
+	"github.com/fnatte/pizza-tribes/internal/persist"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/zerolog"
@@ -42,7 +43,10 @@ func main() {
 
 	world := internal.NewWorldService(rc)
 
-	h := &handler{rdb: rc, world: world}
+	gsRepo := persist.NewGameStateRepository(rc)
+	reportsRepo := persist.NewReportsRepository(rc)
+
+	h := &handler{rdb: rc, world: world, gsRepo: gsRepo, reportsRepo: reportsRepo }
 
 	ctx := context.Background()
 

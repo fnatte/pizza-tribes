@@ -74,9 +74,9 @@ const SchoolEducation: React.VFC<{
   education: Education;
   educationInfo: EducationInfo;
 }> = ({ education, educationInfo }) => {
-  const coins = useStore((state) => state.gameState.resources.coins);
+  const coins = useStore((state) => state.gameState.resources?.coins ?? 0);
   const train = useStore((state) => state.train);
-  const uneducated = useStore((state) => state.gameState.population.uneducated);
+  const uneducated = useStore((state) => state.gameState.population?.uneducated ?? 0);
 
   const maxByCost = educationInfo.cost
     ? Math.floor(coins / educationInfo.cost)
@@ -176,7 +176,7 @@ const SchoolEducation: React.VFC<{
 function School() {
   const educations = useStore((state) => state.gameData?.educations) || [];
   const trainingQueue = useStore((state) => state.gameState.trainingQueue);
-  const uneducated = useStore((state) => state.gameState.population.uneducated);
+  const uneducated = useStore((state) => state.gameState.population?.uneducated ?? 0);
 
   const [_, setNow] = useState(Date.now());
   useInterval(() => {

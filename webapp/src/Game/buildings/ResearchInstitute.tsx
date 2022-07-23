@@ -144,7 +144,7 @@ const ResearchNodeView: React.VFC<{
   opened: boolean;
   onToggleOpen: () => void;
 }> = ({ node, discovered, opened, onToggleOpen, parentDiscovered }) => {
-  const coins = useStore((state) => state.gameState.resources.coins);
+  const coins = useStore((state) => state.gameState.resources?.coins ?? 0);
   const startResearch = useStore((state) => state.startResearch);
   const researchQueue = useStore((state) => state.gameState.researchQueue);
 

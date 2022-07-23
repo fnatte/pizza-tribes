@@ -5,7 +5,9 @@ import (
 	"fmt"
 
 	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/gamestate"
 	"github.com/fnatte/pizza-tribes/internal/models"
+	"github.com/fnatte/pizza-tribes/internal/persist"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog/log"
@@ -14,6 +16,8 @@ import (
 type handler struct {
 	rdb   internal.RedisClient
 	world *internal.WorldService
+	gsRepo persist.GameStateRepository
+	reportsRepo persist.ReportsRepository
 }
 
 func (h *handler) Handle(ctx context.Context, senderId string, m *models.ClientMessage) {
@@ -101,19 +105,70 @@ func (h *handler) sendFullStateUpdate(ctx context.Context, senderId string) {
 		return
 	}
 
-	msg := gs.ToStateChangeMessage()
-	err = h.send(ctx, senderId, msg)
+	err = h.send(ctx, senderId, &models.ServerMessage{
+		Id: xid.New().String(),
+		Payload: &models.ServerMessage_StateChange3{
+			StateChange3: &models.ServerMessage_GameStatePatch3{
+				GameState: &gs,
+			},
+		},
+	})
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to send state update")
 		return
 	}
 
-	msg = internal.CalculateStats(&gs).ToServerMessage()
+	msg := internal.CalculateStats(&gs).ToServerMessage()
 	err = h.send(ctx, senderId, msg)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to send stats message")
 		return
 	}
+}
+
+func (h *handler) sendGameTx(ctx context.Context, tx *gamestate.GameTx) error {
+	errs := []error{}
+
+	for uid, u := range tx.Users {
+		err := h.send(ctx, uid, &models.ServerMessage{
+			Id: xid.New().String(),
+			Payload: &models.ServerMessage_StateChange3{
+				StateChange3: &models.ServerMessage_GameStatePatch3{
+					GameState: u.Gs,
+					PatchMask: &models.ServerMessage_PatchMask{
+						Paths: u.PatchMask.Paths,
+					},
+				},
+			},
+		})
+		if err != nil {
+			errs = append(errs, err)
+		}
+
+		if u.StatsInvalidated {
+			msg := internal.CalculateStats(u.Gs).ToServerMessage()
+			err = h.send(ctx, uid, msg)
+			if err != nil {
+				errs = append(errs, err)
+			}
+		}
+
+		if u.NextUpdateInvalidated {
+			_, err = internal.SetNextUpdate(h.rdb, ctx, uid, u.Gs)
+			if err != nil {
+				errs = append(errs, err)
+			}
+		}
+	}
+
+	if len(errs) > 0 {
+		if len(errs) == 1 {
+			return fmt.Errorf("error when sending game tx: %w", errs[0])
+		} 
+		return fmt.Errorf("errors when sending game tx")
+	}
+
+	return nil
 }
 
 func (h *handler) send(ctx context.Context, senderId string, m *models.ServerMessage) error {
