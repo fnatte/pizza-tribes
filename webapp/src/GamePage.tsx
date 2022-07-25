@@ -216,7 +216,7 @@ function Navigation() {
               )}
             >
               {!isMinMd && (
-                <Link to="/stats">
+                <Link to="/stats" onClick={() => setMenuExpaded(false)}>
                   <button className={classnames(styles.primaryButton, "mr-2")}>
                     Stats
                   </button>
