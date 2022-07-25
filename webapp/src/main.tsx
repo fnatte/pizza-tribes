@@ -4,12 +4,13 @@ import "./index.css";
 import App from "./App";
 import { platform } from "./config";
 import { initApi } from "./api";
+import {
+  initializePushNotifications,
+  isPushNotificationsSupported,
+} from "./push-notifications";
+import("./push-notifications");
 
 document.body.classList.add(`platform-${platform}`);
-
-if (platform === "ios" || platform === "android") {
-  import("./push-notifications");
-}
 
 const render = () => {
   ReactDOM.render(
@@ -22,6 +23,9 @@ const render = () => {
 
 const run = async () => {
   await initApi();
+  if (isPushNotificationsSupported()) {
+    initializePushNotifications();
+  }
   render();
 };
 

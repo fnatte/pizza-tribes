@@ -4,16 +4,7 @@ import connect, { ConnectionApi, ConnectionState } from "./connect";
 import { Building } from "./generated/building";
 import { ClientMessage } from "./generated/client_message";
 import { Education } from "./generated/education";
-import {
-  Construction,
-  GameState_Population,
-  Training,
-  Travel,
-  OngoingResearch,
-  Mouse,
-  QuestState,
-  GameState,
-} from "./generated/gamestate";
+import { GameState } from "./generated/gamestate";
 import { GameData } from "./generated/game_data";
 import { Report } from "./generated/report";
 import { ResearchDiscovery } from "./generated/research";
@@ -47,7 +38,7 @@ type User = {
   username: string;
 };
 
-type State = {
+export type State = {
   gameState: GameState;
   gameStats: Stats | null;
   gameData: GameData | null;
@@ -175,7 +166,7 @@ export const useStore = create<State>((set, get) => ({
                 stateChange.gameState,
                 stateChange.patchMask.paths
               );
-              reflectionMergePartial(GameState, draftState.gameState, partial)
+              reflectionMergePartial(GameState, draftState.gameState, partial);
             } else if (stateChange.gameState) {
               draftState.gameState = stateChange.gameState;
             }
