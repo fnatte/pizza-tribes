@@ -61,7 +61,6 @@ func (h *handler) handleTrain(ctx context.Context, userId string, m *models.Clie
 		u := tx.Users[userId]
 		u.SetUneducated(gs.Population.Uneducated - m.Amount)
 		for _, id := range miceIds {
-			log.Info().Str("mouseId", id).Send()
 			u.SetMouseIsBeingEducated(id, true)
 		}
 		u.SetCoins(gs.Resources.Coins - cost)
