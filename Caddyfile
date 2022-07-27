@@ -6,9 +6,20 @@
   handle /assets/* {
     reverse_proxy webapp:80
   }
+
   handle {
     rewrite * /index.html
     reverse_proxy webapp:80
+  }
+}
+
+{$REDISINSIGHT_HOST} {
+  basicauth {
+    admin {$REDISINSIGHT_PASSWORD}
+  }
+
+  handle {
+    reverse_proxy redisinsight:8001
   }
 }
 

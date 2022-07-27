@@ -6,6 +6,10 @@ services:
       - redis_data:/data
     environment:
       REDIS_ARGS: "--appendonly yes --aof-use-rdb-preamble yes"
+  redisinsight:
+    image: "redislabs/redisinsight:latest"
+    volumes:
+      - redisinsight_data:/db
   api:
     image: "ghcr.io/fnatte/pizza-tribes-api:latest"
     env_file: .env
@@ -39,4 +43,5 @@ services:
 
 volumes:
   redis_data:
+  redisinsight_data:
   caddy_data:
