@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/gamestate"
@@ -18,6 +19,7 @@ type handler struct {
 	world *internal.WorldService
 	gsRepo persist.GameStateRepository
 	reportsRepo persist.ReportsRepository
+	userRepo persist.UserRepository
 }
 
 func (h *handler) Handle(ctx context.Context, senderId string, m *models.ClientMessage) {
@@ -75,6 +77,12 @@ func (h *handler) Handle(ctx context.Context, senderId string, m *models.ClientM
 
 	if err != nil {
 		log.Error().Err(err).Msg("failed to handle message")
+	}
+
+	// Update users latest activity
+	err = h.userRepo.SetUserLatestActivity(ctx, senderId, time.Now().UnixNano())
+	if err != nil {
+		log.Error().Err(err).Msg("failed to update user's latest activity")
 	}
 }
 

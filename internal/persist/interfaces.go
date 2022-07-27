@@ -18,6 +18,12 @@ type ReportsRepository interface {
 	MarkRead(ctx context.Context, userId string, reportId string) error
 }
 
+type UserRepository interface {
+	SetUserLatestActivity(ctx context.Context, userId string, value int64) error
+	GetUserLatestActivity(ctx context.Context, userId string) (int64, error)
+	GetAllUsers(ctx context.Context) ([]string, error)
+}
+
 type Mutex interface {
 	Lock() error
 	LockContext(context.Context) error

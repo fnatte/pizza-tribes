@@ -45,13 +45,16 @@ func main() {
 
 	gsRepo := persist.NewGameStateRepository(rc)
 	reportsRepo := persist.NewReportsRepository(rc)
+	userRepo := persist.NewUserRepository(rc)
 
-	h := &handler{rdb: rc, world: world, gsRepo: gsRepo, reportsRepo: reportsRepo }
+	h := &handler{rdb: rc, world: world, gsRepo: gsRepo, reportsRepo: reportsRepo, userRepo: userRepo}
 
 	ctx := context.Background()
 
 	useFirebase := envOrDefault("FEATURE_FIREBASE", "0") == "1"
 	usePushNotifications := envOrDefault("FEATURE_PUSH_NOTIFICATIONS", "0") == "1"
+	useReminders := envOrDefault("FEATURE_REMINDERS", "0") == "1"
+	mockPushNotifications := envOrDefault("MOCK_PUSH_NOTIFICATIONS", "0") == "1"
 
 	var fapp *firebase.App
 	var msgClient *messaging.Client
@@ -69,12 +72,17 @@ func main() {
 	}
 
 	if usePushNotifications {
-		if !useFirebase {
+		if !useFirebase && !mockPushNotifications {
 			log.Warn().Msg("Push notifications are not supported without enabling firebase")
 		} else {
 			log.Info().Msg("Starting Push Notification worker")
-			go pushNotificationsWorker(ctx, msgClient, rc)
+			go pushNotificationsWorker(ctx, msgClient, rc, mockPushNotifications)
 		}
+	}
+
+	if useReminders {
+		log.Info().Msg("Starting reminders worker")
+		startRemindersWorker(ctx, rc, userRepo)
 	}
 
 	for {

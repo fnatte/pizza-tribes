@@ -47,7 +47,7 @@ func nextPushNotification(ctx context.Context, r internal.RedisClient) (*messagi
 	return msg, nil
 }
 
-func pushNotificationsWorker(ctx context.Context, client *messaging.Client, r internal.RedisClient) {
+func pushNotificationsWorker(ctx context.Context, client *messaging.Client, r internal.RedisClient, mock bool) {
 	for {
 		msg, err := nextPushNotification(ctx, r)
 		if err != nil {
@@ -65,6 +65,11 @@ func pushNotificationsWorker(ctx context.Context, client *messaging.Client, r in
 		if !ok || userId == "" {
 			log.Error().Err(err).Msg("Encountered push notification without target user id")
 			time.Sleep(10 * time.Millisecond)
+			continue
+		}
+
+		if mock {
+			log.Info().Interface("msg", msg).Msg("Mocked push notification")
 			continue
 		}
 

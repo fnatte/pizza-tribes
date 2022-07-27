@@ -106,6 +106,7 @@ func (a *AuthService) Register(ctx context.Context, username, password string) e
 
 			pipe.Set(ctx, usernameKey, id, 0)
 			pipe.HSet(ctx, userKey, "id", id, "username", username, "hashed_password", hash)
+			pipe.SAdd(ctx, "users", id)
 			return nil
 		})
 		return err
