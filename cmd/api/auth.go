@@ -139,10 +139,10 @@ func (a *AuthService) Login(ctx context.Context, username, password string) (str
 	return user.Id, nil
 }
 
-func (a *AuthService) CreateToken(userId string) (string, error) {
+func (a *AuthService) CreateToken(userId string, expiresAt time.Time) (string, error) {
 	t := jwt.New(jwt.SigningMethodHS256)
 	t.Claims = &jwt.StandardClaims{
-		ExpiresAt: time.Now().Add(48 * time.Hour).Unix(),
+		ExpiresAt: expiresAt.Unix(),
 		Subject:   userId,
 	}
 
@@ -285,8 +285,9 @@ func (a *AuthService) Handler() http.Handler {
 			http.Error(w, "Login failed", http.StatusInternalServerError)
 			return
 		}
-
-		jwt, err := a.CreateToken(userId)
+		expiresIn := 3 * 7 * 24 * time.Hour // 3 weeks
+		expiresAt := time.Now().Add(expiresIn)
+		jwt, err := a.CreateToken(userId, expiresAt)
 		if err != nil {
 			http.Error(w, "Failed to create token", http.StatusInternalServerError)
 			return
@@ -298,7 +299,7 @@ func (a *AuthService) Handler() http.Handler {
 				Value:    jwt,
 				HttpOnly: true,
 				Path:     "/",
-				MaxAge:   3600 * 72,
+				MaxAge:   int(expiresIn.Seconds()),
 				SameSite: http.SameSiteStrictMode,
 			})
 			w.WriteHeader(200)
