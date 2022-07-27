@@ -470,12 +470,15 @@ function GamePage(): JSX.Element {
     enabled: connectionState?.connected ?? false,
   });
 
-
   // Delay showing connection popup for 2s, but remove it instantly if connection is restored
   const [showConnectionPopup, setShowConnectionPopup] = useState(false);
-  useDebounce(() => {
-    setShowConnectionPopup(connectionState?.connecting ?? false);
-  }, 2000, [connectionState?.connecting])
+  useDebounce(
+    () => {
+      setShowConnectionPopup(connectionState?.connecting ?? false);
+    },
+    2000,
+    [connectionState?.connecting]
+  );
   useEffect(() => {
     if (!connectionState?.connecting) {
       setShowConnectionPopup(false);
@@ -497,7 +500,7 @@ function GamePage(): JSX.Element {
     return <Loading />;
   }
 
-  if (isLoading || (error && user)) {
+  if (isLoading || (error && user) || connectionState === null) {
     return <Loading />;
   }
 
