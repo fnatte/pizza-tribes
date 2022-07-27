@@ -65,6 +65,7 @@ export type State = {
   openQuest: (questId: string) => void;
   claimQuestReward: (questId: string) => void;
   completeVisitHelpPageQuest: () => void;
+  reportActivity: () => void;
 };
 
 const resetQueryDataState = () => {
@@ -414,6 +415,17 @@ export const useStore = create<State>((set, get) => ({
         type: {
           oneofKind: "completeVisitHelpPageQuest",
           completeVisitHelpPageQuest: {},
+        },
+      })
+    );
+  },
+  reportActivity: () => {
+    get().connection?.send(
+      ClientMessage.create({
+        id: generateId(),
+        type: {
+          oneofKind: "reportActivity",
+          reportActivity: {},
         },
       })
     );

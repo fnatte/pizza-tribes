@@ -3,8 +3,6 @@ package pizzatribes;
 
 option go_package = "github.com/fnatte/pizza-tribes/internal/models";
 
-import "google/protobuf/struct.proto";
-import "google/protobuf/wrappers.proto";
 import "education.proto";
 import "building.proto";
 import "research.proto";

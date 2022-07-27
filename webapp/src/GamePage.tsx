@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Link, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import classnames from "classnames";
 import Town from "./Game/Town";
@@ -22,6 +22,7 @@ import { WorldEnded } from "./WorldEnded";
 import { Clock, Coin, Pizza, Sparkles } from "./icons";
 import MouseView from "./Game/MouseView";
 import QuestsView from "./Game/QuestsView";
+import { useActivity } from "./useActivity";
 
 type ClockState = {
   formatted: string;
@@ -144,7 +145,9 @@ function Navigation() {
         </button>
       </Link>
       <Link to="/quests">
-        <button className={classnames(styles.primaryButton, "mr-2", "relative")}>
+        <button
+          className={classnames(styles.primaryButton, "mr-2", "relative")}
+        >
           {questBadgeCount > 0 && <ButtonBadgeCount count={questBadgeCount} />}
           Quests
         </button>
@@ -272,7 +275,9 @@ function GameTitle() {
 }
 
 function ResourceBar() {
-  const { pizzas, coins } = useStore((state) => state.gameState.resources ?? { coins: 0, pizzas: 0 });
+  const { pizzas, coins } = useStore(
+    (state) => state.gameState.resources ?? { coins: 0, pizzas: 0 }
+  );
   const stats = useStore((state) => state.gameStats);
   const clock = useMouseClock();
 
@@ -445,6 +450,7 @@ function GamePage(): JSX.Element {
   const gameData = useStore((state) => state.gameData);
   const gameDataLoading = useStore((state) => state.gameDataLoading);
   const fetchGameData = useStore((state) => state.fetchGameData);
+  const reportActivity = useStore((state) => state.reportActivity);
   const start = useStore((state) => state.start);
 
   useEffect(() => {
@@ -457,7 +463,12 @@ function GamePage(): JSX.Element {
     if (user && error) {
       refetch();
     }
-  }, [refetch, user, error])
+  }, [refetch, user, error]);
+
+  const onReportActivity = useCallback(() => reportActivity(), []);
+  useActivity(onReportActivity, {
+    enabled: connectionState?.connected ?? false,
+  });
 
 
   // Delay showing connection popup for 2s, but remove it instantly if connection is restored

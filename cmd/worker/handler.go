@@ -72,7 +72,7 @@ func (h *handler) Handle(ctx context.Context, senderId string, m *models.ClientM
 	case *models.ClientMessage_CompleteVisitHelpPageQuest_:
 		err = h.handleCompleteVisitHelpPageQuest(ctx, senderId, x.CompleteVisitHelpPageQuest)
 	default:
-		log.Info().Str("senderId", senderId).Msg("Received message")
+		log.Debug().Str("senderId", senderId).Msg("Received message")
 	}
 
 	if err != nil {

@@ -71,6 +71,9 @@ message ClientMessage {
   message CompleteVisitHelpPageQuest {
   }
 
+  message ReportActivity {
+  }
+
   string id = 1;
   oneof type {
     Tap tap = 2;
@@ -88,6 +91,7 @@ message ClientMessage {
     OpenQuest openQuest = 14;
     ClaimQuestReward claimQuestReward = 15;
     CompleteVisitHelpPageQuest completeVisitHelpPageQuest = 16;
+    ReportActivity reportActivity = 17;
   }
 }
 
