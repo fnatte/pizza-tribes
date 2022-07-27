@@ -23,7 +23,7 @@ func PerformUpdate(ctx context.Context, gsRepo persist.GameStateRepository, repo
 		tx = NewGameTx(userId, gs)
 		err = updater(gs, tx)
 		if err == nil {
-			err = persistTx(ctx, userId, tx, gsRepo, reportRepo)
+			err = persistTx(ctx, tx, gsRepo, reportRepo)
 		}
 	}
 
@@ -38,8 +38,8 @@ func PerformUpdate(ctx context.Context, gsRepo persist.GameStateRepository, repo
 	return tx, nil
 }
 
-func persistTx(ctx context.Context, userId string, tx *GameTx, gsRepo persist.GameStateRepository, reportRepo persist.ReportsRepository) error {
-	for _, txu := range tx.Users {
+func persistTx(ctx context.Context, tx *GameTx, gsRepo persist.GameStateRepository, reportRepo persist.ReportsRepository) error {
+	for userId, txu := range tx.Users {
 		err := gsRepo.Patch(ctx, userId, txu.Gs, txu.PatchMask)
 		if err != nil {
 			return err
