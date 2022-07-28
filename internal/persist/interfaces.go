@@ -10,6 +10,7 @@ type GameStateRepository interface {
 	NewMutex(userId string) Mutex
 	Get(ctx context.Context, userId string) (*models.GameState, error)
 	Patch(ctx context.Context, userId string, gs *models.GameState, patch *models.ServerMessage_PatchMask) error
+	Save(ctx context.Context, userId string, gs *models.GameState) error
 }
 
 type ReportsRepository interface {

@@ -39,7 +39,10 @@ func (r *gameStateRepo) Get(ctx context.Context, userId string) (*models.GameSta
 	s, err := r.rdb.JsonGet(ctx, gsKey, "$").Result()
 
 	if err != nil && err != redis.Nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get gamestate: %w", err)
+	}
+	if err == redis.Nil {
+		return &models.GameState{}, nil
 	}
 
 	var arr []*models.GameState
@@ -55,7 +58,7 @@ func (r *gameStateRepo) Get(ctx context.Context, userId string) (*models.GameSta
 
 		return nil
 	}); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to unmarshal gamestate: %w", err)
 	}
 
 	if len(arr) == 0 {
@@ -90,6 +93,24 @@ func (r *gameStateRepo) Patch(ctx context.Context, userId string, gs *models.Gam
 	_, err := pipe.Exec(ctx)
 	if err != nil {
 		return fmt.Errorf("patch failed: %w", err)
+	}
+
+	return nil
+}
+
+func (r *gameStateRepo) Save(ctx context.Context, userId string, gs *models.GameState) error {
+	gsKey := fmt.Sprintf("user:%s:gamestate", userId)
+
+	b, err := protojson.MarshalOptions{
+		EmitUnpopulated: true,
+	}.Marshal(gs)
+	if err != nil {
+		return fmt.Errorf("failed to marshal gamestate: %w", err)
+	}
+
+	err = r.rdb.JsonSet(ctx, gsKey, ".", string(b)).Err()
+	if err != nil {
+		return fmt.Errorf("failed to save gamestate: %w", err)
 	}
 
 	return nil

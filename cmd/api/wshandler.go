@@ -7,6 +7,7 @@ import (
 	"github.com/fnatte/pizza-tribes/cmd/api/ws"
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/models"
+	"github.com/fnatte/pizza-tribes/internal/persist"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/xid"
@@ -16,6 +17,7 @@ import (
 type wsHandler struct {
 	rc    internal.RedisClient
 	world *internal.WorldService
+	gsRepo persist.GameStateRepository
 }
 
 func (h *wsHandler) HandleMessage(ctx context.Context, m []byte, c *ws.Client) {
@@ -39,14 +41,7 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 		return fmt.Errorf("failed to get username: %w", err)
 	}
 
-	gs := models.GameState{
-		Population:  &models.GameState_Population{},
-		Resources:   &models.GameState_Resources{},
-		Lots:        map[string]*models.GameState_Lot{},
-		Discoveries: []models.ResearchDiscovery{},
-		Mice: map[string]*models.Mouse{},
-		Quests: map[string]*models.QuestState{},
-	}
+	gs := models.NewGameState()
 
 	log.Info().Str("userId", c.UserId()).Msg("Client connected")
 
@@ -58,26 +53,13 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 		}
 
 		// Initialize game state for user
-		gs.Lots["2"] = &models.GameState_Lot{
-			Building: models.Building_TOWN_CENTRE,
-		}
-		for _, qid := range internal.GetAvailableQuestIds(&gs) {
-			gs.Quests[qid] = &models.QuestState{}
-		}
-
-		b, err := protojson.MarshalOptions{
-			EmitUnpopulated: true,
-		}.Marshal(&gs)
-		if err != nil {
-			return err
-		}
-		err = h.rc.JsonSet(ctx, gsKey, ".", string(b)).Err()
+		err = h.gsRepo.Save(ctx, c.UserId(), gs)
 		if err != nil {
 			return err
 		}
 		log.Info().Msg("Initilized new game state for user")
 	} else {
-		if err = protojson.Unmarshal([]byte(s), &gs); err != nil {
+		if err = protojson.Unmarshal([]byte(s), gs); err != nil {
 			return err
 		}
 	}
@@ -97,7 +79,7 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 	}
 
 	// Make sure the user is enqueued for updates
-	_, err = internal.SetNextUpdate(h.rc, ctx, c.UserId(), &gs)
+	_, err = internal.SetNextUpdate(h.rc, ctx, c.UserId(), gs)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to ensure user updates")
 		return err
@@ -132,7 +114,7 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 
 		c.Send(b)
 
-		msg = internal.CalculateStats(&gs).ToServerMessage()
+		msg = internal.CalculateStats(gs).ToServerMessage()
 		b, err = protojson.Marshal(msg)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to send init stats")

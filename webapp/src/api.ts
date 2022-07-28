@@ -16,10 +16,13 @@ export const setAccessToken = (accessToken: string) => {
 export const getAccessToken = () => _accessToken;
 
 const getAuthHeaders = () => {
-  if (platform === "android" || platform === "ios") {
-    return {
-      Authorization: `Bearer ${getAccessToken()}`,
-    };
+  if (platform === "android" || platform === "ios" || isCypress()) {
+    const accessToken = getAccessToken();
+    if (accessToken) {
+      return {
+        Authorization: `Bearer ${accessToken}`,
+      };
+    }
   }
 };
 
@@ -33,3 +36,7 @@ export const apiFetch = (path: string, init?: RequestInit) => {
     ...init,
   });
 };
+
+function isCypress(): boolean {
+  return "Cypress" in window;
+}

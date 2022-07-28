@@ -169,7 +169,7 @@ const UpgradeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
 
   if (lot.level + 1 >= buildingInfo.levelInfos.length) {
     return (
-      <section className={classnames("m-4", "p-4", "bg-green-200")}>
+      <section className={classnames("m-4", "p-4", "bg-green-200")} data-cy="upgrade-section">
         <span>Already at max level</span>
       </section>
     );
@@ -178,7 +178,7 @@ const UpgradeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
   const constr = constructionQueue.find((x) => x.lotId === lotId);
   if (constr) {
     return !constr.razing ? (
-      <section className={classnames("m-4", "p-4", "bg-green-200")}>
+      <section className={classnames("m-4", "p-4", "bg-green-200")} data-cy="upgrade-section">
         <span>This building is being upgraded.</span>
       </section>
     ) : null;
@@ -208,7 +208,7 @@ const UpgradeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
   const canAfford = coins >= cost;
 
   return (
-    <section className={classnames("m-4", "p-4", "bg-green-200")}>
+    <section className={classnames("m-4", "p-4", "bg-green-200")} data-cy="upgrade-section">
       <table>
         <tbody>
           <tr>
@@ -254,6 +254,7 @@ const UpgradeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
         className={styles.primaryButton}
         disabled={!canAfford}
         onClick={onClick}
+        data-cy="upgrade-building-button"
       >
         Upgrade to level {lot.level + 2}
       </button>
@@ -378,6 +379,7 @@ function TownLot() {
         "mt-2",
         "p-2"
       )}
+      data-cy="town-lot"
     >
       {!lot && !ongoingConstruction && <ConstructBuilding lotId={id} />}
       {!lot && ongoingConstruction && (

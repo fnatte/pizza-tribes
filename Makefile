@@ -49,4 +49,7 @@ start-worker: build-worker
 start-updater: build-updater
 	out/pizza-tribes-updater
 
-start: start-api start-worker start-updater start-migrator
+start-admin: build-admin
+	out/pizza-tribes-admin serve
+
+start: start-api start-worker start-updater start-migrator start-admin

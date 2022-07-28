@@ -24,6 +24,7 @@ const ConstructionQueue: React.FC<{
         className,
         "pointer-events-auto"
       )}
+      data-cy="construction-queue"
     >
       <div className={classnames("flex", "items-center", "justify-between")}>
         <h4
@@ -47,6 +48,8 @@ const ConstructionQueue: React.FC<{
               "items-center"
             )}
             onClick={onToggleClick}
+            aria-expanded={!minimized}
+            data-cy="construction-queue-toggle-button"
           >
             {minimized ? "➕" : "➖"}
           </button>

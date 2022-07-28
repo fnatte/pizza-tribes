@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useEffect, useRef } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
-import { useLocalStorage, useMedia } from "react-use";
+import {  useNavigate } from "react-router-dom";
+import {  useMedia } from "react-use";
 import classnames from "classnames";
 import { useStore } from "../store";
 import ConstructionQueue from "./ConstructionQueue";
@@ -10,7 +10,6 @@ import classes from "./town.module.css";
 import TownExpandMenu from "./TownExpandMenu";
 import TownSvg from "./TownSvg";
 import TravelQueue from "./TravelQueue";
-import { ReactComponent as SvgQuestMouse } from "../../images/pizza-mouse-1.svg";
 
 function Town() {
   const ref = useRef<SVGSVGElement>(null);
@@ -85,12 +84,6 @@ function Town() {
       lots.forEach((lot) => lot.removeEventListener("click", handler));
     };
   }, [ref.current]);
-
-  const [hasSeenHelpPage] = useLocalStorage("hasSeenHelpPage", false);
-
-  if (hasSeenHelpPage === false) {
-    return <Navigate to="/help" replace />;
-  }
 
   return (
     <div

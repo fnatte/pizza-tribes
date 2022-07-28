@@ -25,7 +25,7 @@ const ConstructionQueue: React.FC<{
   }
 
   return (
-    <table className={className}>
+    <table className={className} data-cy="construction-queue-table">
       <tbody>
         {constructionQueue.map((construction) => (
           <tr key={construction.lotId}>

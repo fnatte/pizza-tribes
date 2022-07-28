@@ -75,6 +75,7 @@ const ConstructBuilding = ({ lotId }: Props) => {
   return (
     <div
       className={classnames("container", "mx-auto", "mt-4", "px-1", "max-w-xl")}
+      data-cy="construct-buildings"
     >
       <h2>Construct Building</h2>
       {Object.keys(buildings)
@@ -109,13 +110,16 @@ const ConstructBuilding = ({ lotId }: Props) => {
           return (
             <div
               className={classnames("flex", "flex-wrap", "gap-4", "mb-8")}
+              data-cy="construct-building"
               key={id}
             >
               <div className={classnames("w-40", "h-28", "md:w-60", "md:h-40")}>
                 <SvgImage className="w-full h-full" />
               </div>
               <div className={classnames("ml-4")}>
-                <div className={title}>{buildings[id].title}</div>
+                <div className={title} data-cy="construct-building-title">
+                  {buildings[id].title}
+                </div>
                 <table>
                   <tbody>
                     <tr>
@@ -199,6 +203,7 @@ const ConstructBuilding = ({ lotId }: Props) => {
                     className={classnames(styles.primaryButton)}
                     onClick={(e) => onSelectClick(e, id)}
                     disabled={!canAfford}
+                    data-cy="construct-building-button"
                   >
                     Place Building
                   </button>

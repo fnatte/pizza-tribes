@@ -133,7 +133,7 @@ function Navigation() {
   };
 
   return (
-    <nav className={classnames("flex", "justify-center", "items-center")}>
+    <nav className={classnames("flex", "justify-center", "items-center")} data-cy="main-nav">
       <Link to="/map">
         <button className={classnames(styles.primaryButton, "mr-2")}>
           Map

@@ -16,27 +16,30 @@ import { ReactComponent as SvgConstructingResearchInstitute } from "../../images
 import { Building } from "../generated/building";
 import classnames from "classnames";
 import { getTapInfo } from "../utils";
+import { useStore } from "../store";
 import { Construction } from "../generated/gamestate";
 import { useMemo, useState } from "react";
 import { useTimeoutFn } from "react-use";
+import { GameData } from "../generated/game_data";
 
 const Badge: React.FC<{
   position: "topleft" | "topright";
   animation?: "bounce" | undefined;
   background?: "red" | "white" | undefined;
   size?: "normal" | "big";
-}> = ({
+} & React.HTMLAttributes<SVGElement>> = ({
   position,
   animation,
   children,
   background = "red",
   size = "normal",
+  ...rest
 }) => {
   const { x, y } = position === "topleft" ? { x: -2, y: -2 } : { x: 18, y: -1 };
-  const offset = useMemo(() => Math.random(), [])
+  const offset = useMemo(() => Math.random(), []);
 
   return (
-    <g transform={`translate(${x}, ${y})`}>
+    <g transform={`translate(${x}, ${y})`} {...rest}>
       {animation === "bounce" && (
         <animateTransform
           attributeName="transform"
@@ -48,7 +51,7 @@ const Badge: React.FC<{
           calcMode="spline"
           keySplines="0 0 1 1; 0.4 0 0.2 1; 0.4 0 0.2 1"
           keyTimes="0; .8; .85; 1"
-          values={`${x} ${y}; ${x} ${y}; ${x} ${y-2}; ${x} ${y}`}
+          values={`${x} ${y}; ${x} ${y}; ${x} ${y - 2}; ${x} ${y}`}
         />
       )}
       <circle
@@ -79,7 +82,7 @@ const NotificationBadge: React.VFC = () => (
 );
 
 const LevelBadge: React.VFC<{ level: number }> = ({ level }) => (
-  <Badge position="topright" background="white" size="big">
+  <Badge position="topright" background="white" size="big" data-cy="level-badge">
     {level}
   </Badge>
 );
@@ -87,12 +90,16 @@ const LevelBadge: React.VFC<{ level: number }> = ({ level }) => (
 function renderBuilding(
   building: Building | undefined,
   notification: boolean,
-  level: number
+  level: number,
+  gameData: GameData | null
 ) {
+  const buildingInfo = building !== undefined ? gameData?.buildings[building] : undefined;
+
   switch (building) {
     case Building.KITCHEN:
       return (
         <g transform="translate(-10, -13)">
+          {buildingInfo && <title>{buildingInfo.title}</title>}
           <SvgKitchen width={20} height={20} />
           {notification && <NotificationBadge />}
           <LevelBadge level={level} />
@@ -101,6 +108,7 @@ function renderBuilding(
     case Building.HOUSE:
       return (
         <g transform="translate(-5, -8)">
+          {buildingInfo && <title>{buildingInfo.title}</title>}
           <g transform="scale(0.5)">
             <SvgHouse width={20} height={20} />
           </g>
@@ -113,6 +121,7 @@ function renderBuilding(
     case Building.SHOP:
       return (
         <g transform="translate(-10, -13)">
+          {buildingInfo && <title>{buildingInfo.title}</title>}
           <SvgShop width={20} height={20} />
           {notification && <NotificationBadge />}
           <LevelBadge level={level} />
@@ -121,6 +130,7 @@ function renderBuilding(
     case Building.SCHOOL:
       return (
         <g transform="translate(-10, -13)">
+          {buildingInfo && <title>{buildingInfo.title}</title>}
           <SvgSchool width={20} height={20} />
           {notification && <NotificationBadge />}
           <LevelBadge level={level} />
@@ -129,6 +139,7 @@ function renderBuilding(
     case Building.MARKETINGHQ:
       return (
         <g transform="translate(-10, -13)">
+          {buildingInfo && <title>{buildingInfo.title}</title>}
           <SvgMarketingHQ width={20} height={20} />
           {notification && <NotificationBadge />}
           <LevelBadge level={level} />
@@ -137,6 +148,7 @@ function renderBuilding(
     case Building.RESEARCH_INSTITUTE:
       return (
         <g transform="translate(-10, -13)">
+          {buildingInfo && <title>{buildingInfo.title}</title>}
           <SvgResearchInstitute width={20} height={20} />
           {notification && <NotificationBadge />}
           <LevelBadge level={level} />
@@ -145,6 +157,7 @@ function renderBuilding(
     case Building.TOWN_CENTRE:
       return (
         <g transform="translate(-10, -13)">
+          {buildingInfo && <title>{buildingInfo.title}</title>}
           <SvgTownCentre width={20} height={20} />
           {notification && <NotificationBadge />}
           <LevelBadge level={level} />
@@ -198,7 +211,8 @@ const renderLot = (
   lots: Record<string, Lot | undefined>,
   constructionQueue: Construction[],
   lotId: string,
-  now: Date
+  now: Date,
+  gameData: GameData | null
 ) => {
   const lot = lots[lotId];
   const construction = constructionQueue.find((x) => x.lotId === lotId);
@@ -208,7 +222,12 @@ const renderLot = (
   }
 
   if (lot) {
-    return renderBuilding(lot.building, getTapInfo(lot, now).canTap, lot.level + 1);
+    return renderBuilding(
+      lot.building,
+      getTapInfo(lot, now).canTap,
+      lot.level + 1,
+      gameData
+    );
   }
 
   return null;
@@ -227,6 +246,8 @@ function SvgTown(
 ) {
   const [now, setNow] = useState(new Date());
   useTimeoutFn(() => setNow(new Date()), 10_000);
+
+  const gameData = useStore((state) => state.gameData);
 
   return (
     <svg
@@ -432,6 +453,7 @@ function SvgTown(
           transform="translate(184.514 140.613)"
           data-type="lot"
           display="inline"
+          data-cy="lot11"
         >
           <ellipse
             id="lot11ellipse"
@@ -443,10 +465,11 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "11", now)};
+          {renderLot(lots, constructionQueue, "11", now, gameData)};
         </g>
         <g
           id="lot10"
+          data-cy="lot10"
           transform="translate(134.174 99.582)"
           data-type="lot"
           display="inline"
@@ -461,10 +484,11 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "10", now)}
+          {renderLot(lots, constructionQueue, "10", now, gameData)}
         </g>
         <g
           id="lot9"
+          data-cy="lot9"
           transform="translate(84.44 96.273)"
           data-type="lot"
           display="inline"
@@ -479,10 +503,11 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "9", now)}
+          {renderLot(lots, constructionQueue, "9", now, gameData)}
         </g>
         <g
           id="lot8"
+          data-cy="lot8"
           transform="translate(44.1 127.126)"
           data-type="lot"
           display="inline"
@@ -497,10 +522,11 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "8", now)}
+          {renderLot(lots, constructionQueue, "8", now, gameData)}
         </g>
         <g
           id="lot7"
+          data-cy="lot7"
           transform="translate(47.454 169.05)"
           data-type="lot"
           display="inline"
@@ -515,10 +541,11 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "7", now)}
+          {renderLot(lots, constructionQueue, "7", now, gameData)}
         </g>
         <g
           id="lot6"
+          data-cy="lot6"
           transform="translate(85.633 198.884)"
           data-type="lot"
           display="inline"
@@ -533,10 +560,11 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "6", now)}
+          {renderLot(lots, constructionQueue, "6", now, gameData)}
         </g>
         <g
           id="lot5"
+          data-cy="lot5"
           transform="translate(128.324 196.828)"
           data-type="lot"
           display="inline"
@@ -551,10 +579,11 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "5", now)}
+          {renderLot(lots, constructionQueue, "5", now, gameData)}
         </g>
         <g
           id="lot4"
+          data-cy="lot4"
           transform="translate(160.175 168.5)"
           data-type="lot"
           display="inline"
@@ -569,10 +598,11 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "4", now)}
+          {renderLot(lots, constructionQueue, "4", now, gameData)}
         </g>
         <g
           id="lot3"
+          data-cy="lot3"
           transform="translate(102.17 161.218)"
           data-type="lot"
           display="inline"
@@ -587,10 +617,11 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "3", now)}
+          {renderLot(lots, constructionQueue, "3", now, gameData)}
         </g>
         <g
           id="lot2"
+          data-cy="lot2"
           transform="translate(91.65 128.657)"
           data-type="lot"
           display="inline"
@@ -605,10 +636,11 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "2", now)}
+          {renderLot(lots, constructionQueue, "2", now, gameData)}
         </g>
         <g
           id="lot1"
+          data-cy="lot1"
           transform="translate(141.641 132.788)"
           data-type="lot"
           display="inline"
@@ -623,7 +655,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "1", now)}
+          {renderLot(lots, constructionQueue, "1", now, gameData)}
         </g>
       </g>
     </svg>

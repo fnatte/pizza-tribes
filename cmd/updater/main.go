@@ -13,6 +13,7 @@ import (
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/persist"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
+	"github.com/fnatte/pizza-tribes/internal/ws"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog"
@@ -43,21 +44,6 @@ type updater struct {
 	gsRepo      persist.GameStateRepository
 	reportsRepo persist.ReportsRepository
 }
-
-/*
-func (ctx *updateContext) initPatch(userId string) {
-	if ctx.patches[userId] == nil {
-		ctx.patches[userId] = &patch{
-			&models.GameStatePatch{
-				Resources:  &models.GameStatePatch_ResourcesPatch{},
-				Population: &models.GameStatePatch_PopulationPatch{},
-			},
-			false,
-			false,
-		}
-	}
-}
-*/
 
 // Update the game state for the specified user
 func (u *updater) update(ctx context.Context, userId string) {
@@ -130,7 +116,7 @@ func (u *updater) postProcessPatch(ctx context.Context, userId string, txu *game
 	var err error
 
 	// Send game state patch
-	err = send(ctx, u.r, userId, txu.ToServerMessage())
+	err = ws.Send(ctx, u.r, userId, txu.ToServerMessage())
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to send state change")
 	}
@@ -171,7 +157,7 @@ func (u *updater) postProcessPatch(ctx context.Context, userId string, txu *game
 			}
 
 			// Announce new world state to all connected players
-			err = send(ctx, u.r, "everyone", &models.ServerMessage{
+			err = ws.Send(ctx, u.r, "everyone", &models.ServerMessage{
 				Id: xid.New().String(),
 				Payload: &models.ServerMessage_WorldState{
 					WorldState: worldState,
@@ -221,7 +207,7 @@ func sendReports(ctx context.Context, r internal.RedisClient, userId string) err
 		return fmt.Errorf("failed to get reports: %w", err)
 	}
 
-	return send(ctx, r, userId, &models.ServerMessage{
+	return ws.Send(ctx, r, userId, &models.ServerMessage{
 		Id: xid.New().String(),
 		Payload: &models.ServerMessage_Reports_{
 			Reports: &models.ServerMessage_Reports{
@@ -244,7 +230,7 @@ func sendStats(ctx context.Context, r internal.RedisClient, userId string) error
 
 	msg := internal.CalculateStats(&gs).ToServerMessage()
 
-	return send(ctx, r, userId, msg)
+	return ws.Send(ctx, r, userId, msg)
 }
 
 // Restore population will add any missing population to the town.
@@ -303,7 +289,7 @@ func (u *updater) restorePopulation(ctx context.Context, userId string) error {
 	}
 
 	if addedPop != 0 {
-		return send(ctx, u.r, userId, &models.ServerMessage{
+		return ws.Send(ctx, u.r, userId, &models.ServerMessage{
 			Id: xid.New().String(),
 			Payload: &models.ServerMessage_StateChange3{
 				StateChange3: &models.ServerMessage_GameStatePatch3{
@@ -353,19 +339,6 @@ func (u *updater) next(ctx context.Context) (string, error) {
 	}
 
 	return userId, nil
-}
-
-// Send a message to the specified userId
-func send(ctx context.Context, r redis.Cmdable, userId string, msg *models.ServerMessage) error {
-	b, err := protojson.Marshal(msg)
-	if err != nil {
-		return err
-	}
-
-	return r.RPush(ctx, "wsout", &internal.OutgoingMessage{
-		ReceiverId: userId,
-		Body:       string(b),
-	}).Err()
 }
 
 func envOrDefault(key string, defaultVal string) string {

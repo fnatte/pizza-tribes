@@ -10,6 +10,7 @@ import (
 
 	"github.com/fnatte/pizza-tribes/cmd/api/ws"
 	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/persist"
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -46,8 +47,9 @@ func main() {
 	auth := NewAuthService(rc)
 	world := internal.NewWorldService(rc)
 	leaderboard := internal.NewLeaderboardService(rc)
+	gsRepo := persist.NewGameStateRepository(rc)
 	wsHub := ws.NewHub()
-	handler := wsHandler{rc: rc, world: world}
+	handler := wsHandler{rc: rc, world: world, gsRepo: gsRepo}
 	wsEndpoint := ws.NewEndpoint(auth.Authorize, wsHub, &handler, origins)
 	poller := poller{rdb: rc, hub: wsHub}
 	ts := &TimeseriesService{r: rc, auth: auth}
