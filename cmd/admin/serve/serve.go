@@ -8,6 +8,8 @@ import (
 	"strings"
 
 	"github.com/fnatte/pizza-tribes/cmd/admin/db"
+	"github.com/fnatte/pizza-tribes/internal/gamestate"
+	"github.com/fnatte/pizza-tribes/internal/persist"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
@@ -33,7 +35,13 @@ func Serve() {
 
 	rc := db.NewRedisClient()
 
-	userController := NewUserController(rc)
+	gsRepo := persist.NewGameStateRepository(rc)
+	reportsRepo := persist.NewReportsRepository(rc)
+	userRepo := persist.NewUserRepository(rc)
+	notifyRepo := persist.NewNotifyRepository(rc)
+	updater := gamestate.NewUpdater(gsRepo, reportsRepo, userRepo, notifyRepo)
+
+	userController := NewUserController(rc, updater)
 	testController := NewTestController(rc)
 
 	r := mux.NewRouter()

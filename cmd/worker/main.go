@@ -8,6 +8,7 @@ import (
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/messaging"
 	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/gamestate"
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/persist"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
@@ -46,8 +47,10 @@ func main() {
 	gsRepo := persist.NewGameStateRepository(rc)
 	reportsRepo := persist.NewReportsRepository(rc)
 	userRepo := persist.NewUserRepository(rc)
+	notifyRepo := persist.NewNotifyRepository(rc)
+	updater := gamestate.NewUpdater(gsRepo, reportsRepo, userRepo, notifyRepo)
 
-	h := &handler{rdb: rc, world: world, gsRepo: gsRepo, reportsRepo: reportsRepo, userRepo: userRepo}
+	h := &handler{rdb: rc, world: world, gsRepo: gsRepo, reportsRepo: reportsRepo, userRepo: userRepo, updater: updater}
 
 	ctx := context.Background()
 

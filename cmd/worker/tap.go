@@ -15,7 +15,7 @@ const MAX_TAP_STREAK = 12
 func (h *handler) handleTap(ctx context.Context, userId string, m *models.ClientMessage_Tap) error {
 	now := time.Now().UnixNano()
 
-	tx, err := gamestate.PerformUpdate(ctx, h.gsRepo, h.reportsRepo, userId, func(gs *models.GameState, tx *gamestate.GameTx) error {
+	tx, err := h.updater.PerformUpdate(ctx, userId, func(gs *models.GameState, tx *gamestate.GameTx) error {
 		lot := gs.Lots[m.LotId]
 		if lot == nil {
 			return fmt.Errorf("invalid lot: %s", m.LotId)
@@ -97,4 +97,3 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *models.Client
 
 	return nil
 }
-

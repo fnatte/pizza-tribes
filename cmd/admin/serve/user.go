@@ -32,12 +32,14 @@ type incrCoinsRequest struct {
 }
 
 type userController struct {
-	rc internal.RedisClient
+	rc      internal.RedisClient
+	updater gamestate.Updater
 }
 
-func NewUserController(r internal.RedisClient) *userController {
+func NewUserController(r internal.RedisClient, updater gamestate.Updater) *userController {
 	return &userController{
-		rc: r,
+		rc:      r,
+		updater: updater,
 	}
 }
 
@@ -141,8 +143,6 @@ func (c *userController) HandleCompleteUserQueues(w http.ResponseWriter, r *http
 	}
 
 	userRepo := persist.NewUserRepository(c.rc)
-	gsRepo := persist.NewGameStateRepository(c.rc)
-	reportsRepo := persist.NewReportsRepository(c.rc)
 
 	u, err := userRepo.GetUser(r.Context(), userId)
 	if err != nil {
@@ -154,7 +154,7 @@ func (c *userController) HandleCompleteUserQueues(w http.ResponseWriter, r *http
 		return
 	}
 
-	gamestate.PerformUpdate(r.Context(), gsRepo, reportsRepo, userId, func(gs *models.GameState, tx *gamestate.GameTx) error {
+	c.updater.PerformUpdate(r.Context(), userId, func(gs *models.GameState, tx *gamestate.GameTx) error {
 		if len(gs.ConstructionQueue) > 0 {
 			q := []*models.Construction{}
 			for _, c := range gs.ConstructionQueue {
@@ -188,10 +188,7 @@ func (c *userController) HandleIncrCoins(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	gsRepo := persist.NewGameStateRepository(c.rc)
-	reportsRepo := persist.NewReportsRepository(c.rc)
-
-	tx, err := gamestate.PerformUpdate(ctx, gsRepo, reportsRepo, userId, func(gs *models.GameState, tx *gamestate.GameTx) error {
+	tx, err := c.updater.PerformUpdate(ctx, userId, func(gs *models.GameState, tx *gamestate.GameTx) error {
 		log.Info().Int32("amount", req.Amount).Msg("perform update")
 		tx.Users[userId].IncrCoins(req.Amount)
 		return nil

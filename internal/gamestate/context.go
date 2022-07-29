@@ -1,24 +1,27 @@
 package gamestate
 
 import (
-	"context"
 	"fmt"
+	"time"
 
+	"firebase.google.com/go/messaging"
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/rs/xid"
 )
 
 type GameTx_User struct {
-	Gs        *models.GameState
-	PatchMask *models.PatchMask
-	Reports   []*models.Report
+	Gs             *models.GameState
+	PatchMask      *models.PatchMask
+	Reports        []*models.Report
+	Messages       []*messaging.Message
+	LatestActivity time.Time
 
 	NextUpdateInvalidated bool
 	StatsInvalidated      bool
 	ReportsInvalidated    bool
-	CoinsChanged bool
-	PizzasChanged bool
+	CoinsChanged          bool
+	PizzasChanged         bool
 }
 
 type GameTx struct {
@@ -237,6 +240,10 @@ func (u *GameTx_User) AppendReport(val *models.Report) {
 	u.ReportsInvalidated = true
 }
 
+func (u *GameTx_User) AppendMessage(val *messaging.Message) {
+	u.Messages = append(u.Messages, val)
+}
+
 func (u *GameTx_User) SetQuestCompleted(questId string) {
 	if !u.Gs.Quests[questId].Completed {
 		u.Gs.Quests[questId].Completed = true
@@ -263,12 +270,13 @@ func (u *GameTx_User) ToServerMessage() *models.ServerMessage {
 	}
 }
 
-func NewGameTx(userId string, gs *models.GameState) *GameTx {
+func NewGameTx(userId string, gs *models.GameState, latestActivity time.Time) *GameTx {
 	return &GameTx{
 		Users: map[string]*GameTx_User{
 			userId: {
-				Reports: []*models.Report{},
-				Gs:      gs,
+				LatestActivity: latestActivity,
+				Reports:        []*models.Report{},
+				Gs:             gs,
 				PatchMask: &models.PatchMask{
 					Paths: []string{},
 				},
@@ -286,19 +294,5 @@ func (tx *GameTx) InitUser(userId string, gs *models.GameState) {
 				Paths: []string{},
 			},
 		}
-	}
-}
-
-type updateContext struct {
-	context.Context
-	userId string
-	tx     *GameTx
-}
-
-func NewUpdateContext(ctx context.Context, userId string, gs *models.GameState) *updateContext {
-	return &updateContext{
-		Context: ctx,
-		userId:  userId,
-		tx:      NewGameTx(userId, gs),
 	}
 }

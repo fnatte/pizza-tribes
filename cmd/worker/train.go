@@ -19,7 +19,7 @@ func (h *handler) handleTrain(ctx context.Context, userId string, m *models.Clie
 		Int32("Amount", m.Amount).
 		Msg("Received train message")
 
-	tx, err := gamestate.PerformUpdate(ctx, h.gsRepo, h.reportsRepo, userId, func(gs *models.GameState, tx *gamestate.GameTx) error {
+	tx, err := h.updater.PerformUpdate(ctx, userId, func(gs *models.GameState, tx *gamestate.GameTx) error {
 		if m.Amount <= 0 {
 			return errors.New("Amount must be greater than 0")
 		}
@@ -31,7 +31,7 @@ func (h *handler) handleTrain(ctx context.Context, userId string, m *models.Clie
 		// Ids of mice that will go to school
 		miceIds := []string{}
 		for id, mouse := range gs.Mice {
-			if !mouse.IsEducated  && !mouse.IsBeingEducated {
+			if !mouse.IsEducated && !mouse.IsBeingEducated {
 				miceIds = append(miceIds, id)
 
 				if len(miceIds) >= int(m.Amount) {

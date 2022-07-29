@@ -43,6 +43,7 @@ type updater struct {
 	leaderboard *internal.LeaderboardService
 	gsRepo      persist.GameStateRepository
 	reportsRepo persist.ReportsRepository
+	updater     gamestate.Updater
 }
 
 // Update the game state for the specified user
@@ -60,8 +61,7 @@ func (u *updater) update(ctx context.Context, userId string) {
 	 *   - schedule the next update
 	 */
 
-
-	tx, err := gamestate.PerformUpdate(ctx, u.gsRepo, u.reportsRepo, userId, func(gs *models.GameState, tx *gamestate.GameTx) error {
+	tx, err := u.updater.PerformUpdate(ctx, userId, func(gs *models.GameState, tx *gamestate.GameTx) error {
 		if err := extrapolate(userId, gs, tx); err != nil {
 			return err
 		}
@@ -405,7 +405,10 @@ func main() {
 	leaderboard := internal.NewLeaderboardService(rc)
 	gsRepo := persist.NewGameStateRepository(rc)
 	reportsRepo := persist.NewReportsRepository(rc)
-	u := updater{r: rc, world: world, leaderboard: leaderboard, gsRepo: gsRepo, reportsRepo: reportsRepo}
+	userRepo := persist.NewUserRepository(rc)
+	notifyRepo := persist.NewNotifyRepository(rc)
+	u2 := gamestate.NewUpdater(gsRepo, reportsRepo, userRepo, notifyRepo)
+	u := updater{r: rc, world: world, leaderboard: leaderboard, gsRepo: gsRepo, reportsRepo: reportsRepo, updater: u2}
 
 	ctx := context.Background()
 

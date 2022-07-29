@@ -2,7 +2,9 @@ package persist
 
 import (
 	"context"
+	"time"
 
+	"firebase.google.com/go/messaging"
 	"github.com/fnatte/pizza-tribes/internal/models"
 )
 
@@ -23,6 +25,11 @@ type UserRepository interface {
 	SetUserLatestActivity(ctx context.Context, userId string, value int64) error
 	GetUserLatestActivity(ctx context.Context, userId string) (int64, error)
 	GetAllUsers(ctx context.Context) ([]string, error)
+}
+
+type NotifyRepository interface {
+	SendPushNotification(ctx context.Context, msg *messaging.Message) (int64, error)
+	SchedulePushNotification(ctx context.Context, msg *messaging.Message, sendAt time.Time) (int64, error)
 }
 
 type Mutex interface {

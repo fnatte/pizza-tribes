@@ -20,6 +20,7 @@ type handler struct {
 	gsRepo persist.GameStateRepository
 	reportsRepo persist.ReportsRepository
 	userRepo persist.UserRepository
+	updater gamestate.Updater
 }
 
 func (h *handler) Handle(ctx context.Context, senderId string, m *models.ClientMessage) {

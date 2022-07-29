@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"time"
 
+	"firebase.google.com/go/messaging"
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/gamestate"
 	"github.com/fnatte/pizza-tribes/internal/models"
@@ -25,6 +27,10 @@ func completedConstructions(userId string, gs *models.GameState, tx *gamestate.G
 			u.RazeBuilding(constr.LotId)
 		} else {
 			u.ConstructBuilding(constr.LotId, constr.Building, constr.Level)
+
+			if u.LatestActivity.Before(time.Now().Add(-5 * time.Minute)) {
+				u.AppendMessage(newConstructionCompletedMessage(userId, constr))
+			}
 		}
 
 		buildInfo := internal.FullGameData.Buildings[int32(constr.Building)]
@@ -130,3 +136,45 @@ func getCompletedConstructions(gs *models.GameState) (res []*models.Construction
 
 	return res
 }
+
+func newConstructionCompletedMessage(userId string, constr *models.Construction) *messaging.Message {
+	// internal.FullGameData.Buildings[int32(constr.Building)]
+	var title string
+	var body string
+
+	buildInfo := internal.FullGameData.Buildings[int32(constr.Building)]
+	if buildInfo != nil {
+		title = "Construction completed!"
+		if constr.Level > 0 {
+			body = fmt.Sprintf("Your %s (level %d) has been completed.", buildInfo.Title, constr.Level)
+		} else {
+			body = fmt.Sprintf("Your %s has been completed.", buildInfo.Title)
+		}
+	} else {
+		title = "Construction completed!"
+	}
+
+	return &messaging.Message{
+		Data: map[string]string{
+			"userId": userId,
+		},
+		Notification: &messaging.Notification{
+			Title: title,
+			Body: body,
+		},
+		Android: &messaging.AndroidConfig{
+			CollapseKey: "reminder",
+		},
+		Webpush: &messaging.WebpushConfig{
+			Notification: &messaging.WebpushNotification{
+				Tag: "reminder",
+			},
+		},
+		APNS: &messaging.APNSConfig{
+			Headers: map[string]string{
+				"apns-collapse-id": "reminder",
+			},
+		},
+	}
+}
+

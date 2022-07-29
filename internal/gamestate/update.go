@@ -3,27 +3,54 @@ package gamestate
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/persist"
 )
 
-type GameStateUpdater func(gs *models.GameState, tx *GameTx) error
+type GameStateUpdaterFn func(gs *models.GameState, tx *GameTx) error
 
-func PerformUpdate(ctx context.Context, gsRepo persist.GameStateRepository, reportRepo persist.ReportsRepository, userId string, updater GameStateUpdater) (*GameTx, error) {
-	mutex := gsRepo.NewMutex(userId)
+type updater struct {
+	gsRepo      persist.GameStateRepository
+	reportsRepo persist.ReportsRepository
+	userRepo    persist.UserRepository
+	notifyRepo  persist.NotifyRepository
+}
+
+type Updater interface {
+	PerformUpdate(ctx context.Context, userId string, updater GameStateUpdaterFn) (*GameTx, error)
+}
+
+func NewUpdater(gsRepo persist.GameStateRepository,
+	reportsRepo persist.ReportsRepository,
+	userRepo persist.UserRepository,
+	notifyRepo persist.NotifyRepository) *updater {
+	return &updater{
+		gsRepo:      gsRepo,
+		userRepo:    userRepo,
+		reportsRepo: reportsRepo,
+		notifyRepo:  notifyRepo,
+	}
+}
+
+func (u *updater) PerformUpdate(ctx context.Context, userId string, updater GameStateUpdaterFn) (*GameTx, error) {
+	mutex := u.gsRepo.NewMutex(userId)
 	if err := mutex.LockContext(ctx); err != nil {
 		return nil, fmt.Errorf("failed to obtain lock: %w", err)
 	}
 
 	var tx *GameTx
 
-	gs, err := gsRepo.Get(ctx, userId)
+	gs, err := u.gsRepo.Get(ctx, userId)
 	if err == nil {
-		tx = NewGameTx(userId, gs)
-		err = updater(gs, tx)
+		t, err := u.userRepo.GetUserLatestActivity(ctx, userId)
 		if err == nil {
-			err = persistTx(ctx, tx, gsRepo, reportRepo)
+			tx = NewGameTx(userId, gs, time.Unix(0, t))
+			err = updater(gs, tx)
+			if err == nil {
+				err = u.persistTx(ctx, tx)
+			}
 		}
 	}
 
@@ -38,20 +65,27 @@ func PerformUpdate(ctx context.Context, gsRepo persist.GameStateRepository, repo
 	return tx, nil
 }
 
-func persistTx(ctx context.Context, tx *GameTx, gsRepo persist.GameStateRepository, reportRepo persist.ReportsRepository) error {
+func (u *updater) persistTx(ctx context.Context, tx *GameTx) error {
 	for userId, txu := range tx.Users {
-		err := gsRepo.Patch(ctx, userId, txu.Gs, txu.PatchMask)
+		err := u.gsRepo.Patch(ctx, userId, txu.Gs, txu.PatchMask)
 		if err != nil {
 			return err
 		}
 
 		if txu.ReportsInvalidated {
 			for _, report := range txu.Reports {
-				if err = reportRepo.Save(ctx, userId, report); err != nil {
+				if err = u.reportsRepo.Save(ctx, userId, report); err != nil {
 					return fmt.Errorf("failed to save report: %w", err)
 				}
 			}
+		}
 
+		if len(txu.Messages) > 0 {
+			for _, m := range txu.Messages {
+				if _, err = u.notifyRepo.SendPushNotification(ctx, m); err != nil {
+					return fmt.Errorf("failed to send push notification: %w", err)
+				}
+			}
 		}
 	}
 
