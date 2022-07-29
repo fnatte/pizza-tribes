@@ -22,6 +22,7 @@ import TapStreak from "./TapStreak";
 import ReactDOM from "react-dom";
 import { Coin, Pizza } from "../icons";
 import { TownCentre } from "./buildings/TownCentre";
+import { CountDown } from "./CountDown";
 
 const label = classnames("text-xs", "md:text-sm", "mr-1");
 const value = classnames("text-sm", "md:text-lg", "ml-1");
@@ -190,7 +191,10 @@ const UpgradeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
         className={classnames("m-4", "p-4", "bg-green-200")}
         data-cy="upgrade-section"
       >
-        <span>This building is being upgraded.</span>
+        <p>This building is being upgraded.</p>
+        <p>
+          It will be ready <CountDown time={constr.completeAt} />.
+        </p>
       </section>
     ) : null;
   }
@@ -407,12 +411,16 @@ function TownLot() {
       {!lot && ongoingConstruction && (
         <>
           <h2>Construction site</h2>
-          <p className={classnames("my-4", "text-gray-700")}>
+          <p className={classnames("mt-4", "text-gray-700")}>
             A{" "}
             {gameData?.buildings[
               ongoingConstruction.building
             ].title.toLowerCase()}{" "}
             is being constructed here.
+          </p>
+          <p className={classnames("mt-2", "text-gray-700")}>
+            It will be ready <CountDown time={ongoingConstruction.completeAt} />
+            .
           </p>
         </>
       )}

@@ -1,8 +1,7 @@
-import React, { useState } from "react";
-import { useInterval } from "react-use";
+import React from "react";
 import classnames from "classnames";
 import { useStore } from "../store";
-import { formatNanoTimestampToNowShort } from "../utils";
+import { CountDown } from "./CountDown";
 
 const ConstructionQueue: React.FC<{
   className?: string;
@@ -11,10 +10,6 @@ const ConstructionQueue: React.FC<{
   const constructionQueue = useStore(
     (state) => state.gameState.constructionQueue
   );
-  const [now, setNow] = useState(Date.now());
-  useInterval(() => {
-    setNow(Date.now());
-  }, 1000);
 
   if (constructionQueue.length === 0) {
     return (
@@ -39,11 +34,14 @@ const ConstructionQueue: React.FC<{
               {construction.razing && "Razing "}
               {buildings[construction.building].title}
               {construction.level > 0 && (
-                <span> {!construction.razing && 'to'} level {construction.level + 1}</span>
+                <span>
+                  {" "}
+                  {!construction.razing && "to"} level {construction.level + 1}
+                </span>
               )}
             </td>
             <td className={classnames("p-2")}>
-              {formatNanoTimestampToNowShort(construction.completeAt)}
+              <CountDown time={construction.completeAt} />
             </td>
           </tr>
         ))}
