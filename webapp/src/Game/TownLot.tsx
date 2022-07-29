@@ -80,26 +80,29 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
       return null;
   }
 
-  const onClick = useCallback<React.MouseEventHandler>((e) => {
-    e.preventDefault();
-    tap(lotId);
-    setTapBackoff(true);
+  const onClick = useCallback<React.MouseEventHandler>(
+    (e) => {
+      e.preventDefault();
+      tap(lotId);
+      setTapBackoff(true);
 
-    if (buttonConfettiRef.current) {
-      confetti(buttonConfettiRef.current, {
-        elementCount: 3 * Math.ceil(Math.sqrt(lot.level + 1)),
-        colors: [],
-        startVelocity: 27,
-        spread: 35,
-        duration: 2000,
-        createElement: () => {
-          return (tapResource === "pizzas"
-            ? pizzaElement.cloneNode(true)
-            : coinElement.cloneNode(true)) as HTMLElement;
-        },
-      });
-    }
-  }, [lotId, lot, pizzaElement, coinElement]);
+      if (buttonConfettiRef.current) {
+        confetti(buttonConfettiRef.current, {
+          elementCount: 3 * Math.ceil(Math.sqrt(lot.level + 1)),
+          colors: [],
+          startVelocity: 27,
+          spread: 35,
+          duration: 2000,
+          createElement: () => {
+            return (tapResource === "pizzas"
+              ? pizzaElement.cloneNode(true)
+              : coinElement.cloneNode(true)) as HTMLElement;
+          },
+        });
+      }
+    },
+    [lotId, lot, pizzaElement, coinElement]
+  );
 
   return (
     <section
@@ -171,7 +174,10 @@ const UpgradeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
 
   if (lot.level + 1 >= buildingInfo.levelInfos.length) {
     return (
-      <section className={classnames("m-4", "p-4", "bg-green-200")} data-cy="upgrade-section">
+      <section
+        className={classnames("m-4", "p-4", "bg-green-200")}
+        data-cy="upgrade-section"
+      >
         <span>Already at max level</span>
       </section>
     );
@@ -180,7 +186,10 @@ const UpgradeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
   const constr = constructionQueue.find((x) => x.lotId === lotId);
   if (constr) {
     return !constr.razing ? (
-      <section className={classnames("m-4", "p-4", "bg-green-200")} data-cy="upgrade-section">
+      <section
+        className={classnames("m-4", "p-4", "bg-green-200")}
+        data-cy="upgrade-section"
+      >
         <span>This building is being upgraded.</span>
       </section>
     ) : null;
@@ -210,7 +219,10 @@ const UpgradeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
   const canAfford = coins >= cost;
 
   return (
-    <section className={classnames("m-4", "p-4", "bg-green-200")} data-cy="upgrade-section">
+    <section
+      className={classnames("m-4", "p-4", "bg-green-200")}
+      data-cy="upgrade-section"
+    >
       <table>
         <tbody>
           <tr>
@@ -300,11 +312,15 @@ const RazeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
   const constr = constructionQueue.find((x) => x.lotId === lotId);
   if (constr) {
     return constr.razing ? (
-      <section className={classnames("m-4", "p-4", "bg-red-200")}>
+      <section
+        className={classnames("m-4", "p-4", "bg-red-200")}
+        data-cy="raze-section"
+      >
         <div>This building is being razed.</div>
         <button
           className={classnames(...styles.button, "bg-red-800")}
           onClick={onCancelClick}
+          data-cy="cancel-raze-building-button"
         >
           Cancel
         </button>
@@ -313,7 +329,10 @@ const RazeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
   }
 
   return (
-    <section className={classnames("m-4", "p-4", "bg-gray-300")}>
+    <section
+      className={classnames("m-4", "p-4", "bg-gray-300")}
+      data-cy="raze-section"
+    >
       <table>
         <tbody>
           <tr>
@@ -340,6 +359,7 @@ const RazeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
         className={classnames(...styles.button, "bg-red-800")}
         disabled={!canAfford}
         onClick={onClick}
+        data-cy="raze-building-button"
       >
         Raze {buildingInfo.title}
       </button>

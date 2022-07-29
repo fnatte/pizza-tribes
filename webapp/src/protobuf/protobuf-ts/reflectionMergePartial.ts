@@ -112,8 +112,14 @@ export function reflectionMergePartial<T extends object>(
             break;
           case "message":
             let T = field.V.T();
-            for (let k of Object.keys(fieldValue as any))
-              (output[name] as any)[k] = T.create((fieldValue as any)[k]);
+            for (let k of Object.keys(fieldValue as any)) {
+              const val = (fieldValue as any)[k];
+              if (val === undefined) {
+                delete (output[name] as any)[k];
+              } else {
+                (output[name] as any)[k] = T.create(val);
+              }
+            }
             break;
         }
         break;

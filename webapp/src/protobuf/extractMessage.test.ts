@@ -1,5 +1,4 @@
 import { GameState } from "../generated/gamestate";
-import { FieldMask } from "../generated/google/protobuf/field_mask";
 import { ResearchDiscovery } from "../generated/research";
 import { extractMessage } from "./extractMessage";
 
@@ -82,6 +81,21 @@ describe("extractMessage", () => {
         5: {
           taps: 1,
         },
+      },
+    });
+  });
+
+  test("extracts undefined from nested map", () => {
+    expect(
+      extractMessage(
+        GameState.create({
+          lots: {},
+        }),
+        ["lots.5"]
+      )
+    ).toEqual({
+      lots: {
+        5: undefined,
       },
     });
   });

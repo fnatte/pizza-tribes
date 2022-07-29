@@ -46,6 +46,10 @@ func TestGetValueByPath(t *testing.T) {
 				},
 			},
 		},
+		"map nil value": {
+			path: "lots.abc",
+			want: nil,
+		},
 		"nested in message": {
 			path: "population.chefs",
 			want: int32(10),

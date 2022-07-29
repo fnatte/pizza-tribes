@@ -88,7 +88,11 @@ func (r *gameStateRepo) Patch(ctx context.Context, userId string, gs *models.Gam
 			return fmt.Errorf("failed to get json value: %w", err)
 		}
 
-		err = internal.RedisJsonSet(pipe, ctx, gsKey, p, jv).Err()
+		if val == nil {
+			err = internal.RedisJsonDel(pipe, ctx, gsKey, p).Err()
+		} else {
+			err = internal.RedisJsonSet(pipe, ctx, gsKey, p, jv).Err()
+		}
 		if err != nil {
 			return fmt.Errorf("failed to set %s: %w", p, err)
 		}

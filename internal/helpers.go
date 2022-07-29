@@ -133,9 +133,13 @@ func GetCompletedTravels(gs *GameState) (res []*Travel) {
 }
 
 func HasBuildingMinLevel(gs *GameState, b Building, minLvl int) bool {
+	if gs.Lots == nil {
+		return false
+	}
+
 	for _, lot := range gs.Lots {
-		if lot.Building == b {
-			if lot.Level >= int32(minLvl - 1) {
+		if lot != nil && lot.Building == b {
+			if lot.Level >= int32(minLvl-1) {
 				return true
 			}
 		}
@@ -153,4 +157,3 @@ func FindMouseIdWithEducation(mice map[string]*Mouse, edu Education) string {
 
 	return ""
 }
-

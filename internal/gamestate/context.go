@@ -172,7 +172,7 @@ func (u *GameTx_User) AppendNewMouse() {
 func (u *GameTx_User) RemoveMouseByEducation(isEducated bool, education models.Education) {
 	for id, m := range u.Gs.Mice {
 		if (!m.IsEducated && !isEducated) || m.Education == education {
-			u.Gs.Mice[id] = nil
+			delete(u.Gs.Mice, id)
 			u.PatchMask.AppendPath(fmt.Sprintf("mice.%s", id))
 		}
 	}
@@ -212,7 +212,7 @@ func (u *GameTx_User) ConstructBuilding(lotId string, building models.Building, 
 func (u *GameTx_User) RazeBuilding(lotId string) {
 	lot := u.Gs.Lots[lotId]
 	if lot != nil {
-		u.Gs.Lots[lotId] = nil
+		delete(u.Gs.Lots, lotId)
 		u.PatchMask.AppendPath(fmt.Sprintf("lots.%s", lotId))
 	}
 }

@@ -94,7 +94,11 @@ func GetValueByPath(m proto.Message, path string) (interface{}, error) {
 	}
 
 	if fd.Kind() == protoreflect.MessageKind {
-		return fv.Message().Interface(), nil
+		if fv.IsValid() {
+			return fv.Message().Interface(), nil
+		} else {
+			return nil, nil
+		}
 	}
 
 	return fv.Interface(), nil
