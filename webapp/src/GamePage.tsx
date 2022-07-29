@@ -14,7 +14,7 @@ import LeaderboardView from "./Game/LeaderboardView";
 import { useClickAway, useDebounce, useInterval, useMedia } from "react-use";
 import ListReportsView from "./Game/reports/ListReportsView";
 import ShowReportView from "./Game/reports/ShowReportView";
-import { formatNumber } from "./utils";
+import { formatNumber, getTapInfo } from "./utils";
 import HelpView from "./Game/HelpView";
 import { useWorldState } from "./queries/useWorldState";
 import { WorldStarting } from "./WorldStarting";
@@ -110,6 +110,14 @@ function Navigation() {
   const unreads = useStore((state) =>
     state.reports.reduce((count, report) => count + (report.unread ? 1 : 0), 0)
   );
+  const now = new Date();
+
+  const tapBadgeCount = useStore((store) =>
+    Object.values(store.gameState.lots).reduce(
+      (count, lot) => count + (getTapInfo(lot, now).tapsRemaining > 0 ? 1 : 0),
+      0
+    )
+  );
 
   const questBadgeCount = useStore((state) =>
     Object.values(state.gameState.quests).reduce(
@@ -133,14 +141,18 @@ function Navigation() {
   };
 
   return (
-    <nav className={classnames("flex", "justify-center", "items-center")} data-cy="main-nav">
+    <nav
+      className={classnames("flex", "justify-center", "items-center")}
+      data-cy="main-nav"
+    >
       <Link to="/map">
         <button className={classnames(styles.primaryButton, "mr-2")}>
           Map
         </button>
       </Link>
       <Link to="/town">
-        <button className={classnames(styles.primaryButton, "mr-2")}>
+        <button className={classnames(styles.primaryButton, "mr-2", "relative")}>
+          {tapBadgeCount > 0 && <ButtonBadgeCount count={tapBadgeCount} />}
           Town
         </button>
       </Link>
