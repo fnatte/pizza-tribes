@@ -11,7 +11,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoregistry"
 )
 
-func (p *ServerMessage_PatchMask) AppendPath(path string) {
+func (p *PatchMask) AppendPath(path string) {
 	for _, p := range p.Paths {
 		if p == path {
 			return
@@ -72,6 +72,25 @@ func GetValueByPath(m proto.Message, path string) (interface{}, error) {
 		}
 
 		return slice.Interface(), nil
+	}
+
+	if fd.IsMap() {
+		mt, err := protoregistry.GlobalTypes.FindMessageByName(fd.MapValue().Message().FullName())
+		if err != nil {
+			return nil, fmt.Errorf("could not find message type: %w", err)
+		}
+
+		val := mt.New().Interface()
+		typ := reflect.MapOf(reflect.TypeOf(""), reflect.TypeOf(val))
+		m := reflect.MakeMap(typ)
+
+		fv.Map().Range(func(k protoreflect.MapKey, v protoreflect.Value) bool {
+			m.SetMapIndex(reflect.ValueOf(k.String()), reflect.ValueOf(v.Message().Interface()))
+
+			return true
+		})
+
+		return m.Interface(), nil
 	}
 
 	if fd.Kind() == protoreflect.MessageKind {

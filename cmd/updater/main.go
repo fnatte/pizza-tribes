@@ -291,14 +291,14 @@ func (u *updater) restorePopulation(ctx context.Context, userId string) error {
 	if addedPop != 0 {
 		return ws.Send(ctx, u.r, userId, &models.ServerMessage{
 			Id: xid.New().String(),
-			Payload: &models.ServerMessage_StateChange3{
-				StateChange3: &models.ServerMessage_GameStatePatch3{
+			Payload: &models.ServerMessage_StateChange{
+				StateChange: &models.GameStatePatch{
 					GameState: &models.GameState{
 						Population: &models.GameState_Population{
 							Uneducated: gs.Population.Uneducated + addedPop,
 						},
 					},
-					PatchMask: &models.ServerMessage_PatchMask{
+					PatchMask: &models.PatchMask{
 						Paths: []string{"population.uneducated"},
 					},
 				},

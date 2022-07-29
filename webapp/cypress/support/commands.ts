@@ -1,5 +1,7 @@
 /// <reference types="cypress" />
 
+import { GameStatePatch } from "../../src/generated/gamestate"
+
 const defaultUsername = "cypress-test-user";
 const defaultPassword = "secret";
 
@@ -8,6 +10,7 @@ declare global {
     interface Chainable {
       adminCompleteQueues(username?: string): Chainable<void>;
       adminIncrCoins(amount: number, username?: string): Chainable<void>;
+      adminPatchGameState(req: GameStatePatch, username?: string): Chainable<void>;
       adminDeleteUser(username?: string): Chainable<void>;
       adminCreateUser(username?: string, password?: string): Chainable<void>;
       adminTestSetup(username?: string): Chainable<void>;
@@ -75,6 +78,24 @@ Cypress.Commands.add("adminIncrCoins", (amount, username = defaultUsername) => {
       cy.request("POST", `http://localhost:8081/users/${userId}/incrCoins`, {
         amount,
       }).then((r2) => {
+        expect(r2.isOkStatusCode).to.be.true;
+      });
+    }
+  );
+});
+
+Cypress.Commands.add("adminPatchGameState", (req, username = defaultUsername) => {
+  const body = GameStatePatch.toJson(req) as object;
+
+  cy.request("GET", `http://localhost:8081/users?username=${username}`).then(
+    (r) => {
+      const users = r.body;
+      if (users.length === 0) {
+        return;
+      }
+
+      const userId = users[0];
+      cy.request("PATCH", `http://localhost:8081/users/${userId}/gameState`, body).then((r2) => {
         expect(r2.isOkStatusCode).to.be.true;
       });
     }

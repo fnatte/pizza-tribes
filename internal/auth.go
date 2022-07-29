@@ -18,7 +18,7 @@ var jwtSigningKey = []byte{}
 
 func init() {
 	jwtSigningKey = []byte(os.Getenv("JWT_SIGNING_KEY"))
-	if len(jwtSigningKey) == 0 {
+	if len(jwtSigningKey) == 0 && os.Getenv("TESTING") != "1" {
 		panic("JWT_SIGNING_KEY was not set")
 	}
 }

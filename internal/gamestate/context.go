@@ -11,7 +11,7 @@ import (
 
 type GameTx_User struct {
 	Gs        *models.GameState
-	PatchMask *models.ServerMessage_PatchMask
+	PatchMask *models.PatchMask
 	Reports   []*models.Report
 
 	NextUpdateInvalidated bool
@@ -254,8 +254,8 @@ func (u *GameTx_User) SetQuestAvailable(questId string) {
 func (u *GameTx_User) ToServerMessage() *models.ServerMessage {
 	return &models.ServerMessage{
 		Id: xid.New().String(),
-		Payload: &models.ServerMessage_StateChange3{
-			StateChange3: &models.ServerMessage_GameStatePatch3{
+		Payload: &models.ServerMessage_StateChange{
+			StateChange: &models.GameStatePatch{
 				GameState: u.Gs,
 				PatchMask: u.PatchMask,
 			},
@@ -269,7 +269,7 @@ func NewGameTx(userId string, gs *models.GameState) *GameTx {
 			userId: {
 				Reports: []*models.Report{},
 				Gs:      gs,
-				PatchMask: &models.ServerMessage_PatchMask{
+				PatchMask: &models.PatchMask{
 					Paths: []string{},
 				},
 			},
@@ -282,7 +282,7 @@ func (tx *GameTx) InitUser(userId string, gs *models.GameState) {
 		tx.Users[userId] = &GameTx_User{
 			Reports: []*models.Report{},
 			Gs:      gs,
-			PatchMask: &models.ServerMessage_PatchMask{
+			PatchMask: &models.PatchMask{
 				Paths: []string{},
 			},
 		}

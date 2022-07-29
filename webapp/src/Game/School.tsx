@@ -76,7 +76,9 @@ const SchoolEducation: React.VFC<{
 }> = ({ education, educationInfo }) => {
   const coins = useStore((state) => state.gameState.resources?.coins ?? 0);
   const train = useStore((state) => state.train);
-  const uneducated = useStore((state) => state.gameState.population?.uneducated ?? 0);
+  const uneducated = useStore(
+    (state) => state.gameState.population?.uneducated ?? 0
+  );
 
   const maxByCost = educationInfo.cost
     ? Math.floor(coins / educationInfo.cost)
@@ -109,12 +111,14 @@ const SchoolEducation: React.VFC<{
   const Description = descriptions[education];
 
   return (
-    <div className={classnames("flex", "mb-8")} key={educationInfo.title}>
+    <div className={classnames("flex", "mb-8")} data-cy="school-education">
       <div style={{ width: 110 }}>
         {SvgImage ? <SvgImage /> : <PlaceholderImage />}
       </div>
       <div className={classnames("ml-6", "lg:ml-8")}>
-        <div className={title}>{educationInfo.title}</div>
+        <div className={title} data-cy="school-education-title">
+          {educationInfo.title}
+        </div>
         {Description && <Description />}
         <table>
           <tbody>
@@ -155,17 +159,19 @@ const SchoolEducation: React.VFC<{
             defaultValue={1}
             required
             disabled={disabled}
+            data-cy="school-education-amount-input"
             {...register("amount")}
           />
           <button
             type="submit"
             className={classnames(styles.primaryButton)}
             disabled={disabled}
+            data-cy="school-education-submit-button"
           >
             Train
           </button>
           {errors.amount && (
-            <div className="pb-2 text-red-900">{errors.amount.message}</div>
+            <div className="pb-2 text-red-900" data-cy="error">{errors.amount.message}</div>
           )}
         </form>
       </div>
@@ -176,7 +182,9 @@ const SchoolEducation: React.VFC<{
 function School() {
   const educations = useStore((state) => state.gameData?.educations) || [];
   const trainingQueue = useStore((state) => state.gameState.trainingQueue);
-  const uneducated = useStore((state) => state.gameState.population?.uneducated ?? 0);
+  const uneducated = useStore(
+    (state) => state.gameState.population?.uneducated ?? 0
+  );
 
   const [_, setNow] = useState(Date.now());
   useInterval(() => {
@@ -201,7 +209,7 @@ function School() {
       {trainingQueue.length > 0 && (
         <>
           <h3>In Training</h3>
-          <table>
+          <table data-cy="training-queue-table">
             <tbody>
               {trainingQueue.map((training) => (
                 <tr
@@ -210,9 +218,18 @@ function School() {
                     training.education +
                     training.amount
                   }
+                  data-cy="training-queue-table-row"
                 >
-                  <td className={classnames("p-2")}>{training.amount}</td>
-                  <td className={classnames("p-2")}>
+                  <td
+                    className={classnames("p-2")}
+                    data-cy="training-queue-table-amount"
+                  >
+                    {training.amount}
+                  </td>
+                  <td
+                    className={classnames("p-2")}
+                    data-cy="training-queue-table-title"
+                  >
                     {educations[training.education].title}
                   </td>
                   <td className={classnames("p-2")}>

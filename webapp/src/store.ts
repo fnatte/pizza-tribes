@@ -4,13 +4,12 @@ import connect, { ConnectionApi, ConnectionState } from "./connect";
 import { Building } from "./generated/building";
 import { ClientMessage } from "./generated/client_message";
 import { Education } from "./generated/education";
-import { GameState } from "./generated/gamestate";
+import { GameState, GameStatePatch } from "./generated/gamestate";
 import { GameData } from "./generated/game_data";
 import { Report } from "./generated/report";
 import { ResearchDiscovery } from "./generated/research";
 import {
   ServerMessage,
-  ServerMessage_GameStatePatch3,
   ServerMessage_Reports,
   ServerMessage_User,
 } from "./generated/server_message";
@@ -158,7 +157,7 @@ export const useStore = create<State>((set, get) => ({
   start: () => {
     get().connection?.close();
 
-    const handleStateChange3 = (stateChange: ServerMessage_GameStatePatch3) => {
+    const handleStateChange3 = (stateChange: GameStatePatch) => {
       unstable_batchedUpdates(() => {
         set((state) =>
           produce(state, (draftState) => {
@@ -207,8 +206,8 @@ export const useStore = create<State>((set, get) => ({
 
     const onMessage = (msg: ServerMessage) => {
       switch (msg.payload.oneofKind) {
-        case "stateChange3":
-          handleStateChange3(msg.payload.stateChange3);
+        case "stateChange":
+          handleStateChange3(msg.payload.stateChange);
           break;
         case "user":
           handleUserMessage(msg.payload.user);

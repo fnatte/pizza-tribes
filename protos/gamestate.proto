@@ -86,3 +86,12 @@ message GameState {
   map<string, QuestState> quests = 13;
 }
 
+message PatchMask {
+  repeated string paths = 1;
+}
+
+message GameStatePatch {
+  GameState gameState = 1;
+  PatchMask patchMask = 2;
+}
+

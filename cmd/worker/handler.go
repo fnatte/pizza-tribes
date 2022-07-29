@@ -115,8 +115,8 @@ func (h *handler) sendFullStateUpdate(ctx context.Context, senderId string) {
 
 	err = h.send(ctx, senderId, &models.ServerMessage{
 		Id: xid.New().String(),
-		Payload: &models.ServerMessage_StateChange3{
-			StateChange3: &models.ServerMessage_GameStatePatch3{
+		Payload: &models.ServerMessage_StateChange{
+			StateChange: &models.GameStatePatch{
 				GameState: &gs,
 			},
 		},
@@ -140,10 +140,10 @@ func (h *handler) sendGameTx(ctx context.Context, tx *gamestate.GameTx) error {
 	for uid, u := range tx.Users {
 		err := h.send(ctx, uid, &models.ServerMessage{
 			Id: xid.New().String(),
-			Payload: &models.ServerMessage_StateChange3{
-				StateChange3: &models.ServerMessage_GameStatePatch3{
+			Payload: &models.ServerMessage_StateChange{
+				StateChange: &models.GameStatePatch{
 					GameState: u.Gs,
-					PatchMask: &models.ServerMessage_PatchMask{
+					PatchMask: &models.PatchMask{
 						Paths: u.PatchMask.Paths,
 					},
 				},

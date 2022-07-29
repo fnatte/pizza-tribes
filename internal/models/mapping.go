@@ -12,8 +12,8 @@ func (gs *GameState) ToStateChangeMessage() *ServerMessage {
 func (gs *GameState) ToServerMessage() *ServerMessage {
 	return &ServerMessage{
 		Id: xid.New().String(),
-		Payload: &ServerMessage_StateChange3{
-			StateChange3: &ServerMessage_GameStatePatch3{
+		Payload: &ServerMessage_StateChange{
+			StateChange: &GameStatePatch{
 				GameState: gs,
 			},
 		},

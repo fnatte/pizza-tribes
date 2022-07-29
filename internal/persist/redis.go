@@ -68,7 +68,11 @@ func (r *gameStateRepo) Get(ctx context.Context, userId string) (*models.GameSta
 	return arr[0], nil
 }
 
-func (r *gameStateRepo) Patch(ctx context.Context, userId string, gs *models.GameState, patchMask *models.ServerMessage_PatchMask) error {
+func (r *gameStateRepo) Patch(ctx context.Context, userId string, gs *models.GameState, patchMask *models.PatchMask) error {
+	if patchMask == nil {
+		return r.Save(ctx, userId, gs)
+	}
+
 	gsKey := fmt.Sprintf("user:%s:gamestate", userId)
 
 	pipe := r.rdb.Pipeline()
@@ -138,6 +142,25 @@ func jsonValue(v interface{}) (interface{}, error) {
 			}
 			buf = append(buf, ']')
 			return buf, nil
+		}
+	}
+
+	if val.Kind() == reflect.Map {
+		mtyp := reflect.TypeOf(new(proto.Message)).Elem()
+		if val.Type().Elem().Implements(mtyp) {
+			m := map[string]*json.RawMessage{}
+			iter := val.MapRange()
+			for iter.Next() {
+				k := iter.Key()
+				v := iter.Value().Interface().(proto.Message)
+				b, err := protojson.Marshal(v)
+				if err != nil {
+					return nil, err
+				}
+				j := json.RawMessage(b)
+				m[k.String()] = &j
+			}
+			return json.Marshal(m)
 		}
 	}
 

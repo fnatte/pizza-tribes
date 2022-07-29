@@ -33,6 +33,19 @@ func TestGetValueByPath(t *testing.T) {
 				Taps:  5,
 			},
 		},
+		"map": {
+			path: "lots",
+			want: map[string]*GameState_Lot{
+				"2": {
+					Level: 2,
+					Taps:  3,
+				},
+				"ab": {
+					Level: 4,
+					Taps:  5,
+				},
+			},
+		},
 		"nested in message": {
 			path: "population.chefs",
 			want: int32(10),

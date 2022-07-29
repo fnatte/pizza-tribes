@@ -2,6 +2,7 @@ package serve
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/fnatte/pizza-tribes/internal/gamestate"
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/persist"
+	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/fnatte/pizza-tribes/internal/ws"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
@@ -207,6 +209,42 @@ func (c *userController) HandleIncrCoins(w http.ResponseWriter, r *http.Request)
 	w.WriteHeader(http.StatusNoContent)
 }
 
+func (c *userController) HandlePatchGameState(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	params := mux.Vars(r)
+	userId := params["userId"]
+	if userId == "" {
+		w.WriteHeader(400)
+		return
+	}
+
+	req := models.GameStatePatch{}
+	b, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	err = protojson.Unmarshal(b, &req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	gsRepo := persist.NewGameStateRepository(c.rc)
+	err = gsRepo.Patch(ctx, userId, req.GameState, req.PatchMask)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = ws.Send(ctx, c.rc, userId, req.ToServerMessage())
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to send state change")
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 func (c *userController) HandleListUsers(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("username")
 
@@ -248,6 +286,7 @@ func (c *userController) Handler() http.Handler {
 
 	r.HandleFunc("/users/{userId}/completeQueues", c.HandleCompleteUserQueues).Methods("POST")
 	r.HandleFunc("/users/{userId}/incrCoins", c.HandleIncrCoins).Methods("POST")
+	r.HandleFunc("/users/{userId}/gameState", c.HandlePatchGameState).Methods("PATCH")
 
 	r.HandleFunc("/users/{userId}", c.HandleDeleteUser).Methods("DELETE")
 	r.HandleFunc("/users/{userId}", c.HandleShowUser).Methods("GET")

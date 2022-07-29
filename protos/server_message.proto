@@ -22,15 +22,6 @@ message ServerMessage {
     repeated Report reports = 1;
   }
 
-  message PatchMask {
-    repeated string paths = 1;
-  }
-
-  message GameStatePatch3 {
-    GameState gameState = 1;
-    PatchMask patchMask = 2;
-  }
-
   string id = 1;
   oneof payload {
     User user = 3;
@@ -38,7 +29,7 @@ message ServerMessage {
     Stats stats = 5;
     Reports reports = 6;
     WorldState worldState = 7;
-    GameStatePatch3 stateChange3 = 9;
+    GameStatePatch stateChange = 9;
   }
 }
 
