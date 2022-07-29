@@ -19,15 +19,17 @@ import { getTapInfo } from "../utils";
 import { useStore } from "../store";
 import { Construction } from "../generated/gamestate";
 import { useMemo, useState } from "react";
-import { useTimeoutFn } from "react-use";
+import { useInterval } from "react-use";
 import { GameData } from "../generated/game_data";
 
-const Badge: React.FC<{
-  position: "topleft" | "topright";
-  animation?: "bounce" | undefined;
-  background?: "red" | "white" | undefined;
-  size?: "normal" | "big";
-} & React.HTMLAttributes<SVGElement>> = ({
+const Badge: React.FC<
+  {
+    position: "topleft" | "topright";
+    animation?: "bounce" | undefined;
+    background?: "red" | "white" | undefined;
+    size?: "normal" | "big";
+  } & React.HTMLAttributes<SVGElement>
+> = ({
   position,
   animation,
   children,
@@ -82,7 +84,12 @@ const NotificationBadge: React.VFC = () => (
 );
 
 const LevelBadge: React.VFC<{ level: number }> = ({ level }) => (
-  <Badge position="topright" background="white" size="big" data-cy="level-badge">
+  <Badge
+    position="topright"
+    background="white"
+    size="big"
+    data-cy="level-badge"
+  >
     {level}
   </Badge>
 );
@@ -93,7 +100,8 @@ function renderBuilding(
   level: number,
   gameData: GameData | null
 ) {
-  const buildingInfo = building !== undefined ? gameData?.buildings[building] : undefined;
+  const buildingInfo =
+    building !== undefined ? gameData?.buildings[building] : undefined;
 
   switch (building) {
     case Building.KITCHEN:
@@ -245,7 +253,7 @@ function SvgTown(
   svgRef?: React.Ref<SVGSVGElement>
 ) {
   const [now, setNow] = useState(new Date());
-  useTimeoutFn(() => setNow(new Date()), 10_000);
+  useInterval(() => setNow(new Date()), 10_000);
 
   const gameData = useStore((state) => state.gameData);
 
