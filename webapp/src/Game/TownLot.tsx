@@ -80,7 +80,8 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
       return null;
   }
 
-  const onClick = useCallback(() => {
+  const onClick = useCallback<React.MouseEventHandler>((e) => {
+    e.preventDefault();
     tap(lotId);
     setTapBackoff(true);
 
@@ -110,6 +111,7 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
         "items-center",
         "flex-col"
       )}
+      data-cy="tap-section"
     >
       <div className="relative select-none">
         <button

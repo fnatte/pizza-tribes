@@ -331,6 +331,7 @@ function ResourceBar() {
             "overflow-hidden",
             "[contain:strict]"
           )}
+          data-cy="resource-bar-coins"
         >
           {coinsDisplayText}
         </div>
@@ -344,6 +345,7 @@ function ResourceBar() {
             "overflow-hidden",
             "[contain:strict]"
           )}
+          data-cy="resource-bar-pizzas"
         >
           {pizzasDisplayText}
         </div>
