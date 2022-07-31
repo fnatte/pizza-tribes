@@ -161,9 +161,12 @@ describe("travel", () => {
 
     // Back home
     cy.get('[data-cy="resource-bar-coins"]').should("have.text", "9,000");
+
+    // Target should have lost 9000 coins
+    cy.adminGetGameState("target").its('resources.coins').should('eq', 1_000);
   });
 
-  it.only("should lose thieves if there are guards", () => {
+  it("should lose thieves if there are guards", () => {
     // Give target 1000 guards
     const mice: Record<string, Partial<Mouse>> = {};
     for (let n = 0; n < 1000; n++) {
