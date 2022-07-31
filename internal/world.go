@@ -181,6 +181,12 @@ func (s *WorldService) GetEntries(ctx context.Context, x, y, radius int) (map[st
 	return entries, nil
 }
 
+func (s *WorldService) RemoveEntry(ctx context.Context, x, y int) (err error) {
+	path := fmt.Sprintf(".entries[\"%d:%d\"]", x, y)
+
+	return RedisJsonDel(s.r, ctx, "world", path).Err()
+}
+
 func (s *WorldService) AcquireTown(ctx context.Context, userId string) (x, y int, err error) {
 	// Find a spot for the new town
 	entries, err := s.GetEntries(ctx, WORLD_SIZE/2, WORLD_SIZE/2, WORLD_SIZE)
@@ -188,7 +194,7 @@ func (s *WorldService) AcquireTown(ctx context.Context, userId string) (x, y int
 		return 0, 0, err
 	}
 	v2s := make([]spot_finder.Vec2, 0, len(entries))
-	for k, _ := range entries {
+	for k := range entries {
 		ex, ey, err := parseWorldKey(k)
 		if err != nil {
 			return 0, 0, err

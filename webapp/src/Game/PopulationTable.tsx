@@ -26,7 +26,7 @@ const PopulationTable: React.FC<{
     : 0;
 
   return (
-    <table className={className}>
+    <table className={className} data-cy="population-table">
       {showHeader && (
         <thead>
           <tr>
@@ -39,7 +39,12 @@ const PopulationTable: React.FC<{
       <tbody>
         <tr>
           <td className={classnames("p-2")}>Uneducated</td>
-          <td className={classnames("p-2")}>{uneducatedCount}</td>
+          <td
+            className={classnames("p-2")}
+            data-cy="population-table-uneducated-count"
+          >
+            {uneducatedCount}
+          </td>
         </tr>
         {Object.keys(educations)
           .map((id) => Number(id) as Education)

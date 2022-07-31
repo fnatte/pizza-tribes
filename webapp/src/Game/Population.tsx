@@ -38,6 +38,8 @@ const Population: React.FC<{
               "justify-center",
               "items-center"
             )}
+            aria-expanded={!minimized}
+            data-cy="population-table-toggle-button"
             onClick={onToggleClick}
           >
             {minimized ? "➕" : "➖"}

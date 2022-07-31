@@ -47,11 +47,18 @@ const WorldTownView: React.FC<Props> = ({ x, y, town }) => {
   const thievesAvailable = thieves; // TODO: subtract thieves on mission
   const steal = useStore((state) => state.steal);
 
+  const schema2 = schema.shape({
+    count: schema.fields.count.max(
+      thievesAvailable,
+      "Cannot send more thieves than available."
+    ),
+  });
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<FormFields>({ resolver: yupResolver(schema) });
+  } = useForm<FormFields>({ resolver: yupResolver(schema2) });
 
   const navigate = useNavigate();
 
@@ -90,14 +97,20 @@ const WorldTownView: React.FC<Props> = ({ x, y, town }) => {
               className={classnames("my-1")}
               disabled={isSubmitting}
               defaultValue={thievesAvailable}
+              data-cy="thieves-to-send-input"
               {...register("count")}
             />
-            {errors.count && <div className="p-2">{errors.count.message}</div>}
+            {errors.count && (
+              <div className="pb-2 text-red-900" data-cy="error">
+                {errors.count.message}
+              </div>
+            )}
           </label>
           <button
             type="submit"
             className={styles.primaryButton}
             disabled={isSubmitting}
+            data-cy="send-thieves-button"
           >
             Send thieves
           </button>

@@ -95,6 +95,14 @@ func (u *GameTx_User) SetMouseEducation(mouseId string, education models.Educati
 	u.PatchMask.AppendPath(fmt.Sprintf("mice.%s", mouseId))
 }
 
+func (u *GameTx_User) SetMouseUneducated(mouseId string) {
+	m := u.Gs.Mice[mouseId]
+	m.IsBeingEducated = false
+	m.IsEducated = false
+	m.Education = 0
+	u.PatchMask.AppendPath(fmt.Sprintf("mice.%s", mouseId))
+}
+
 func (u *GameTx_User) AppendNewMouse() {
 	mouseId := xid.New().String()
 	newMouse := &models.Mouse{

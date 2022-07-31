@@ -34,6 +34,7 @@ function ShowReportView() {
         "mt-2",
         "p-2"
       )}
+      data-cy="show-report"
     >
       <h2>Report</h2>
       <div
@@ -48,9 +49,14 @@ function ShowReportView() {
       >
         {report && (
           <>
-            <h3>{report.title}</h3>
-            <div>{formatISO9075(parseDateNano(report.createdAt))}</div>
-            <ReactMarkdown className={classnames("prose" as any, "mt-6", "text-gray-700")} disallowedElements={['img']}>
+            <h3 data-cy="report-title">{report.title}</h3>
+            <div data-cy="report-created-at">
+              {formatISO9075(parseDateNano(report.createdAt))}
+            </div>
+            <ReactMarkdown
+              className={classnames("prose" as any, "mt-6", "text-gray-700")}
+              disallowedElements={["img"]}
+            >
               {report.content}
             </ReactMarkdown>
           </>

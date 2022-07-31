@@ -35,6 +35,7 @@ function ListReportsView() {
               className={classnames({
                 "bg-green-200": i % 2 === 0,
               })}
+              data-cy="report-row"
             >
               <td className={classnames("p-1", "w-1", "whitespace-nowrap")}>
                 {formatISO9075(parseDateNano(report.createdAt))}
@@ -47,7 +48,9 @@ function ListReportsView() {
                   underline: true,
                 })}
               >
-                <Link to={`/reports/${report.id}`}>{report.title}</Link>
+                <Link to={`/reports/${report.id}`} data-cy="report-link">
+                  {report.title}
+                </Link>
               </td>
             </tr>
           ))}

@@ -42,6 +42,8 @@ func (c *testController) HandleSetupTest(w http.ResponseWriter, r *http.Request)
 	ctx := r.Context()
 
 	userRepo := persist.NewUserRepository(c.rc)
+	gsRepo := persist.NewGameStateRepository(c.rc)
+	world := internal.NewWorldService(c.rc)
 
 	// Delete previous user
 	userId, err := userRepo.FindUser(ctx, req.Username)
@@ -50,10 +52,24 @@ func (c *testController) HandleSetupTest(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	if userId != "" {
+		gs, err := gsRepo.Get(ctx, userId)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		err = userRepo.DeleteUser(ctx, userId)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
+		}
+
+		if gs != nil {
+			err = world.RemoveEntry(ctx, int(gs.TownX), int(gs.TownY))
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 		}
 	}
 
@@ -64,7 +80,6 @@ func (c *testController) HandleSetupTest(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	gsRepo := persist.NewGameStateRepository(c.rc)
 	gs := models.NewGameState()
 	gsRepo.Save(ctx, id, gs)
 	if err != nil {

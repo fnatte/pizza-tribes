@@ -203,9 +203,11 @@ function Navigation() {
       )}
       {!isMinXl && (
         <div className={classnames("relative", "ml-8")} ref={menuRef}>
-          <div
+          <button
             className={classnames("relative", "cursor-pointer")}
             onClick={() => setMenuExpaded((s) => !s)}
+            aria-expanded={menuExpanded}
+            data-cy="menu-expand-button"
           >
             <BurgerMenuIcon />
             {unreads > 0 && !menuExpanded && (
@@ -214,7 +216,7 @@ function Navigation() {
                 className={classnames("translate-x-5", "-translate-y-4")}
               />
             )}
-          </div>
+          </button>
           {menuExpanded && (
             <div
               className={classnames(

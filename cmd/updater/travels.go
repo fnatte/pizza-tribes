@@ -143,6 +143,16 @@ func completeSteal(ctx context.Context, userId string, gs *models.GameState, tx 
 	maxLoot := int32(float64(successfulThieves) * internal.ThiefCapacity * thiefEfficiency)
 	loot := int64(internal.MinInt32(maxLoot, gsTarget.Resources.Coins))
 
+	// Make caught thiefs uneducated
+	for n:= int32(0); n < caughtThieves; n++ {
+		for k, m := range tx.Users[userId].Gs.Mice {
+			if m.IsEducated && m.Education == models.Education_THIEF {
+				tx.Users[userId].SetMouseUneducated(k)
+				break
+			}
+		}
+	}
+
 	// Prepare return travel - but not if all thieves got caught
 	if successfulThieves > 0 {
 		arrivalAt := internal.CalculateArrivalTime(

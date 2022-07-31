@@ -41,6 +41,8 @@ const TravelQueue: React.FC<{ className?: string, minimized: boolean, onToggleCl
               "items-center"
             )}
             onClick={onToggleClick}
+            aria-expanded={!minimized}
+            data-cy="travel-queue-toggle-button"
           >
             {minimized ? "➕" : "➖"}
           </button>

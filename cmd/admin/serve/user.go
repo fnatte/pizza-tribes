@@ -2,6 +2,7 @@ package serve
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -44,6 +45,8 @@ func NewUserController(r internal.RedisClient, updater gamestate.Updater) *userC
 }
 
 func (c *userController) HandleDeleteUser(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	params := mux.Vars(r)
 	userId := params["userId"]
 	if userId == "" {
@@ -52,7 +55,28 @@ func (c *userController) HandleDeleteUser(w http.ResponseWriter, r *http.Request
 	}
 
 	userRepo := persist.NewUserRepository(c.rc)
-	userRepo.DeleteUser(r.Context(), userId)
+	gsRepo := persist.NewGameStateRepository(c.rc)
+	world := internal.NewWorldService(c.rc)
+
+	gs, err := gsRepo.Get(ctx, userId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = userRepo.DeleteUser(ctx, userId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if gs != nil {
+		err = world.RemoveEntry(ctx, int(gs.TownX), int(gs.TownY))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
 
 	w.WriteHeader(204)
 }
@@ -69,12 +93,14 @@ func (c *userController) HandleCreateUser(w http.ResponseWriter, r *http.Request
 	userRepo := persist.NewUserRepository(c.rc)
 	id, err := userRepo.CreateUser(ctx, req.Username, req.Password)
 	if err != nil {
+		err = fmt.Errorf("failed to create user: %w", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	u, err := userRepo.GetUser(ctx, id)
 	if err != nil {
+		err = fmt.Errorf("failed to get user: %w", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -83,6 +109,25 @@ func (c *userController) HandleCreateUser(w http.ResponseWriter, r *http.Request
 	gs := models.NewGameState()
 	gsRepo.Save(ctx, id, gs)
 	if err != nil {
+		err = fmt.Errorf("failed to save game state: %w", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	world := internal.NewWorldService(c.rc)
+	x, y, err := world.AcquireTown(ctx, id)
+	if err != nil {
+		err = fmt.Errorf("failed to acquire town: %w", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	gs.TownX = int32(x)
+	gs.TownY = int32(y)
+	gsRepo.Patch(ctx, id, gs, &models.PatchMask{
+		Paths: []string{"townX", "townY"},
+	})
+	if err != nil {
+		err = fmt.Errorf("failed to patch acquired town: %w", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -155,6 +200,7 @@ func (c *userController) HandleCompleteUserQueues(w http.ResponseWriter, r *http
 	}
 
 	c.updater.PerformUpdate(r.Context(), userId, func(gs *models.GameState, tx *gamestate.GameTx) error {
+		// Complete construction queue
 		if len(gs.ConstructionQueue) > 0 {
 			q := []*models.Construction{}
 			for _, c := range gs.ConstructionQueue {
@@ -163,6 +209,17 @@ func (c *userController) HandleCompleteUserQueues(w http.ResponseWriter, r *http
 				q = append(q, c2)
 			}
 			tx.Users[userId].SetConstructionQueue(q)
+		}
+
+		// Complete travel queue
+		if len(gs.TravelQueue) > 0 {
+			q := []*models.Travel{}
+			for _, c := range gs.TravelQueue {
+				c2 := proto.Clone(c).(*models.Travel)
+				c2.ArrivalAt = time.Now().Add(-10 * time.Second).UnixNano()
+				q = append(q, c2)
+			}
+			tx.Users[userId].SetTravelQueue(q)
 		}
 		return nil
 	})
@@ -204,6 +261,33 @@ func (c *userController) HandleIncrCoins(w http.ResponseWriter, r *http.Request)
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (c *userController) HandleGetGameState(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	params := mux.Vars(r)
+	userId := params["userId"]
+	if userId == "" {
+		w.WriteHeader(400)
+		return
+	}
+
+	gsRepo := persist.NewGameStateRepository(c.rc)
+	gs, err := gsRepo.Get(ctx, userId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	b, err := json.Marshal(gs)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(200)
+	w.Write(b)
 }
 
 func (c *userController) HandlePatchGameState(w http.ResponseWriter, r *http.Request) {
@@ -284,6 +368,7 @@ func (c *userController) Handler() http.Handler {
 	r.HandleFunc("/users/{userId}/completeQueues", c.HandleCompleteUserQueues).Methods("POST")
 	r.HandleFunc("/users/{userId}/incrCoins", c.HandleIncrCoins).Methods("POST")
 	r.HandleFunc("/users/{userId}/gameState", c.HandlePatchGameState).Methods("PATCH")
+	r.HandleFunc("/users/{userId}/gameState", c.HandleGetGameState).Methods("GET")
 
 	r.HandleFunc("/users/{userId}", c.HandleDeleteUser).Methods("DELETE")
 	r.HandleFunc("/users/{userId}", c.HandleShowUser).Methods("GET")
