@@ -51,7 +51,7 @@ func TestGetValueByPath(t *testing.T) {
 			want: nil,
 		},
 		"nested in message": {
-			path: "population.chefs",
+			path: "resources.coins",
 			want: int32(10),
 		},
 		"nested value at first position in list": {
@@ -75,7 +75,10 @@ func TestGetValueByPath(t *testing.T) {
 			path: "researchQueue",
 			want: []*OngoingResearch{},
 		},
-
+		"string slice": {
+			path: "discoveries",
+			want: []ResearchDiscovery{ResearchDiscovery_DURUM_WHEAT, ResearchDiscovery_MOBILE_APP},
+		},
 		// TODO: add case for invalid field
 	}
 
@@ -84,6 +87,9 @@ func TestGetValueByPath(t *testing.T) {
 			gs := &GameState{
 				TownX: 10,
 				TownY: 12,
+				Resources: &GameState_Resources{
+					Coins: 10,
+				},
 				Lots: map[string]*GameState_Lot{
 					"2": {
 						Level: 2,
@@ -93,10 +99,6 @@ func TestGetValueByPath(t *testing.T) {
 						Level: 4,
 						Taps:  5,
 					},
-				},
-				Population: &GameState_Population{
-					Chefs:  10,
-					Guards: 5,
 				},
 				TravelQueue: []*Travel{
 					{
@@ -115,6 +117,7 @@ func TestGetValueByPath(t *testing.T) {
 					},
 				},
 				ResearchQueue: []*OngoingResearch{},
+				Discoveries: []ResearchDiscovery{ResearchDiscovery_DURUM_WHEAT, ResearchDiscovery_MOBILE_APP},
 			}
 
 			got, err := GetValueByPath(gs, test.path)

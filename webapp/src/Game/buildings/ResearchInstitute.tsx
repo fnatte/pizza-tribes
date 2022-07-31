@@ -180,6 +180,8 @@ const ResearchNodeView: React.VFC<{
             "p-1"
           )}
           onClick={() => onToggleOpen()}
+          aria-expanded={opened}
+          data-cy="research-node-expand-toggle"
         >
           <SvgImage className={classnames("w-full", "h-full")} />
         </button>
@@ -223,10 +225,12 @@ const ResearchNodeView: React.VFC<{
           "p-1"
         )}
         onClick={() => onToggleOpen()}
+        aria-expanded={opened}
+        data-cy="research-node-expand-toggle"
       >
         <SvgImage className={classnames("w-full", "h-full")} />
       </button>
-      <div className={classnames("px-2")}>
+      <div className={classnames("px-2")} data-cy="research-node-item">
         <div className={title}>{node.title}</div>
         {Description && <Description />}
         <table>
@@ -254,17 +258,26 @@ const ResearchNodeView: React.VFC<{
           </tbody>
         </table>
         {discovered && (
-          <section className={classnames("m-4", "p-4", "bg-green-200")}>
+          <section
+            className={classnames("m-4", "p-4", "bg-green-200")}
+            data-cy="research-node-already-researched"
+          >
             <span>{node.title} has already been researched.</span>
           </section>
         )}
         {isBeingResearched && (
-          <section className={classnames("m-4", "p-4", "bg-green-200")}>
+          <section
+            className={classnames("m-4", "p-4", "bg-green-200")}
+            data-cy="research-node-being-researched"
+          >
             <span>This is currently being researched.</span>
           </section>
         )}
         {!parentDiscovered && (
-          <section className={classnames("m-4", "p-4", "bg-yellow-200")}>
+          <section
+            className={classnames("m-4", "p-4", "bg-yellow-200")}
+            data-cy="research-node-parent-not-discovered"
+          >
             <span>
               You must research all previous items in this tree to unlock this
               one.
@@ -283,6 +296,7 @@ const ResearchNodeView: React.VFC<{
               type="submit"
               className={classnames(styles.primaryButton)}
               disabled={disabled}
+              data-cy="research-node-start-research-button"
             >
               Start Research
             </button>
@@ -435,7 +449,10 @@ function ResearchInstitute() {
           <table>
             <tbody>
               {researchQueue.map((ongoingResearch) => (
-                <tr key={ongoingResearch.discovery}>
+                <tr
+                  key={ongoingResearch.discovery}
+                  data-cy="ongoing-research-row"
+                >
                   <td className={classnames("p-2")}>
                     {findNode(researchTracks, ongoingResearch.discovery)?.title}
                   </td>
@@ -457,6 +474,7 @@ function ResearchInstitute() {
             <div
               key={track.title}
               className={classnames("bg-green-400", "p-1")}
+              data-cy="research-track"
             >
               <div className={classnames("flex", "items-center", "p-1")}>
                 <div>
@@ -479,6 +497,8 @@ function ResearchInstitute() {
                   onClick={() =>
                     setTreeOpen((x) => (x !== track.title ? track.title : null))
                   }
+                  aria-expanded={treeOpen === track.title}
+                  data-cy="research-track-expand-toggle"
                 >
                   {treeOpen === track.title ? "Close" : "Open"}
                 </button>

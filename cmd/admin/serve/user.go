@@ -221,6 +221,18 @@ func (c *userController) HandleCompleteUserQueues(w http.ResponseWriter, r *http
 			}
 			tx.Users[userId].SetTravelQueue(q)
 		}
+
+		// Complete research queue
+		if len(gs.ResearchQueue) > 0 {
+			q := []*models.OngoingResearch{}
+			for _, c := range gs.ResearchQueue {
+				c2 := proto.Clone(c).(*models.OngoingResearch)
+				c2.CompleteAt = time.Now().Add(-10 * time.Second).UnixNano()
+				q = append(q, c2)
+			}
+			tx.Users[userId].SetResearchQueue(q)
+		}
+
 		return nil
 	})
 

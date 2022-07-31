@@ -56,22 +56,34 @@ func GetValueByPath(m proto.Message, path string) (interface{}, error) {
 	}
 
 	if fd.IsList() {
-		mt, err := protoregistry.GlobalTypes.FindMessageByName(fd.Message().FullName())
-		if err != nil {
-			return nil, fmt.Errorf("could not find message type: %w", err)
+		switch fd.Kind() {
+		case protoreflect.MessageKind:
+			mt, err := protoregistry.GlobalTypes.FindMessageByName(fd.Message().FullName())
+			if err != nil {
+				return nil, fmt.Errorf("could not find message type '%s': %w", fd.Message().FullName(), err)
+			}
+			val := mt.New().Interface()
+			list := fv.List()
+			typ := reflect.SliceOf(reflect.TypeOf(val))
+			slice := reflect.MakeSlice(typ, 0, list.Len())
+			for i := 0; i < list.Len(); i++ {
+				slice = reflect.Append(slice, reflect.ValueOf(list.Get(i).Message().Interface()))
+			}
+			return slice.Interface(), nil
+		case protoreflect.EnumKind:
+			mt, err := protoregistry.GlobalTypes.FindEnumByName(fd.Enum().FullName())
+			if err != nil {
+				return nil, fmt.Errorf("could not find enum type '%s': %w", fd.Enum().FullName(), err)
+			}
+			val := mt.New(0)
+			list := fv.List()
+			typ := reflect.SliceOf(reflect.TypeOf(val))
+			slice := reflect.MakeSlice(typ, 0, list.Len())
+			for i := 0; i < list.Len(); i++ {
+				slice = reflect.Append(slice, reflect.ValueOf(mt.New(list.Get(i).Enum())))
+			}
+			return slice.Interface(), nil
 		}
-
-		list := fv.List()
-
-		val := mt.New().Interface()
-		typ := reflect.SliceOf(reflect.TypeOf(val))
-		slice := reflect.MakeSlice(typ, 0, list.Len())
-
-		for i := 0; i < list.Len(); i++ {
-			slice = reflect.Append(slice, reflect.ValueOf(list.Get(i).Message().Interface()))
-		}
-
-		return slice.Interface(), nil
 	}
 
 	if fd.IsMap() {
