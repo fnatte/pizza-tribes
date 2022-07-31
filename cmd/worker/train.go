@@ -24,7 +24,7 @@ func (h *handler) handleTrain(ctx context.Context, userId string, m *models.Clie
 			return errors.New("Amount must be greater than 0")
 		}
 
-		if gs.Population.Uneducated < m.Amount {
+		if internal.CountUneducated(gs) < m.Amount {
 			return errors.New("Too few uneducated")
 		}
 
@@ -59,7 +59,6 @@ func (h *handler) handleTrain(ctx context.Context, userId string, m *models.Clie
 		}
 
 		u := tx.Users[userId]
-		u.SetUneducated(gs.Population.Uneducated - m.Amount)
 		for _, id := range miceIds {
 			u.SetMouseIsBeingEducated(id, true)
 		}

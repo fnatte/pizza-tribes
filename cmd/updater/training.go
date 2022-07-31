@@ -73,19 +73,6 @@ func completeTrainings(userId string, gs *models.GameState, tx *gamestate.GameTx
 			return errors.New("could not find mouse being educated")
 		}
 		u.SetMouseEducation(mouseId, c.education)
-
-		switch c.education {
-		case models.Education_CHEF:
-			u.IncrChefs(c.amount)
-		case models.Education_SALESMOUSE:
-			u.IncrSalesmice(c.amount)
-		case models.Education_GUARD:
-			u.IncrGuards(c.amount)
-		case models.Education_THIEF:
-			u.IncrThieves(c.amount)
-		case models.Education_PUBLICIST:
-			u.IncrPublicists(c.amount)
-		}
 	}
 
 	u.SetTrainingQueue(q)

@@ -8,6 +8,7 @@ import (
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/gamestate"
 	"github.com/fnatte/pizza-tribes/internal/models"
+	"github.com/rs/zerolog/log"
 )
 
 func completedConstructions(userId string, gs *models.GameState, tx *gamestate.GameTx) error {
@@ -23,23 +24,34 @@ func completedConstructions(userId string, gs *models.GameState, tx *gamestate.G
 	u.SetConstructionQueue(gs.ConstructionQueue[len(completedConstructions):])
 
 	for _, constr := range completedConstructions {
+		var lot *models.GameState_Lot
+		var buildInfo *models.BuildingInfo
+		var levelInfo *models.BuildingInfo_LevelInfo
+
 		if constr.Razing {
+			lot = gs.Lots[constr.LotId]
 			u.RazeBuilding(constr.LotId)
 		} else {
 			u.ConstructBuilding(constr.LotId, constr.Building, constr.Level)
+			lot = gs.Lots[constr.LotId]
 
 			if u.LatestActivity.Before(time.Now().Add(-5 * time.Minute)) {
 				u.AppendMessage(newConstructionCompletedMessage(userId, constr))
 			}
 		}
 
-		buildInfo := internal.FullGameData.Buildings[int32(constr.Building)]
+		buildInfo = internal.FullGameData.Buildings[int32(lot.Building)]
 		if buildInfo == nil {
+			log.Error().Int32("building", int32(lot.Building)).Msg("Could not find building info")
 			continue
 		}
 
-		levelInfo := buildInfo.LevelInfos[constr.Level]
+		levelInfo = buildInfo.LevelInfos[lot.Level]
 		if levelInfo == nil {
+			log.Error().
+				Int32("building", int32(lot.Building)).
+				Int32("level", lot.Level).
+				Msg("Could not find level info")
 			continue
 		}
 
@@ -47,65 +59,50 @@ func completedConstructions(userId string, gs *models.GameState, tx *gamestate.G
 			if !constr.Razing {
 				var count int32
 				if constr.Level > 0 {
-					prevLevelInfo := buildInfo.LevelInfos[constr.Level-1]
+					prevLevelInfo := buildInfo.LevelInfos[lot.Level-1]
 					count = levelInfo.Residence.Beds - prevLevelInfo.Residence.Beds
 				} else {
 					count = levelInfo.Residence.Beds
 				}
-				u.IncrUneducated(count)
 				for n := 0; n < int(count); n++ {
 					u.AppendNewMouse()
 				}
 			} else {
-				rest := levelInfo.Residence.Beds
+				removeCount := levelInfo.Residence.Beds
 
-				if rest > gs.Population.Uneducated {
-					u.SetUneducated(0)
-					rest = rest - gs.Population.Uneducated
-					for n := 0; n < int(gs.Population.Uneducated); n++ {
-						u.RemoveMouseByEducation(false, 0)
-					}
-				} else {
-					u.IncrUneducated(-rest)
-					rest = 0
-					for n := 0; n < int(rest); n++ {
-						u.RemoveMouseByEducation(false, 0)
+				// Remove uneducated until there are not more uneducated mice
+				for removeCount > 0 {
+					if u.RemoveMouseByEducation(false, 0) {
+						removeCount--
+					} else {
+						break
 					}
 				}
 
+				// Remove educated mice until removeCount is 0
 				popKey := 0
 				loopCount := 0
-				for rest > 0 && loopCount < 1000 {
+				for removeCount > 0 && loopCount < 1000 {
 					switch popKey {
 					case 0:
-						if gs.Population.Chefs > 0 {
-							u.IncrChefs(-1)
-							u.RemoveMouseByEducation(true, models.Education_CHEF)
-							rest = rest - 1
+						if u.RemoveMouseByEducation(true, models.Education_CHEF) {
+							removeCount--
 						}
 					case 1:
-						if gs.Population.Salesmice > 0 {
-							u.IncrSalesmice(-1)
-							u.RemoveMouseByEducation(true, models.Education_SALESMOUSE)
-							rest = rest - 1
+						if u.RemoveMouseByEducation(true, models.Education_SALESMOUSE) {
+							removeCount = removeCount - 1
 						}
 					case 2:
-						if gs.Population.Guards > 0 {
-							u.IncrGuards(-1)
-							u.RemoveMouseByEducation(true, models.Education_GUARD)
-							rest = rest - 1
+						if u.RemoveMouseByEducation(true, models.Education_GUARD) {
+							removeCount = removeCount - 1
 						}
 					case 3:
-						if gs.Population.Thieves > 0 {
-							u.IncrThieves(-1)
-							u.RemoveMouseByEducation(true, models.Education_THIEF)
-							rest = rest - 1
+						if u.RemoveMouseByEducation(true, models.Education_THIEF) {
+							removeCount = removeCount - 1
 						}
 					case 4:
-						if gs.Population.Publicists > 0 {
-							u.IncrPublicists(-1)
-							u.RemoveMouseByEducation(true, models.Education_PUBLICIST)
-							rest = rest - 1
+						if u.RemoveMouseByEducation(true, models.Education_PUBLICIST) {
+							removeCount = removeCount - 1
 						}
 					}
 					popKey = (popKey + 1) % 5

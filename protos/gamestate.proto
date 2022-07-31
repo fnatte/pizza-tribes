@@ -62,18 +62,10 @@ message GameState {
     int32 streak = 5;
   }
 
-  message Population {
-    int32 uneducated = 1;
-    int32 chefs = 2;
-    int32 salesmice = 3;
-    int32 guards = 4;
-    int32 thieves = 5;
-    int32 publicists = 6;
-  }
-
   Resources resources = 1;
   map<string, Lot> lots = 2;
-  Population population = 3;
+  reserved 3;
+  reserved "population";
   int64 timestamp = 4;
   repeated Training trainingQueue = 5;
   repeated Construction constructionQueue = 6;

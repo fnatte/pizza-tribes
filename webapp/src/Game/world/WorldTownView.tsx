@@ -10,6 +10,8 @@ import { RemoveIndex } from "../../utils";
 import styles from "../../styles";
 import { useStore } from "../../store";
 import { apiFetch } from "../../api";
+import { useEducationCount } from "../useEducationCount";
+import { Education } from "../../generated/education";
 
 type Props = {
   town: WorldEntry_Town;
@@ -40,7 +42,8 @@ const WorldTownView: React.FC<Props> = ({ x, y, town }) => {
     return data.username as string;
   }, [town]);
 
-  const thieves = useStore((state) => state.gameState.population?.thieves ?? 0);
+  const educationCount = useEducationCount();
+  const thieves = educationCount[Education.THIEF] ?? 0;
   const thievesAvailable = thieves; // TODO: subtract thieves on mission
   const steal = useStore((state) => state.steal);
 

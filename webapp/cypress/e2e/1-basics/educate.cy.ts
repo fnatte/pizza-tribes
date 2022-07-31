@@ -25,18 +25,9 @@ describe("education", () => {
             "4": {},
             "5": {},
           },
-          population: {
-            uneducated: 5,
-          },
         },
         patchMask: {
-          paths: [
-            "resources.coins",
-            "lots.1",
-            "lots.3",
-            "mice",
-            "population.uneducated",
-          ],
+          paths: ["resources.coins", "lots.1", "lots.3", "mice"],
         },
       })
     );

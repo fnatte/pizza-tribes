@@ -80,72 +80,6 @@ func (u *GameTx_User) SetStreak(lotId string, val int32) {
 	}
 }
 
-func (u *GameTx_User) SetUneducated(val int32) {
-	if u.Gs.Population.Uneducated != val {
-		u.Gs.Population.Uneducated = val
-		u.PatchMask.AppendPath("population.uneducated")
-	}
-}
-
-func (u *GameTx_User) SetChefs(val int32) {
-	if u.Gs.Population.Chefs != val {
-		u.Gs.Population.Chefs = val
-		u.PatchMask.AppendPath("population.chefs")
-	}
-}
-
-func (u *GameTx_User) SetSalesmice(val int32) {
-	if u.Gs.Population.Salesmice != val {
-		u.Gs.Population.Salesmice = val
-		u.PatchMask.AppendPath("population.salesmice")
-	}
-}
-
-func (u *GameTx_User) SetGuards(val int32) {
-	if u.Gs.Population.Guards != val {
-		u.Gs.Population.Guards = val
-		u.PatchMask.AppendPath("population.guards")
-	}
-}
-
-func (u *GameTx_User) SetPublicists(val int32) {
-	if u.Gs.Population.Publicists != val {
-		u.Gs.Population.Publicists = val
-		u.PatchMask.AppendPath("population.publicists")
-	}
-}
-
-func (u *GameTx_User) SetThieves(val int32) {
-	if u.Gs.Population.Thieves != val {
-		u.Gs.Population.Thieves = val
-		u.PatchMask.AppendPath("population.thieves")
-	}
-}
-
-func (u *GameTx_User) IncrUneducated(val int32) {
-	u.SetUneducated(u.Gs.Population.Uneducated + val)
-}
-
-func (u *GameTx_User) IncrChefs(val int32) {
-	u.SetChefs(u.Gs.Population.Chefs + val)
-}
-
-func (u *GameTx_User) IncrSalesmice(val int32) {
-	u.SetSalesmice(u.Gs.Population.Salesmice + val)
-}
-
-func (u *GameTx_User) IncrPublicists(val int32) {
-	u.SetPublicists(u.Gs.Population.Publicists + val)
-}
-
-func (u *GameTx_User) IncrThieves(val int32) {
-	u.SetThieves(u.Gs.Population.Thieves + val)
-}
-
-func (u *GameTx_User) IncrGuards(val int32) {
-	u.SetGuards(u.Gs.Population.Guards + val)
-}
-
 func (u *GameTx_User) SetMouseIsBeingEducated(mouseId string, val bool) {
 	if u.Gs.Mice[mouseId].IsBeingEducated != val {
 		u.Gs.Mice[mouseId].IsBeingEducated = val
@@ -172,13 +106,16 @@ func (u *GameTx_User) AppendNewMouse() {
 	u.PatchMask.AppendPath(fmt.Sprintf("mice.%s", mouseId))
 }
 
-func (u *GameTx_User) RemoveMouseByEducation(isEducated bool, education models.Education) {
+func (u *GameTx_User) RemoveMouseByEducation(isEducated bool, education models.Education) bool {
 	for id, m := range u.Gs.Mice {
 		if (!m.IsEducated && !isEducated) || m.Education == education {
 			delete(u.Gs.Mice, id)
 			u.PatchMask.AppendPath(fmt.Sprintf("mice.%s", id))
+			return true
 		}
 	}
+
+	return false
 }
 
 func (u *GameTx_User) SetTrainingQueue(val []*models.Training) {

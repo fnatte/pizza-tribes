@@ -23,6 +23,7 @@ import ReactDOM from "react-dom";
 import { Coin, Pizza } from "../icons";
 import { TownCentre } from "./buildings/TownCentre";
 import { CountDown } from "./CountDown";
+import { useEducationCount } from "./useEducationCount";
 
 const label = classnames("text-xs", "md:text-sm", "mr-1");
 const value = classnames("text-sm", "md:text-lg", "ml-1");
@@ -381,7 +382,7 @@ function TownLot() {
     )
   );
   const stats = useStore((state) => state.gameStats);
-  const population = useStore((state) => state.gameState.population);
+  const educationCount = useEducationCount();
   const gameData = useStore((state) => state.gameData);
 
   const ongoingConstruction = useStore(
@@ -439,7 +440,7 @@ function TownLot() {
             </span>{" "}
             in your town out of your{" "}
             <span className={classnames("font-bold", "text-gray-900")}>
-              {population?.chefs ?? 0} educated chefs
+              {educationCount[Education.CHEF] ?? 0} educated chefs
             </span>
             .
           </p>
@@ -483,7 +484,7 @@ function TownLot() {
             </span>{" "}
             in your town out of your{" "}
             <span className={classnames("font-bold", "text-gray-900")}>
-              {population?.salesmice ?? 0} educated salesmice
+              {educationCount[Education.SALESMOUSE] ?? 0} educated salesmice
             </span>
             .
           </p>

@@ -57,7 +57,8 @@ func GetNewCompletedQuests(gs *models.GameState) []string {
 			}
 			break
 		case "3":
-			if gs.Population.Chefs >= 1 && gs.Population.Salesmice >= 1 {
+			e := CountTownPopulationEducations(gs)
+			if e[models.Education_CHEF] >= 1 && e[models.Education_SALESMOUSE] >= 1 {
 				solved = append(solved, qid)
 			}
 			break

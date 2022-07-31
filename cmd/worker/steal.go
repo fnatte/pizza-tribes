@@ -43,8 +43,9 @@ func (h *handler) handleSteal(ctx context.Context, senderId string, m *models.Cl
 		}
 
 		// Validate game state of thief
-		if gsThief.Population == nil || gsThief.Population.Thieves < m.Amount {
-			return errors.New("no enough thieves")
+		e := internal.CountTownPopulationEducations(&gsThief)
+		if e[models.Education_THIEF] < m.Amount {
+			return errors.New("not enough thieves")
 		}
 
 		arrivalAt := internal.CalculateArrivalTime(
@@ -67,15 +68,6 @@ func (h *handler) handleSteal(ctx context.Context, senderId string, m *models.Cl
 		}
 
 		_, err = h.rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
-			// Decrease thieves in town population of sending town
-			_, err := internal.RedisJsonNumIncrBy(
-				pipe, ctx, gsKeyThief,
-				".population.thieves",
-				int64(-travel.Thieves)).Result()
-			if err != nil {
-				return fmt.Errorf("failed to decrease thieves of sender: %w", err)
-			}
-
 			if err = internal.RedisJsonArrAppend(pipe, ctx, gsKeyThief,
 				".travelQueue", b).Err(); err != nil {
 				return err

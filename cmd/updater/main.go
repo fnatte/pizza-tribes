@@ -89,10 +89,6 @@ func (u *updater) update(ctx context.Context, userId string) {
 		return
 	}
 
-	if err := u.restorePopulation(ctx, userId); err != nil {
-		log.Error().Err(err).Msg("Failed to restore population")
-	}
-
 	for txUserId, txu := range tx.Users {
 		if err := u.postProcessPatch(ctx, txUserId, txu); err != nil {
 			log.Error().Err(err).
@@ -231,82 +227,6 @@ func sendStats(ctx context.Context, r internal.RedisClient, userId string) error
 	msg := internal.CalculateStats(&gs).ToServerMessage()
 
 	return ws.Send(ctx, r, userId, msg)
-}
-
-// Restore population will add any missing population to the town.
-// If the user lost thieves in a heist, those mice will be replaced
-// by uneducated mice in the town.
-//
-// This process in currently not implemented as a part of the normal
-// game state update pipeline because it does not handle modification
-// of the same variables twice with ease. Once that is fixed, this
-// func should be part of the update pipeline.
-func (u *updater) restorePopulation(ctx context.Context, userId string) error {
-	gsKey := fmt.Sprintf("user:%s:gamestate", userId)
-
-	gs := &models.GameState{}
-	var addedPop int32 = 0
-
-	txf := func() error {
-		// Get current game state
-		s, err := internal.RedisJsonGet(u.r, ctx, gsKey, ".").Result()
-		if err != nil && err != redis.Nil {
-			return err
-		}
-		if err == redis.Nil {
-			return nil
-		}
-		if err = protojson.Unmarshal([]byte(s), gs); err != nil {
-			return err
-		}
-
-		pop := internal.CountAllPopulation(gs)
-		maxPop := internal.CountMaxPopulation(gs)
-
-		if pop < maxPop {
-			addedPop = maxPop - pop
-			_, err = u.r.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
-				return internal.RedisJsonNumIncrBy(
-					u.r, ctx, gsKey,
-					".population.uneducated",
-					int64(addedPop)).Err()
-			})
-		}
-
-		return err
-	}
-
-	mutex := u.r.NewMutex("lock:" + gsKey)
-	if err := mutex.Lock(); err != nil {
-		return fmt.Errorf("failed to obtain lock: %w", err)
-	}
-	err2 := txf()
-	if ok, err := mutex.Unlock(); !ok || err != nil {
-		return fmt.Errorf("failed to unlock: %w", err)
-	}
-	if err2 != nil {
-		return fmt.Errorf("failed to restore population: %w", err2)
-	}
-
-	if addedPop != 0 {
-		return ws.Send(ctx, u.r, userId, &models.ServerMessage{
-			Id: xid.New().String(),
-			Payload: &models.ServerMessage_StateChange{
-				StateChange: &models.GameStatePatch{
-					GameState: &models.GameState{
-						Population: &models.GameState_Population{
-							Uneducated: gs.Population.Uneducated + addedPop,
-						},
-					},
-					PatchMask: &models.PatchMask{
-						Paths: []string{"population.uneducated"},
-					},
-				},
-			},
-		})
-	}
-
-	return nil
 }
 
 func (u *updater) next(ctx context.Context) (string, error) {

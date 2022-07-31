@@ -19,6 +19,7 @@ import { EducationInfo } from "../generated/game_data";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { RemoveIndex } from "../utils";
+import { useUneducatedCount } from "./useUneducatedCount";
 
 const title = classnames("text-lg", "md:text-xl", "mb-2");
 const label = classnames("text-xs", "md:text-sm");
@@ -76,9 +77,7 @@ const SchoolEducation: React.VFC<{
 }> = ({ education, educationInfo }) => {
   const coins = useStore((state) => state.gameState.resources?.coins ?? 0);
   const train = useStore((state) => state.train);
-  const uneducated = useStore(
-    (state) => state.gameState.population?.uneducated ?? 0
-  );
+  const uneducated = useUneducatedCount();
 
   const maxByCost = educationInfo.cost
     ? Math.floor(coins / educationInfo.cost)
@@ -171,7 +170,9 @@ const SchoolEducation: React.VFC<{
             Train
           </button>
           {errors.amount && (
-            <div className="pb-2 text-red-900" data-cy="error">{errors.amount.message}</div>
+            <div className="pb-2 text-red-900" data-cy="error">
+              {errors.amount.message}
+            </div>
           )}
         </form>
       </div>
@@ -182,9 +183,7 @@ const SchoolEducation: React.VFC<{
 function School() {
   const educations = useStore((state) => state.gameData?.educations) || [];
   const trainingQueue = useStore((state) => state.gameState.trainingQueue);
-  const uneducated = useStore(
-    (state) => state.gameState.population?.uneducated ?? 0
-  );
+  const uneducated = useUneducatedCount();
 
   const [_, setNow] = useState(Date.now());
   useInterval(() => {

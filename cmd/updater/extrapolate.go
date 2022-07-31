@@ -29,7 +29,7 @@ func extrapolate(userId string, gs *models.GameState, tx *gamestate.GameTx) erro
 
 func calculateExtrapolateChanges(gs *models.GameState) extrapolateChanges {
 	// No changes if there are no population
-	if gs.Population == nil {
+	if internal.CountTownPopulation(gs) == 0 {
 		return extrapolateChanges{}
 	}
 

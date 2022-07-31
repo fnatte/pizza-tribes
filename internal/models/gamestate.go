@@ -14,7 +14,6 @@ func (gs *GameState) HasDiscovery(d ResearchDiscovery) bool {
 
 func NewGameState() *GameState {
 	return &GameState{
-		Population: &GameState_Population{},
 		Resources:  &GameState_Resources{},
 		Lots: map[string]*GameState_Lot{
 			"2": {

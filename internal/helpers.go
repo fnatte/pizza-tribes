@@ -3,6 +3,7 @@ package internal
 import (
 	"time"
 
+	"github.com/fnatte/pizza-tribes/internal/models"
 	. "github.com/fnatte/pizza-tribes/internal/models"
 )
 
@@ -76,17 +77,19 @@ func CountMaxPopulation(gs *GameState) (count int32) {
 	return
 }
 
-func CountTownPopulation(population *GameState_Population) int32 {
-	if population == nil {
-		return 0
+func CountUneducated(gs *GameState) int32 {
+	n := int32(0)
+	for _, m := range gs.Mice {
+		if !m.IsEducated {
+			n++
+		}
 	}
 
-	return (population.Uneducated +
-		population.Chefs +
-		population.Salesmice +
-		population.Guards +
-		population.Thieves +
-		population.Publicists)
+	return n
+}
+
+func CountTownPopulation(gs *GameState) int32 {
+	return int32(len(gs.Mice))
 }
 
 func CountTravellingPopulation(travelQueue []*Travel) int32 {
@@ -112,10 +115,26 @@ func CountAllPopulation(gs *GameState) int32 {
 		return 0
 	}
 
-	return CountTownPopulation(gs.Population) +
+	return CountTownPopulation(gs) +
 		CountTravellingPopulation(gs.TravelQueue) +
 		CountTrainingPopulation(gs.TrainingQueue)
+}
 
+func CountTownPopulationEducations(gs *GameState) map[models.Education]int32 {
+	res := map[models.Education]int32{}
+	for _, m := range gs.Mice {
+		if m.IsEducated {
+			res[m.Education] = res[m.Education] + 1
+		}
+	}
+
+	for _, t := range gs.TravelQueue {
+		if t.Thieves > 0 {
+			res[Education_THIEF] = res[Education_THIEF] - t.Thieves
+		}
+	}
+
+	return res
 }
 
 func GetCompletedTravels(gs *GameState) (res []*Travel) {

@@ -115,8 +115,10 @@ func completeSteal(ctx context.Context, userId string, gs *models.GameState, tx 
 		return fmt.Errorf("failed to complete steal: %w", err)
 	}
 
+	targetEducations := internal.CountTownPopulationEducations(gsTarget)
+
 	// Calculate outcome
-	guards := gsTarget.Population.Guards
+	guards := targetEducations[models.Education_GUARD]
 	guardsf := float64(guards)
 	dist := distuv.Binomial{
 		N:   guardsf,
@@ -135,7 +137,7 @@ func completeSteal(ctx context.Context, userId string, gs *models.GameState, tx 
 	}
 	successfulThieves := int32(dist.Rand())
 	caughtThieves := travel.Thieves - successfulThieves
-	guardsProtectingLoot := float64(internal.MaxInt32(gsTarget.Population.Guards-caughtThieves, 0))
+	guardsProtectingLoot := float64(internal.MaxInt32(guards-caughtThieves, 0))
 	thiefEfficiency := 0.5 + 0.5/(1+math.Pow(guardsProtectingLoot/12, 0.7))
 
 	maxLoot := int32(float64(successfulThieves) * internal.ThiefCapacity * thiefEfficiency)
@@ -206,9 +208,9 @@ func completeSteal(ctx context.Context, userId string, gs *models.GameState, tx 
 	tx.Users[town.UserId].IncrCoins(-int32(loot))
 
 	if sleepingGuards > 0 {
-		// TODO: update mice
-		tx.Users[town.UserId].IncrUneducated(sleepingGuards)
-		tx.Users[town.UserId].IncrGuards(-sleepingGuards)
+		for n := 0; n < int(sleepingGuards); n++ {
+			tx.Users[town.UserId].RemoveMouseByEducation(true, models.Education_GUARD)
+		}
 	}
 
 	// Append reports to patch
@@ -221,7 +223,6 @@ func completeSteal(ctx context.Context, userId string, gs *models.GameState, tx 
 func completeStealReturn(userId string, gs *models.GameState, tx *gamestate.GameTx, world *internal.WorldService, travel *models.Travel, travelIndex int) error {
 	u := tx.Users[userId]
 	u.IncrCoins(int32(travel.Coins))
-	u.IncrThieves(travel.Thieves)
 
 	log.Info().
 		Str("userId", userId).

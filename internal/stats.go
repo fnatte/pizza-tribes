@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"github.com/fnatte/pizza-tribes/internal/models"
 	. "github.com/fnatte/pizza-tribes/internal/models"
 )
 
@@ -34,7 +35,7 @@ func calculateTasteScore(gs *GameState) float64 {
 	return score
 }
 
-func calculatePopularity(gs *GameState) float64 {
+func calculatePopularity(gs *GameState, e map[models.Education]int32) float64 {
 	popularityBonus := 1.0
 
 	if gs.HasDiscovery(ResearchDiscovery_WEBSITE) {
@@ -46,7 +47,7 @@ func calculatePopularity(gs *GameState) float64 {
 
 	tasteScore := calculateTasteScore(gs)
 
-	return (3 + float64(gs.Population.Publicists)*2) * 5.0 * popularityBonus * tasteScore
+	return (3 + float64(e[models.Education_PUBLICIST])*2) * 5.0 * popularityBonus * tasteScore
 }
 
 func calculateSalesBonus(gs *GameState) float64 {
@@ -74,22 +75,24 @@ func calculateBakeBonus(gs *GameState) float64 {
 
 func CalculateStats(gs *GameState) *Stats {
 	// No changes if there are no population
-	if gs.Population == nil {
+	if CountTownPopulation(gs) == 0 {
 		return &Stats{}
 	}
 
-	popularity := calculatePopularity(gs)
+	e := CountTownPopulationEducations(gs)
+
+	popularity := calculatePopularity(gs, e)
 	demandOffpeak := DEMAND_BASE * popularity
 	demandRushHour := (DEMAND_BASE + DEMAND_RUSH_HOUR_BONUS) * popularity
 
 	maxEmployed := CountMaxEmployed(gs)
 
-	employedChefs := MinInt32(gs.Population.Chefs, maxEmployed[int32(Building_KITCHEN)])
+	employedChefs := MinInt32(e[Education_CHEF], maxEmployed[int32(Building_KITCHEN)])
 	pizzasProducedPerSecond := float64(employedChefs) *
 		CHEF_PIZZAS_PER_SECOND *
 		calculateBakeBonus(gs)
 
-	employedSalesmice := MinInt32(gs.Population.Salesmice, maxEmployed[int32(Building_SHOP)])
+	employedSalesmice := MinInt32(e[Education_SALESMOUSE], maxEmployed[int32(Building_SHOP)])
 	maxSellsByMicePerSecond := float64(employedSalesmice) *
 		SALESMICE_SELLS_PER_SECOND *
 		calculateSalesBonus(gs)

@@ -33,50 +33,15 @@ func (h *handler) handleReschoolMouse(ctx context.Context, senderId string, m *m
 			return err
 		}
 
-		var mouse *models.Mouse
-		var ok bool
-		if mouse, ok = gs.Mice[m.MouseId]; !ok {
+		if _, ok := gs.Mice[m.MouseId]; !ok {
 			return errors.New("invalid mouse id")
 		}
 
 		mousePath := fmt.Sprintf(".mice[\"%s\"]", m.MouseId)
-
-		uneducated := gs.Population.Uneducated + 1
-
-		var educatedCount int
-		var educationCountPath string
-		switch mouse.Education {
-		case models.Education_CHEF:
-			educatedCount = int(gs.Population.Chefs) - 1
-			educationCountPath = ".population.chefs"
-		case models.Education_SALESMOUSE:
-			educatedCount = int(gs.Population.Salesmice) - 1
-			educationCountPath = ".population.salesmice"
-		case models.Education_GUARD:
-			educatedCount = int(gs.Population.Guards) - 1
-			educationCountPath = ".population.guards"
-		case models.Education_THIEF:
-			educatedCount = int(gs.Population.Thieves) - 1
-			educationCountPath = ".population.thieves"
-		case models.Education_PUBLICIST:
-			educatedCount = int(gs.Population.Publicists) - 1
-			educationCountPath = ".population.publicists"
-		}
-
 		_, err = h.rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			err := internal.RedisJsonSet(pipe, ctx, gsKey, fmt.Sprintf("%s.isEducated", mousePath), "false").Err()
 			if err != nil {
 				return fmt.Errorf("failed to set isEducated: %w", err)
-			}
-
-			err = internal.RedisJsonSet(pipe, ctx, gsKey, ".population.uneducated", uneducated).Err()
-			if err != nil {
-				return fmt.Errorf("failed to increase uneducated: %w", err)
-			}
-
-			err = internal.RedisJsonSet(pipe, ctx, gsKey, educationCountPath, educatedCount).Err()
-			if err != nil {
-				return fmt.Errorf("failed to decrease the educated value: %w", err)
 			}
 
 			return nil

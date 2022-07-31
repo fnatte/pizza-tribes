@@ -7,7 +7,6 @@ import {
 } from "date-fns";
 import JSBI from "jsbi";
 import { Building } from "./generated/building";
-import { GameState_Population } from "./generated/gamestate";
 import { GameData } from "./generated/game_data";
 import { GameState, Lot } from "./store";
 
@@ -67,17 +66,6 @@ export const countBuildingsUnderConstruction = (
       5: 0,
       6: 0,
     }
-  );
-};
-
-export const countPopulation = (population: GameState_Population): number => {
-  return (
-    population.chefs +
-    population.guards +
-    population.thieves +
-    population.salesmice +
-    population.publicists +
-    population.uneducated
   );
 };
 
