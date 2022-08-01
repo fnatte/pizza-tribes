@@ -315,6 +315,8 @@ func (c *userController) HandleGetGameState(w http.ResponseWriter, r *http.Reque
 }
 
 func (c *userController) HandlePatchGameState(w http.ResponseWriter, r *http.Request) {
+	log.Debug().Msg("Admin: HandlePatchGameState")
+
 	ctx := r.Context()
 	params := mux.Vars(r)
 	userId := params["userId"]
@@ -346,6 +348,8 @@ func (c *userController) HandlePatchGameState(w http.ResponseWriter, r *http.Req
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to send state change")
 	}
+
+	internal.SetNextUpdateTo(c.rc, r.Context(), userId, time.Now().UnixNano())
 
 	w.WriteHeader(http.StatusNoContent)
 }

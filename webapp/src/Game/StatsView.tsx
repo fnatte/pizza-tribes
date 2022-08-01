@@ -72,7 +72,7 @@ const StatsView: React.FC<{}> = () => {
       { label: "Employed chefs", value: stats.employedChefs },
       { label: "Employed salesmice", value: stats.employedSalesmice },
       {
-        label: "Pizzas produces",
+        label: "Pizzas produced",
         value: `${formatNumber(stats.pizzasProducedPerSecond)}/s`,
       },
       {
@@ -147,9 +147,10 @@ const StatsView: React.FC<{}> = () => {
               className={classnames({
                 "bg-green-200": i % 2 === 0,
               })}
+              data-cy="stats-row"
             >
               <td className={classnames("p-1")}>{label}</td>
-              <td className={classnames("p-1")}>{value}</td>
+              <td className={classnames("p-1")} data-cy="stats-value">{value}</td>
             </tr>
           ))}
         </tbody>

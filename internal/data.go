@@ -496,5 +496,23 @@ var FullGameData = GameData{
 				Pizzas: 500,
 			},
 		},
+		{
+			Id:          "8",
+			Title:       "Work, work",
+			Description: "This tribe is getting some serious business. Let's keep going! Employ 8 a total of mice.",
+			Reward: &models.Quest_Reward{
+				Coins:  800,
+				Pizzas: 300,
+			},
+		},
+		{
+			Id:          "9",
+			Title:       "Statistics",
+			Description: "Have you found the stats page yet? Visit the stats page and find your pizza production.\nHow many pizzas are you making per second?",
+			Reward: &models.Quest_Reward{
+				Coins:  600,
+				Pizzas: 0,
+			},
+		},
 	},
 }

@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/gamestate"
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/fnatte/pizza-tribes/internal/redis"
@@ -155,58 +157,34 @@ func (h *handler) handleClaimQuestReward(ctx context.Context, senderId string, m
 	return nil
 }
 
-func (h *handler) handleCompleteVisitHelpPageQuest(ctx context.Context, senderId string, m *models.ClientMessage_CompleteVisitHelpPageQuest) error {
+func (h *handler) handleCompleteQuest(ctx context.Context, senderId string, m *models.ClientMessage_CompleteQuest) error {
 	log.Info().
 		Str("senderId", senderId).
-		Msg("Received complete visit help page quest message")
+		Str("questId", m.QuestId).
+		Msg("Received complete quest message")
 
-	gsKey := fmt.Sprintf("user:%s:gamestate", senderId)
-
-	var gs models.GameState
-
-	txf := func() error {
-		// Get current game state
-		s, err := redis.RedisJsonGet(h.rdb, ctx, gsKey, ".").Result()
-		if err != nil && err != redis.Nil {
-			return err
-		}
-		if err = protojson.Unmarshal([]byte(s), &gs); err != nil {
-			return err
-		}
-
-		if q, ok := gs.Quests["6"]; !ok || q.Completed {
-			return nil
-		}
-
-		_, err = h.rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
-			if q, ok := gs.Quests["6"]; ok && !q.Completed {
-				path := ".quests[\"6\"].completed"
-				value := "true"
-				err := redis.RedisJsonSet(pipe, ctx, gsKey, path, value).Err()
-				if err != nil {
-					return fmt.Errorf("failed to set visit help page quest completed to true: %w", err)
+	tx, err := h.updater.PerformUpdate(ctx, senderId, func(gs *models.GameState, tx *gamestate.GameTx) error {
+		switch m.QuestId {
+			case "6", "9":
+				if q, ok := gs.Quests[m.QuestId]; ok && !q.Completed {
+					tx.Users[senderId].SetQuestCompleted(m.QuestId)
 				}
-			}
+			default:
+				return errors.New("invalid quest id")
+		}
+		return nil
+	})
 
-			return nil
-		})
-		return err
+	if err != nil {
+		return fmt.Errorf("failed handle complete quest: %w", err)
 	}
 
-	mutex := h.rdb.NewMutex("lock:" + gsKey)
-	if err := mutex.Lock(); err != nil {
-		return fmt.Errorf("failed to obtain lock: %w", err)
-	}
-	err2 := txf()
-	if ok, err := mutex.Unlock(); !ok || err != nil {
-		return fmt.Errorf("failed to unlock: %w", err)
-	}
-	if err2 != nil {
-		return fmt.Errorf("failed to handle complete visit help page quest: %w", err2)
+	err = h.sendGameTx(ctx, tx)
+	if err != nil {
+		return fmt.Errorf("failed handle complete quest: %w", err)
 	}
 
 	h.fetchAndUpdateTimestamp(ctx, senderId)
-	h.sendFullStateUpdate(ctx, senderId)
 
 	return nil
 }

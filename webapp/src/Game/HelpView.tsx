@@ -14,8 +14,8 @@ const HelpView: React.VFC<{}> = () => {
     false
   );
 
-  const completeVisitHelpPageQuest = useStore(
-    (state) => state.completeVisitHelpPageQuest
+  const completeQuest = useStore(
+    (state) => state.completeQuest
   );
   const helpQuestState = useStore(
     (state) => state.gameState.quests[HELP_QUEST_ID]
@@ -29,9 +29,9 @@ const HelpView: React.VFC<{}> = () => {
 
   useEffect(() => {
     if (helpQuestState && !helpQuestState.completed) {
-      completeVisitHelpPageQuest();
+      completeQuest(HELP_QUEST_ID);
     }
-  }, [helpQuestState, completeVisitHelpPageQuest]);
+  }, [helpQuestState, completeQuest]);
 
   return (
     <div
@@ -45,6 +45,7 @@ const HelpView: React.VFC<{}> = () => {
         "mt-2",
         "p-2"
       )}
+      data-cy="game-help"
     >
       <h2>Game Help</h2>
 

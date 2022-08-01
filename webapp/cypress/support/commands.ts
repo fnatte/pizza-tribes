@@ -18,7 +18,9 @@ declare global {
       adminDeleteUser(username?: string): Chainable<void>;
       adminCreateUser(username?: string, password?: string): Chainable<void>;
       adminTestSetup(username?: string): Chainable<void>;
+
       login(username?: string, password?: string): Chainable<void>;
+      expand(): Chainable<Element>;
     }
   }
 }
@@ -163,5 +165,13 @@ Cypress.Commands.add(
     cy.location("pathname").should("eq", "/");
   }
 );
+
+Cypress.Commands.add("expand", { prevSubject: true }, (subject) => {
+  cy.wrap(subject).then(($el) => {
+      if ($el.parents('[aria-expanded="true"]').length === 0) {
+        cy.wrap($el).click();
+      }
+    });
+});
 
 export {};

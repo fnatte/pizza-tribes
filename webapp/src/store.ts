@@ -63,7 +63,7 @@ export type State = {
   renameMouse: (mouseId: string, name: string) => void;
   openQuest: (questId: string) => void;
   claimQuestReward: (questId: string) => void;
-  completeVisitHelpPageQuest: () => void;
+  completeQuest: (questId: string) => void;
   reportActivity: () => void;
 };
 
@@ -399,13 +399,15 @@ export const useStore = create<State>((set, get) => ({
       })
     );
   },
-  completeVisitHelpPageQuest: () => {
+  completeQuest: (questId) => {
     get().connection?.send(
       ClientMessage.create({
         id: generateId(),
         type: {
-          oneofKind: "completeVisitHelpPageQuest",
-          completeVisitHelpPageQuest: {},
+          oneofKind: "completeQuest",
+          completeQuest: {
+            questId
+          },
         },
       })
     );

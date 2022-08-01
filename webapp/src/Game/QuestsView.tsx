@@ -1,12 +1,17 @@
 import React, { ReactNode, useEffect, useMemo, useState } from "react";
+import * as yup from "yup";
 import classnames from "classnames";
 import { useStore } from "../store";
 import { Quest } from "../generated/quest";
 import ReactMarkdown from "react-markdown";
 import { Coin, Pizza } from "../icons";
 import { QuestState } from "../generated/gamestate";
-import { primaryButton } from "../styles";
-import { isNonNullable } from "../utils";
+import { button, primaryButton } from "../styles";
+import { useForm } from "react-hook-form";
+import { RemoveIndex } from "../utils";
+import { yupResolver } from "@hookform/resolvers/yup";
+
+const STATS_QUEST_ID = "9";
 
 function Container({ children }: { children?: ReactNode | undefined }) {
   return (
@@ -90,7 +95,7 @@ export default function QuestsView() {
             const canClaimReward =
               questState.completed && !questState.claimedReward;
             return (
-              <li key={id} className="my-6">
+              <li key={id} className="my-6" data-cy="quest-item">
                 <div className="flex items-center">
                   <input
                     type="checkbox"
@@ -105,8 +110,12 @@ export default function QuestsView() {
                     className={classnames({
                       "font-bold": !questState.opened,
                     })}
+                    aria-expanded={expanded === id}
+                    data-cy="quest-item-expand-toggle"
                   >
-                    <span className="underline">{quest.title}</span>
+                    <span className="underline" data-cy="quest-item-title">
+                      {quest.title}
+                    </span>
                     {expanded !== id && canClaimReward ? (
                       <span className="ml-1">(Claim reward)</span>
                     ) : null}
@@ -120,13 +129,22 @@ export default function QuestsView() {
                     >
                       {quest.description}
                     </ReactMarkdown>
+                    {id === STATS_QUEST_ID && (
+                      <div className="my-4">
+                        <StatsQuestForm />
+                      </div>
+                    )}
+
                     <div className="my-4">
                       <h4>Reward</h4>
                       <div className="flex gap-4 items-center flex-wrap">
                         {(quest.reward?.coins ?? 0) > 0 && (
                           <div className="flex gap-1 items-center">
                             <Coin className={"h-[3em] w-[3em]"} />{" "}
-                            <span className="text-xl">
+                            <span
+                              className="text-xl"
+                              data-cy="quest-item-reward-coins"
+                            >
                               {quest.reward?.coins}
                             </span>
                           </div>
@@ -134,7 +152,10 @@ export default function QuestsView() {
                         {(quest.reward?.pizzas ?? 0) > 0 && (
                           <div className="flex gap-1 items-center">
                             <Pizza className={"h-[3em] w-[3em]"} />{" "}
-                            <span className="text-xl">
+                            <span
+                              className="text-xl"
+                              data-cy="quest-item-reward-pizzas"
+                            >
                               {quest.reward?.pizzas}
                             </span>
                           </div>
@@ -150,6 +171,7 @@ export default function QuestsView() {
                           <button
                             className={primaryButton}
                             onClick={() => claimQuestReward(id)}
+                            data-cy="quest-item-claim-reward-button"
                           >
                             Claim Reward
                           </button>
@@ -164,5 +186,62 @@ export default function QuestsView() {
         </ul>
       </section>
     </Container>
+  );
+}
+
+function StatsQuestForm() {
+  const schema = yup.object().shape({
+    answer: yup.string().trim().required(),
+  });
+
+  type FormFields = RemoveIndex<yup.Asserts<typeof schema>>;
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<{
+    answer: string;
+  }>({ resolver: yupResolver(schema) });
+
+  const completeQuest = useStore((state) => state.completeQuest);
+  const stats = useStore((state) => state.gameStats);
+  const [answerResult, setAnswerResult] = useState<boolean>();
+
+  const onSubmit = async (data: FormFields) => {
+    const correctAnswer = stats?.pizzasProducedPerSecond.toString();
+    const answer = data.answer.replace("/s", "")
+    if (answer === correctAnswer) {
+      completeQuest(STATS_QUEST_ID);
+      setAnswerResult(true);
+    } else {
+      setAnswerResult(false);
+    }
+    reset();
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} data-cy="stats-quest-form">
+      {answerResult !== true && (
+        <>
+          {errors.answer && <div className="p-2">{errors.answer.message}</div>}
+          <label className="mx-2">
+            Answer:
+            <input className="mx-2" type="text" {...register("answer")} />
+          </label>
+          <button
+            type="submit"
+            disabled={isSubmitting || answerResult}
+            className={classnames(...button, "bg-green-600")}
+          >
+            Send Answer
+          </button>
+        </>
+      )}
+      {answerResult !== undefined && (
+        <div className="p-2">{answerResult ? "Correct!" : "Wrong!"}</div>
+      )}
+    </form>
   );
 }

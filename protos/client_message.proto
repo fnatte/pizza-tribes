@@ -68,7 +68,8 @@ message ClientMessage {
     string questId = 2;
   }
 
-  message CompleteVisitHelpPageQuest {
+  message CompleteQuest {
+    string questId = 1;
   }
 
   message ReportActivity {
@@ -90,7 +91,7 @@ message ClientMessage {
     RenameMouse renameMouse = 13;
     OpenQuest openQuest = 14;
     ClaimQuestReward claimQuestReward = 15;
-    CompleteVisitHelpPageQuest completeVisitHelpPageQuest = 16;
+    CompleteQuest completeQuest = 16;
     ReportActivity reportActivity = 17;
   }
 }

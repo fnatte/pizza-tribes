@@ -66,6 +66,26 @@ func CountMaxEmployed(gs *GameState) (counts map[int32]int32) {
 	return counts
 }
 
+func CountEmployed(gs *GameState) (count int32) {
+	e := CountTownPopulationEducations(gs)
+	m := CountMaxEmployed(gs)
+
+	for education, n := range e {
+		info := FullGameData.Educations[int32(education)]
+		if info.Employer != nil {
+			max := m[int32(*info.Employer)]
+			if n < max {
+				count += n
+			} else {
+				count += max
+			}
+		}
+	}
+
+	return count
+}
+
+
 func CountMaxPopulation(gs *GameState) (count int32) {
 	for _, lot := range gs.Lots {
 		info := FullGameData.Buildings[int32(lot.Building)]
@@ -81,6 +101,17 @@ func CountUneducated(gs *GameState) int32 {
 	n := int32(0)
 	for _, m := range gs.Mice {
 		if !m.IsEducated {
+			n++
+		}
+	}
+
+	return n
+}
+
+func CountEducated(gs *GameState) int32 {
+	n := int32(0)
+	for _, m := range gs.Mice {
+		if m.IsEducated {
 			n++
 		}
 	}
