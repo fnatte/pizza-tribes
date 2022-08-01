@@ -1,5 +1,7 @@
 import { Building } from "../../../src/generated/building";
+import { Education } from "../../../src/generated/education";
 import { GameStatePatch } from "../../../src/generated/gamestate";
+import { MiceBuilder } from "../../support/helpers";
 
 describe("quests", () => {
   beforeEach(() => {
@@ -95,7 +97,7 @@ describe("quests", () => {
     cy.get('[data-cy="quest-item"]').should("contain.text", "claimed");
   });
 
-  it.only("can complete stats quest", () => {
+  it("can complete stats quest", () => {
     cy.get('[data-cy="quest-item-title"]').should(
       "contain.text",
       "Bake and sell"
@@ -155,6 +157,62 @@ describe("quests", () => {
     // Claim reward
     cy.get('[data-cy="quest-item-claim-reward-button"]').click();
     cy.get('[data-cy="resource-bar-coins"]').should("contain.text", "600");
+    cy.get('[data-cy="quest-item-claim-reward-button"]').should("not.exist");
+    cy.get('[data-cy="quest-item"]').should("contain.text", "claimed");
+  });
+
+  it.only("can complete 8 employees quest", () => {
+    cy.get('[data-cy="quest-item-title"]').should(
+      "contain.text",
+      "Bake and sell"
+    );
+
+    cy.adminPatchGameState(
+      GameStatePatch.create({
+        gameState: {
+          quests: {
+            "7": {
+              opened: true,
+              completed: true,
+              claimedReward: true,
+            },
+          },
+        },
+        patchMask: {
+          paths: ["quests"],
+        },
+      })
+    );
+
+    cy.get('[data-cy="quest-item-title"]').should("contain.text", "Work, work");
+    cy.get('[data-cy="quest-item-title"]').contains("Work, work").expand();
+
+    cy.adminPatchGameState(
+      GameStatePatch.create({
+        gameState: {
+          lots: {
+            "6": {
+              building: Building.SHOP,
+              level: 4,
+            },
+            "7": {
+              building: Building.KITCHEN,
+              level: 4,
+            },
+          },
+          mice: new MiceBuilder()
+            .add(Education.CHEF, 3)
+            .add(Education.SALESMOUSE, 5)
+            .build(),
+        },
+        patchMask: {
+          paths: ["lots.6", "lots.7", "mice"],
+        },
+      })
+    );
+
+    // Claim reward
+    cy.get('[data-cy="quest-item-claim-reward-button"]').click();
     cy.get('[data-cy="quest-item-claim-reward-button"]').should("not.exist");
     cy.get('[data-cy="quest-item"]').should("contain.text", "claimed");
   });
