@@ -6,8 +6,8 @@ import (
 
 const CHEF_PIZZAS_PER_SECOND = 0.2
 const SALESMICE_SELLS_PER_SECOND = 0.5
-const DEMAND_BASE = 0.2
-const DEMAND_RUSH_HOUR_BONUS = 0.55
+const DEMAND_BASE = 1
+const DEMAND_RUSH_HOUR_BONUS = 1.5
 
 func calculateSalesBonus(gs *GameState) float64 {
 	bonus := 1.0
@@ -40,13 +40,18 @@ func CalculateStats(gs *GameState, globalDemandScore float64, worldState *WorldS
 
 	e := CountTownPopulationEducations(gs)
 
-	marketShare := CalculateDemandScore(gs) / globalDemandScore
+	demandScore := CalculateDemandScore(gs)
+
+	marketShare := demandScore / globalDemandScore
 	marketDemandBase := marketShare * CalculateGlobalDemand(worldState)
 	marketDemandOffpeak := marketDemandBase
 	marketDemandRushHour := marketDemandBase * 2
 
-	demandOffpeak := DEMAND_BASE + marketDemandOffpeak
-	demandRushHour := (DEMAND_BASE + DEMAND_RUSH_HOUR_BONUS) + marketDemandRushHour
+	baseDemandOffpeak := DEMAND_BASE * demandScore
+	baseDemandRushHour := (DEMAND_BASE + DEMAND_RUSH_HOUR_BONUS) * demandScore
+
+	demandOffpeak := baseDemandOffpeak + marketDemandOffpeak
+	demandRushHour := baseDemandRushHour + marketDemandRushHour
 
 	maxEmployed := CountMaxEmployed(gs)
 
