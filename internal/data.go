@@ -161,7 +161,7 @@ var FullGameData = GameData{
 			LevelInfos: []*BuildingInfo_LevelInfo{
 				{
 					Cost:             8_000,
-					ConstructionTime: 90,
+					ConstructionTime: 30,
 					Residence: &Residence{
 						Beds: 3,
 					},
@@ -170,7 +170,7 @@ var FullGameData = GameData{
 				},
 				{
 					Cost:             500,
-					ConstructionTime: 200,
+					ConstructionTime: 60,
 					Residence: &Residence{
 						Beds: 5,
 					},
