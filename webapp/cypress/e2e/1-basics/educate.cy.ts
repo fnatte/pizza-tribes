@@ -41,7 +41,7 @@ describe("education", () => {
     cy.get('[data-cy="lot1"]').click();
     cy.get('[data-cy="school-education-title"]')
       .contains("Chef")
-      .parents('[data-cy="school-education"]')
+      .closest('[data-cy="school-education"]')
       .find('[data-cy="school-education-submit-button"]')
       .click();
 
@@ -62,13 +62,13 @@ describe("education", () => {
     cy.get('[data-cy="lot1"]').click();
     cy.get('[data-cy="school-education-title"]')
       .contains("Salesmouse")
-      .parents('[data-cy="school-education"]')
+      .closest('[data-cy="school-education"]')
       .find('[data-cy="school-education-amount-input"]')
       .clear()
       .type("3");
     cy.get('[data-cy="school-education-title"]')
       .contains("Salesmouse")
-      .parents('[data-cy="school-education"]')
+      .closest('[data-cy="school-education"]')
       .find('[data-cy="school-education-submit-button"]')
       .click();
 
@@ -89,21 +89,73 @@ describe("education", () => {
     cy.get('[data-cy="lot1"]').click();
     cy.get('[data-cy="school-education-title"]')
       .contains("Chef")
-      .parents('[data-cy="school-education"]')
+      .closest('[data-cy="school-education"]')
       .find('[data-cy="school-education-amount-input"]')
       .clear()
       .type("6");
     cy.get('[data-cy="school-education-title"]')
       .contains("Chef")
-      .parents('[data-cy="school-education"]')
+      .closest('[data-cy="school-education"]')
       .find('[data-cy="school-education-submit-button"]')
       .click();
 
     // Assert
     cy.get('[data-cy="school-education-title"]')
       .contains("Chef")
-      .parents('[data-cy="school-education"]')
+      .closest('[data-cy="school-education"]')
       .find('[data-cy="error"]')
       .should("exist");
+  });
+
+  it("can train 1 chef and 1 salesmouse at the same time", () => {
+    // Train
+    cy.get('[data-cy="main-nav"] a[href="/town"]').click();
+    cy.get('[data-cy="lot1"]').click();
+    cy.get('[data-cy="school-education-title"]')
+      .contains("Chef")
+      .closest('[data-cy="school-education"]')
+      .find('[data-cy="school-education-submit-button"]')
+      .click();
+    cy.get('[data-cy="school-education-title"]')
+      .contains("Salesmouse")
+      .closest('[data-cy="school-education"]')
+      .find('[data-cy="school-education-submit-button"]')
+      .click();
+
+    // Assert training queue
+    cy.get('[data-cy="training-queue-table-row"]:first-child').within(() => {
+      cy.get('[data-cy="training-queue-table-amount"]').should(
+        "have.text",
+        "1"
+      );
+      cy.get('[data-cy="training-queue-table-title"]').should(
+        "have.text",
+        "Chef"
+      );
+    });
+    cy.get('[data-cy="training-queue-table-row"]:last-child').within(() => {
+      cy.get('[data-cy="training-queue-table-amount"]').should(
+        "have.text",
+        "1"
+      );
+      cy.get('[data-cy="training-queue-table-title"]').should(
+        "have.text",
+        "Salesmouse"
+      );
+    });
+
+    // Complete trainings
+    cy.adminCompleteQueues();
+
+    // Assert
+    cy.get('[data-cy="training-queue-table-row"]').should("not.exist");
+    cy.get('[data-cy="main-nav"] [href="/town"]').click();
+    cy.get('[data-cy="population-table-toggle-button"]').expand();
+    cy.get('[data-cy="population-table-row"]')
+      .contains('[data-cy="population-table-row"]', "Chef")
+      .should("contain.text", "1 / 0");
+    cy.get('[data-cy="population-table-row"]')
+      .contains('[data-cy="population-table-row"]', "Salesmice")
+      .should("contain.text", "1 / 0");
   });
 });

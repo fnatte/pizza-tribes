@@ -161,7 +161,7 @@ describe("quests", () => {
     cy.get('[data-cy="quest-item"]').should("contain.text", "claimed");
   });
 
-  it.only("can complete 8 employees quest", () => {
+  it("can complete 8 employees quest", () => {
     cy.get('[data-cy="quest-item-title"]').should(
       "contain.text",
       "Bake and sell"

@@ -63,7 +63,7 @@ const PopulationTable: React.FC<{
             }
 
             return (
-              <tr key={id}>
+              <tr key={id} data-cy="population-table-row">
                 <td className={classnames("p-2")}>
                   {educations[id].titlePlural}
                 </td>
