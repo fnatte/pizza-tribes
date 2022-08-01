@@ -210,9 +210,9 @@ function StatsQuestForm() {
   const [answerResult, setAnswerResult] = useState<boolean>();
 
   const onSubmit = async (data: FormFields) => {
-    const correctAnswer = stats?.pizzasProducedPerSecond.toString();
-    const answer = data.answer.replace("/s", "")
-    if (answer === correctAnswer) {
+    const correctAnswer = stats?.pizzasProducedPerSecond;
+    const answer = parseFloat(data.answer.replace("/s", ""))
+    if (correctAnswer && Math.abs(answer - correctAnswer) < 0.05) {
       completeQuest(STATS_QUEST_ID);
       setAnswerResult(true);
     } else {
