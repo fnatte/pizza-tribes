@@ -234,6 +234,17 @@ func (c *userController) HandleCompleteUserQueues(w http.ResponseWriter, r *http
 			tx.Users[userId].SetResearchQueue(q)
 		}
 
+		// Complete train queue
+		if len(gs.TrainingQueue) > 0 {
+			q := []*models.Training{}
+			for _, c := range gs.TrainingQueue {
+				c2 := proto.Clone(c).(*models.Training)
+				c2.CompleteAt = time.Now().Add(-10 * time.Second).UnixNano()
+				q = append(q, c2)
+			}
+			tx.Users[userId].SetTrainingQueue(q)
+		}
+
 		return nil
 	})
 
