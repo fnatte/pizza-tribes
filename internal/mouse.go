@@ -11,7 +11,6 @@ import (
 
 //go:embed names.txt
 var namesTxt string
-
 var names []string
 
 func init() {
@@ -37,3 +36,21 @@ func GetNewMouseName(existingMice map[string]*models.Mouse) string {
 	}
 }
 
+func IsValidMouseAppearance(a *models.MouseAppearance) bool {
+	if a == nil || a.Parts == nil {
+		return false
+	}
+
+	for category, ref := range a.Parts {
+		if ref == nil {
+			continue
+		}
+
+		part := AppearancePartsMap[ref.Id]
+		if int32(part.Category) != category {
+			return false
+		}
+	}
+
+	return true
+}

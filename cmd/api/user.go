@@ -1,18 +1,21 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
+	"github.com/fnatte/pizza-tribes/internal/models"
+	"github.com/fnatte/pizza-tribes/internal/persist"
+	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/fnatte/pizza-tribes/internal/redis"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 )
 
 type UserController struct {
-	r redis.RedisClient
-	auth *AuthService
+	r      redis.RedisClient
+	auth   *AuthService
+	gsRepo persist.GameStateRepository
 }
 
 func (c *UserController) Handler() http.Handler {
@@ -39,9 +42,33 @@ func (c *UserController) Handler() http.Handler {
 			return
 		}
 
-		b, err := json.Marshal(struct{ Username string `json:"username"` }{
+		gs, err := c.gsRepo.Get(r.Context(), userId)
+		if err != nil {
+			log.Error().Msg("failed to get game state")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		var ambassador *models.Mouse
+		if gs.AmbassadorMouseId != "" {
+			var ok bool
+			ambassador, ok = gs.Mice[gs.AmbassadorMouseId]
+			if !ok {
+				log.Error().Msg("failed to look up ambassador mouse")
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+		}
+
+		res := &models.ApiUserResponse{
 			Username: username,
-		})
+		}
+		if ambassador != nil {
+			res.Ambassador = &models.ApiUserResponse_Ambassador{
+				Appearance: ambassador.Appearance,
+			}
+		}
+
+		b, err := protojson.Marshal(res)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to marshal username struct")
 			w.WriteHeader(500)
@@ -55,4 +82,3 @@ func (c *UserController) Handler() http.Handler {
 
 	return r
 }
-

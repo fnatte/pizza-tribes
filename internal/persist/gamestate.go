@@ -175,6 +175,8 @@ func jsonValue(v interface{}) (interface{}, error) {
 		return "false", nil
 	case proto.Message:
 		return protojson.Marshal(v)
+	case string:
+		return json.Marshal(v)
 	default:
 		return v, nil
 	}

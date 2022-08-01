@@ -74,6 +74,10 @@ func (h *handler) Handle(ctx context.Context, senderId string, m *models.ClientM
 		err = h.handleClaimQuestReward(ctx, senderId, x.ClaimQuestReward)
 	case *models.ClientMessage_CompleteQuest_:
 		err = h.handleCompleteQuest(ctx, senderId, x.CompleteQuest)
+	case *models.ClientMessage_SaveMouseAppearance_:
+		err = h.handleSaveMouseAppearance(ctx, senderId, x.SaveMouseAppearance)
+	case *models.ClientMessage_SetAmbassadorMouse_:
+		err = h.handleSetAmbassadorMouse(ctx, senderId, x.SetAmbassadorMouse)
 	default:
 		log.Debug().Str("senderId", senderId).Msg("Received message")
 	}

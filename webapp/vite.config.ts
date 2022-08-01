@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import reactRefresh from "@vitejs/plugin-react-refresh";
 import svgr from "./plugins/svgr";
 import fs from "fs";
+import path from "path";
 
 // We set clearScreen to false in case of a configuration error occur, so that the user have
 // a chance to see any logged error messages.
@@ -32,6 +33,11 @@ const readOriginsFromEnvFile = (envFile: string) => {
 const origin = readOriginsFromEnvFile("../.env");
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      images: path.resolve(__dirname, "./images"),
+    },
+  },
   clearScreen,
   server: {
     proxy: {

@@ -7,17 +7,29 @@ export default function svgrPlugin(): Plugin {
     name: "vite:svgr",
     async transform(code, id) {
       if (id.endsWith(".svg")) {
-        const svgr = require("@svgr/core").default;
+        const { transform } = require("@svgr/core");
         const esbuild = require("esbuild") as typeof E;
 
         const svg = await fs.promises.readFile(id, "utf8");
 
         const componentCode = (
-          await svgr(
+          await transform(
             svg,
             {
               ref: true,
               plugins: ["@svgr/plugin-svgo", "@svgr/plugin-jsx"],
+              svgoConfig: {
+                plugins: [
+                  {
+                    name: "preset-default",
+                    params: {
+                      overrides: {
+                        removeViewBox: false,
+                      },
+                    },
+                  },
+                ],
+              },
             },
             { componentName: "ReactComponent" }
           )

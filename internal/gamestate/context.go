@@ -103,6 +103,16 @@ func (u *GameTx_User) SetMouseUneducated(mouseId string) {
 	u.PatchMask.AppendPath(fmt.Sprintf("mice.%s", mouseId))
 }
 
+func (u *GameTx_User) SetMouseAppearance(mouseId string, appearance *models.MouseAppearance) {
+	u.Gs.Mice[mouseId].Appearance = appearance
+	u.PatchMask.AppendPath(fmt.Sprintf("mice.%s", mouseId))
+}
+
+func (u *GameTx_User) SetAmbassadorMouse(mouseId string) {
+	u.Gs.AmbassadorMouseId = mouseId
+	u.PatchMask.AppendPath("ambassadorMouseId")
+}
+
 func (u *GameTx_User) AppendNewMouse() {
 	mouseId := xid.New().String()
 	newMouse := &models.Mouse{
