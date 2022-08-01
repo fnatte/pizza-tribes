@@ -11,7 +11,7 @@ import (
 	"github.com/fnatte/pizza-tribes/cmd/api/ws"
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/persist"
-	"github.com/go-redis/redis/v8"
+	"github.com/fnatte/pizza-tribes/internal/redis"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog"
@@ -37,11 +37,11 @@ func main() {
 	origins := strings.Split(envOrDefault("ORIGIN", "http://localhost:8080"), " ")
 
 	// Setup redis client
-	rc := internal.NewRedisClient(redis.NewClient(&redis.Options{
+	rc := redis.NewRedisClient(&redis.Options{
 		Addr:     envOrDefault("REDIS_ADDR", "localhost:6379"),
 		Password: envOrDefault("REDIS_PASSWORD", ""),
 		DB:       0, // use default DB
-	}))
+	})
 
 	// Initialize services and controllers
 	auth := NewAuthService(rc)

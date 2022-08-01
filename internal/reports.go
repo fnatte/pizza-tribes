@@ -4,16 +4,16 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/go-redis/redis/v8"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
+	"github.com/fnatte/pizza-tribes/internal/redis"
 	. "github.com/fnatte/pizza-tribes/internal/models"
 )
 
 type ReportsService struct {
-	r RedisClient
+	r redis.RedisClient
 }
 
-func NewReportsService(r RedisClient) *ReportsService {
+func NewReportsService(r redis.RedisClient) *ReportsService {
 	return &ReportsService{r: r}
 }
 

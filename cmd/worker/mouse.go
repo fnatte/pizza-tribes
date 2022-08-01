@@ -6,10 +6,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
-	"github.com/go-redis/redis/v8"
+	"github.com/fnatte/pizza-tribes/internal/redis"
 	"github.com/rs/zerolog/log"
 )
 
@@ -25,7 +24,7 @@ func (h *handler) handleReschoolMouse(ctx context.Context, senderId string, m *m
 
 	txf := func() error {
 		// Get current game state
-		s, err := internal.RedisJsonGet(h.rdb, ctx, gsKey, ".").Result()
+		s, err := redis.RedisJsonGet(h.rdb, ctx, gsKey, ".").Result()
 		if err != nil && err != redis.Nil {
 			return err
 		}
@@ -39,7 +38,7 @@ func (h *handler) handleReschoolMouse(ctx context.Context, senderId string, m *m
 
 		mousePath := fmt.Sprintf(".mice[\"%s\"]", m.MouseId)
 		_, err = h.rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
-			err := internal.RedisJsonSet(pipe, ctx, gsKey, fmt.Sprintf("%s.isEducated", mousePath), "false").Err()
+			err := redis.RedisJsonSet(pipe, ctx, gsKey, fmt.Sprintf("%s.isEducated", mousePath), "false").Err()
 			if err != nil {
 				return fmt.Errorf("failed to set isEducated: %w", err)
 			}
@@ -80,7 +79,7 @@ func (h *handler) handleRenameMouse(ctx context.Context, senderId string, m *mod
 
 	txf := func() error {
 		// Get current game state
-		s, err := internal.RedisJsonGet(h.rdb, ctx, gsKey, ".").Result()
+		s, err := redis.RedisJsonGet(h.rdb, ctx, gsKey, ".").Result()
 		if err != nil && err != redis.Nil {
 			return err
 		}
@@ -108,7 +107,7 @@ func (h *handler) handleRenameMouse(ctx context.Context, senderId string, m *mod
 		_, err = h.rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			path := fmt.Sprintf("%s.name", mousePath)
 			value := fmt.Sprintf("\"%s\"", name)
-			err := internal.RedisJsonSet(pipe, ctx, gsKey, path, value).Err()
+			err := redis.RedisJsonSet(pipe, ctx, gsKey, path, value).Err()
 			if err != nil {
 				return fmt.Errorf("failed to set name: %w", err)
 			}
@@ -117,7 +116,7 @@ func (h *handler) handleRenameMouse(ctx context.Context, senderId string, m *mod
 			if q, ok := gs.Quests["4"]; ok && !q.Completed {
 				path := ".quests[\"4\"].completed"
 				value := "true"
-				err := internal.RedisJsonSet(pipe, ctx, gsKey, path, value).Err()
+				err := redis.RedisJsonSet(pipe, ctx, gsKey, path, value).Err()
 				if err != nil {
 					return fmt.Errorf("failed to set claimed reward to true: %w", err)
 				}

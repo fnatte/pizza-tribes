@@ -7,6 +7,7 @@ import (
 
 	"github.com/fnatte/pizza-tribes/cmd/admin/db"
 	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/redis"
 	"github.com/spf13/cobra"
 )
 
@@ -18,7 +19,7 @@ func envOrDefault(key string, defaultVal string) string{
 	return defaultVal
 }
 
-func ensureWorld(ctx context.Context, r internal.RedisClient) error {
+func ensureWorld(ctx context.Context, r redis.RedisClient) error {
 	world := internal.NewWorldService(r)
 	if err := world.Initialize(ctx); err != nil {
 		return err
@@ -32,10 +33,9 @@ var dbResetCmd = &cobra.Command{
 	Short: "Reset state of server",
 	Long: "Reset state of server. This will delete game state and users.",
 	Run: func(cmd *cobra.Command, args []string) {
-		rdb := db.NewRedisClient()
-		rc := internal.NewRedisClient(rdb)
+		rc := db.NewRedisClient()
 
-		res := rdb.FlushDB(cmd.Context())
+		res := rc.FlushDB(cmd.Context())
 		if res.Err() != nil {
 			fmt.Println("An error occurred:")
 			fmt.Println(res.Err().Error())

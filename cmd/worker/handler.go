@@ -10,12 +10,13 @@ import (
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/persist"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
+	"github.com/fnatte/pizza-tribes/internal/redis"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog/log"
 )
 
 type handler struct {
-	rdb   internal.RedisClient
+	rdb   redis.RedisClient
 	world *internal.WorldService
 	gsRepo persist.GameStateRepository
 	reportsRepo persist.ReportsRepository

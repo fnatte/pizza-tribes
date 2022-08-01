@@ -32,6 +32,11 @@ type NotifyRepository interface {
 	SchedulePushNotification(ctx context.Context, msg *messaging.Message, sendAt time.Time) (int64, error)
 }
 
+type MarketRepository interface {
+	GetGlobalDemand(ctx context.Context) (float64, error)
+	SetUserDemand(ctx context.Context, userId string, demand float64) error
+}
+
 type Mutex interface {
 	Lock() error
 	LockContext(context.Context) error

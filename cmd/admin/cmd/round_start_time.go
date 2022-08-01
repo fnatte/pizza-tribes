@@ -17,8 +17,7 @@ var roundStartTimeCmd = &cobra.Command{
 	Short: "Get or set the game round start time",
 	Args:  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		rdb := db.NewRedisClient()
-		rc := internal.NewRedisClient(rdb)
+		rc := db.NewRedisClient()
 		world := internal.NewWorldService(rc)
 
 		state, err := world.GetState(cmd.Context())

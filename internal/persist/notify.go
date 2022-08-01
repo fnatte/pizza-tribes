@@ -6,15 +6,14 @@ import (
 	"time"
 
 	"firebase.google.com/go/messaging"
-	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/go-redis/redis/v8"
+	"github.com/fnatte/pizza-tribes/internal/redis"
 )
 
 type notifyRepo struct {
-	rc internal.RedisClient
+	rc redis.RedisClient
 }
 
-func NewNotifyRepository(rc internal.RedisClient) *notifyRepo {
+func NewNotifyRepository(rc redis.RedisClient) *notifyRepo {
 	return &notifyRepo{
 		rc: rc,
 	}

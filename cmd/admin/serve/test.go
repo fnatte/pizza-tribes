@@ -8,6 +8,7 @@ import (
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/persist"
+	"github.com/fnatte/pizza-tribes/internal/redis"
 	"github.com/gorilla/mux"
 )
 
@@ -22,10 +23,10 @@ type setupTestRequest struct {
 }
 
 type testController struct {
-	rc internal.RedisClient
+	rc redis.RedisClient
 }
 
-func NewTestController(r internal.RedisClient) *testController {
+func NewTestController(r redis.RedisClient) *testController {
 	return &testController{
 		rc: r,
 	}

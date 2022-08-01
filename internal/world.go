@@ -11,7 +11,7 @@ import (
 	. "github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/fnatte/pizza-tribes/internal/spot_finder"
-	"github.com/go-redis/redis/v8"
+	"github.com/fnatte/pizza-tribes/internal/redis"
 )
 
 const WORLD_SIZE = 110
@@ -30,7 +30,7 @@ var xyOffsets []xy = []xy{
 }
 
 type WorldService struct {
-	r RedisClient
+	r redis.RedisClient
 }
 
 func parseWorldKey(key string) (int, int, error) {
@@ -56,7 +56,7 @@ func getWorldKey(x, y int) string {
 	return fmt.Sprintf("%d:%d", x, y)
 }
 
-func NewWorldService(r RedisClient) *WorldService {
+func NewWorldService(r redis.RedisClient) *WorldService {
 	return &WorldService{r: r}
 }
 
@@ -135,7 +135,7 @@ func (s *WorldService) GetEntryXY(ctx context.Context, x, y int) (*WorldEntry, e
 
 	str, err := s.r.JsonGet(ctx, "world", path).Result()
 	if err != nil {
-		if err == redis.Nil || IsRedisJsonPathDoesNotExistError(err) {
+		if err == redis.Nil || redis.IsRedisJsonPathDoesNotExistError(err) {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("failed to get entry at %d:%d: %w", x, y, err)
@@ -184,7 +184,7 @@ func (s *WorldService) GetEntries(ctx context.Context, x, y, radius int) (map[st
 func (s *WorldService) RemoveEntry(ctx context.Context, x, y int) (err error) {
 	path := fmt.Sprintf(".entries[\"%d:%d\"]", x, y)
 
-	return RedisJsonDel(s.r, ctx, "world", path).Err()
+	return redis.RedisJsonDel(s.r, ctx, "world", path).Err()
 }
 
 func (s *WorldService) AcquireTown(ctx context.Context, userId string) (x, y int, err error) {

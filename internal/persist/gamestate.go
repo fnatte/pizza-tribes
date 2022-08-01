@@ -6,15 +6,14 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
-	"github.com/go-redis/redis/v8"
+	"github.com/fnatte/pizza-tribes/internal/redis"
 	"google.golang.org/protobuf/proto"
 )
 
 type gameStateRepo struct {
-	rdb internal.RedisClient
+	rdb redis.RedisClient
 }
 
 type redisContext struct {
@@ -22,7 +21,7 @@ type redisContext struct {
 	cmdable redis.Cmdable
 }
 
-func NewGameStateRepository(rdb internal.RedisClient) *gameStateRepo {
+func NewGameStateRepository(rdb redis.RedisClient) *gameStateRepo {
 	return &gameStateRepo{
 		rdb: rdb,
 	}
@@ -89,9 +88,9 @@ func (r *gameStateRepo) Patch(ctx context.Context, userId string, gs *models.Gam
 		}
 
 		if val == nil {
-			err = internal.RedisJsonDel(pipe, ctx, gsKey, p).Err()
+			err = redis.RedisJsonDel(pipe, ctx, gsKey, p).Err()
 		} else {
-			err = internal.RedisJsonSet(pipe, ctx, gsKey, p, jv).Err()
+			err = redis.RedisJsonSet(pipe, ctx, gsKey, p, jv).Err()
 		}
 		if err != nil {
 			return fmt.Errorf("failed to set %s: %w", p, err)

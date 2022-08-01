@@ -6,12 +6,13 @@ import (
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
+	"github.com/fnatte/pizza-tribes/internal/redis"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 )
 
 type TimeseriesService struct {
-	r    internal.RedisClient
+	r    redis.RedisClient
 	auth *AuthService
 }
 
@@ -65,7 +66,7 @@ func (s *TimeseriesService) Handler() http.Handler {
 }
 
 // Merge timeseries data and convert from Redis format to message format.
-func mergeTimeseries(tsPizzas []*internal.TimeseriesDataPoint, tsCoins []*internal.TimeseriesDataPoint) []*models.DataPoint {
+func mergeTimeseries(tsPizzas []*redis.TimeseriesDataPoint, tsCoins []*redis.TimeseriesDataPoint) []*models.DataPoint {
 	res := []*models.DataPoint{}
 	pi := 0
 	ci := 0

@@ -9,7 +9,7 @@ import (
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
-	"github.com/go-redis/redis/v8"
+	"github.com/fnatte/pizza-tribes/internal/redis"
 	"github.com/rs/zerolog/log"
 )
 
@@ -20,7 +20,7 @@ func (h *handler) handleUpgrade(ctx context.Context, senderId string, m *models.
 
 	txf := func() error {
 		// Get current game state
-		s, err := internal.RedisJsonGet(h.rdb, ctx, gsKey, ".").Result()
+		s, err := redis.RedisJsonGet(h.rdb, ctx, gsKey, ".").Result()
 		if err != nil && err != redis.Nil {
 			return err
 		}
@@ -61,7 +61,7 @@ func (h *handler) handleUpgrade(ctx context.Context, senderId string, m *models.
 		completeAt := timeOffset + int64(constructionTime)*1e9
 
 		_, err = h.rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
-			_, err := internal.RedisJsonNumIncrBy(
+			_, err := redis.RedisJsonNumIncrBy(
 				pipe, ctx, gsKey,
 				".resources.coins",
 				int64(-cost)).Result()
@@ -83,7 +83,7 @@ func (h *handler) handleUpgrade(ctx context.Context, senderId string, m *models.
 				return err
 			}
 
-			err = internal.RedisJsonArrAppend(
+			err = redis.RedisJsonArrAppend(
 				pipe,
 				ctx,
 				fmt.Sprintf("user:%s:gamestate", senderId),

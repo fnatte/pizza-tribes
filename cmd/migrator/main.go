@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/go-redis/redis/v8"
+	"github.com/fnatte/pizza-tribes/internal/redis"
 	"github.com/rs/zerolog/log"
 )
 
@@ -17,7 +17,7 @@ func envOrDefault(key string, defaultVal string) string{
 	return defaultVal
 }
 
-func ensureWorld(ctx context.Context, r internal.RedisClient) error {
+func ensureWorld(ctx context.Context, r redis.RedisClient) error {
 	world := internal.NewWorldService(r)
 	if err := world.Initialize(ctx); err != nil {
 		return err
@@ -31,12 +31,11 @@ func main() {
 
 	ctx := context.Background()
 
-	rdb := redis.NewClient(&redis.Options{
+	r := redis.NewRedisClient(&redis.Options{
 		Addr:     envOrDefault("REDIS_ADDR", "localhost:6379"),
 		Password: envOrDefault("REDIS_PASSWORD", ""),
 		DB:       0,  // use default DB
 	})
-	r := internal.NewRedisClient(rdb)
 
 	err := ensureWorld(ctx, r)
 	if err != nil {

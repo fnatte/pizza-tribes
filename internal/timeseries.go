@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"time"
+
+	"github.com/fnatte/pizza-tribes/internal/redis"
 )
 
-func ensureTimeserie(ctx context.Context, r RedisClient, key string, retention int64) error {
+func ensureTimeserie(ctx context.Context, r redis.RedisClient, key string, retention int64) error {
 	err := r.TsInfo(ctx, key).Err()
 	if err == nil {
 		return nil
@@ -20,7 +22,7 @@ func ensureTimeserie(ctx context.Context, r RedisClient, key string, retention i
 	return nil
 }
 
-func EnsureTimeseries(ctx context.Context, r RedisClient, userId string) error {
+func EnsureTimeseries(ctx context.Context, r redis.RedisClient, userId string) error {
 	retention := (7 * 24 * time.Hour).Milliseconds()
 	err := ensureTimeserie(ctx, r, fmt.Sprintf("user:%s:ts_coins", userId), retention)
 	if err != nil {
@@ -35,17 +37,17 @@ func EnsureTimeseries(ctx context.Context, r RedisClient, userId string) error {
 	return nil
 }
 
-func AddMetricCoins(ctx context.Context, r RedisClient, userId string, time, value int64) error {
+func AddMetricCoins(ctx context.Context, r redis.RedisClient, userId string, time, value int64) error {
 	k := fmt.Sprintf("user:%s:ts_coins", userId)
 	return r.TsAdd(ctx, k, time, value).Err()
 }
 
-func AddMetricPizzas(ctx context.Context, r RedisClient, userId string, time, value int64) error {
+func AddMetricPizzas(ctx context.Context, r redis.RedisClient, userId string, time, value int64) error {
 	k := fmt.Sprintf("user:%s:ts_pizzas", userId)
 	return r.TsAdd(ctx, k, time, value).Err()
 }
 
-func FetchPizzasTimeseries(ctx context.Context, r RedisClient, userId string) ([]*TimeseriesDataPoint, error) {
+func FetchPizzasTimeseries(ctx context.Context, r redis.RedisClient, userId string) ([]*redis.TimeseriesDataPoint, error) {
 	from := time.Now().Unix() * 1000 - (24 * time.Hour).Milliseconds()
 	to := time.Now().Unix() * 1000
 	k := fmt.Sprintf("user:%s:ts_pizzas", userId)
@@ -54,7 +56,7 @@ func FetchPizzasTimeseries(ctx context.Context, r RedisClient, userId string) ([
 	return r.TsRangeAggr(ctx, k, from, to, "avg", timeBucket)
 }
 
-func FetchCoinsTimeseries(ctx context.Context, r RedisClient, userId string) ([]*TimeseriesDataPoint, error) {
+func FetchCoinsTimeseries(ctx context.Context, r redis.RedisClient, userId string) ([]*redis.TimeseriesDataPoint, error) {
 	from := time.Now().Unix() * 1000 - (24 * time.Hour).Milliseconds()
 	to := time.Now().Unix() * 1000
 	k := fmt.Sprintf("user:%s:ts_coins", userId)

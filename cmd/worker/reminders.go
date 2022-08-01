@@ -7,6 +7,7 @@ import (
 	"firebase.google.com/go/messaging"
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/persist"
+	"github.com/fnatte/pizza-tribes/internal/redis"
 	"github.com/rs/zerolog/log"
 )
 
@@ -84,7 +85,7 @@ func makeAvailableTapsMessage(userId string) *messaging.Message {
 	}
 }
 
-func handleTapReminder(ctx context.Context, rc internal.RedisClient, u persist.UserRepository, r *internal.Reminder) {
+func handleTapReminder(ctx context.Context, rc redis.RedisClient, u persist.UserRepository, r *internal.Reminder) {
 	users, err := u.GetAllUsers(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get all users when handling tap reminder")
@@ -114,7 +115,7 @@ func handleTapReminder(ctx context.Context, rc internal.RedisClient, u persist.U
 	}
 }
 
-func handleActivityReminder(ctx context.Context, rc internal.RedisClient, u persist.UserRepository, r *internal.Reminder) {
+func handleActivityReminder(ctx context.Context, rc redis.RedisClient, u persist.UserRepository, r *internal.Reminder) {
 	users, err := u.GetAllUsers(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get all users when handling activity reminder")
@@ -135,7 +136,7 @@ func handleActivityReminder(ctx context.Context, rc internal.RedisClient, u pers
 	}
 }
 
-func startRemindersWorker(ctx context.Context, rc internal.RedisClient, u persist.UserRepository) {
+func startRemindersWorker(ctx context.Context, rc redis.RedisClient, u persist.UserRepository) {
 	internal.ScheduleReminder(ctx, rc, &internal.Reminder{
 		Id:       "tap-reminder",
 		Interval: time.Hour,

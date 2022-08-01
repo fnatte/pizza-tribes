@@ -13,8 +13,8 @@ import (
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/persist"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
+	"github.com/fnatte/pizza-tribes/internal/redis"
 	"github.com/fnatte/pizza-tribes/internal/ws"
-	"github.com/go-redis/redis/v8"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -38,7 +38,7 @@ func getPopulationKey(edu models.Education) (string, error) {
 }
 
 type updater struct {
-	r           internal.RedisClient
+	r           redis.RedisClient
 	world       *internal.WorldService
 	leaderboard *internal.LeaderboardService
 	gsRepo      persist.GameStateRepository
@@ -165,7 +165,7 @@ func (u *updater) postProcessPatch(ctx context.Context, userId string, txu *game
 	return nil
 }
 
-func addTimeseriesDataPoints(ctx context.Context, userId string, txu *gamestate.GameTx_User, r internal.RedisClient) error {
+func addTimeseriesDataPoints(ctx context.Context, userId string, txu *gamestate.GameTx_User, r redis.RedisClient) error {
 	if !txu.CoinsChanged && !txu.PizzasChanged {
 		return nil
 	}
@@ -196,7 +196,7 @@ func addTimeseriesDataPoints(ctx context.Context, userId string, txu *gamestate.
 	return nil
 }
 
-func sendReports(ctx context.Context, r internal.RedisClient, userId string) error {
+func sendReports(ctx context.Context, r redis.RedisClient, userId string) error {
 	reports, err := internal.GetReports(ctx, r, userId)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to send updated reports")
@@ -213,10 +213,10 @@ func sendReports(ctx context.Context, r internal.RedisClient, userId string) err
 	})
 }
 
-func sendStats(ctx context.Context, r internal.RedisClient, userId string) error {
+func sendStats(ctx context.Context, r redis.RedisClient, userId string) error {
 	gs := models.GameState{}
 	gsKey := fmt.Sprintf("user:%s:gamestate", userId)
-	s, err := internal.RedisJsonGet(r, ctx, gsKey, ".").Result()
+	s, err := redis.RedisJsonGet(r, ctx, gsKey, ".").Result()
 	if err != nil && err != redis.Nil {
 		return err
 	}
@@ -314,13 +314,12 @@ func main() {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
 
-	rdb := redis.NewClient(&redis.Options{
+	rc := redis.NewRedisClient(&redis.Options{
 		Addr:     envOrDefault("REDIS_ADDR", "localhost:6379"),
 		Password: envOrDefault("REDIS_PASSWORD", ""),
 		DB:       0, // use default DB
 	})
 
-	rc := internal.NewRedisClient(rdb)
 	world := internal.NewWorldService(rc)
 	leaderboard := internal.NewLeaderboardService(rc)
 	gsRepo := persist.NewGameStateRepository(rc)

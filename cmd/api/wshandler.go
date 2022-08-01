@@ -9,13 +9,13 @@ import (
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/persist"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
-	"github.com/go-redis/redis/v8"
+	"github.com/fnatte/pizza-tribes/internal/redis"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog/log"
 )
 
 type wsHandler struct {
-	rc    internal.RedisClient
+	rc    redis.RedisClient
 	world *internal.WorldService
 	gsRepo persist.GameStateRepository
 }

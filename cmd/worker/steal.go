@@ -10,7 +10,7 @@ import (
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
-	"github.com/go-redis/redis/v8"
+	"github.com/fnatte/pizza-tribes/internal/redis"
 	"github.com/rs/zerolog/log"
 )
 
@@ -34,7 +34,7 @@ func (h *handler) handleSteal(ctx context.Context, senderId string, m *models.Cl
 
 	txf := func() error {
 		// Get game state of thief
-		s, err := internal.RedisJsonGet(h.rdb, ctx, gsKeyThief, ".").Result()
+		s, err := redis.RedisJsonGet(h.rdb, ctx, gsKeyThief, ".").Result()
 		if err != nil && err != redis.Nil {
 			return err
 		}
@@ -68,7 +68,7 @@ func (h *handler) handleSteal(ctx context.Context, senderId string, m *models.Cl
 		}
 
 		_, err = h.rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
-			if err = internal.RedisJsonArrAppend(pipe, ctx, gsKeyThief,
+			if err = redis.RedisJsonArrAppend(pipe, ctx, gsKeyThief,
 				".travelQueue", b).Err(); err != nil {
 				return err
 			}

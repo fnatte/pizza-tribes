@@ -9,7 +9,7 @@ import (
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
-	"github.com/go-redis/redis/v8"
+	"github.com/fnatte/pizza-tribes/internal/redis"
 	"github.com/rs/zerolog/log"
 )
 
@@ -37,7 +37,7 @@ func (h *handler) handleStartResearch(ctx context.Context, senderId string, m *m
 
 	txf := func() error {
 		// Get current game state
-		s, err := internal.RedisJsonGet(h.rdb, ctx, gsKey, ".").Result()
+		s, err := redis.RedisJsonGet(h.rdb, ctx, gsKey, ".").Result()
 		if err != nil && err != redis.Nil {
 			return err
 		}
@@ -86,7 +86,7 @@ func (h *handler) handleStartResearch(ctx context.Context, senderId string, m *m
 		}
 
 		_, err = h.rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
-			_, err := internal.RedisJsonNumIncrBy(
+			_, err := redis.RedisJsonNumIncrBy(
 				pipe, ctx, gsKey,
 				".resources.coins",
 				int64(-node.Cost)).Result()
@@ -95,7 +95,7 @@ func (h *handler) handleStartResearch(ctx context.Context, senderId string, m *m
 				return err
 			}
 
-			err = internal.RedisJsonArrAppend(
+			err = redis.RedisJsonArrAppend(
 				pipe,
 				ctx,
 				fmt.Sprintf("user:%s:gamestate", senderId),

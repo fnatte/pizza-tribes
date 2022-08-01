@@ -9,10 +9,11 @@ import (
 
 	"firebase.google.com/go/messaging"
 	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/redis"
 	"github.com/rs/zerolog/log"
 )
 
-func nextPushNotification(ctx context.Context, r internal.RedisClient) (*messaging.Message, error) {
+func nextPushNotification(ctx context.Context, r redis.RedisClient) (*messaging.Message, error) {
 	packed, err := r.ZRangeWithScores(ctx, "push_notifications", 0, 0).Result()
 	if err != nil {
 		return nil, err
@@ -47,7 +48,7 @@ func nextPushNotification(ctx context.Context, r internal.RedisClient) (*messagi
 	return msg, nil
 }
 
-func pushNotificationsWorker(ctx context.Context, client *messaging.Client, r internal.RedisClient, mock bool) {
+func pushNotificationsWorker(ctx context.Context, client *messaging.Client, r redis.RedisClient, mock bool) {
 	for {
 		msg, err := nextPushNotification(ctx, r)
 		if err != nil {

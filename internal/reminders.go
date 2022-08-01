@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/fnatte/pizza-tribes/internal/redis"
 	"github.com/rs/zerolog/log"
 )
 
@@ -29,7 +29,7 @@ func (r *Reminder) NextOccurence() time.Time {
 	return r.NextOccurenceAfter(time.Now())
 }
 
-func ScheduleReminder(ctx context.Context, rc RedisClient, r *Reminder) (int64, error) {
+func ScheduleReminder(ctx context.Context, rc redis.RedisClient, r *Reminder) (int64, error) {
 	b, err := json.Marshal(r)
 	if err != nil {
 		return 0, err
@@ -52,7 +52,7 @@ func ScheduleReminder(ctx context.Context, rc RedisClient, r *Reminder) (int64, 
 	return t, nil
 }
 
-func NextReminder(ctx context.Context, rc RedisClient) (*Reminder, error) {
+func NextReminder(ctx context.Context, rc redis.RedisClient) (*Reminder, error) {
 	packed, err := rc.ZRangeWithScores(ctx, "reminders", 0, 0).Result()
 	if err != nil {
 		return nil, err
@@ -100,7 +100,7 @@ func NextReminder(ctx context.Context, rc RedisClient) (*Reminder, error) {
 	return r, nil
 }
 
-func HandleReminders(ctx context.Context, rc RedisClient, h func(r *Reminder)) {
+func HandleReminders(ctx context.Context, rc redis.RedisClient, h func(r *Reminder)) {
 	for {
 		select {
 		case <-ctx.Done():

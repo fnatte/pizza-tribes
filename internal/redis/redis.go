@@ -1,4 +1,4 @@
-package internal
+package redis
 
 import (
 	"context"
@@ -22,6 +22,13 @@ func IsRedisJsonPathDoesNotExistError(err error) bool {
 	return strings.Contains(err.Error(), "ERR path") &&
 		strings.Contains(err.Error(), "does not exist")
 }
+
+type Z = redis.Z
+type Cmdable = redis.Cmdable
+type Tx = redis.Tx
+type Pipeliner = redis.Pipeliner
+type Options = redis.Options
+const Nil = redis.Nil
 
 type TimeseriesDataPoint struct {
 	Timestamp int64
@@ -52,7 +59,8 @@ type redisClient struct {
 	*redsync.Redsync
 }
 
-func NewRedisClient(rdb redis.UniversalClient) RedisClient {
+func NewRedisClient(opt *Options) RedisClient {
+	rdb := redis.NewClient(opt)
 	rs := redsync.New(goredis.NewPool(rdb))
 
 	return &redisClient{rdb, rs}

@@ -3,8 +3,7 @@ package db
 import (
 	"os"
 
-	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/go-redis/redis/v8"
+	"github.com/fnatte/pizza-tribes/internal/redis"
 )
 
 func envOrDefault(key string, defaultVal string) string{
@@ -16,11 +15,11 @@ func envOrDefault(key string, defaultVal string) string{
 }
 
 
-func NewRedisClient() internal.RedisClient {
-	return internal.NewRedisClient(redis.NewClient(&redis.Options{
+func NewRedisClient() redis.RedisClient {
+	return redis.NewRedisClient(&redis.Options{
 		Addr:     envOrDefault("REDIS_ADDR", "localhost:6379"),
 		Password: envOrDefault("REDIS_PASSWORD", ""),
 		DB:       0, // use default DB
-	}))
+	})
 }
 

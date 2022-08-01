@@ -12,6 +12,7 @@ import (
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/persist"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
+	"github.com/fnatte/pizza-tribes/internal/redis"
 	"github.com/fnatte/pizza-tribes/internal/ws"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
@@ -33,11 +34,11 @@ type incrCoinsRequest struct {
 }
 
 type userController struct {
-	rc      internal.RedisClient
+	rc      redis.RedisClient
 	updater gamestate.Updater
 }
 
-func NewUserController(r internal.RedisClient, updater gamestate.Updater) *userController {
+func NewUserController(r redis.RedisClient, updater gamestate.Updater) *userController {
 	return &userController{
 		rc:      r,
 		updater: updater,

@@ -6,12 +6,13 @@ import (
 
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
+	"github.com/fnatte/pizza-tribes/internal/redis"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 )
 
 type LeaderboardController struct {
-	r           internal.RedisClient
+	r           redis.RedisClient
 	leaderboard *internal.LeaderboardService
 	auth        *AuthService
 }

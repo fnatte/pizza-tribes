@@ -12,7 +12,7 @@ import (
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/persist"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
-	"github.com/go-redis/redis/v8"
+	"github.com/fnatte/pizza-tribes/internal/redis"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -34,13 +34,11 @@ func main() {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
 
-	rdb := redis.NewClient(&redis.Options{
+	rc := redis.NewRedisClient(&redis.Options{
 		Addr:     envOrDefault("REDIS_ADDR", "localhost:6379"),
 		Password: envOrDefault("REDIS_PASSWORD", ""),
 		DB:       0, // use default DB
 	})
-
-	rc := internal.NewRedisClient(rdb)
 
 	world := internal.NewWorldService(rc)
 
@@ -89,7 +87,7 @@ func main() {
 	}
 
 	for {
-		res, err := rdb.BLPop(ctx, 30*time.Second, "wsin").Result()
+		res, err := rc.BLPop(ctx, 30*time.Second, "wsin").Result()
 		if err != nil {
 			if err != redis.Nil {
 				log.Error().Err(err).Msg("Error when dequeuing message")

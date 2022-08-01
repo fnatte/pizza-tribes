@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/fnatte/pizza-tribes/internal/redis"
+
 	"firebase.google.com/go/messaging"
-	"github.com/go-redis/redis/v8"
 )
 
-func SchedulePushNotification(ctx context.Context, r RedisClient, msg *messaging.Message, sendAt time.Time) (int64, error) {
+func SchedulePushNotification(ctx context.Context, r redis.RedisClient, msg *messaging.Message, sendAt time.Time) (int64, error) {
 	b, err := json.Marshal(msg)
 	if err != nil {
 		return 0, err

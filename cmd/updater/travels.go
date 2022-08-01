@@ -13,7 +13,7 @@ import (
 	"github.com/fnatte/pizza-tribes/internal/gamestate"
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
-	"github.com/go-redis/redis/v8"
+	"github.com/fnatte/pizza-tribes/internal/redis"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/exp/rand"
@@ -81,7 +81,7 @@ func init() {
 		Parse(targetReportTemplateText))
 }
 
-func completeSteal(ctx context.Context, userId string, gs *models.GameState, tx *gamestate.GameTx, r internal.RedisClient, world *internal.WorldService, travel *models.Travel, travelIndex int) error {
+func completeSteal(ctx context.Context, userId string, gs *models.GameState, tx *gamestate.GameTx, r redis.RedisClient, world *internal.WorldService, travel *models.Travel, travelIndex int) error {
 	gsTarget := &models.GameState{}
 	x := travel.DestinationX
 	y := travel.DestinationY
@@ -101,7 +101,7 @@ func completeSteal(ctx context.Context, userId string, gs *models.GameState, tx 
 
 	// Get game state of target
 	gsKeyTarget := fmt.Sprintf("user:%s:gamestate", town.UserId)
-	s, err := internal.RedisJsonGet(r, ctx, gsKeyTarget, ".").Result()
+	s, err := redis.RedisJsonGet(r, ctx, gsKeyTarget, ".").Result()
 	if err != nil {
 		return fmt.Errorf("failed to complete steal: %w", err)
 	}
@@ -242,7 +242,7 @@ func completeStealReturn(userId string, gs *models.GameState, tx *gamestate.Game
 	return nil
 }
 
-func completeTravels(ctx context.Context, userId string, gs *models.GameState, tx *gamestate.GameTx, r internal.RedisClient, world *internal.WorldService) error {
+func completeTravels(ctx context.Context, userId string, gs *models.GameState, tx *gamestate.GameTx, r redis.RedisClient, world *internal.WorldService) error {
 	completedTravels := internal.GetCompletedTravels(gs)
 	if len(completedTravels) == 0 {
 		return nil

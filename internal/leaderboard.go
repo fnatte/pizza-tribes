@@ -5,14 +5,14 @@ import (
 	"fmt"
 
 	. "github.com/fnatte/pizza-tribes/internal/models"
-	"github.com/go-redis/redis/v8"
+	"github.com/fnatte/pizza-tribes/internal/redis"
 )
 
 type LeaderboardService struct {
-	r RedisClient
+	r redis.RedisClient
 }
 
-func NewLeaderboardService(r RedisClient) *LeaderboardService {
+func NewLeaderboardService(r redis.RedisClient) *LeaderboardService {
 	return &LeaderboardService{r: r}
 }
 

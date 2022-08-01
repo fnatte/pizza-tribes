@@ -6,8 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/go-redis/redis/v8"
+	"github.com/fnatte/pizza-tribes/internal/redis"
 	"github.com/rs/xid"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -19,12 +18,12 @@ type UserDbo struct {
 }
 
 type userRepo struct {
-	rdb internal.RedisClient
+	rdb redis.RedisClient
 }
 
 var ErrUsernameTaken = errors.New("username is taken")
 
-func NewUserRepository(rdb internal.RedisClient) *userRepo {
+func NewUserRepository(rdb redis.RedisClient) *userRepo {
 	return &userRepo{
 		rdb: rdb,
 	}

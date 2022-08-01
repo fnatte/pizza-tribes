@@ -7,7 +7,7 @@ import (
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
-	"github.com/go-redis/redis/v8"
+	"github.com/fnatte/pizza-tribes/internal/redis"
 	"github.com/rs/zerolog/log"
 )
 
@@ -23,7 +23,7 @@ func (h *handler) handleOpenQuest(ctx context.Context, senderId string, m *model
 
 	txf := func() error {
 		// Get current game state
-		s, err := internal.RedisJsonGet(h.rdb, ctx, gsKey, ".").Result()
+		s, err := redis.RedisJsonGet(h.rdb, ctx, gsKey, ".").Result()
 		if err != nil && err != redis.Nil {
 			return err
 		}
@@ -38,7 +38,7 @@ func (h *handler) handleOpenQuest(ctx context.Context, senderId string, m *model
 		_, err = h.rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			path := fmt.Sprintf(".quests[\"%s\"].opened", m.QuestId)
 			value := "true"
-			err := internal.RedisJsonSet(pipe, ctx, gsKey, path, value).Err()
+			err := redis.RedisJsonSet(pipe, ctx, gsKey, path, value).Err()
 			if err != nil {
 				return fmt.Errorf("failed to set quest to opened: %w", err)
 			}
@@ -78,7 +78,7 @@ func (h *handler) handleClaimQuestReward(ctx context.Context, senderId string, m
 
 	txf := func() error {
 		// Get current game state
-		s, err := internal.RedisJsonGet(h.rdb, ctx, gsKey, ".").Result()
+		s, err := redis.RedisJsonGet(h.rdb, ctx, gsKey, ".").Result()
 		if err != nil && err != redis.Nil {
 			return err
 		}
@@ -105,13 +105,13 @@ func (h *handler) handleClaimQuestReward(ctx context.Context, senderId string, m
 		_, err = h.rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			path := fmt.Sprintf(".quests[\"%s\"].claimedReward", m.QuestId)
 			value := "true"
-			err := internal.RedisJsonSet(pipe, ctx, gsKey, path, value).Err()
+			err := redis.RedisJsonSet(pipe, ctx, gsKey, path, value).Err()
 			if err != nil {
 				return fmt.Errorf("failed to set claimed reward to true: %w", err)
 			}
 
 			if q.Reward.Coins > 0 {
-				err := internal.RedisJsonNumIncrBy(
+				err := redis.RedisJsonNumIncrBy(
 					pipe, ctx, gsKey,
 					".resources.coins",
 					int64(q.Reward.Coins)).Err()
@@ -122,7 +122,7 @@ func (h *handler) handleClaimQuestReward(ctx context.Context, senderId string, m
 			}
 
 			if q.Reward.Pizzas > 0 {
-				err := internal.RedisJsonNumIncrBy(
+				err := redis.RedisJsonNumIncrBy(
 					pipe, ctx, gsKey,
 					".resources.pizzas",
 					int64(q.Reward.Pizzas)).Err()
@@ -166,7 +166,7 @@ func (h *handler) handleCompleteVisitHelpPageQuest(ctx context.Context, senderId
 
 	txf := func() error {
 		// Get current game state
-		s, err := internal.RedisJsonGet(h.rdb, ctx, gsKey, ".").Result()
+		s, err := redis.RedisJsonGet(h.rdb, ctx, gsKey, ".").Result()
 		if err != nil && err != redis.Nil {
 			return err
 		}
@@ -182,7 +182,7 @@ func (h *handler) handleCompleteVisitHelpPageQuest(ctx context.Context, senderId
 			if q, ok := gs.Quests["6"]; ok && !q.Completed {
 				path := ".quests[\"6\"].completed"
 				value := "true"
-				err := internal.RedisJsonSet(pipe, ctx, gsKey, path, value).Err()
+				err := redis.RedisJsonSet(pipe, ctx, gsKey, path, value).Err()
 				if err != nil {
 					return fmt.Errorf("failed to set visit help page quest completed to true: %w", err)
 				}

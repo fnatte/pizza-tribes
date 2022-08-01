@@ -7,12 +7,13 @@ import (
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
+	"github.com/fnatte/pizza-tribes/internal/redis"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 )
 
 type WorldController struct {
-	r     internal.RedisClient
+	r     redis.RedisClient
 	world *internal.WorldService
 	auth  *AuthService
 }
