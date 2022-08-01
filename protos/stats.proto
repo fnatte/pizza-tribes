@@ -10,4 +10,5 @@ message Stats {
   double pizzasProducedPerSecond = 4;
   double demandOffpeak = 5;
   double demandRushHour = 6;
+  double marketShare = 7;
 }

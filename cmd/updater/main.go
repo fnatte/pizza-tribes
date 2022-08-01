@@ -12,7 +12,6 @@ import (
 	"github.com/fnatte/pizza-tribes/internal/gamestate"
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/persist"
-	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/fnatte/pizza-tribes/internal/redis"
 	"github.com/fnatte/pizza-tribes/internal/ws"
 	"github.com/rs/xid"
@@ -43,12 +42,26 @@ type updater struct {
 	leaderboard *internal.LeaderboardService
 	gsRepo      persist.GameStateRepository
 	reportsRepo persist.ReportsRepository
+	worldRepo   persist.WorldRepository
+	marketRepo  persist.MarketRepository
 	updater     gamestate.Updater
 }
 
 // Update the game state for the specified user
 func (u *updater) update(ctx context.Context, userId string) {
 	log.Debug().Str("userId", userId).Msg("Update")
+
+	worldState, err := u.worldRepo.GetState(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to perform update")
+		return
+	}
+
+	globalDemandScore, err := u.marketRepo.GetGlobalDemandScore(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to perform update")
+		return
+	}
 
 	/*
 	 * There's a lot of stuff happening in this function, but this is
@@ -62,7 +75,7 @@ func (u *updater) update(ctx context.Context, userId string) {
 	 */
 
 	tx, err := u.updater.PerformUpdate(ctx, userId, func(gs *models.GameState, tx *gamestate.GameTx) error {
-		if err := extrapolate(userId, gs, tx); err != nil {
+		if err := extrapolate(userId, gs, tx, worldState, globalDemandScore); err != nil {
 			return err
 		}
 		if err := completedConstructions(userId, gs, tx); err != nil {
@@ -136,10 +149,22 @@ func (u *updater) postProcessPatch(ctx context.Context, userId string, txu *game
 		}
 	}
 
-	// Send stats
 	if txu.StatsInvalidated {
-		if err = sendStats(ctx, u.r, userId); err != nil {
+		// Send stats
+		var stats *models.Stats
+		if stats, err = u.getStats(ctx, userId); err != nil {
+			log.Error().Err(err).Msg("Failed to get stats")
+		}
+
+		msg := stats.ToServerMessage()
+		if err = ws.Send(ctx, u.r, userId, msg); err != nil {
 			log.Error().Err(err).Msg("Failed to send stats")
+		}
+
+		// Update user demand score
+		demandScore := internal.CalculateDemandScore(txu.Gs)
+		if err = u.marketRepo.SetUserDemandScore(ctx, userId, demandScore); err != nil {
+			log.Error().Err(err).Msg("Failed to set user demand score")
 		}
 	}
 
@@ -213,20 +238,23 @@ func sendReports(ctx context.Context, r redis.RedisClient, userId string) error 
 	})
 }
 
-func sendStats(ctx context.Context, r redis.RedisClient, userId string) error {
-	gs := models.GameState{}
-	gsKey := fmt.Sprintf("user:%s:gamestate", userId)
-	s, err := redis.RedisJsonGet(r, ctx, gsKey, ".").Result()
-	if err != nil && err != redis.Nil {
-		return err
-	}
-	if err = protojson.Unmarshal([]byte(s), &gs); err != nil {
-		return err
+func (u *updater) getStats(ctx context.Context, userId string) (*models.Stats, error) {
+	gs, err := u.gsRepo.Get(ctx, userId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send stats: %w", err)
 	}
 
-	msg := internal.CalculateStats(&gs).ToServerMessage()
+	worldState, err := u.worldRepo.GetState(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send full state update: %w", err)
+	}
 
-	return ws.Send(ctx, r, userId, msg)
+	globalDemandScore, err := u.marketRepo.GetGlobalDemandScore(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send full state update: %w", err)
+	}
+
+	return internal.CalculateStats(gs, globalDemandScore, worldState), nil
 }
 
 func (u *updater) next(ctx context.Context) (string, error) {
@@ -326,8 +354,13 @@ func main() {
 	reportsRepo := persist.NewReportsRepository(rc)
 	userRepo := persist.NewUserRepository(rc)
 	notifyRepo := persist.NewNotifyRepository(rc)
-	u2 := gamestate.NewUpdater(gsRepo, reportsRepo, userRepo, notifyRepo)
-	u := updater{r: rc, world: world, leaderboard: leaderboard, gsRepo: gsRepo, reportsRepo: reportsRepo, updater: u2}
+	worldRepo := persist.NewWorldRepository(rc)
+	marketRepo := persist.NewMarketRepository(rc)
+	u2 := gamestate.NewUpdater(gsRepo, reportsRepo, userRepo, notifyRepo, worldRepo)
+	u := updater{
+		r: rc, world: world, leaderboard: leaderboard, gsRepo: gsRepo,
+		reportsRepo: reportsRepo, worldRepo: worldRepo, marketRepo: marketRepo,
+		updater: u2}
 
 	ctx := context.Background()
 

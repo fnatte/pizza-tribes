@@ -46,9 +46,12 @@ func main() {
 	reportsRepo := persist.NewReportsRepository(rc)
 	userRepo := persist.NewUserRepository(rc)
 	notifyRepo := persist.NewNotifyRepository(rc)
-	updater := gamestate.NewUpdater(gsRepo, reportsRepo, userRepo, notifyRepo)
+	worldRepo := persist.NewWorldRepository(rc)
+	marketRepo := persist.NewMarketRepository(rc)
+	updater := gamestate.NewUpdater(gsRepo, reportsRepo, userRepo, notifyRepo, worldRepo)
 
-	h := &handler{rdb: rc, world: world, gsRepo: gsRepo, reportsRepo: reportsRepo, userRepo: userRepo, updater: updater}
+	h := &handler{rdb: rc, world: world, gsRepo: gsRepo, reportsRepo: reportsRepo,
+		userRepo: userRepo, updater: updater, marketRepo: marketRepo}
 
 	ctx := context.Background()
 

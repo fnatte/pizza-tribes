@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"github.com/fnatte/pizza-tribes/internal/models"
 	. "github.com/fnatte/pizza-tribes/internal/models"
 )
 
@@ -9,46 +8,6 @@ const CHEF_PIZZAS_PER_SECOND = 0.2
 const SALESMICE_SELLS_PER_SECOND = 0.5
 const DEMAND_BASE = 0.2
 const DEMAND_RUSH_HOUR_BONUS = 0.55
-
-func calculateTasteScore(gs *GameState) float64 {
-	score := 1.0
-
-	if gs.HasDiscovery(ResearchDiscovery_DURUM_WHEAT) {
-		score = score + 0.05
-	}
-	if gs.HasDiscovery(ResearchDiscovery_DOUBLE_ZERO_FLOUR) {
-		score = score + 0.05
-	}
-	if gs.HasDiscovery(ResearchDiscovery_SAN_MARZANO_TOMATOES) {
-		score = score + 0.05
-	}
-	if gs.HasDiscovery(ResearchDiscovery_OCIMUM_BASILICUM) {
-		score = score + 0.05
-	}
-	if gs.HasDiscovery(ResearchDiscovery_EXTRA_VIRGIN) {
-		score = score + 0.05
-	}
-	if gs.HasDiscovery(ResearchDiscovery_MASONRY_OVEN) {
-		score = score + 0.1
-	}
-
-	return score
-}
-
-func calculatePopularity(gs *GameState, e map[models.Education]int32) float64 {
-	popularityBonus := 1.0
-
-	if gs.HasDiscovery(ResearchDiscovery_WEBSITE) {
-		popularityBonus = popularityBonus + 0.1
-	}
-	if gs.HasDiscovery(ResearchDiscovery_MOBILE_APP) {
-		popularityBonus = popularityBonus + 0.1
-	}
-
-	tasteScore := calculateTasteScore(gs)
-
-	return (3 + float64(e[models.Education_PUBLICIST])*2) * 5.0 * popularityBonus * tasteScore
-}
 
 func calculateSalesBonus(gs *GameState) float64 {
 	bonus := 1.0
@@ -73,7 +32,7 @@ func calculateBakeBonus(gs *GameState) float64 {
 	return bonus
 }
 
-func CalculateStats(gs *GameState) *Stats {
+func CalculateStats(gs *GameState, globalDemandScore float64, worldState *WorldState) *Stats {
 	// No changes if there are no population
 	if CountTownPopulation(gs) == 0 {
 		return &Stats{}
@@ -81,9 +40,13 @@ func CalculateStats(gs *GameState) *Stats {
 
 	e := CountTownPopulationEducations(gs)
 
-	popularity := calculatePopularity(gs, e)
-	demandOffpeak := DEMAND_BASE * popularity
-	demandRushHour := (DEMAND_BASE + DEMAND_RUSH_HOUR_BONUS) * popularity
+	marketShare := CalculateDemandScore(gs) / globalDemandScore
+	marketDemandBase := marketShare * CalculateGlobalDemand(worldState)
+	marketDemandOffpeak := marketDemandBase
+	marketDemandRushHour := marketDemandBase * 2
+
+	demandOffpeak := DEMAND_BASE + marketDemandOffpeak
+	demandRushHour := (DEMAND_BASE + DEMAND_RUSH_HOUR_BONUS) + marketDemandRushHour
 
 	maxEmployed := CountMaxEmployed(gs)
 
@@ -104,5 +67,6 @@ func CalculateStats(gs *GameState) *Stats {
 		PizzasProducedPerSecond: pizzasProducedPerSecond,
 		DemandOffpeak:           demandOffpeak,
 		DemandRushHour:          demandRushHour,
+		MarketShare:             marketShare,
 	}
 }

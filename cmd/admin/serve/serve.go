@@ -39,7 +39,9 @@ func Serve() {
 	reportsRepo := persist.NewReportsRepository(rc)
 	userRepo := persist.NewUserRepository(rc)
 	notifyRepo := persist.NewNotifyRepository(rc)
-	updater := gamestate.NewUpdater(gsRepo, reportsRepo, userRepo, notifyRepo)
+	worldRepo := persist.NewWorldRepository(rc)
+	// marketRepo := persist.NewMarketRepository(rc)
+	updater := gamestate.NewUpdater(gsRepo, reportsRepo, userRepo, notifyRepo, worldRepo)
 
 	userController := NewUserController(rc, updater)
 	testController := NewTestController(rc)

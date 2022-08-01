@@ -21,6 +21,7 @@ type handler struct {
 	gsRepo persist.GameStateRepository
 	reportsRepo persist.ReportsRepository
 	userRepo persist.UserRepository
+	marketRepo persist.MarketRepository
 	updater gamestate.Updater
 }
 
@@ -128,12 +129,27 @@ func (h *handler) sendFullStateUpdate(ctx context.Context, senderId string) {
 		return
 	}
 
-	msg := internal.CalculateStats(&gs).ToServerMessage()
-	err = h.send(ctx, senderId, msg)
+	h.sendStats(ctx, senderId, &gs)
+}
+
+func (h *handler) sendStats(ctx context.Context, userId string, gs *models.GameState) error {
+	worldState, err := h.world.GetState(ctx)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to send stats message")
-		return
+		return fmt.Errorf("failed to send full state update: %w", err)
 	}
+
+	globalDemandScore, err := h.marketRepo.GetGlobalDemandScore(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to send full state update: %w", err)
+	}
+
+	msg := internal.CalculateStats(gs, globalDemandScore, worldState).ToServerMessage()
+	err = h.send(ctx, userId, msg)
+	if err != nil {
+		return fmt.Errorf("failed to send full state update: %w", err)
+	}
+
+	return nil
 }
 
 func (h *handler) sendGameTx(ctx context.Context, tx *gamestate.GameTx) error {
@@ -156,8 +172,7 @@ func (h *handler) sendGameTx(ctx context.Context, tx *gamestate.GameTx) error {
 		}
 
 		if u.StatsInvalidated {
-			msg := internal.CalculateStats(u.Gs).ToServerMessage()
-			err = h.send(ctx, uid, msg)
+			err = h.sendStats(ctx, uid, u.Gs)
 			if err != nil {
 				errs = append(errs, err)
 			}

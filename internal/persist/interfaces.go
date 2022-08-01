@@ -33,8 +33,12 @@ type NotifyRepository interface {
 }
 
 type MarketRepository interface {
-	GetGlobalDemand(ctx context.Context) (float64, error)
-	SetUserDemand(ctx context.Context, userId string, demand float64) error
+	GetGlobalDemandScore(ctx context.Context) (float64, error)
+	SetUserDemandScore(ctx context.Context, userId string, demand float64) error
+}
+
+type WorldRepository interface {
+	GetState(ctx context.Context) (*models.WorldState, error)
 }
 
 type Mutex interface {

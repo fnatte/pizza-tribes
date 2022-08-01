@@ -241,3 +241,4 @@ func (tx *GameTx) InitUser(userId string, gs *models.GameState) {
 		}
 	}
 }
+

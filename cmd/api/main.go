@@ -48,8 +48,9 @@ func main() {
 	world := internal.NewWorldService(rc)
 	leaderboard := internal.NewLeaderboardService(rc)
 	gsRepo := persist.NewGameStateRepository(rc)
+	marketRepo := persist.NewMarketRepository(rc)
 	wsHub := ws.NewHub()
-	handler := wsHandler{rc: rc, world: world, gsRepo: gsRepo}
+	handler := wsHandler{rc: rc, world: world, gsRepo: gsRepo, marketRepo: marketRepo}
 	wsEndpoint := ws.NewEndpoint(auth.Authorize, wsHub, &handler, origins)
 	poller := poller{rdb: rc, hub: wsHub}
 	ts := &TimeseriesService{r: rc, auth: auth}

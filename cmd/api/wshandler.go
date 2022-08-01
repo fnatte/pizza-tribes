@@ -18,6 +18,7 @@ type wsHandler struct {
 	rc    redis.RedisClient
 	world *internal.WorldService
 	gsRepo persist.GameStateRepository
+	marketRepo persist.MarketRepository
 }
 
 func (h *wsHandler) HandleMessage(ctx context.Context, m []byte, c *ws.Client) {
@@ -85,6 +86,18 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 		return err
 	}
 
+	worldState, err := h.world.GetState(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get world state")
+		return err
+	}
+
+	globalDemandScore, err := h.marketRepo.GetGlobalDemandScore(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get world state")
+		return err
+	}
+
 	go (func() {
 		msg := &models.ServerMessage{
 			Id: xid.New().String(),
@@ -114,7 +127,7 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 
 		c.Send(b)
 
-		msg = internal.CalculateStats(gs).ToServerMessage()
+		msg = internal.CalculateStats(gs, globalDemandScore, worldState).ToServerMessage()
 		b, err = protojson.Marshal(msg)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to send init stats")

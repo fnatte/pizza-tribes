@@ -16,8 +16,8 @@ type extrapolateChanges struct {
 	pizzas    int32
 }
 
-func extrapolate(userId string, gs *models.GameState, tx *gamestate.GameTx) error {
-	changes := calculateExtrapolateChanges(gs)
+func extrapolate(userId string, gs *models.GameState, tx *gamestate.GameTx, worldState *models.WorldState, globalDemandScore float64) error {
+	changes := calculateExtrapolateChanges(gs, worldState, globalDemandScore)
 
 	u := tx.Users[userId]
 	u.SetCoins(gs.Resources.Coins + changes.coins)
@@ -27,7 +27,7 @@ func extrapolate(userId string, gs *models.GameState, tx *gamestate.GameTx) erro
 	return nil
 }
 
-func calculateExtrapolateChanges(gs *models.GameState) extrapolateChanges {
+func calculateExtrapolateChanges(gs *models.GameState, worldState *models.WorldState, globalDemandScore float64) extrapolateChanges {
 	// No changes if there are no population
 	if internal.CountTownPopulation(gs) == 0 {
 		return extrapolateChanges{}
@@ -44,7 +44,7 @@ func calculateExtrapolateChanges(gs *models.GameState) extrapolateChanges {
 
 	rush, offpeak := mtime.GetRush(then, now.Unix())
 
-	stats := internal.CalculateStats(gs)
+	stats := internal.CalculateStats(gs, globalDemandScore, worldState)
 
 	demand := int32(stats.DemandOffpeak*float64(offpeak) +
 		stats.DemandRushHour*float64(rush))

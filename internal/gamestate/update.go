@@ -16,6 +16,7 @@ type updater struct {
 	reportsRepo persist.ReportsRepository
 	userRepo    persist.UserRepository
 	notifyRepo  persist.NotifyRepository
+	worldRepo  persist.WorldRepository
 }
 
 type Updater interface {
@@ -25,12 +26,14 @@ type Updater interface {
 func NewUpdater(gsRepo persist.GameStateRepository,
 	reportsRepo persist.ReportsRepository,
 	userRepo persist.UserRepository,
-	notifyRepo persist.NotifyRepository) *updater {
+	notifyRepo persist.NotifyRepository,
+	worldRepo persist.WorldRepository) *updater {
 	return &updater{
 		gsRepo:      gsRepo,
 		userRepo:    userRepo,
 		reportsRepo: reportsRepo,
 		notifyRepo:  notifyRepo,
+		worldRepo:   worldRepo,
 	}
 }
 
