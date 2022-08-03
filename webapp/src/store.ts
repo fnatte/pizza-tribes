@@ -7,7 +7,6 @@ import { Education } from "./generated/education";
 import {
   GameState,
   GameStatePatch,
-  MouseAppearance,
 } from "./generated/gamestate";
 import { GameData } from "./generated/game_data";
 import { Report } from "./generated/report";
@@ -18,6 +17,7 @@ import {
   ServerMessage_User,
 } from "./generated/server_message";
 import { Stats } from "./generated/stats";
+import { MouseAppearance } from "./generated/appearance";
 import { generateId } from "./utils";
 import { enablePatches, produce } from "immer";
 import { queryClient } from "./queryClient";
