@@ -1,0 +1,46 @@
+syntax = "proto3";
+package pizzatribes;
+
+option go_package = "github.com/fnatte/pizza-tribes/internal/models";
+
+enum AppearanceCategory {
+  BODY = 0;
+  EYES = 1;
+  MOUTH = 2;
+  FEET = 3;
+  TAIL = 4;
+  OUTFIT = 5;
+  EYES_EXTRA1 = 6;
+  EYES_EXTRA2 = 7;
+  HAT = 8;
+  LEFT_HAND = 9;
+  RIGHT_HAND = 10;
+}
+
+message AppearancePart {
+  string id = 1;
+  AppearanceCategory category = 2;
+}
+
+message MouseAppearance {
+  message PartRef {
+    string id = 1;
+    int32 color = 2;
+  }
+
+  map<int32, PartRef> parts = 1;
+
+/*
+  PartRef body = 1;
+  PartRef eyes = 2;
+  PartRef mouth = 3;
+  PartRef feet = 4;
+  PartRef tail = 5;
+  PartRef outfits = 6;
+  PartRef eyesExtra1 = 7;
+  PartRef eyesExtra2 = 8;
+  PartRef hats = 9;
+  PartRef leftHand = 10;
+  PartRef rightHand = 11;
+  */
+}
