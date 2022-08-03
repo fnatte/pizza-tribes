@@ -45,7 +45,7 @@ describe("education", () => {
       .find('[data-cy="school-education-submit-button"]')
       .click();
 
-    // Assert
+    // Assert training queue
     cy.get('[data-cy="training-queue-table-row"]').should(($tr) => {
       expect($tr.find('[data-cy="training-queue-table-amount"]').text()).to.eq(
         "1"
@@ -54,6 +54,17 @@ describe("education", () => {
         "Chef"
       );
     });
+
+    // Complete trainings
+    cy.adminCompleteQueues();
+
+    // Assert
+    cy.get('[data-cy="training-queue-table-row"]').should("not.exist");
+    cy.get('[data-cy="main-nav"] [href="/town"]').click();
+    cy.get('[data-cy="population-table-toggle-button"]').expand();
+    cy.get('[data-cy="population-table-row"]')
+      .contains('[data-cy="population-table-row"]', "Chef")
+      .should("contain.text", "1 / 0");
   });
 
   it("can train 3 salesmice", () => {
@@ -81,6 +92,17 @@ describe("education", () => {
         "Salesmouse"
       );
     });
+
+    // Complete trainings
+    cy.adminCompleteQueues();
+
+    // Assert
+    cy.get('[data-cy="training-queue-table-row"]').should("not.exist");
+    cy.get('[data-cy="main-nav"] [href="/town"]').click();
+    cy.get('[data-cy="population-table-toggle-button"]').expand();
+    cy.get('[data-cy="population-table-row"]')
+      .contains('[data-cy="population-table-row"]', "Salesmice")
+      .should("contain.text", "3 / 0");
   });
 
   it("can't train more chefs than available uneducated", () => {

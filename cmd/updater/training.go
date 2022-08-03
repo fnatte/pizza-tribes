@@ -53,7 +53,6 @@ func completeTrainings(userId string, gs *models.GameState, tx *gamestate.GameTx
 	// Update patch
 	u := tx.Users[userId]
 
-
 	q := gs.TrainingQueue
 	for _, c := range completions {
 		// Remove completion by index from training queue
@@ -62,17 +61,19 @@ func completeTrainings(userId string, gs *models.GameState, tx *gamestate.GameTx
 			q[c.queueIdx+1:]...,
 		)
 
-		var mouseId string
-		for id, m := range u.Gs.Mice {
-			if m.IsBeingEducated {
-				mouseId = id
-				break
+		for n := 0; n < int(c.amount); n++ {
+			var mouseId string
+			for id, m := range u.Gs.Mice {
+				if m.IsBeingEducated {
+					mouseId = id
+					break
+				}
 			}
+			if mouseId == "" {
+				return errors.New("could not find mouse being educated")
+			}
+			u.SetMouseEducation(mouseId, c.education)
 		}
-		if mouseId == "" {
-			return errors.New("could not find mouse being educated")
-		}
-		u.SetMouseEducation(mouseId, c.education)
 	}
 
 	u.SetTrainingQueue(q)
@@ -82,4 +83,3 @@ func completeTrainings(userId string, gs *models.GameState, tx *gamestate.GameTx
 
 	return nil
 }
-
