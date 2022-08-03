@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
@@ -64,12 +65,23 @@ func NewAuthService(rdb redis.UniversalClient) *AuthService {
 }
 
 var ErrUsernameTaken = errors.New("username is taken")
+var ErrInvalidUsername = errors.New("username is invalid")
 
 func useCookieAuth(req *http.Request) bool {
 	return !strings.Contains(req.UserAgent(), "pizzatribes")
 }
 
+var validUsername = regexp.MustCompile(`^[a-zA-Z]+[a-zA-Z0-9_]*$`)
+
+func IsValidUsername(username string) bool {
+	return validUsername.MatchString(username) && len(username) >= 3 && len(username) <= 20
+}
+
 func (a *AuthService) Register(ctx context.Context, username, password string) error {
+	if !IsValidUsername(username) {
+		return ErrInvalidUsername
+	}
+
 	id := xid.New().String()
 	usernameKey := fmt.Sprintf("username:%s", strings.ToLower(username))
 	userKey := fmt.Sprintf("user:%s", id)
@@ -142,6 +154,8 @@ func (a *AuthService) Handler() http.Handler {
 			log.Error().Err(err).Msg("Error when registering user")
 			if errors.Is(err, ErrUsernameTaken) {
 				http.Error(w, "Username taken", http.StatusBadRequest)
+			} else if errors.Is(err, ErrInvalidUsername) {
+				http.Error(w, "Invalid username", http.StatusBadRequest)
 			} else {
 				http.Error(w, "Failed to register", http.StatusInternalServerError)
 			}

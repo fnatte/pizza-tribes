@@ -1,4 +1,4 @@
-const username = "cypress-test-user";
+const username = "cypress_test_user";
 const password = "secret";
 
 describe("pizza-tribes", () => {

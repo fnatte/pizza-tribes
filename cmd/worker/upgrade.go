@@ -14,6 +14,10 @@ import (
 )
 
 func (h *handler) handleUpgrade(ctx context.Context, senderId string, m *models.ClientMessage_UpgradeBuilding) error {
+	if !internal.IsValidLotId(m.LotId) {
+		return errors.New("Invalid lot id")
+	}
+
 	gsKey := fmt.Sprintf("user:%s:gamestate", senderId)
 
 	var gs models.GameState

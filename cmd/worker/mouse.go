@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/fnatte/pizza-tribes/internal"
@@ -68,6 +69,24 @@ func (h *handler) handleReschoolMouse(ctx context.Context, senderId string, m *m
 	return nil
 }
 
+var validMouseName = regexp.MustCompile(`^[a-zA-Z]+(\s[a-zA-Z]+)?(\s[a-zA-Z]+)?$`)
+
+func validateName(name string) error {
+	if len(name) < 2 {
+		return errors.New("name too short")
+	}
+
+	if len(name) > 30 {
+		return errors.New("name too long")
+	}
+
+	if !validMouseName.MatchString(name) {
+		return errors.New("invalid name")
+	}
+
+	return nil
+}
+
 func (h *handler) handleRenameMouse(ctx context.Context, senderId string, m *models.ClientMessage_RenameMouse) error {
 	log.Info().
 		Str("senderId", senderId).
@@ -90,13 +109,8 @@ func (h *handler) handleRenameMouse(ctx context.Context, senderId string, m *mod
 		}
 
 		name := strings.TrimSpace(m.Name)
-
-		if len(name) < 2 {
-			return errors.New("name too short")
-		}
-
-		if len(name) > 30 {
-			return errors.New("name too long")
+		if err = validateName(name); err != nil {
+			return err
 		}
 
 		var ok bool

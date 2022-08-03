@@ -2,7 +2,7 @@
 
 import { GameState, GameStatePatch } from "../../src/generated/gamestate";
 
-const defaultUsername = "cypress-test-user";
+const defaultUsername = "cypress_test_user";
 const defaultPassword = "secret";
 
 declare global {

@@ -13,6 +13,10 @@ import (
 )
 
 func (h *handler) handleRazeBuilding(ctx context.Context, senderId string, m *models.ClientMessage_RazeBuilding) error {
+	if !internal.IsValidLotId(m.LotId) {
+		return errors.New("Invalid lot id")
+	}
+
 	gsKey := fmt.Sprintf("user:%s:gamestate", senderId)
 
 	var gs models.GameState
@@ -116,6 +120,10 @@ func (h *handler) handleRazeBuilding(ctx context.Context, senderId string, m *mo
 }
 
 func (h *handler) handleCancelRazeBuilding(ctx context.Context, senderId string, m *models.ClientMessage_CancelRazeBuilding) error {
+	if !internal.IsValidLotId(m.LotId) {
+		return errors.New("Invalid lot id")
+	}
+
 	gsKey := fmt.Sprintf("user:%s:gamestate", senderId)
 
 	var gs models.GameState

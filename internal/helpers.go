@@ -207,3 +207,27 @@ func FindMouseIdWithEducation(mice map[string]*Mouse, edu Education) string {
 
 	return ""
 }
+
+var validLotIds = []string{
+	"1",
+	"2",
+	"3",
+	"4",
+	"5",
+	"6",
+	"7",
+	"8",
+	"9",
+	"10",
+	"11",
+}
+
+func IsValidLotId(lotId string) bool {
+	for _, x := range validLotIds {
+		if x == lotId {
+			return true
+		}
+	}
+	return false
+}
+

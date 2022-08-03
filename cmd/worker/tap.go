@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 	"time"
 
+	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/gamestate"
 	"github.com/fnatte/pizza-tribes/internal/models"
 )
@@ -13,6 +15,10 @@ import (
 const MAX_TAP_STREAK = 12
 
 func (h *handler) handleTap(ctx context.Context, userId string, m *models.ClientMessage_Tap) error {
+	if !internal.IsValidLotId(m.LotId) {
+		return errors.New("Invalid lot id")
+	}
+
 	now := time.Now().UnixNano()
 
 	tx, err := h.updater.PerformUpdate(ctx, userId, func(gs *models.GameState, tx *gamestate.GameTx) error {

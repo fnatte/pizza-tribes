@@ -41,7 +41,20 @@ function Container({ children }: { children?: ReactNode | undefined }) {
 }
 
 const schema = yup.object().shape({
-  name: yup.string().trim().min(2).max(30).required(),
+  name: yup
+    .string()
+    .trim()
+    .min(2)
+    .max(30)
+    .matches(
+      /^[a-zA-Z\s]+$/,
+      "name must consist of letters (a-z) and up to two spaces"
+    )
+    .matches(
+      /^[a-zA-Z]+(\s[a-zA-Z]+)?(\s[a-zA-Z]+)?$/,
+      "name can have up to two spaces and there must be letter between"
+    )
+    .required(),
 });
 
 type FormFields = RemoveIndex<yup.Asserts<typeof schema>>;
@@ -63,7 +76,6 @@ function RenameForm({ mouseId }: { mouseId: string }) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      {errors.name && <div className="p-2">{errors.name.message}</div>}
       <label className="mx-2">
         New Name:
         <input className="mx-2" type="text" {...register("name")} />
@@ -75,6 +87,7 @@ function RenameForm({ mouseId }: { mouseId: string }) {
       >
         Rename
       </button>
+      {errors.name && <div className="p-2">{errors.name.message}</div>}
     </form>
   );
 }
@@ -90,7 +103,7 @@ export default function MouseView() {
     )
   );
 
-  const ambassador = useStore(state => state.gameState.ambassadorMouseId);
+  const ambassador = useStore((state) => state.gameState.ambassadorMouseId);
   const isAmbassador = ambassador !== "" && ambassador === id;
 
   const reschool = useStore((store) => store.reschool);

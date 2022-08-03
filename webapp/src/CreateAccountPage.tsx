@@ -11,7 +11,17 @@ import { apiFetch } from "./api";
 import { ViewFilled, ViewOffFilled } from "./icons";
 
 const schema = yup.object().shape({
-  username: yup.string().required(),
+  username: yup
+    .string()
+    .trim()
+    .matches(
+      /^[a-zA-Z0-9_]*$/,
+      "username must only contain letters (a-z), digits and underscore"
+    )
+    .matches(/^[a-zA-Z].*/, "username must start with a letter (a-z)")
+    .min(3)
+    .max(20)
+    .required(),
   password: yup.string().required(),
   confirm: yup
     .string()
@@ -75,7 +85,7 @@ const CreateAccountPage: React.VFC<{}> = () => {
           {...register("username")}
         />
         {errors.username && (
-          <span className="pb-2">{errors.username.message}</span>
+          <span className="px-2 pb-2">{errors.username.message}</span>
         )}
         <div className="relative">
           <input
@@ -85,9 +95,6 @@ const CreateAccountPage: React.VFC<{}> = () => {
             disabled={isSubmitting}
             {...register("password")}
           />
-          {errors.password && (
-            <span className="pb-2">{errors.password.message}</span>
-          )}
           {!viewPassword1 ? (
             <ViewOffFilled
               className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5"
@@ -100,6 +107,9 @@ const CreateAccountPage: React.VFC<{}> = () => {
             />
           )}
         </div>
+        {errors.password && (
+          <span className="px-2 pb-2">{errors.password.message}</span>
+        )}
         <div className="relative">
           <input
             type={viewPassword2 ? "text" : "password"}
@@ -121,7 +131,7 @@ const CreateAccountPage: React.VFC<{}> = () => {
           )}
         </div>
         {errors.confirm && (
-          <span className="pb-2">{errors.confirm.message}</span>
+          <span className="px-2 pb-2">{errors.confirm.message}</span>
         )}
         <button
           type="submit"
