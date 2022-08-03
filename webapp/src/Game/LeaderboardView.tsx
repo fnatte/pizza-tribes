@@ -102,6 +102,7 @@ function LeaderboardTable({ leaderboard }: { leaderboard: Leaderboard }) {
             className={classnames({
               "bg-green-200": i % 2 === 0,
             })}
+            data-cy="leaderboard-row"
           >
             <td className={classnames("p-1")}>
               {i + 1 + (leaderboard.skip ?? 0)}

@@ -30,7 +30,7 @@ type createUserRequest struct {
 }
 
 type batchDeleteUserRequest struct {
-	UserIds []string `json:"userIds"`
+	UserIds   []string `json:"userIds"`
 	Usernames []string `json:"usernames"`
 }
 
@@ -39,7 +39,7 @@ type batchCreateUserRequest struct {
 }
 
 type batchDeleteUserResponseItem struct {
-	Id         string    `json:"id"`
+	Id         string `json:"id"`
 	Status     int    `json:"status"`
 	StatusText string `json:"statusText"`
 }
@@ -66,6 +66,16 @@ type incrCoinsRequest struct {
 type userController struct {
 	rc      redis.RedisClient
 	updater gamestate.Updater
+}
+
+func contains(slice []string, item string) bool {
+	for _, str := range slice {
+		if str == item {
+			return true
+		}
+	}
+
+	return false
 }
 
 func NewUserController(r redis.RedisClient, updater gamestate.Updater) *userController {
@@ -467,6 +477,15 @@ func (c *userController) HandlePatchGameState(w http.ResponseWriter, r *http.Req
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
+	}
+
+	// Update leaderboard
+	if contains(req.PatchMask.Paths, "resources") || contains(req.PatchMask.Paths, "resources.coins") {
+		coins := int64(req.GameState.Resources.Coins)
+		leaderboard := internal.NewLeaderboardService(c.rc)
+		if err = leaderboard.UpdateUser(ctx, userId, coins); err != nil {
+			log.Error().Err(err).Msg("Failed to update leaderboard")
+		}
 	}
 
 	err = ws.Send(ctx, c.rc, userId, req.ToServerMessage())

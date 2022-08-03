@@ -20,7 +20,7 @@ const schema = yup.object().shape({
     )
     .matches(/^[a-zA-Z].*/, "username must start with a letter (a-z)")
     .min(3)
-    .max(20)
+    .max(30)
     .required(),
   password: yup.string().required(),
   confirm: yup

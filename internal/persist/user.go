@@ -110,7 +110,7 @@ func (r *userRepo) FindUser(ctx context.Context, username string) (string, error
 var validUsername = regexp.MustCompile(`^[a-zA-Z]+[a-zA-Z0-9_]*$`)
 
 func IsValidUsername(username string) bool {
-	return validUsername.MatchString(username) && len(username) >= 3 && len(username) <= 20
+	return validUsername.MatchString(username) && len(username) >= 3 && len(username) <= 30
 }
 
 func (r *userRepo) CreateUser(ctx context.Context, username string, password string) (string, error) {

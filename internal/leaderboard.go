@@ -17,7 +17,7 @@ func NewLeaderboardService(r redis.RedisClient) *LeaderboardService {
 }
 
 func (s *LeaderboardService) GetRankByUserId(ctx context.Context, userId string) (int64, error) {
-	rank, err := s.r.ZRank(ctx, "leaderboard", userId).Result()
+	rank, err := s.r.ZRevRank(ctx, "leaderboard", userId).Result()
 	if err != nil {
 		return 0, fmt.Errorf("failed to get user leaderboard rank: %w", err)
 	}
@@ -26,7 +26,7 @@ func (s *LeaderboardService) GetRankByUserId(ctx context.Context, userId string)
 }
 
 func (s *LeaderboardService) Get(ctx context.Context, skip int) (*Leaderboard, error) {
-	res, err := s.r.ZRevRangeWithScores(ctx, "leaderboard", int64(skip), 20).Result()
+	res, err := s.r.ZRevRangeWithScores(ctx, "leaderboard", int64(skip), int64(skip)+20).Result()
 	if err != nil {
 		return nil, err
 	}
