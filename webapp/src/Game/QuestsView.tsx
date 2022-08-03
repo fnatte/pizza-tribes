@@ -129,7 +129,7 @@ export default function QuestsView() {
                     >
                       {quest.description}
                     </ReactMarkdown>
-                    {id === STATS_QUEST_ID && (
+                    {id === STATS_QUEST_ID && !questState.completed && (
                       <div className="my-4">
                         <StatsQuestForm />
                       </div>
