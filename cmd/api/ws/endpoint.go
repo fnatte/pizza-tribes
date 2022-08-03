@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/gorilla/websocket"
 	"github.com/rs/zerolog/log"
 )
@@ -81,7 +82,7 @@ func (e *WsEndpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Read user id from request context
-	userId, ok := r.Context().Value("userId").(string)
+	userId, ok := internal.GetUserIdFromContext(r.Context())
 	if !ok {
 		log.Warn().Msg("Failed to get account id")
 		ws.Close()

@@ -15,7 +15,7 @@ import (
 type WorldController struct {
 	r     redis.RedisClient
 	world *internal.WorldService
-	auth  *AuthService
+	auth  *internal.AuthService
 }
 
 func (c *WorldController) Handler() http.Handler {

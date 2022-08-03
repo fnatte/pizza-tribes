@@ -14,11 +14,39 @@ import (
 type LeaderboardController struct {
 	r           redis.RedisClient
 	leaderboard *internal.LeaderboardService
-	auth        *AuthService
+	auth        *internal.AuthService
 }
 
 func (c *LeaderboardController) Handler() http.Handler {
 	r := mux.NewRouter()
+
+	r.HandleFunc("/me/rank", func(w http.ResponseWriter, r *http.Request) {
+		err := c.auth.Authorize(r)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to authorize")
+			w.WriteHeader(403)
+			return
+		}
+
+		userId, ok := internal.GetUserIdFromContext(r.Context())
+		if !ok {
+			log.Error().Err(err).Msg("Failed to get user id")
+			return
+		}
+
+		rank, err := c.leaderboard.GetRankByUserId(r.Context(), userId)
+		if err != nil {
+			w.WriteHeader(500)
+			log.Error().Err(err).Msg("Failed to get leaderboard")
+			return
+		}
+
+		rankStr := strconv.FormatInt(rank, 10)
+
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(200)
+		w.Write([]byte(rankStr))
+	})
 
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		err := c.auth.Authorize(r)

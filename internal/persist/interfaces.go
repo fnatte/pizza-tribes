@@ -25,6 +25,8 @@ type UserRepository interface {
 	SetUserLatestActivity(ctx context.Context, userId string, value int64) error
 	GetUserLatestActivity(ctx context.Context, userId string) (int64, error)
 	GetAllUsers(ctx context.Context) ([]string, error)
+	CreateUser(ctx context.Context, username string, password string) (string, error)
+    GetUser(ctx context.Context, userId string) (*UserDbo, error)
 }
 
 type NotifyRepository interface {

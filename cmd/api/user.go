@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/persist"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
@@ -14,7 +15,7 @@ import (
 
 type UserController struct {
 	r      redis.RedisClient
-	auth   *AuthService
+	auth   *internal.AuthService
 	gsRepo persist.GameStateRepository
 }
 

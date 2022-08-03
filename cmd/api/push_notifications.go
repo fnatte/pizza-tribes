@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/redis"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
@@ -12,7 +13,7 @@ import (
 
 type PushNotificationsController struct {
 	r    redis.RedisClient
-	auth *AuthService
+	auth *internal.AuthService
 }
 
 type registerPushNotificationRequest struct {

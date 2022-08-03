@@ -156,7 +156,7 @@ describe("quests", () => {
 
     // Claim reward
     cy.get('[data-cy="quest-item-claim-reward-button"]').click();
-    cy.get('[data-cy="resource-bar-coins"]').should("contain.text", "600");
+    cy.get('[data-cy="resource-bar-coins"]').should("contain.text", "1,000");
     cy.get('[data-cy="quest-item-claim-reward-button"]').should("not.exist");
     cy.get('[data-cy="quest-item"]').should("contain.text", "claimed");
   });

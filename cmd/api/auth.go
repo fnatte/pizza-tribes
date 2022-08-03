@@ -6,14 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"regexp"
 	"strings"
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
-	"github.com/rs/xid"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -53,14 +51,17 @@ type userDbo struct {
 	HashedPassword string `redis:"hashed_password"`
 }
 
-type AuthService struct {
-	internal.AuthService
-	rdb redis.UniversalClient
+type AuthController struct {
+	auth  *internal.AuthService
+	rdb   redis.UniversalClient
+	users *internal.UserService
 }
 
-func NewAuthService(rdb redis.UniversalClient) *AuthService {
-	return &AuthService{
-		rdb: rdb,
+func NewAuthController(rdb redis.UniversalClient, auth *internal.AuthService, users *internal.UserService) *AuthController {
+	return &AuthController{
+		auth:  auth,
+		rdb:   rdb,
+		users: users,
 	}
 }
 
@@ -71,52 +72,7 @@ func useCookieAuth(req *http.Request) bool {
 	return !strings.Contains(req.UserAgent(), "pizzatribes")
 }
 
-var validUsername = regexp.MustCompile(`^[a-zA-Z]+[a-zA-Z0-9_]*$`)
-
-func IsValidUsername(username string) bool {
-	return validUsername.MatchString(username) && len(username) >= 3 && len(username) <= 20
-}
-
-func (a *AuthService) Register(ctx context.Context, username, password string) error {
-	if !IsValidUsername(username) {
-		return ErrInvalidUsername
-	}
-
-	id := xid.New().String()
-	usernameKey := fmt.Sprintf("username:%s", strings.ToLower(username))
-	userKey := fmt.Sprintf("user:%s", id)
-
-	// Check for existing user with this username
-	res, err := a.rdb.Exists(ctx, usernameKey).Result()
-	if err != nil && err != redis.Nil {
-		return err
-	}
-	if res != 0 {
-		return ErrUsernameTaken
-	}
-
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return err
-	}
-
-	txf := func(tx *redis.Tx) error {
-		_, err := tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
-
-			pipe.Set(ctx, usernameKey, id, 0)
-			pipe.HSet(ctx, userKey, "id", id, "username", username, "hashed_password", hash)
-			pipe.SAdd(ctx, "users", id)
-			return nil
-		})
-		return err
-	}
-
-	err = a.rdb.Watch(ctx, txf, usernameKey, userKey)
-
-	return err
-}
-
-func (a *AuthService) Login(ctx context.Context, username, password string) (string, error) {
+func (a *AuthController) Login(ctx context.Context, username, password string) (string, error) {
 	usernameKey := fmt.Sprintf("username:%s", strings.ToLower(username))
 	userId, err := a.rdb.Get(ctx, usernameKey).Result()
 	if err != nil {
@@ -138,7 +94,7 @@ func (a *AuthService) Login(ctx context.Context, username, password string) (str
 	return user.Id, nil
 }
 
-func (a *AuthService) Handler() http.Handler {
+func (a *AuthController) Handler() http.Handler {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
@@ -149,7 +105,7 @@ func (a *AuthService) Handler() http.Handler {
 			return
 		}
 
-		err = a.Register(r.Context(), req.Username, req.Password)
+		_, err = a.users.CreateUser(r.Context(), req.Username, req.Password)
 		if err != nil {
 			log.Error().Err(err).Msg("Error when registering user")
 			if errors.Is(err, ErrUsernameTaken) {
@@ -195,7 +151,7 @@ func (a *AuthService) Handler() http.Handler {
 		}
 		expiresIn := 3 * 7 * 24 * time.Hour // 3 weeks
 		expiresAt := time.Now().Add(expiresIn)
-		jwt, err := a.CreateToken(userId, expiresAt)
+		jwt, err := a.auth.CreateToken(userId, expiresAt)
 		if err != nil {
 			http.Error(w, "Failed to create token", http.StatusInternalServerError)
 			return

@@ -125,7 +125,21 @@ function LeaderboardView() {
   const skip = parseInt(query.get("skip") ?? "") || 0;
 
   const data = useAsync(async () => {
-    const response = await apiFetch(`/leaderboard/?skip=${skip}`);
+    let skipParam = skip;
+
+    if (!query.has("skip")) {
+      const response = await apiFetch("/leaderboard/me/rank");
+      if (
+        !response.ok ||
+        response.headers.get("Content-Type") !== "application/json"
+      ) {
+        throw new Error("Failed to get leaderboard rank");
+      }
+      const rank = await response.json();
+      skipParam = Math.max(0, rank - 10);
+    }
+
+    const response = await apiFetch(`/leaderboard/?skip=${skipParam}`);
     if (
       !response.ok ||
       response.headers.get("Content-Type") !== "application/json"

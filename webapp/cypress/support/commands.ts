@@ -17,6 +17,10 @@ declare global {
       ): Chainable<void>;
       adminDeleteUser(username?: string): Chainable<void>;
       adminCreateUser(username?: string, password?: string): Chainable<void>;
+      adminBatchCreateUser(
+        users: { username: string; password: string }[]
+      ): Chainable<void>;
+      adminBatchDeleteUser(usernames: string[]): Chainable<void>;
       adminTestSetup(username?: string): Chainable<void>;
 
       login(username?: string, password?: string): Chainable<void>;
@@ -76,15 +80,12 @@ Cypress.Commands.add("adminGetGameState", (username = defaultUsername) => {
 
       const userId = users[0];
       return cy
-        .request(
-          "GET",
-          `http://localhost:8081/users/${userId}/gameState`
-        )
+        .request("GET", `http://localhost:8081/users/${userId}/gameState`)
         .then((r2) => {
           expect(r2.isOkStatusCode).to.be.true;
         })
         .its("body")
-        .then<GameState>(x => GameState.fromJson(x))
+        .then<GameState>((x) => GameState.fromJson(x));
     });
 });
 
@@ -97,6 +98,36 @@ Cypress.Commands.add(
     });
   }
 );
+
+Cypress.Commands.add("adminBatchCreateUser", (users) => {
+  cy.request<{ users: { status: number }[] }>(
+    "POST",
+    "http://localhost:8081/users/batch",
+    {
+      users,
+    }
+  ).then((x) => {
+    expect(x.status).to.eq(207);
+    x.body.users.forEach((user) => {
+      expect(user.status).to.be.within(200, 299);
+    });
+  });
+});
+
+Cypress.Commands.add("adminBatchDeleteUser", (usernames) => {
+  cy.request<{ users: { status: number }[] }>(
+    "DELETE",
+    "http://localhost:8081/users/batch",
+    {
+      usernames,
+    }
+  ).then((x) => {
+    expect(x.status).to.eq(207);
+    x.body.users.forEach((user) => {
+      expect(user.status).to.be.within(200, 299);
+    });
+  });
+});
 
 Cypress.Commands.add("adminIncrCoins", (amount, username = defaultUsername) => {
   cy.request("GET", `http://localhost:8081/users?username=${username}`).then(
@@ -168,10 +199,10 @@ Cypress.Commands.add(
 
 Cypress.Commands.add("expand", { prevSubject: true }, (subject) => {
   cy.wrap(subject).then(($el) => {
-      if ($el.parents('[aria-expanded="true"]').length === 0) {
-        cy.wrap($el).click();
-      }
-    });
+    if ($el.parents('[aria-expanded="true"]').length === 0) {
+      cy.wrap($el).click();
+    }
+  });
 });
 
 export {};

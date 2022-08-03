@@ -21,7 +21,7 @@ import { WorldStarting } from "./WorldStarting";
 import { WorldEnded } from "./WorldEnded";
 import { Clock, Coin, Pizza, Sparkles } from "./icons";
 import MouseView from "./Game/MouseView";
-import QuestsView from "./Game/QuestsView";
+import QuestsView from "./Game/quests/QuestsView";
 import { useActivity } from "./useActivity";
 import MouseAppearanceView from "./Game/MouseAppearanceView";
 

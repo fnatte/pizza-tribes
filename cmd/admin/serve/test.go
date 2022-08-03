@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/persist"
 	"github.com/fnatte/pizza-tribes/internal/redis"
 	"github.com/gorilla/mux"
@@ -45,6 +44,8 @@ func (c *testController) HandleSetupTest(w http.ResponseWriter, r *http.Request)
 	userRepo := persist.NewUserRepository(c.rc)
 	gsRepo := persist.NewGameStateRepository(c.rc)
 	world := internal.NewWorldService(c.rc)
+	leaderboard := internal.NewLeaderboardService(c.rc)
+	users := internal.NewUserService(userRepo, gsRepo, world, leaderboard)
 
 	// Delete previous user
 	userId, err := userRepo.FindUser(ctx, req.Username)
@@ -75,27 +76,14 @@ func (c *testController) HandleSetupTest(w http.ResponseWriter, r *http.Request)
 	}
 
 	// Create new user
-	id, err := userRepo.CreateUser(r.Context(), req.Username, req.Password)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	gs := models.NewGameState()
-	gsRepo.Save(ctx, id, gs)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	u, err := userRepo.GetUser(r.Context(), id)
+	usr, err := users.CreateUser(r.Context(), req.Username, req.Password)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	a := internal.AuthService{}
-	token, err := a.CreateToken(id, time.Now().Add(2*time.Minute))
+	token, err := a.CreateToken(usr.Id, time.Now().Add(2*time.Minute))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -104,8 +92,8 @@ func (c *testController) HandleSetupTest(w http.ResponseWriter, r *http.Request)
 	b, err := json.Marshal(&setupTestResponse{
 		AccessToken: token,
 		User: &user{
-			Id:       u.Id,
-			Username: u.Username,
+			Id:       usr.Id,
+			Username: usr.Username,
 		}})
 	if err != nil {
 		http.Error(w, err.Error(), 500)

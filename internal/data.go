@@ -619,7 +619,7 @@ var FullGameData = GameData{
 			Title:       "Work, work",
 			Description: "This tribe is getting some serious business. Let's keep going! Employ 8 a total of mice.",
 			Reward: &models.Quest_Reward{
-				Coins:  800,
+				Coins:  1_500,
 				Pizzas: 300,
 			},
 		},
@@ -628,8 +628,26 @@ var FullGameData = GameData{
 			Title:       "Statistics",
 			Description: "Have you found the stats page yet? Visit the stats page and find your pizza production.\nHow many pizzas are you making per second?",
 			Reward: &models.Quest_Reward{
-				Coins:  600,
+				Coins:  1_000,
 				Pizzas: 0,
+			},
+		},
+		{
+			Id:          "10",
+			Title:       "Protection",
+			Description: "Boss! I'm not sure we can trust our neighbors. They might be sneaking around and try to our coins! Let's educate:\n- 1 *Guard*",
+			Reward: &models.Quest_Reward{
+				Coins:  5_000,
+				Pizzas: 1_000,
+			},
+		},
+		{
+			Id:          "11",
+			Title:       "Victory is not gained by idleness",
+			Description: "Chief! Looks like we have found ourselves in a competition. Go to the leaderboard and to see our progression and rank.\nWhat rank/position do we have?",
+			Reward: &models.Quest_Reward{
+				Coins:  1_000,
+				Pizzas: 1_000,
 			},
 		},
 	},

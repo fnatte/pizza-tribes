@@ -29,6 +29,36 @@ type createUserRequest struct {
 	Password string `json:"password"`
 }
 
+type batchDeleteUserRequest struct {
+	UserIds []string `json:"userIds"`
+	Usernames []string `json:"usernames"`
+}
+
+type batchCreateUserRequest struct {
+	Users []createUserRequest `json:"users"`
+}
+
+type batchDeleteUserResponseItem struct {
+	Id         string    `json:"id"`
+	Status     int    `json:"status"`
+	StatusText string `json:"statusText"`
+}
+
+type batchDeleteUserResponse struct {
+	Users []*batchDeleteUserResponseItem `json:"users"`
+}
+
+type batchCreateUserResponseItem struct {
+	Id         string `json:"id"`
+	Username   string `json:"username"`
+	Status     int    `json:"status"`
+	StatusText string `json:"statusText"`
+}
+
+type batchCreateUserResponse struct {
+	Users []*batchCreateUserResponseItem `json:"users"`
+}
+
 type incrCoinsRequest struct {
 	Amount int32 `json:"amount"`
 }
@@ -82,6 +112,82 @@ func (c *userController) HandleDeleteUser(w http.ResponseWriter, r *http.Request
 	w.WriteHeader(204)
 }
 
+func (c *userController) HandleBatchDeleteUser(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	req := batchDeleteUserRequest{}
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	userRepo := persist.NewUserRepository(c.rc)
+	gsRepo := persist.NewGameStateRepository(c.rc)
+	world := internal.NewWorldService(c.rc)
+
+	resp := batchDeleteUserResponse{
+		Users: []*batchDeleteUserResponseItem{},
+	}
+
+	userIds := req.UserIds
+
+	for _, username := range req.Usernames {
+		userId, err := userRepo.FindUser(ctx, username)
+		if err != nil {
+			respItem := batchDeleteUserResponseItem{}
+			respItem.Id = username
+			respItem.StatusText = err.Error()
+			respItem.Status = http.StatusInternalServerError
+			resp.Users = append(resp.Users, &respItem)
+			continue
+		}
+
+		userIds = append(userIds, userId)
+	}
+
+	for _, userId := range userIds {
+		respItem := batchDeleteUserResponseItem{}
+		resp.Users = append(resp.Users, &respItem)
+
+		gs, err := gsRepo.Get(ctx, userId)
+		if err != nil {
+			respItem.Status = http.StatusInternalServerError
+			respItem.StatusText = err.Error()
+			continue
+		}
+
+		err = userRepo.DeleteUser(ctx, userId)
+		if err != nil {
+			respItem.Status = http.StatusInternalServerError
+			respItem.StatusText = err.Error()
+			continue
+		}
+
+		if gs != nil {
+			err = world.RemoveEntry(ctx, int(gs.TownX), int(gs.TownY))
+			if err != nil {
+				respItem.Status = http.StatusInternalServerError
+				respItem.StatusText = err.Error()
+				continue
+			}
+		}
+
+		respItem.Id = userId
+		respItem.Status = http.StatusOK
+		respItem.StatusText = "OK"
+	}
+
+	b, err := json.Marshal(&resp)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(http.StatusMultiStatus)
+	w.Write(b)
+}
+
 func (c *userController) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	req := createUserRequest{}
@@ -92,43 +198,14 @@ func (c *userController) HandleCreateUser(w http.ResponseWriter, r *http.Request
 	}
 
 	userRepo := persist.NewUserRepository(c.rc)
-	id, err := userRepo.CreateUser(ctx, req.Username, req.Password)
+	gsRepo := persist.NewGameStateRepository(c.rc)
+	world := internal.NewWorldService(c.rc)
+	leaderboard := internal.NewLeaderboardService(c.rc)
+	users := internal.NewUserService(userRepo, gsRepo, world, leaderboard)
+
+	u, err := users.CreateUser(ctx, req.Username, req.Password)
 	if err != nil {
 		err = fmt.Errorf("failed to create user: %w", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	u, err := userRepo.GetUser(ctx, id)
-	if err != nil {
-		err = fmt.Errorf("failed to get user: %w", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	gsRepo := persist.NewGameStateRepository(c.rc)
-	gs := models.NewGameState()
-	gsRepo.Save(ctx, id, gs)
-	if err != nil {
-		err = fmt.Errorf("failed to save game state: %w", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	world := internal.NewWorldService(c.rc)
-	x, y, err := world.AcquireTown(ctx, id)
-	if err != nil {
-		err = fmt.Errorf("failed to acquire town: %w", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	gs.TownX = int32(x)
-	gs.TownY = int32(y)
-	gsRepo.Patch(ctx, id, gs, &models.PatchMask{
-		Paths: []string{"townX", "townY"},
-	})
-	if err != nil {
-		err = fmt.Errorf("failed to patch acquired town: %w", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -144,6 +221,54 @@ func (c *userController) HandleCreateUser(w http.ResponseWriter, r *http.Request
 
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(200)
+	w.Write(b)
+}
+
+func (c *userController) HandleBatchCreateUser(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	req := batchCreateUserRequest{}
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	userRepo := persist.NewUserRepository(c.rc)
+	gsRepo := persist.NewGameStateRepository(c.rc)
+	world := internal.NewWorldService(c.rc)
+	leaderboard := internal.NewLeaderboardService(c.rc)
+	users := internal.NewUserService(userRepo, gsRepo, world, leaderboard)
+
+	resp := batchCreateUserResponse{
+		Users: []*batchCreateUserResponseItem{},
+	}
+
+	for _, user := range req.Users {
+		respItem := batchCreateUserResponseItem{}
+		resp.Users = append(resp.Users, &respItem)
+
+		u, err := users.CreateUser(ctx, user.Username, user.Password)
+		if err != nil {
+			respItem.Username = user.Username
+			respItem.Status = http.StatusInternalServerError
+			respItem.StatusText = fmt.Errorf("failed to create user: %w", err).Error()
+			continue
+		}
+
+		respItem.Id = u.Id
+		respItem.Username = u.Username
+		respItem.Status = 200
+		respItem.StatusText = "OK"
+	}
+
+	b, err := json.Marshal(&resp)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(http.StatusMultiStatus)
 	w.Write(b)
 }
 
@@ -398,6 +523,8 @@ func (c *userController) Handler() http.Handler {
 	r.HandleFunc("/users/{userId}/gameState", c.HandlePatchGameState).Methods("PATCH")
 	r.HandleFunc("/users/{userId}/gameState", c.HandleGetGameState).Methods("GET")
 
+	r.HandleFunc("/users/batch", c.HandleBatchCreateUser).Methods("POST")
+	r.HandleFunc("/users/batch", c.HandleBatchDeleteUser).Methods("DELETE")
 	r.HandleFunc("/users/{userId}", c.HandleDeleteUser).Methods("DELETE")
 	r.HandleFunc("/users/{userId}", c.HandleShowUser).Methods("GET")
 	r.HandleFunc("/users", c.HandleCreateUser).Methods("POST")

@@ -27,6 +27,10 @@ func getJwtSigningKeyFunc(*jwt.Token) (interface{}, error) {
 	return jwtSigningKey, nil
 }
 
+func NewAuthService() *AuthService {
+	return &AuthService{}
+}
+
 func (a *AuthService) CreateToken(userId string, expiresAt time.Time) (string, error) {
 	t := jwt.New(jwt.SigningMethodHS256)
 	t.Claims = &jwt.StandardClaims{
@@ -120,3 +124,7 @@ func getAccessToken(r *http.Request) (string, error) {
 	return "", nil
 }
 
+func GetUserIdFromContext(ctx context.Context) (string, bool) {
+	str, ok := ctx.Value("userId").(string)
+	return str, ok
+}

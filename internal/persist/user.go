@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/fnatte/pizza-tribes/internal/redis"
@@ -22,6 +23,7 @@ type userRepo struct {
 }
 
 var ErrUsernameTaken = errors.New("username is taken")
+var ErrInvalidUsername = errors.New("username is invalid")
 
 func NewUserRepository(rdb redis.RedisClient) *userRepo {
 	return &userRepo{
@@ -75,6 +77,7 @@ func (r *userRepo) DeleteUser(ctx context.Context, userId string) error {
 	pipe.Del(ctx, fmt.Sprintf("username:%s", u.Username))
 	pipe.SRem(ctx, "users", userId)
 	pipe.ZRem(ctx, "user_updates", userId)
+	pipe.ZRem(ctx, "leaderboard", userId)
 
 	_, err = pipe.Exec(ctx)
 	return err
@@ -104,7 +107,17 @@ func (r *userRepo) FindUser(ctx context.Context, username string) (string, error
 	return userId, nil
 }
 
+var validUsername = regexp.MustCompile(`^[a-zA-Z]+[a-zA-Z0-9_]*$`)
+
+func IsValidUsername(username string) bool {
+	return validUsername.MatchString(username) && len(username) >= 3 && len(username) <= 20
+}
+
 func (r *userRepo) CreateUser(ctx context.Context, username string, password string) (string, error) {
+	if !IsValidUsername(username) {
+		return "", ErrInvalidUsername
+	}
+
 	id := xid.New().String()
 	usernameKey := fmt.Sprintf("username:%s", strings.ToLower(username))
 	userKey := fmt.Sprintf("user:%s", id)

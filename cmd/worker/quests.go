@@ -165,7 +165,7 @@ func (h *handler) handleCompleteQuest(ctx context.Context, senderId string, m *m
 
 	tx, err := h.updater.PerformUpdate(ctx, senderId, func(gs *models.GameState, tx *gamestate.GameTx) error {
 		switch m.QuestId {
-			case "6", "9":
+			case "6", "9", "11":
 				if q, ok := gs.Quests[m.QuestId]; ok && !q.Completed {
 					tx.Users[senderId].SetQuestCompleted(m.QuestId)
 				}

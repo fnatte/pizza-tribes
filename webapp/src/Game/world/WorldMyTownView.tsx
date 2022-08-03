@@ -18,6 +18,7 @@ const WorldMyTownView: React.FC<Props> = () => {
       {ambassador && (
         <MouseImage
           appearance={ambassador.appearance}
+          shiftRight
           className="mt-6 translate-x-16"
           data-cy="ambassador-mouse"
         />

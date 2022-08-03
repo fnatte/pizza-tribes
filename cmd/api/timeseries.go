@@ -13,7 +13,7 @@ import (
 
 type TimeseriesService struct {
 	r    redis.RedisClient
-	auth *AuthService
+	auth *internal.AuthService
 }
 
 func (s *TimeseriesService) Handler() http.Handler {

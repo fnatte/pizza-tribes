@@ -35,6 +35,12 @@ func GetAvailableQuestIds(gs *models.GameState) []string {
 		quests = append(quests, "8", "9")
 	}
 
+	if q, ok := gs.Quests["8"]; ok && q.Completed {
+		if q, ok := gs.Quests["9"]; ok && q.Completed {
+			quests = append(quests, "10", "11")
+		}
+	}
+
 	return quests
 }
 
@@ -87,6 +93,18 @@ func GetNewCompletedQuests(gs *models.GameState) []string {
 			if CountEmployed(gs) >= 8 {
 				solved = append(solved, qid)
 			}
+			break
+		case "9":
+			// "Stats quest" is solved using special message
+			break
+		case "10":
+			e := CountTownPopulationEducations(gs)
+			if e[models.Education_GUARD] >= 1 {
+				solved = append(solved, qid)
+			}
+			break
+		case "11":
+			// "Leaderboard quest" is solved using special message
 			break
 		}
 	}
