@@ -97,7 +97,7 @@ describe("quests", () => {
     cy.get('[data-cy="quest-item"]').should("contain.text", "claimed");
   });
 
-  it.only("can complete stats quest", () => {
+  it("can complete stats quest", () => {
     cy.get('[data-cy="quest-item-title"]').should(
       "contain.text",
       "Bake and sell"
