@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/gamestate"
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/fnatte/pizza-tribes/internal/redis"
@@ -142,6 +144,56 @@ func (h *handler) handleRenameMouse(ctx context.Context, senderId string, m *mod
 
 	h.fetchAndUpdateTimestamp(ctx, senderId)
 	h.sendFullStateUpdate(ctx, senderId)
+
+	return nil
+}
+
+func (h *handler) handleSaveMouseAppearance(ctx context.Context, userId string, m *models.ClientMessage_SaveMouseAppearance) error {
+	if !internal.IsValidMouseAppearance(m.Appearance) {
+		return errors.New("invalid appearance")
+	}
+
+	tx, err := h.updater.PerformUpdate(ctx, userId, func(gs *models.GameState, tx *gamestate.GameTx) error {
+		if _, ok := gs.Mice[m.MouseId]; !ok {
+			return errors.New("invalid mouse id")
+		}
+
+		tx.Users[userId].SetMouseAppearance(m.MouseId, m.Appearance)
+
+		return nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("failed to perform update: %w", err)
+	}
+
+	err = h.sendGameTx(ctx, tx)
+	if err != nil {
+		return fmt.Errorf("failed to send game tx: %w", err)
+	}
+
+	return nil
+}
+
+func (h *handler) handleSetAmbassadorMouse(ctx context.Context, userId string, m *models.ClientMessage_SetAmbassadorMouse) error {
+	tx, err := h.updater.PerformUpdate(ctx, userId, func(gs *models.GameState, tx *gamestate.GameTx) error {
+		if _, ok := gs.Mice[m.MouseId]; !ok {
+			return errors.New("invalid mouse id")
+		}
+
+		tx.Users[userId].SetAmbassadorMouse(m.MouseId)
+
+		return nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("failed to perform update: %w", err)
+	}
+
+	err = h.sendGameTx(ctx, tx)
+	if err != nil {
+		return fmt.Errorf("failed to send game tx: %w", err)
+	}
 
 	return nil
 }

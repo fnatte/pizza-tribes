@@ -50,18 +50,18 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 	s, err := h.rc.JsonGet(ctx, gsKey, ".").Result()
 	if err != nil {
 		if err != redis.Nil {
-			return err
+			return fmt.Errorf("failed to get gamestate: %w", err)
 		}
 
 		// Initialize game state for user
 		err = h.gsRepo.Save(ctx, c.UserId(), gs)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to initialize gamestate: %w", err)
 		}
 		log.Info().Msg("Initilized new game state for user")
 	} else {
 		if err = protojson.Unmarshal([]byte(s), gs); err != nil {
-			return err
+			return fmt.Errorf("failed to unmarshal gamestate: %w", err)
 		}
 	}
 

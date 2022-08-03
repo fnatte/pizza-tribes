@@ -3,6 +3,7 @@ package pizzatribes;
 
 option go_package = "github.com/fnatte/pizza-tribes/internal/models";
 
+import "appearance.proto";
 import "building.proto";
 import "research.proto";
 import "quest.proto";
@@ -20,5 +21,6 @@ message GameData {
   map<int32, EducationInfo> educations = 2;
   repeated ResearchTrack researchTracks = 3;
   repeated Quest quests = 4;
+  map<string, AppearancePart> appearanceParts = 5;
 }
 

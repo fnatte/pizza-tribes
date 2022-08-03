@@ -6,6 +6,7 @@ option go_package = "github.com/fnatte/pizza-tribes/internal/models";
 import "education.proto";
 import "building.proto";
 import "research.proto";
+import "appearance.proto";
 
 message OngoingResearch {
   int64 complete_at = 1;
@@ -40,6 +41,7 @@ message Mouse {
   bool isEducated = 2;
   bool isBeingEducated = 3;
   Education education = 4;
+  MouseAppearance appearance = 5;
 }
 
 message QuestState {
@@ -76,6 +78,7 @@ message GameState {
   repeated OngoingResearch researchQueue = 11;
   map<string, Mouse> mice = 12;
   map<string, QuestState> quests = 13;
+  string ambassadorMouseId = 14;
 }
 
 message PatchMask {

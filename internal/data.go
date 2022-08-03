@@ -11,7 +11,125 @@ import (
 const ThiefSpeed = 6 * time.Minute
 const ThiefCapacity = 3_000
 
+var AllAppearanceParts = []*models.AppearancePart{
+	{
+		Id:       "redHat1",
+		Category: models.AppearanceCategory_HAT,
+	},
+	{
+		Id:       "thiefHat1",
+		Category: models.AppearanceCategory_HAT,
+	},
+	{
+		Id:       "chefHat1",
+		Category: models.AppearanceCategory_HAT,
+	},
+	{
+		Id:       "guardHat1",
+		Category: models.AppearanceCategory_HAT,
+	},
+	{
+		Id:       "basicFeet1",
+		Category: models.AppearanceCategory_FEET,
+	},
+	{
+		Id:       "bigFeet1",
+		Category: models.AppearanceCategory_FEET,
+	},
+	{
+		Id:       "smallFeet1",
+		Category: models.AppearanceCategory_FEET,
+	},
+	{
+		Id:       "mixedSmile1",
+		Category: models.AppearanceCategory_MOUTH,
+	},
+	{
+		Id:       "smile1",
+		Category: models.AppearanceCategory_MOUTH,
+	},
+	{
+		Id:       "smile2",
+		Category: models.AppearanceCategory_MOUTH,
+	},
+	{
+		Id:       "smile3",
+		Category: models.AppearanceCategory_MOUTH,
+	},
+	{
+		Id:       "tail1",
+		Category: models.AppearanceCategory_TAIL,
+	},
+	{
+		Id:       "tail2",
+		Category: models.AppearanceCategory_TAIL,
+	},
+	{
+		Id:       "tail3",
+		Category: models.AppearanceCategory_TAIL,
+	},
+	{
+		Id:       "tail4",
+		Category: models.AppearanceCategory_TAIL,
+	},
+	{
+		Id:       "tail5",
+		Category: models.AppearanceCategory_TAIL,
+	},
+	{
+		Id:       "glasses1",
+		Category: models.AppearanceCategory_EYES_EXTRA2,
+	},
+	{
+		Id:       "glasses2",
+		Category: models.AppearanceCategory_EYES_EXTRA2,
+	},
+	{
+		Id:       "eyePatch1",
+		Category: models.AppearanceCategory_EYES_EXTRA2,
+	},
+	{
+		Id:       "eyeCover1",
+		Category: models.AppearanceCategory_EYES_EXTRA1,
+	},
+	{
+		Id:       "eyeStars1",
+		Category: models.AppearanceCategory_EYES_EXTRA1,
+	},
+	{
+		Id:       "eyes1",
+		Category: models.AppearanceCategory_EYES,
+	},
+	{
+		Id:       "eyes2",
+		Category: models.AppearanceCategory_EYES,
+	},
+	{
+		Id:       "eyes3",
+		Category: models.AppearanceCategory_EYES,
+	},
+	{
+		Id:       "outfit1",
+		Category: models.AppearanceCategory_OUTFIT,
+	},
+	{
+		Id:       "thiefOutfit1",
+		Category: models.AppearanceCategory_OUTFIT,
+	},
+	{
+		Id:       "guardOutfit1",
+		Category: models.AppearanceCategory_OUTFIT,
+	},
+	{
+		Id:       "mouse1",
+		Category: models.AppearanceCategory_BODY,
+	},
+}
+
+var AppearancePartsMap = map[string]*AppearancePart{}
+
 var FullGameData = GameData{
+	AppearanceParts: AppearancePartsMap,
 	Buildings: map[int32]*BuildingInfo{
 		int32(Building_KITCHEN): {
 			Title:       "Kitchen",
@@ -23,7 +141,7 @@ var FullGameData = GameData{
 					Employer: &Employer{
 						MaxWorkforce: 2,
 					},
-					FirstCost: wrapperspb.Int32(0),
+					FirstCost:             wrapperspb.Int32(0),
 					FirstConstructionTime: wrapperspb.Int32(8),
 				},
 				{
@@ -101,7 +219,7 @@ var FullGameData = GameData{
 					Employer: &Employer{
 						MaxWorkforce: 2,
 					},
-					FirstCost: wrapperspb.Int32(0),
+					FirstCost:             wrapperspb.Int32(0),
 					FirstConstructionTime: wrapperspb.Int32(12),
 				},
 				{
@@ -165,7 +283,7 @@ var FullGameData = GameData{
 					Residence: &Residence{
 						Beds: 3,
 					},
-					FirstCost: wrapperspb.Int32(100),
+					FirstCost:             wrapperspb.Int32(100),
 					FirstConstructionTime: wrapperspb.Int32(10),
 				},
 				{
@@ -232,9 +350,9 @@ var FullGameData = GameData{
 			MaxCount:    wrapperspb.Int32(1),
 			LevelInfos: []*BuildingInfo_LevelInfo{
 				{
-					Cost:             30_000,
-					ConstructionTime: 1500,
-					FirstCost: wrapperspb.Int32(200),
+					Cost:                  30_000,
+					ConstructionTime:      1500,
+					FirstCost:             wrapperspb.Int32(200),
 					FirstConstructionTime: wrapperspb.Int32(15),
 				},
 			},
@@ -515,4 +633,11 @@ var FullGameData = GameData{
 			},
 		},
 	},
+}
+
+func init() {
+	// Build up appearance parts map
+	for _, part := range AllAppearanceParts {
+		AppearancePartsMap[part.Id] = part
+	}
 }

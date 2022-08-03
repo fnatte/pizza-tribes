@@ -8,6 +8,7 @@ import { smallPrimaryButton } from "../../styles";
 
 function MouseTable({ className }: { className?: string }) {
   const mice = useStore((state) => state.gameState.mice);
+  const ambassador = useStore((state) => state.gameState.ambassadorMouseId);
   const gameData = useStore((state) => state.gameData);
   const educations = gameData?.educations ?? {};
 
@@ -33,7 +34,13 @@ function MouseTable({ className }: { className?: string }) {
         {Object.entries(mice).map(([id, mouse]) => {
           return (
             <tr key={id}>
-              <td className="p-2">{mouse.name}</td>
+              <td
+                className={classnames("p-2", {
+                  "font-bold": ambassador !== "" && ambassador === id,
+                })}
+              >
+                {mouse.name}
+              </td>
               <td className="p-2">
                 {!mouse.isEducated
                   ? "Uneducated"

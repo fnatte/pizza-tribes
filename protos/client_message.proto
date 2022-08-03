@@ -3,6 +3,7 @@ package pizzatribes;
 
 option go_package = "github.com/fnatte/pizza-tribes/internal/models";
 
+import "appearance.proto";
 import "education.proto";
 import "building.proto";
 import "research.proto";
@@ -75,6 +76,15 @@ message ClientMessage {
   message ReportActivity {
   }
 
+  message SaveMouseAppearance {
+    string mouseId = 1;
+    MouseAppearance appearance = 2;
+  }
+
+  message SetAmbassadorMouse {
+    string mouseId = 1;
+  }
+
   string id = 1;
   oneof type {
     Tap tap = 2;
@@ -93,6 +103,8 @@ message ClientMessage {
     ClaimQuestReward claimQuestReward = 15;
     CompleteQuest completeQuest = 16;
     ReportActivity reportActivity = 17;
+    SaveMouseAppearance saveMouseAppearance = 18;
+    SetAmbassadorMouse setAmbassadorMouse = 19;
   }
 }
 

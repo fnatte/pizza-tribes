@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useAsync } from "react-use";
 import classnames from "classnames";
+import { ReactComponent as HeartsSvg } from "images/hearts.svg";
 import { WorldEntry_Town } from "../../generated/world";
 import * as yup from "yup";
 import { RemoveIndex } from "../../utils";
@@ -12,6 +13,8 @@ import { useStore } from "../../store";
 import { apiFetch } from "../../api";
 import { useEducationCount } from "../useEducationCount";
 import { Education } from "../../generated/education";
+import { ApiUserResponse } from "../../generated/responses";
+import { MouseImage } from "../components/MouseImage";
 
 type Props = {
   town: WorldEntry_Town;
@@ -26,7 +29,7 @@ const schema = yup.object().shape({
 type FormFields = RemoveIndex<yup.Asserts<typeof schema>>;
 
 const WorldTownView: React.FC<Props> = ({ x, y, town }) => {
-  const username = useAsync(async () => {
+  const user = useAsync(async () => {
     if (town === null) {
       return null;
     }
@@ -38,8 +41,7 @@ const WorldTownView: React.FC<Props> = ({ x, y, town }) => {
       throw new Error("Failed to get user");
     }
 
-    const data = await response.json();
-    return data.username as string;
+    return ApiUserResponse.fromJsonString(await response.text());
   }, [town]);
 
   const educationCount = useEducationCount();
@@ -67,12 +69,29 @@ const WorldTownView: React.FC<Props> = ({ x, y, town }) => {
     navigate("/");
   };
 
+  if (user.loading || !user.value) {
+    return (
+      <div className={classnames("flex", "items-center", "flex-col", "mt-2")}>
+        <HeartsSvg />
+      </div>
+    );
+  }
+
   return (
     <div className={classnames("flex", "items-center", "flex-col", "mt-2")}>
-      <h2>{username.value ? `${username.value}'s town` : "Town"}</h2>
+      <h2>{`${user.value.username}'s town`}</h2>
+
+      {user.value.ambassador && (
+        <MouseImage
+          appearance={user.value.ambassador.appearance}
+          shiftRight
+          className="my-6"
+          data-cy="ambassador-mouse"
+        />
+      )}
 
       {thievesAvailable === 0 && (
-        <p className={classnames("max-w-sm", "text-gray-700")}>
+        <p className={classnames("max-w-sm", "text-gray-700", "my-4")}>
           If you train some thieves, you can send them on a heist to other
           players towns to steal their coins.
         </p>

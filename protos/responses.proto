@@ -1,0 +1,15 @@
+syntax = "proto3";
+package pizzatribes;
+
+option go_package = "github.com/fnatte/pizza-tribes/internal/models";
+
+import "appearance.proto";
+
+message ApiUserResponse {
+  message Ambassador {
+    MouseAppearance appearance = 1;
+  }
+
+  string username = 1;
+  Ambassador ambassador = 2;
+}

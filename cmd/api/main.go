@@ -55,7 +55,7 @@ func main() {
 	poller := poller{rdb: rc, hub: wsHub}
 	ts := &TimeseriesService{r: rc, auth: auth}
 	worldController := &WorldController{auth: auth, world: world}
-	userController := &UserController{auth: auth, r: rc}
+	userController := &UserController{auth: auth, r: rc, gsRepo: gsRepo}
 	leaderboardController := &LeaderboardController{
 		auth:        auth,
 		leaderboard: leaderboard}

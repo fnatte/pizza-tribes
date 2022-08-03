@@ -23,6 +23,7 @@ import { Clock, Coin, Pizza, Sparkles } from "./icons";
 import MouseView from "./Game/MouseView";
 import QuestsView from "./Game/QuestsView";
 import { useActivity } from "./useActivity";
+import MouseAppearanceView from "./Game/MouseAppearanceView";
 
 type ClockState = {
   formatted: string;
@@ -544,6 +545,7 @@ function GamePage(): JSX.Element {
         <Route path="leaderboard" element={<LeaderboardView />} />
         <Route path="reports" element={<ListReportsView />} />
         <Route path="reports/:id" element={<ShowReportView />} />
+        <Route path="mouse/:id/appearance" element={<MouseAppearanceView />} />
         <Route path="mouse/:id" element={<MouseView />} />
         <Route path="help" element={<HelpView />} />
         <Route path="/" element={<Navigate to="/town" replace />} />
