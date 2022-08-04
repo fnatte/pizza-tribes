@@ -22,7 +22,7 @@ func (s *LeaderboardService) GetRankByUserId(ctx context.Context, userId string)
 		return 0, fmt.Errorf("failed to get user leaderboard rank: %w", err)
 	}
 
-	return rank, nil
+	return rank + 1, nil
 }
 
 func (s *LeaderboardService) Get(ctx context.Context, skip int) (*Leaderboard, error) {
