@@ -85,7 +85,6 @@ func CountEmployed(gs *GameState) (count int32) {
 	return count
 }
 
-
 func CountMaxPopulation(gs *GameState) (count int32) {
 	for _, lot := range gs.Lots {
 		info := FullGameData.Buildings[int32(lot.Building)]
@@ -231,3 +230,6 @@ func IsValidLotId(lotId string) bool {
 	return false
 }
 
+func IsValidPizzaPrice(value int32) bool {
+	return value >= 1 && value <= 15
+}

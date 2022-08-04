@@ -85,6 +85,10 @@ message ClientMessage {
     string mouseId = 1;
   }
 
+  message SetPizzaPrice {
+    int32 pizzaPrice = 1;
+  }
+
   string id = 1;
   oneof type {
     Tap tap = 2;
@@ -105,6 +109,7 @@ message ClientMessage {
     ReportActivity reportActivity = 17;
     SaveMouseAppearance saveMouseAppearance = 18;
     SetAmbassadorMouse setAmbassadorMouse = 19;
+    SetPizzaPrice setPizzaPrice = 20;
   }
 }
 

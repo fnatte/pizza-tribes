@@ -419,6 +419,11 @@ var FullGameData = GameData{
 					Cost:             0,
 					ConstructionTime: 0,
 				},
+				{
+					Description: "Upgrade allows sell price for pizza to changed.",
+					Cost:             10_000,
+					ConstructionTime: 3600,
+				},
 			},
 		},
 	},

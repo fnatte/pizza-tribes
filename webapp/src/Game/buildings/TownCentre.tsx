@@ -1,10 +1,15 @@
-import React from "react";
+import React, { useCallback, useEffect } from "react";
 import classnames from "classnames";
 import { ReactComponent as SvgTownCentre } from "../../../images/town-centre.svg";
-import { useStore } from "../../store";
+import { Lot, useStore } from "../../store";
 import PopulationTable from "../PopulationTable";
 import { Link } from "react-router-dom";
 import { smallPrimaryButton } from "../../styles";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { RemoveIndex } from "../../utils";
+import { UpgradeSection } from "../town/UpgradeSection";
 
 function MouseTable({ className }: { className?: string }) {
   const mice = useStore((state) => state.gameState.mice);
@@ -80,7 +85,109 @@ function PopulationSection() {
   );
 }
 
-export function TownCentre() {
+const schema = yup.object().shape({
+  pizzaPrice: yup
+    .number()
+    .label("Price")
+    .typeError("Price must be a number")
+    .integer()
+    .positive()
+    .min(1)
+    .max(15)
+    .required(),
+});
+
+type FormFields = RemoveIndex<yup.Asserts<typeof schema>>;
+
+function EconomySection() {
+  const setPizzaPrice = useStore((state) => state.setPizzaPrice);
+  const pizzaPrice = useStore((state) => state.gameState.pizzaPrice);
+
+  const {
+    register,
+    setValue,
+    getValues,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<FormFields>({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      pizzaPrice,
+    },
+  });
+
+  const increasePrice = () => {
+    let value = getValues("pizzaPrice");
+    if (typeof value === "string") {
+      value = parseInt(value);
+    }
+    setValue("pizzaPrice", Math.max(1, Math.min(15, value + 1)));
+  };
+  const decreasePrice = () => {
+    let value = getValues("pizzaPrice");
+    if (typeof value === "string") {
+      value = parseInt(value);
+    }
+    setValue("pizzaPrice", Math.max(1, Math.min(15, value - 1)));
+  };
+
+  const onSubmit = useCallback(({ pizzaPrice }: FormFields) => {
+    setPizzaPrice(pizzaPrice);
+  }, []);
+
+  useEffect(() => {
+    const subscription = watch(() => {
+      handleSubmit(onSubmit)();
+    });
+    return () => subscription.unsubscribe();
+  }, [handleSubmit, watch, onSubmit]);
+
+  return (
+    <section className="my-6">
+      <h3>Economy</h3>
+
+      <div className="prose my-6 text-gray-700">
+        <p>A fool and their money are soon parted.</p>
+      </div>
+
+      <h4>Pricing</h4>
+      <div className="prose my-2 text-gray-700">
+        <p>A higher price will lower your demand.</p>
+      </div>
+
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <label className="flex gap-2 items-center">
+          Pizza price:
+          <div className="flex items-stretch focus-within:ring-1 ring-blue-500">
+            <button
+              className={smallPrimaryButton}
+              type="button"
+              onClick={() => decreasePrice()}
+            >
+              -
+            </button>
+            <input
+              type="number"
+              className="inline-block w-12 font-bold border-0 focus:border-0 focus:outline-0 focus:ring-0"
+              {...register("pizzaPrice")}
+            />
+            <button
+              className={smallPrimaryButton}
+              type="button"
+              onClick={() => increasePrice()}
+            >
+              +
+            </button>
+          </div>
+          <span className="font-bold">coins</span>
+        </label>
+        <span>{errors.pizzaPrice?.message}</span>
+      </form>
+    </section>
+  );
+}
+export function TownCentre({ lot, lotId }: { lot: Lot; lotId: string }) {
   return (
     <div className={classnames("container", "px-2", "max-w-2xl", "mb-8")}>
       <h2>Town Centre</h2>
@@ -92,6 +199,8 @@ export function TownCentre() {
           </p>
         </div>
       </div>
+      <UpgradeSection lotId={lotId} lot={lot} />
+      {lot.level >= 1 && <EconomySection />}
       <PopulationSection />
     </div>
   );

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal/models"
+	"github.com/rs/zerolog/log"
 )
 
 func calculateQualityScore(gs *models.GameState) float64 {
@@ -52,14 +53,29 @@ const ep = -1.5 // Price exponant
 const em = 1.2 // Marketing exponant
 const er = 1.5 // Quality exponant
 
+func getPizzaPrice(gs *models.GameState) float64 {
+	p := float64(gs.PizzaPrice)
+
+	if p < 1 {
+		return 1
+	}
+	if p > 15 {
+		return 15
+	}
+
+	return p
+}
+
 func CalculateDemandScore(gs *models.GameState) float64 {
 	educations := CountTownPopulationEducations(gs)
 
-	p := 1.0 // Price
+	p := getPizzaPrice(gs) // Price
 	r := calculateQualityScore(gs) // Quality
 	m := calculateMarketingScore(gs, educations) // Marketing
 	e := 1.0 // Economical index
 	s := 1.0 // Seasonal index
+
+	log.Debug().Float64("price", p).Float64("quality", r).Float64("marketing", m).Msg("Calculate demand score")
 
 	score := math.Pow(p, ep) * math.Pow(r, er) * math.Pow(m, em) * e * s
 

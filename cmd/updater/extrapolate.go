@@ -56,17 +56,20 @@ func calculateExtrapolateChanges(gs *models.GameState, worldState *models.WorldS
 	pizzasSold := internal.MinInt32(demand,
 		internal.MinInt32(maxSellsByMice, pizzasAvailable))
 
+	pizzaPrice := gs.PizzaPrice
+
 	log.Debug().
 		Int32("pizzasAvailable", pizzasAvailable).
 		Int32("pizzasProduced", pizzasProduced).
 		Int32("maxSellsByMice", maxSellsByMice).
 		Int32("pizzasSold", pizzasSold).
 		Int32("demand", demand).
+		Int32("price", pizzaPrice).
 		Interface("stats", &stats).
 		Msg("Game state update")
 
 	return extrapolateChanges{
-		coins:     pizzasSold,
+		coins:     pizzasSold * pizzaPrice,
 		pizzas:    pizzasProduced - pizzasSold,
 		timestamp: now.Unix(),
 	}

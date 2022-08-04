@@ -52,6 +52,14 @@ func (u *GameTx_User) IncrPizzas(val int32) {
 	u.SetCoins(u.Gs.Resources.Pizzas + val)
 }
 
+func (u *GameTx_User) SetPizzaPrice(val int32) {
+	if u.Gs.PizzaPrice != val {
+		u.Gs.PizzaPrice = val
+		u.StatsInvalidated = true
+		u.PatchMask.AppendPath("pizzaPrice")
+	}
+}
+
 func (u *GameTx_User) SetTimestamp(val int64) {
 	if u.Gs.Timestamp != val {
 		u.Gs.Timestamp = val

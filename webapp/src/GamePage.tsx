@@ -293,6 +293,7 @@ function ResourceBar() {
   const { pizzas, coins } = useStore(
     (state) => state.gameState.resources ?? { coins: 0, pizzas: 0 }
   );
+  const pizzaPrice = useStore(state => state.gameState.pizzaPrice);
   const stats = useStore((state) => state.gameStats);
   const clock = useMouseClock();
 
@@ -312,7 +313,7 @@ function ResourceBar() {
     const maxSellsByMice = stats.maxSellsByMicePerSecond * dt;
     const pizzasSold = Math.min(demand, maxSellsByMice, pizzasAvailable);
 
-    setDisplayCoins((c) => c + pizzasSold);
+    setDisplayCoins((c) => c + pizzasSold * pizzaPrice);
     setDisplayPizzas((p) => Math.max(p + pizzasProduced - pizzasSold, 0));
   }, 100);
 

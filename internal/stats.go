@@ -43,6 +43,9 @@ func CalculateStats(gs *GameState, globalDemandScore float64, worldState *WorldS
 	demandScore := CalculateDemandScore(gs)
 
 	marketShare := demandScore / globalDemandScore
+	if marketShare > 1 {
+		marketShare = 1
+	}
 	marketDemandBase := marketShare * CalculateGlobalDemand(worldState)
 	marketDemandOffpeak := marketDemandBase
 	marketDemandRushHour := marketDemandBase * 2

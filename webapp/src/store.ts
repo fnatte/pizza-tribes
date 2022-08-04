@@ -4,10 +4,7 @@ import connect, { ConnectionApi, ConnectionState } from "./connect";
 import { Building } from "./generated/building";
 import { ClientMessage } from "./generated/client_message";
 import { Education } from "./generated/education";
-import {
-  GameState,
-  GameStatePatch,
-} from "./generated/gamestate";
+import { GameState, GameStatePatch } from "./generated/gamestate";
 import { GameData } from "./generated/game_data";
 import { Report } from "./generated/report";
 import { ResearchDiscovery } from "./generated/research";
@@ -71,6 +68,7 @@ export type State = {
   reportActivity: () => void;
   saveMouseAppearance: (mouseId: string, appearance: MouseAppearance) => void;
   setAmbassadorMouse: (mouseId: string) => void;
+  setPizzaPrice: (pizzaPrice: number) => void;
 };
 
 const resetQueryDataState = () => {
@@ -93,7 +91,8 @@ const initialGameState: GameState = {
   mice: {},
   quests: {},
   timestamp: "",
-  ambassadorMouseId: ""
+  ambassadorMouseId: "",
+  pizzaPrice: 0,
 };
 
 const resetAuthState = (state: State) => ({
@@ -452,6 +451,19 @@ export const useStore = create<State>((set, get) => ({
           oneofKind: "setAmbassadorMouse",
           setAmbassadorMouse: {
             mouseId,
+          },
+        },
+      })
+    );
+  },
+  setPizzaPrice: (pizzaPrice: number) => {
+    get().connection?.send(
+      ClientMessage.create({
+        id: generateId(),
+        type: {
+          oneofKind: "setPizzaPrice",
+          setPizzaPrice: {
+            pizzaPrice,
           },
         },
       })

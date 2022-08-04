@@ -79,6 +79,7 @@ message GameState {
   map<string, Mouse> mice = 12;
   map<string, QuestState> quests = 13;
   string ambassadorMouseId = 14;
+  int32 pizzaPrice = 15;
 }
 
 message PatchMask {
