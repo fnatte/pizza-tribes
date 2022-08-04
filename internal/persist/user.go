@@ -150,3 +150,7 @@ func (r *userRepo) CreateUser(ctx context.Context, username string, password str
 
 	return id, err
 }
+
+func (r *userRepo) GetUserCount(ctx context.Context) (int64, error) {
+	return r.rdb.SCard(ctx, "users").Result()
+}

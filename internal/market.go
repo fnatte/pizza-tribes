@@ -48,10 +48,9 @@ func calculateMarketingScore(gs *models.GameState, e map[models.Education]int32)
 	return (1 + publicists) * (1 + marketingBonus)
 }
 
-
 const ep = -1.5 // Price exponant
-const em = 1.2 // Marketing exponant
-const er = 1.5 // Quality exponant
+const em = 1.2  // Marketing exponant
+const er = 1.5  // Quality exponant
 
 func getPizzaPrice(gs *models.GameState) float64 {
 	p := float64(gs.PizzaPrice)
@@ -69,11 +68,11 @@ func getPizzaPrice(gs *models.GameState) float64 {
 func CalculateDemandScore(gs *models.GameState) float64 {
 	educations := CountTownPopulationEducations(gs)
 
-	p := getPizzaPrice(gs) // Price
-	r := calculateQualityScore(gs) // Quality
+	p := getPizzaPrice(gs)                       // Price
+	r := calculateQualityScore(gs)               // Quality
 	m := calculateMarketingScore(gs, educations) // Marketing
-	e := 1.0 // Economical index
-	s := 1.0 // Seasonal index
+	e := 1.0                                     // Economical index
+	s := 1.0                                     // Seasonal index
 
 	log.Debug().Float64("price", p).Float64("quality", r).Float64("marketing", m).Msg("Calculate demand score")
 
@@ -82,12 +81,12 @@ func CalculateDemandScore(gs *models.GameState) float64 {
 	return score
 }
 
-func CalculateGlobalDemand(worldState *models.WorldState) (float64) {
+func CalculateGlobalDemand(worldState *models.WorldState, userCount int64) float64 {
 	start := time.Unix(worldState.StartTime, 0)
 	dur := time.Now().Sub(start)
+	days := dur.Hours() / 24
 
-	d := dur.Hours()
+	d := days * float64(userCount)
 
 	return d
 }
-

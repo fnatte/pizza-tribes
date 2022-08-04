@@ -149,7 +149,12 @@ func (h *handler) sendStats(ctx context.Context, userId string, gs *models.GameS
 		return fmt.Errorf("failed to send full state update: %w", err)
 	}
 
-	msg := internal.CalculateStats(gs, globalDemandScore, worldState).ToServerMessage()
+	userCount, err := h.userRepo.GetUserCount(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to send full state update: %w", err)
+	}
+
+	msg := internal.CalculateStats(gs, globalDemandScore, worldState, userCount).ToServerMessage()
 	err = h.send(ctx, userId, msg)
 	if err != nil {
 		return fmt.Errorf("failed to send full state update: %w", err)

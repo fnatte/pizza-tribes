@@ -44,6 +44,7 @@ type updater struct {
 	reportsRepo persist.ReportsRepository
 	worldRepo   persist.WorldRepository
 	marketRepo  persist.MarketRepository
+	userRepo    persist.UserRepository
 	updater     gamestate.Updater
 }
 
@@ -63,6 +64,12 @@ func (u *updater) update(ctx context.Context, userId string) {
 		return
 	}
 
+	userCount, err := u.userRepo.GetUserCount(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to perform update")
+		return
+	}
+
 	/*
 	 * There's a lot of stuff happening in this function, but this is
 	 * also the heart of the game. In short it does:
@@ -75,7 +82,7 @@ func (u *updater) update(ctx context.Context, userId string) {
 	 */
 
 	tx, err := u.updater.PerformUpdate(ctx, userId, func(gs *models.GameState, tx *gamestate.GameTx) error {
-		if err := extrapolate(userId, gs, tx, worldState, globalDemandScore); err != nil {
+		if err := extrapolate(userId, gs, tx, worldState, globalDemandScore, userCount); err != nil {
 			return err
 		}
 		if err := completedConstructions(userId, gs, tx); err != nil {
@@ -254,7 +261,12 @@ func (u *updater) getStats(ctx context.Context, userId string) (*models.Stats, e
 		return nil, fmt.Errorf("failed to send full state update: %w", err)
 	}
 
-	return internal.CalculateStats(gs, globalDemandScore, worldState), nil
+	userCount, err := u.userRepo.GetUserCount(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send full state update: %w", err)
+	}
+
+	return internal.CalculateStats(gs, globalDemandScore, worldState, userCount), nil
 }
 
 func (u *updater) next(ctx context.Context) (string, error) {
@@ -360,7 +372,7 @@ func main() {
 	u := updater{
 		r: rc, world: world, leaderboard: leaderboard, gsRepo: gsRepo,
 		reportsRepo: reportsRepo, worldRepo: worldRepo, marketRepo: marketRepo,
-		updater: u2}
+		userRepo: userRepo, updater: u2}
 
 	ctx := context.Background()
 

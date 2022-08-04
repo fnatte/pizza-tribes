@@ -32,7 +32,7 @@ func calculateBakeBonus(gs *GameState) float64 {
 	return bonus
 }
 
-func CalculateStats(gs *GameState, globalDemandScore float64, worldState *WorldState) *Stats {
+func CalculateStats(gs *GameState, globalDemandScore float64, worldState *WorldState, userCount int64) *Stats {
 	// No changes if there are no population
 	if CountTownPopulation(gs) == 0 {
 		return &Stats{}
@@ -46,7 +46,7 @@ func CalculateStats(gs *GameState, globalDemandScore float64, worldState *WorldS
 	if marketShare > 1 {
 		marketShare = 1
 	}
-	marketDemandBase := marketShare * CalculateGlobalDemand(worldState)
+	marketDemandBase := marketShare * CalculateGlobalDemand(worldState, userCount)
 	marketDemandOffpeak := marketDemandBase
 	marketDemandRushHour := marketDemandBase * 2
 
