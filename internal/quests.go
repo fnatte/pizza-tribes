@@ -12,15 +12,13 @@ func GetAvailableQuestIds(gs *models.GameState) []string {
 	}
 
 	if q, ok := gs.Quests["2"]; ok && q.Completed {
-		quests = append(quests, "3")
+		quests = append(quests, "3", "4")
 	}
 
 	if q, ok := gs.Quests["3"]; ok && q.Completed {
-		quests = append(quests, "4")
-	}
-
-	if q, ok := gs.Quests["4"]; ok && q.Completed {
-		quests = append(quests, "5")
+		if q, ok := gs.Quests["4"]; ok && q.Completed {
+			quests = append(quests, "5")
+		}
 	}
 
 	if q, ok := gs.Quests["5"]; ok && q.Completed {
