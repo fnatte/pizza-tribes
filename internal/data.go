@@ -622,7 +622,7 @@ var FullGameData = GameData{
 		{
 			Id:          "8",
 			Title:       "Work, work",
-			Description: "This tribe is getting some serious business. Let's keep going! Employ a total of 8 mice.",
+			Description: "This tribe is getting some serious business. Let's keep going! Employ a total of 7 mice.",
 			Reward: &models.Quest_Reward{
 				Coins:  1_500,
 				Pizzas: 300,

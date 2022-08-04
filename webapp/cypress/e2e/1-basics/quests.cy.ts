@@ -165,7 +165,7 @@ describe("quests", () => {
     cy.get('[data-cy="quest-item"]').should("contain.text", "claimed");
   });
 
-  it("can complete 8 employees quest", () => {
+  it("can complete 7 employees quest", () => {
     cy.get('[data-cy="quest-item-title"]').should(
       "contain.text",
       "Bake and sell"
@@ -206,7 +206,7 @@ describe("quests", () => {
           },
           mice: new MiceBuilder()
             .add(Education.CHEF, 3)
-            .add(Education.SALESMOUSE, 5)
+            .add(Education.SALESMOUSE, 4)
             .build(),
         },
         patchMask: {

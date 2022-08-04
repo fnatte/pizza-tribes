@@ -88,7 +88,7 @@ func GetNewCompletedQuests(gs *models.GameState) []string {
 			}
 			break
 		case "8":
-			if CountEmployed(gs) >= 8 {
+			if CountEmployed(gs) >= 7 {
 				solved = append(solved, qid)
 			}
 			break
