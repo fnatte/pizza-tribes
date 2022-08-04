@@ -655,6 +655,15 @@ var FullGameData = GameData{
 				Pizzas: 1_000,
 			},
 		},
+		{
+			Id: "12",
+			Title: "God's touch",
+			Description: "As the leader for your tribe you can tap shops and kitchens to get instant coins and pizzas. Keep your hourly streak alive to get even higher rewards!\n- Reach a tap streak of 2 (consecutive hours)",
+			Reward: &models.Quest_Reward{
+				Coins:  250,
+				Pizzas: 250,
+			},
+		},
 	},
 }
 

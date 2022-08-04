@@ -17,7 +17,7 @@ func GetAvailableQuestIds(gs *models.GameState) []string {
 
 	if q, ok := gs.Quests["3"]; ok && q.Completed {
 		if q, ok := gs.Quests["4"]; ok && q.Completed {
-			quests = append(quests, "5")
+			quests = append(quests, "5", "12")
 		}
 	}
 
@@ -103,6 +103,13 @@ func GetNewCompletedQuests(gs *models.GameState) []string {
 			break
 		case "11":
 			// "Leaderboard quest" is solved using special message
+			break
+		case "12":
+			for _, lot := range gs.Lots {
+				if lot.Streak >= 2 {
+					solved = append(solved, qid)
+				}
+			}
 			break
 		}
 	}
