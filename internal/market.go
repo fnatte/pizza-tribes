@@ -52,23 +52,10 @@ const ep = -1.5 // Price exponant
 const em = 1.2  // Marketing exponant
 const er = 1.5  // Quality exponant
 
-func getPizzaPrice(gs *models.GameState) float64 {
-	p := float64(gs.PizzaPrice)
-
-	if p < 1 {
-		return 1
-	}
-	if p > 15 {
-		return 15
-	}
-
-	return p
-}
-
 func CalculateDemandScore(gs *models.GameState) float64 {
 	educations := CountTownPopulationEducations(gs)
 
-	p := getPizzaPrice(gs)                       // Price
+	p := float64(gs.GetValidPizzaPrice())        // Price
 	r := calculateQualityScore(gs)               // Quality
 	m := calculateMarketingScore(gs, educations) // Marketing
 	e := 1.0                                     // Economical index

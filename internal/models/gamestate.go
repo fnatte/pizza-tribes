@@ -25,6 +25,7 @@ func NewGameState() *GameState {
 		Quests: map[string]*QuestState{
 			"1": {},
 		},
+		PizzaPrice: 1,
 	}
 }
 
@@ -39,3 +40,17 @@ func (gsp *GameStatePatch) ToServerMessage() *ServerMessage {
 		},
 	}
 }
+
+func (gs *GameState) GetValidPizzaPrice() int32 {
+	p := gs.PizzaPrice
+
+	if p < 1 {
+		return 1
+	}
+	if p > 15 {
+		return 15
+	}
+
+	return p
+}
+

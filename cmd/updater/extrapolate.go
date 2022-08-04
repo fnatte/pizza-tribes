@@ -56,7 +56,7 @@ func calculateExtrapolateChanges(gs *models.GameState, worldState *models.WorldS
 	pizzasSold := internal.MinInt32(demand,
 		internal.MinInt32(maxSellsByMice, pizzasAvailable))
 
-	pizzaPrice := gs.PizzaPrice
+	pizzaPrice :=  gs.GetValidPizzaPrice()
 
 	log.Debug().
 		Int32("pizzasAvailable", pizzasAvailable).

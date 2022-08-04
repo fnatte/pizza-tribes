@@ -152,7 +152,9 @@ function Navigation() {
         </button>
       </Link>
       <Link to="/town">
-        <button className={classnames(styles.primaryButton, "mr-2", "relative")}>
+        <button
+          className={classnames(styles.primaryButton, "mr-2", "relative")}
+        >
           {tapBadgeCount > 0 && <ButtonBadgeCount count={tapBadgeCount} />}
           Town
         </button>
@@ -293,7 +295,9 @@ function ResourceBar() {
   const { pizzas, coins } = useStore(
     (state) => state.gameState.resources ?? { coins: 0, pizzas: 0 }
   );
-  const pizzaPrice = useStore(state => state.gameState.pizzaPrice);
+  const pizzaPrice = useStore((state) =>
+    Math.max(1, Math.min(15, state.gameState.pizzaPrice))
+  );
   const stats = useStore((state) => state.gameStats);
   const clock = useMouseClock();
 
