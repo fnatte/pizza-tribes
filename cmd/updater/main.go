@@ -50,8 +50,6 @@ type updater struct {
 
 // Update the game state for the specified user
 func (u *updater) update(ctx context.Context, userId string) {
-	log.Debug().Str("userId", userId).Msg("Update")
-
 	worldState, err := u.worldRepo.GetState(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to perform update")
