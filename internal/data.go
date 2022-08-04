@@ -405,7 +405,7 @@ var FullGameData = GameData{
 			MaxCount:    wrapperspb.Int32(1),
 			LevelInfos: []*BuildingInfo_LevelInfo{
 				{
-					Cost:             200_000,
+					Cost:             100_000,
 					ConstructionTime: 9600,
 				},
 			},
