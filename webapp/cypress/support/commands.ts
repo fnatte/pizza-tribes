@@ -22,6 +22,7 @@ declare global {
       ): Chainable<void>;
       adminBatchDeleteUser(usernames: string[]): Chainable<void>;
       adminTestSetup(username?: string): Chainable<void>;
+      adminTestTeardown(username?: string): Chainable<void>;
 
       login(username?: string, password?: string): Chainable<void>;
       expand(): Chainable<Element>;
@@ -183,6 +184,10 @@ Cypress.Commands.add("adminTestSetup", (username = defaultUsername) => {
         resp.body.accessToken
       );
     });
+});
+
+Cypress.Commands.add("adminTestTeardown", (username = defaultUsername) => {
+  cy.adminBatchDeleteUser([username])
 });
 
 Cypress.Commands.add(

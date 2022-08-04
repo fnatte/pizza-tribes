@@ -45,6 +45,11 @@ describe("travel", () => {
     });
   });
 
+  afterEach(() => {
+    cy.adminTestTeardown();
+    cy.adminDeleteUser("target");
+  });
+
   it("can send 1 thief", () => {
     // Send
     cy.get('[data-cy="thieves-to-send-input"]').clear().type("1");

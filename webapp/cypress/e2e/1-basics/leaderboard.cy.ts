@@ -45,6 +45,13 @@ describe("leaderboard", () => {
     );
   });
 
+  afterEach(() => {
+    cy.adminTestTeardown();
+    cy.adminBatchDeleteUser(
+      [...Array(30).keys()].map((i) => `cypress_other_test_user_${i + 1}`)
+    );
+  });
+
   it("can see leaderboard", () => {
     cy.visit("/leaderboard");
     cy.get('[data-cy="leaderboard-row"]')

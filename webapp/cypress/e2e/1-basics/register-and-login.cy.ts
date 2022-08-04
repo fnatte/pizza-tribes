@@ -7,6 +7,11 @@ describe("pizza-tribes", () => {
     cy.adminDeleteUser(username);
   });
 
+  afterEach(() => {
+    cy.adminDeleteUser(username);
+  });
+
+
   it("register and login", () => {
     cy.contains("button", "Create Account").click();
     cy.location("pathname").should("eq", "/create-account");

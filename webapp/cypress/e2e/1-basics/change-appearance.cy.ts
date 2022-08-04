@@ -18,6 +18,10 @@ describe("change appearance", () => {
     cy.visit("/mouse/1/appearance");
   });
 
+  afterEach(() => {
+    cy.adminTestTeardown();
+  });
+
   it("can set outfit", () => {
     cy.get('[data-cy="gallery-section-title"]').contains("Outfits").expand();
     cy.get('[data-cy="gallery-section-item"]').first().click();

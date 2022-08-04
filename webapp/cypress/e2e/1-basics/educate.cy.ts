@@ -35,6 +35,10 @@ describe("education", () => {
     cy.visit("/");
   });
 
+  afterEach(() => {
+    cy.adminTestTeardown();
+  });
+
   it("can train 1 chef", () => {
     // Train
     cy.get('[data-cy="main-nav"] a[href="/town"]').click();

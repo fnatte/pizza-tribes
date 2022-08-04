@@ -10,6 +10,10 @@ describe("quests", () => {
     cy.visit("/quests");
   });
 
+  afterEach(() => {
+    cy.adminTestTeardown();
+  });
+
   it("can see first quest", () => {
     cy.get('[data-cy="quest-item-title"]').should(
       "contain.text",

@@ -4,6 +4,10 @@ describe("constructing buildings", () => {
     cy.visit("/");
   });
 
+  afterEach(() => {
+    cy.adminTestTeardown();
+  });
+
   it("construct level 1 kitchen at lot 1", () => {
     cy.get('[data-cy="main-nav"] a[href="/town"]').click();
     cy.get('[data-cy="lot1"]').click();

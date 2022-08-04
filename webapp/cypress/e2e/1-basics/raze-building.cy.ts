@@ -22,6 +22,10 @@ describe("raze building", () => {
     cy.visit("/");
   });
 
+  afterEach(() => {
+    cy.adminTestTeardown();
+  });
+
   it("can raze level 1 shop", () => {
     cy.adminPatchGameState(
       GameStatePatch.create({

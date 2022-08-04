@@ -30,6 +30,10 @@ describe("change appearance", () => {
     );
   });
 
+  afterEach(() => {
+    cy.adminTestTeardown();
+  });
+
   it("can set ambassador", () => {
     cy.visit("/mouse/1");
     cy.get('[data-cy="make-ambassador-button"]').click();

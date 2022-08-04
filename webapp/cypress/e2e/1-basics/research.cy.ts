@@ -24,6 +24,10 @@ describe("research", () => {
     cy.visit("/town/1");
   });
 
+  afterEach(() => {
+    cy.adminTestTeardown();
+  });
+
   it("can research durum wheat", () => {
     cy.get('[data-cy="ongoing-research-row"]').should("not.exist");
 

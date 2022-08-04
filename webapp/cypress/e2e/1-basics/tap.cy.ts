@@ -25,6 +25,10 @@ describe("tap", () => {
     cy.visit("/");
   });
 
+  afterEach(() => {
+    cy.adminTestTeardown();
+  });
+
   it("can tap 1 shop time", () => {
     // Tap
     cy.get('[data-cy="main-nav"] a[href="/town"]').click();
