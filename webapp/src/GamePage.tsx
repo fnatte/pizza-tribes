@@ -15,7 +15,7 @@ import { useClickAway, useDebounce, useInterval, useMedia } from "react-use";
 import ListReportsView from "./Game/reports/ListReportsView";
 import ShowReportView from "./Game/reports/ShowReportView";
 import { formatNumber, getTapInfo } from "./utils";
-import HelpView from "./Game/HelpView";
+import HelpView from "./Game/help/HelpView";
 import { useWorldState } from "./queries/useWorldState";
 import { WorldStarting } from "./WorldStarting";
 import { WorldEnded } from "./WorldEnded";
@@ -552,7 +552,7 @@ function GamePage(): JSX.Element {
         <Route path="reports/:id" element={<ShowReportView />} />
         <Route path="mouse/:id/appearance" element={<MouseAppearanceView />} />
         <Route path="mouse/:id" element={<MouseView />} />
-        <Route path="help" element={<HelpView />} />
+        <Route path="help/*" element={<HelpView />} />
         <Route path="/" element={<Navigate to="/town" replace />} />
       </Routes>
       {showConnectionPopup && (
