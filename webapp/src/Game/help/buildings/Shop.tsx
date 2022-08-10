@@ -1,5 +1,7 @@
 import React from "react";
 import { ReactComponent as SvgShop } from "images/shop.svg";
+import { LevelInfoTable } from "./LevelInfoTable";
+import { Building } from "../../../generated/building";
 
 export function Shop() {
   return (
@@ -11,6 +13,7 @@ export function Shop() {
         Mice that are educated as <em>Salesmice</em> will work here. Without
         salesmice there no pizzas will be sold.
       </p>
+      <LevelInfoTable className="my-8 clear-left" building={Building.SHOP} />
     </article>
   );
 }

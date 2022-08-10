@@ -1,5 +1,7 @@
 import React from "react";
 import { ReactComponent as SvgKitchen } from "images/kitchen.svg";
+import { LevelInfoTable } from "./LevelInfoTable";
+import { Building } from "../../../generated/building";
 
 export function Kitchen() {
   return (
@@ -10,6 +12,7 @@ export function Kitchen() {
         The kitchen is used to make pizzas. Mice that are educated as{" "}
         <em>Chefs</em> will work here. Without chefs there will be no pizzas.
       </p>
+      <LevelInfoTable className="my-8 clear-left" building={Building.KITCHEN} />
     </article>
   );
 }

@@ -85,6 +85,18 @@ export function HelpMenu({
                   <li>
                     <Link to="educations/chef">Chef</Link>
                   </li>
+                  <li>
+                    <Link to="educations/salesmouse">Salesmouse</Link>
+                  </li>
+                  <li>
+                    <Link to="educations/guard">Guard</Link>
+                  </li>
+                  <li>
+                    <Link to="educations/thief">Thief</Link>
+                  </li>
+                  <li>
+                    <Link to="educations/publicist">Publicist</Link>
+                  </li>
                 </ul>
               </li>
             </ul>

@@ -1,5 +1,7 @@
 import React from "react";
 import { ReactComponent as SvgSchool } from "images/school.svg";
+import { LevelInfoTable } from "./LevelInfoTable";
+import { Building } from "../../../generated/building";
 
 export function School() {
   return (
@@ -11,6 +13,7 @@ export function School() {
         mice will move into that house. You should educate the mices in your
         tribe so that they can work.
       </p>
+      <LevelInfoTable className="my-8 clear-left" building={Building.SCHOOL} />
     </article>
   );
 }

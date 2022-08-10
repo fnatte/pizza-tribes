@@ -1,5 +1,7 @@
 import React from "react";
 import { ReactComponent as SvgMarketingHq } from "images/marketing-hq.svg";
+import { LevelInfoTable } from "./LevelInfoTable";
+import { Building } from "../../../generated/building";
 
 export function MarketingHq() {
   return (
@@ -11,6 +13,7 @@ export function MarketingHq() {
         when publicity is increase, so is demand. Mice that are educated as{" "}
         <em>Publicists</em> will work here.
       </p>
+      <LevelInfoTable className="my-8 clear-left" building={Building.MARKETINGHQ} />
     </article>
   );
 }

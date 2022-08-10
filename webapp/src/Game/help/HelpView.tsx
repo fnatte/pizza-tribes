@@ -14,6 +14,11 @@ import { House } from "./buildings/House";
 import { School } from "./buildings/School";
 import { MarketingHq } from "./buildings/MarketingHQ";
 import { ResearchInstitute } from "./buildings/ResearchInstitute";
+import { Educations } from "./educations/Educations";
+import { Salesmouse } from "./educations/Salesmouse";
+import { Guard } from "./educations/Guard";
+import { Thief } from "./educations/Thief";
+import { Publicist } from "./educations/Publicist";
 
 const HELP_QUEST_ID = "6";
 
@@ -85,7 +90,12 @@ const HelpView: React.VFC<{}> = () => {
               path="buildings/research-institute"
               element={<ResearchInstitute />}
             />
+            <Route path="educations" element={<Educations />} />
             <Route path="educations/chef" element={<Chef />} />
+            <Route path="educations/salesmouse" element={<Salesmouse />} />
+            <Route path="educations/guard" element={<Guard />} />
+            <Route path="educations/thief" element={<Thief />} />
+            <Route path="educations/publicist" element={<Publicist />} />
           </Routes>
         </div>
       </div>
