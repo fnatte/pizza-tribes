@@ -14,5 +14,6 @@ message Quest {
   string title = 2;
   string description = 3;
   Reward reward = 4;
+  int32 order = 5;
 }
 

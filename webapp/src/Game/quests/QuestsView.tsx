@@ -4,7 +4,6 @@ import ReactMarkdown from "react-markdown";
 import { useStore } from "../../store";
 import { Quest } from "../../generated/quest";
 import { Coin, Pizza } from "../../icons";
-import { QuestState } from "../../generated/gamestate";
 import { primaryButton } from "../../styles";
 import { LEADERBOARD_QUEST_ID, STATS_QUEST_ID } from "./ids";
 import { StatsQuestForm } from "./StatsQuestForm";
@@ -26,18 +25,6 @@ function Container({ children }: { children?: ReactNode | undefined }) {
   );
 }
 
-function getQuestStateImportance(q: QuestState): number {
-  if (q.completed && !q.claimedReward) {
-    return 2;
-  }
-
-  if (!q.completed) {
-    return 1;
-  }
-
-  return 0;
-}
-
 export default function QuestsView() {
   const questStates = useStore((state) => state.gameState.quests);
   const gameData = useStore((state) => state.gameData);
@@ -52,10 +39,9 @@ export default function QuestsView() {
 
   const sortedQuestStates = Object.entries(questStates)
     .reverse()
-    .sort(
-      ([_a, a], [_b, b]) =>
-        getQuestStateImportance(b) - getQuestStateImportance(a)
-    );
+    .sort(([a], [b]) => {
+      return (quests.get(b)?.order ?? 0) - (quests.get(a)?.order ?? 0);
+    });
 
   const [expanded, setExpanded] = useState<string>();
 
@@ -105,7 +91,7 @@ export default function QuestsView() {
                       setExpanded(expanded !== id ? id : undefined)
                     }
                     className={classnames({
-                      "font-bold": !questState.opened,
+                      "font-bold": !questState.opened || canClaimReward,
                     })}
                     aria-expanded={expanded === id}
                     data-cy="quest-item-expand-toggle"

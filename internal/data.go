@@ -420,7 +420,7 @@ var FullGameData = GameData{
 					ConstructionTime: 0,
 				},
 				{
-					Description: "Upgrade allows sell price for pizza to changed.",
+					Description:      "Upgrade allows sell price for pizza to changed.",
 					Cost:             10_000,
 					ConstructionTime: 3600,
 				},
@@ -564,6 +564,7 @@ var FullGameData = GameData{
 				Coins:  550,
 				Pizzas: 0,
 			},
+			Order: 1,
 		},
 		{
 			Id:          "2",
@@ -573,6 +574,7 @@ var FullGameData = GameData{
 				Coins:  325,
 				Pizzas: 0,
 			},
+			Order: 2,
 		},
 		{
 			Id:          "3",
@@ -582,6 +584,7 @@ var FullGameData = GameData{
 				Coins:  375,
 				Pizzas: 50,
 			},
+			Order: 4,
 		},
 		{
 			Id:          "4",
@@ -591,6 +594,7 @@ var FullGameData = GameData{
 				Coins:  450,
 				Pizzas: 75,
 			},
+			Order: 3,
 		},
 		{
 			Id:          "5",
@@ -600,6 +604,7 @@ var FullGameData = GameData{
 				Coins:  500,
 				Pizzas: 0,
 			},
+			Order: 6,
 		},
 		{
 			Id:          "6",
@@ -609,6 +614,7 @@ var FullGameData = GameData{
 				Coins:  750,
 				Pizzas: 0,
 			},
+			Order: 7,
 		},
 		{
 			Id:          "7",
@@ -618,6 +624,7 @@ var FullGameData = GameData{
 				Coins:  500,
 				Pizzas: 500,
 			},
+			Order: 8,
 		},
 		{
 			Id:          "8",
@@ -627,6 +634,7 @@ var FullGameData = GameData{
 				Coins:  1_500,
 				Pizzas: 300,
 			},
+			Order: 9,
 		},
 		{
 			Id:          "9",
@@ -636,6 +644,7 @@ var FullGameData = GameData{
 				Coins:  1_000,
 				Pizzas: 0,
 			},
+			Order: 10,
 		},
 		{
 			Id:          "10",
@@ -645,6 +654,7 @@ var FullGameData = GameData{
 				Coins:  5_000,
 				Pizzas: 1_000,
 			},
+			Order: 11,
 		},
 		{
 			Id:          "11",
@@ -654,15 +664,17 @@ var FullGameData = GameData{
 				Coins:  1_000,
 				Pizzas: 1_000,
 			},
+			Order: 12,
 		},
 		{
-			Id: "12",
-			Title: "God's touch",
+			Id:          "12",
+			Title:       "God's touch",
 			Description: "As the leader for your tribe you can tap shops and kitchens to get instant coins and pizzas. Keep your hourly streak alive to get even higher rewards!\n- Reach a tap streak of 2 (consecutive hours)",
 			Reward: &models.Quest_Reward{
 				Coins:  250,
 				Pizzas: 250,
 			},
+			Order: 5,
 		},
 	},
 }
