@@ -100,6 +100,11 @@ func handleTapReminder(ctx context.Context, rc redis.RedisClient, u persist.User
 
 		t := time.Unix(0, lastActivity)
 
+		// Don't send tap notifications if user has been inactive for over 12 hours
+		if t.Before(time.Now().Add(-12 * time.Hour)) {
+			continue
+		}
+
 		// Check if user has not been active this hour
 		if t.Before(time.Now().Truncate(time.Hour).Add(-time.Minute)) {
 			log.Debug().Str("userId", user).Msg("Scheduling tap reminder push notification")
@@ -122,14 +127,21 @@ func handleActivityReminder(ctx context.Context, rc redis.RedisClient, u persist
 	}
 
 	for _, user := range users {
-		t, err := u.GetUserLatestActivity(ctx, user)
+		lastActivity, err := u.GetUserLatestActivity(ctx, user)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to get user's latest activity when handling activity reminder")
 			continue
 		}
 
+		t := time.Unix(0, lastActivity)
+
+		// Don't send activity reminder if user has been inactive for over 72 hours
+		if t.Before(time.Now().Add(-72 * time.Hour)) {
+			continue
+		}
+
 		// Check if user has not been active for over 24 hours
-		if time.Unix(0, t).Before(time.Now().Add(-24 * time.Hour)) {
+		if t.Before(time.Now().Add(-24 * time.Hour)) {
 			log.Debug().Str("userId", user).Msg("Scheduling activity reminder push notification")
 			internal.SchedulePushNotification(ctx, rc, makeActivityReminderMessage(user), time.Now())
 		}
