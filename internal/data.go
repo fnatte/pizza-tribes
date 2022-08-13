@@ -676,6 +676,16 @@ var FullGameData = GameData{
 			},
 			Order: 5,
 		},
+		{
+			Id:          "13",
+			Title:       "Supply and demand",
+			Description: "By upgrading our Town Hall we can unlock the ability to change our pizza price, so that we can tune it for maximum profit!\n- Upgrade Town Hall to level 2",
+			Reward: &models.Quest_Reward{
+				Coins:  0,
+				Pizzas: 2_500,
+			},
+			Order: 13,
+		},
 	},
 }
 

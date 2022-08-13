@@ -38,6 +38,9 @@ func GetAvailableQuestIds(gs *models.GameState) []string {
 			quests = append(quests, "10", "11")
 		}
 	}
+	if q, ok := gs.Quests["10"]; ok && q.Completed {
+		quests = append(quests, "13")
+	}
 
 	return quests
 }
@@ -109,6 +112,11 @@ func GetNewCompletedQuests(gs *models.GameState) []string {
 				if lot.Streak >= 2 {
 					solved = append(solved, qid)
 				}
+			}
+			break
+		case "13":
+			if HasBuildingMinLevel(gs, models.Building_TOWN_CENTRE, 2) {
+				solved = append(solved, qid)
 			}
 			break
 		}
