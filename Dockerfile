@@ -86,6 +86,7 @@ CMD ["/app/pizza-tribes-admin"]
 # Web App
 #
 FROM nginx AS webapp
+COPY ./PRIVACY_POLICY.html /usr/share/nginx/html/privacy-policy.html
 COPY --from=webapp-builder /usr/src/app/dist/ /usr/share/nginx/html
 
 #
