@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+
+import { Link, LinkProps } from "react-router-dom";
 import classnames from "classnames";
 
 export function HelpMenu({
@@ -14,6 +15,10 @@ export function HelpMenu({
   useEffect(() => {
     setIsExpanded(alwaysExpanded);
   }, [alwaysExpanded]);
+
+  const linkProps: Partial<LinkProps> = {
+    onClick: () => setIsExpanded(false),
+  };
 
   return (
     <div className={classnames("bg-green-50 py-2 px-8", className)}>
@@ -32,18 +37,25 @@ export function HelpMenu({
           <nav>
             <ul className="leading-loose">
               <li className="mb-2">
-                <Link to="getting-started">Getting Started</Link>
+                <Link {...linkProps} to="getting-started">
+                  Getting Started
+                </Link>
                 <ul className="pl-4">
                   <li>
-                    <Link to="getting-started#introduction">Introduction</Link>
+                    <Link {...linkProps} to="getting-started#introduction">
+                      Introduction
+                    </Link>
                   </li>
                   <li>
-                    <Link to="getting-started#constructing-buildings">
+                    <Link
+                      {...linkProps}
+                      to="getting-started#constructing-buildings"
+                    >
                       Constructing Buildings
                     </Link>
                   </li>
                   <li>
-                    <Link to="getting-started#educating-mice">
+                    <Link {...linkProps} to="getting-started#educating-mice">
                       Educating Mice
                     </Link>
                   </li>
@@ -51,28 +63,46 @@ export function HelpMenu({
               </li>
 
               <li className="mb-2">
-                <Link to="buildings">Buildings</Link>
+                <Link {...linkProps} to="buildings">
+                  Buildings
+                </Link>
                 <ul className="pl-4">
                   <li>
-                    <Link to="buildings/town-centre">Town Centre</Link>
+                    <Link
+                      {...linkProps}
+                      to="buildings/town-centre"
+                      onClick={() => setIsExpanded(false)}
+                    >
+                      Town Centre
+                    </Link>
                   </li>
                   <li>
-                    <Link to="buildings/kitchen">Kitchen</Link>
+                    <Link {...linkProps} to="buildings/kitchen">
+                      Kitchen
+                    </Link>
                   </li>
                   <li>
-                    <Link to="buildings/shop">Shop</Link>
+                    <Link {...linkProps} to="buildings/shop">
+                      Shop
+                    </Link>
                   </li>
                   <li>
-                    <Link to="buildings/house">House</Link>
+                    <Link {...linkProps} to="buildings/house">
+                      House
+                    </Link>
                   </li>
                   <li>
-                    <Link to="buildings/school">School</Link>
+                    <Link {...linkProps} to="buildings/school">
+                      School
+                    </Link>
                   </li>
                   <li>
-                    <Link to="buildings/marketing-hq">Marketing HQ</Link>
+                    <Link {...linkProps} to="buildings/marketing-hq">
+                      Marketing HQ
+                    </Link>
                   </li>
                   <li>
-                    <Link to="buildings/research-institute">
+                    <Link {...linkProps} to="buildings/research-institute">
                       Research Institute
                     </Link>
                   </li>
@@ -80,34 +110,52 @@ export function HelpMenu({
               </li>
 
               <li className="mb-2">
-                <Link to="educations">Educations</Link>
+                <Link {...linkProps} to="educations">
+                  Educations
+                </Link>
                 <ul className="pl-4">
                   <li>
-                    <Link to="educations/chef">Chef</Link>
+                    <Link {...linkProps} to="educations/chef">
+                      Chef
+                    </Link>
                   </li>
                   <li>
-                    <Link to="educations/salesmouse">Salesmouse</Link>
+                    <Link {...linkProps} to="educations/salesmouse">
+                      Salesmouse
+                    </Link>
                   </li>
                   <li>
-                    <Link to="educations/guard">Guard</Link>
+                    <Link {...linkProps} to="educations/guard">
+                      Guard
+                    </Link>
                   </li>
                   <li>
-                    <Link to="educations/thief">Thief</Link>
+                    <Link {...linkProps} to="educations/thief">
+                      Thief
+                    </Link>
                   </li>
                   <li>
-                    <Link to="educations/publicist">Publicist</Link>
+                    <Link {...linkProps} to="educations/publicist">
+                      Publicist
+                    </Link>
                   </li>
                 </ul>
               </li>
 
               <li className="mb-2">
-                <Link to="concepts">Concepts</Link>
+                <Link {...linkProps} to="concepts">
+                  Concepts
+                </Link>
                 <ul className="pl-4">
                   <li>
-                    <Link to="concepts/demand">Demand</Link>
+                    <Link {...linkProps} to="concepts/demand">
+                      Demand
+                    </Link>
                   </li>
                   <li>
-                    <Link to="concepts/rush-hour">Rush Hour</Link>
+                    <Link {...linkProps} to="concepts/rush-hour">
+                      Rush Hour
+                    </Link>
                   </li>
                 </ul>
               </li>

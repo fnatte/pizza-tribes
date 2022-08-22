@@ -77,8 +77,8 @@ const HelpView: React.VFC<{}> = () => {
           "items-center": !isMinXl,
         })}
       >
-        <HelpMenu className="shrink-0 sticky top-4" alwaysExpanded={isMinXl} />
-        <div className="grow-1 min-w-[65ch]">
+        <HelpMenu className="shrink-0 xl:sticky top-4" alwaysExpanded={isMinXl} />
+        <div className="grow-1 sm:min-w-[65ch]">
           <Routes>
             <Route index element={<Navigate to="getting-started" replace />} />
             <Route path="getting-started" element={<GettingStarted />} />

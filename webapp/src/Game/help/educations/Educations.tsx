@@ -7,19 +7,19 @@ export function Educations() {
       <h3>Educations</h3>
       <ul className="pl-4">
         <li>
-          <Link to="educations/chef">Chef</Link>
+          <Link to="../educations/chef">Chef</Link>
         </li>
         <li>
-          <Link to="educations/salesmouse">Salesmouse</Link>
+          <Link to="../educations/salesmouse">Salesmouse</Link>
         </li>
         <li>
-          <Link to="educations/guard">Guard</Link>
+          <Link to="../educations/guard">Guard</Link>
         </li>
         <li>
-          <Link to="educations/thief">Thief</Link>
+          <Link to="../educations/thief">Thief</Link>
         </li>
         <li>
-          <Link to="educations/publicist">Publicist</Link>
+          <Link to="../educations/publicist">Publicist</Link>
         </li>
       </ul>
     </article>
