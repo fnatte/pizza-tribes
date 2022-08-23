@@ -371,6 +371,11 @@ func main() {
 		DB:       0, // use default DB
 	})
 
+	redisDebug := envOrDefault("REDIS_DEBUG", "0") == "1"
+	if redisDebug {
+		rc.AddDebugHook()
+	}
+
 	world := internal.NewWorldService(rc)
 	leaderboard := internal.NewLeaderboardService(rc)
 	gsRepo := persist.NewGameStateRepository(rc)
