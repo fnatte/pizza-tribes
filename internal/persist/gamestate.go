@@ -11,6 +11,7 @@ import (
 	"github.com/fnatte/pizza-tribes/internal/redis"
 	"go.uber.org/multierr"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
 type gameStateRepo struct {
@@ -151,6 +152,24 @@ func jsonValue(v interface{}) (interface{}, error) {
 				if err != nil {
 					return nil, err
 				}
+				buf = append(buf, b...)
+			}
+			buf = append(buf, ']')
+			return buf, nil
+		}
+
+		mtyp = reflect.TypeOf(new(protoreflect.Enum)).Elem()
+		if val.Type().Elem().Implements(mtyp) {
+			l := val.Len()
+			buf := []byte{}
+			buf = append(buf, '[')
+			for i := 0; i < l; i++ {
+				if i != 0 {
+					buf = append(buf, ',')
+				}
+
+				a := val.Index(i).Interface().(fmt.Stringer)
+				b := fmt.Sprintf("\"%s\"", a.String())
 				buf = append(buf, b...)
 			}
 			buf = append(buf, ']')
