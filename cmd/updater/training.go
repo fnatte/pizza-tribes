@@ -1,11 +1,11 @@
 package main
 
 import (
-	"errors"
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal/gamestate"
 	"github.com/fnatte/pizza-tribes/internal/models"
+	"github.com/rs/zerolog/log"
 )
 
 func completeTrainings(userId string, gs *models.GameState, tx *gamestate.GameTx) error {
@@ -70,7 +70,8 @@ func completeTrainings(userId string, gs *models.GameState, tx *gamestate.GameTx
 				}
 			}
 			if mouseId == "" {
-				return errors.New("could not find mouse being educated")
+				log.Error().Msg("could not find mouse being educated, ignoring training completion")
+				continue
 			}
 			u.SetMouseEducation(mouseId, c.education)
 		}
