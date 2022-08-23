@@ -47,9 +47,11 @@ func (u *updater) PerformUpdate(ctx context.Context, userId string, updater Game
 
 	gs, err := u.gsRepo.Get(ctx, userId)
 	if err == nil {
-		t, err := u.userRepo.GetUserLatestActivity(ctx, userId)
+		var t int64
+		t, err = u.userRepo.GetUserLatestActivity(ctx, userId)
 		if err == nil {
 			tx = NewGameTx(userId, gs, time.Unix(0, t))
+
 			err = updater(gs, tx)
 			if err == nil {
 				err = u.persistTx(ctx, tx)
