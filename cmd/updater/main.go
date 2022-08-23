@@ -53,18 +53,21 @@ func (u *updater) update(ctx context.Context, userId string) {
 	worldState, err := u.worldRepo.GetState(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to perform update")
+		u.scheduleNextUpdateAfterError(ctx, userId)
 		return
 	}
 
 	globalDemandScore, err := u.marketRepo.GetGlobalDemandScore(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to perform update")
+		u.scheduleNextUpdateAfterError(ctx, userId)
 		return
 	}
 
 	userCount, err := u.userRepo.GetUserCount(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to perform update")
+		u.scheduleNextUpdateAfterError(ctx, userId)
 		return
 	}
 
@@ -104,7 +107,7 @@ func (u *updater) update(ctx context.Context, userId string) {
 
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to perform update")
-		u.scheduleNextUpdate(ctx, userId, tx.Users[userId].Gs)
+		u.scheduleNextUpdateAfterError(ctx, userId)
 		return
 	}
 
@@ -118,6 +121,13 @@ func (u *updater) update(ctx context.Context, userId string) {
 	}
 
 	u.scheduleNextUpdate(ctx, userId, tx.Users[userId].Gs)
+}
+
+func (u *updater) scheduleNextUpdateAfterError(ctx context.Context, userId string) {
+	_, err := internal.SetNextUpdateTo(u.r, ctx, userId, time.Now().Add(2*time.Second).UnixNano())
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to set next update after error")
+	}
 }
 
 func (u *updater) scheduleNextUpdate(ctx context.Context, userId string, gs *models.GameState) {
@@ -145,7 +155,9 @@ func (u *updater) postProcessPatch(ctx context.Context, userId string, txu *game
 	}
 
 	if err := addTimeseriesDataPoints(ctx, userId, txu, u.r); err != nil {
-		log.Error().Err(err).Msg("Failed to add timeseries data points")
+		log.Error().Err(err).
+			Str("userId", userId).
+			Msg("Failed to add timeseries data points")
 	}
 
 	// Send reports
