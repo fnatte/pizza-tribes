@@ -104,6 +104,7 @@ func (u *updater) update(ctx context.Context, userId string) {
 
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to perform update")
+		u.scheduleNextUpdate(ctx, userId, tx.Users[userId].Gs)
 		return
 	}
 

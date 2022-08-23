@@ -9,6 +9,7 @@ import (
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/fnatte/pizza-tribes/internal/redis"
+	"go.uber.org/multierr"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -97,9 +98,18 @@ func (r *gameStateRepo) Patch(ctx context.Context, userId string, gs *models.Gam
 		}
 	}
 
-	_, err := pipe.Exec(ctx)
+	cmds, err := pipe.Exec(ctx)
 	if err != nil {
-		return fmt.Errorf("patch failed: %w", err)
+		return fmt.Errorf("patch failed (1): %w", err)
+	}
+
+	for _, cmd := range cmds {
+		if cerr := cmd.Err(); cerr != nil {
+			err = multierr.Append(err, cerr)
+		}
+	}
+	if err != nil {
+		return fmt.Errorf("patch failed (2): %w", err)
 	}
 
 	return nil
