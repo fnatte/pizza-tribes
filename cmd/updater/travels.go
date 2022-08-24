@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math"
+	"golang.org/x/exp/rand"
 	"text/template"
 	"time"
 
@@ -16,9 +16,7 @@ import (
 	"github.com/fnatte/pizza-tribes/internal/redis"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog/log"
-	"golang.org/x/exp/rand"
 	"golang.org/x/text/message"
-	"gonum.org/v1/gonum/stat/distuv"
 )
 
 var messagePrinter = message.NewPrinter(message.MatchLanguage("en"))
@@ -62,7 +60,7 @@ type reportTemplateData struct {
 	Thieves           int32
 	SuccessfulThieves int32
 	CaughtThieves     int32
-	SleepingGuards      int32
+	SleepingGuards    int32
 }
 
 type pipeFn func(redis.Pipeliner) error
@@ -115,36 +113,16 @@ func completeSteal(ctx context.Context, userId string, gs *models.GameState, tx 
 		return fmt.Errorf("failed to complete steal: %w", err)
 	}
 
-	targetEducations := internal.CountTownPopulationEducations(gsTarget)
-
 	// Calculate outcome
-	guards := targetEducations[models.Education_GUARD]
-	guardsf := float64(guards)
-	dist := distuv.Binomial{
-		N:   guardsf,
-		P:   0.1,
-		Src: rand.NewSource(uint64(time.Now().UnixNano())),
-	}
-	sleepingGuards := internal.MinInt32(int32(dist.Rand()), (guards+1)/3)
-	guards = guards - sleepingGuards
-	guardsf = float64(guards)
-
-	thievesf := float64(travel.Thieves)
-	dist = distuv.Binomial{
-		N:   thievesf,
-		P:   thievesf / (thievesf + guardsf/2),
-		Src: rand.NewSource(uint64(time.Now().UnixNano())),
-	}
-	successfulThieves := int32(dist.Rand())
-	caughtThieves := travel.Thieves - successfulThieves
-	guardsProtectingLoot := float64(internal.MaxInt32(guards-caughtThieves, 0))
-	thiefEfficiency := 0.5 + 0.5/(1+math.Pow(guardsProtectingLoot/12, 0.7))
-
-	maxLoot := int32(float64(successfulThieves) * internal.ThiefCapacity * thiefEfficiency)
-	loot := int64(internal.MinInt32(maxLoot, gsTarget.Resources.Coins))
+	targetEducations := internal.CountTownPopulationEducations(gsTarget)
+	outcome := internal.CalculateHeist(internal.Heist{
+		Guards:      targetEducations[models.Education_GUARD],
+		Thieves:     travel.Thieves,
+		TargetCoins: gsTarget.Resources.Coins,
+	}, rand.NewSource(uint64(time.Now().UnixNano())))
 
 	// Make caught thiefs uneducated
-	for n:= int32(0); n < caughtThieves; n++ {
+	for n := int32(0); n < outcome.CaughtThieves; n++ {
 		for k, m := range tx.Users[userId].Gs.Mice {
 			if m.IsEducated && m.Education == models.Education_THIEF {
 				tx.Users[userId].SetMouseUneducated(k)
@@ -154,7 +132,7 @@ func completeSteal(ctx context.Context, userId string, gs *models.GameState, tx 
 	}
 
 	// Prepare return travel - but not if all thieves got caught
-	if successfulThieves > 0 {
+	if outcome.SuccessfulThieves > 0 {
 		arrivalAt := internal.CalculateArrivalTime(
 			travel.DestinationX, travel.DestinationY,
 			gs.TownX, gs.TownY,
@@ -166,8 +144,8 @@ func completeSteal(ctx context.Context, userId string, gs *models.GameState, tx 
 			DestinationX: travel.DestinationX,
 			DestinationY: travel.DestinationY,
 			Returning:    true,
-			Thieves:      successfulThieves,
-			Coins:        loot,
+			Thieves:      outcome.SuccessfulThieves,
+			Coins:        outcome.Loot,
 		}
 		if err != nil {
 			return fmt.Errorf("failed to marshal travel: %w", err)
@@ -180,11 +158,11 @@ func completeSteal(ctx context.Context, userId string, gs *models.GameState, tx 
 	// Build reports
 	tmplData := reportTemplateData{
 		TargetUsername:    targetUsername,
-		Loot:              loot,
+		Loot:              outcome.Loot,
 		Thieves:           travel.Thieves,
-		SuccessfulThieves: successfulThieves,
-		CaughtThieves:     caughtThieves,
-		SleepingGuards:      sleepingGuards,
+		SuccessfulThieves: outcome.SuccessfulThieves,
+		CaughtThieves:     outcome.CaughtThieves,
+		SleepingGuards:    outcome.SleepingGuards,
 	}
 	buf := new(bytes.Buffer)
 	if err = thiefReportTemplate.Execute(buf, &tmplData); err != nil {
@@ -202,7 +180,7 @@ func completeSteal(ctx context.Context, userId string, gs *models.GameState, tx 
 		return fmt.Errorf("failed to get target report contents: %w", err)
 	}
 	targetReportTitle := "We have been robbed!"
-	if successfulThieves == 0 {
+	if outcome.SuccessfulThieves == 0 {
 		targetReportTitle = "We caught thieves!"
 	}
 	targetReport := &models.Report{
@@ -215,10 +193,10 @@ func completeSteal(ctx context.Context, userId string, gs *models.GameState, tx 
 
 	// Prepare patch to target user (whoms coins was stoled)
 	tx.InitUser(town.UserId, gsTarget)
-	tx.Users[town.UserId].IncrCoins(-int32(loot))
+	tx.Users[town.UserId].IncrCoins(-int32(outcome.Loot))
 
-	if sleepingGuards > 0 {
-		for n := 0; n < int(sleepingGuards); n++ {
+	if outcome.SleepingGuards > 0 {
+		for n := 0; n < int(outcome.SleepingGuards); n++ {
 			tx.Users[town.UserId].RemoveMouseByEducation(true, models.Education_GUARD)
 		}
 	}
@@ -273,4 +251,3 @@ func completeTravels(ctx context.Context, userId string, gs *models.GameState, t
 
 	return nil
 }
-
