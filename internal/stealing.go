@@ -28,7 +28,7 @@ func CalculateHeist(h Heist, rsrc rand.Source) HeistOutcome {
 	guardsf := float64(guards)
 	dist := distuv.Binomial{
 		N:   guardsf,
-		P:   0.08,
+		P:   0.075,
 		Src: rsrc,
 	}
 	sleepingGuards := MinInt32(MinInt32(int32(dist.Rand()), (guards+1)/3), thieves)
