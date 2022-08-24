@@ -89,6 +89,10 @@ message ClientMessage {
     int32 pizzaPrice = 1;
   }
 
+  message BuyGeniusFlash {
+    int32 id = 1;
+  }
+
   string id = 1;
   oneof type {
     Tap tap = 2;
@@ -110,6 +114,7 @@ message ClientMessage {
     SaveMouseAppearance saveMouseAppearance = 18;
     SetAmbassadorMouse setAmbassadorMouse = 19;
     SetPizzaPrice setPizzaPrice = 20;
+    BuyGeniusFlash buyGeniusFlash = 21;
   }
 }
 

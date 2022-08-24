@@ -221,6 +221,17 @@ func (u *GameTx_User) SetQuestAvailable(questId string) {
 	}
 }
 
+func (u *GameTx_User) SetGeniusFlashes(val int32) {
+	if u.Gs.GeniusFlashes != val {
+		u.Gs.GeniusFlashes = val
+		u.PatchMask.AppendPath("geniusFlashes")
+	}
+}
+
+func (u *GameTx_User) IncrGeniusFlashes(val int32) {
+	u.SetGeniusFlashes(u.Gs.GeniusFlashes + val)
+}
+
 func (u *GameTx_User) ToServerMessage() *models.ServerMessage {
 	return &models.ServerMessage{
 		Id: xid.New().String(),

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/gamestate"
 	"github.com/fnatte/pizza-tribes/internal/models"
 	"github.com/fnatte/pizza-tribes/internal/protojson"
 	"github.com/fnatte/pizza-tribes/internal/redis"
@@ -130,3 +131,43 @@ func (h *handler) handleStartResearch(ctx context.Context, senderId string, m *m
 
 	return nil
 }
+
+
+func (h *handler) handleBuyGeniusFlash(ctx context.Context, userId string, m *models.ClientMessage_BuyGeniusFlash) error {
+	tx, err := h.updater.PerformUpdate(ctx, userId, func(gs *models.GameState, tx *gamestate.GameTx) error {
+		nextId := len(gs.Discoveries) + int(gs.GeniusFlashes) + 1
+		if nextId != int(m.Id) {
+			return fmt.Errorf("not current genius id")
+		}
+
+		costs := internal.FullGameData.GeniusFlashCosts
+		if nextId >= len(costs) {
+			return fmt.Errorf("invalid genius id")
+		}
+
+		cost := costs[nextId]
+		if gs.Resources.Coins < cost.Coins {
+			return fmt.Errorf("not enough coins")
+		}
+		if gs.Resources.Pizzas < cost.Pizzas {
+			return fmt.Errorf("not enough pizzas")
+		}
+
+		tx.Users[userId].IncrCoins(-cost.Coins)
+		tx.Users[userId].IncrPizzas(-cost.Pizzas)
+		tx.Users[userId].IncrGeniusFlashes(1)
+
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("failed to handle genius flash: %w", err)
+	}
+
+	err = h.sendGameTx(ctx, tx)
+	if err != nil {
+		return fmt.Errorf("failed to send game tx: %w", err)
+	}
+
+	return nil
+}
+

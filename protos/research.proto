@@ -7,26 +7,54 @@ enum ResearchDiscovery {
   WEBSITE = 0;
   DIGITAL_ORDERING_SYSTEM = 1;
   MOBILE_APP = 2;
+
   MASONRY_OVEN = 3;
   GAS_OVEN = 4;
   HYBRID_OVEN = 5;
+
   DURUM_WHEAT = 6;
   DOUBLE_ZERO_FLOUR = 7;
   SAN_MARZANO_TOMATOES = 8;
   OCIMUM_BASILICUM = 9;
   EXTRA_VIRGIN = 10;
+
+  WHITEBOARD = 11;
+  KITCHEN_STRATEGY = 12;
+  STRESS_HANDLING = 13;
+
+  SLAM = 14;
+  HIT_IT = 15;
+  GRAND_SLAM = 16;
+  GODS_TOUCH = 17;
+  CONSECUTIVE = 18;
+  ON_A_ROLL = 19;
+
+  BOOTS_OF_HASTE = 20;
+  TIP_TOE = 21;
+  SHADOW_EXPERT = 22;
+  BIG_POCKETS = 23;
+  THIEVES_FAVORITE_BAG = 24;
+  
+  COFFEE = 25;
+  NIGHTS_WATCH = 26;
+  LASER_ALARM = 27;
+  TRIP_WIRE = 28;
+  CARDIO = 29;
 }
 
-message ResearchNode {
+enum ResearchTree {
+  PRODUCTION = 0;
+  DEMAND = 1;
+  TAPPING = 2;
+  THIEVES = 3;
+  GUARDS = 4;
+}
+
+message ResearchInfo {
   string title = 1;
   ResearchDiscovery discovery = 2;
-  repeated ResearchNode nodes = 3;
-  int32 cost = 4;
-  int32 researchTime = 5;
-}
-
-message ResearchTrack {
-  string title = 1;
-  ResearchNode rootNode = 2;
+  repeated ResearchDiscovery requirements = 3;
+  int32 researchTime = 4;
+  ResearchTree tree = 5;
 }
 

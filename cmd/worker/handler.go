@@ -80,6 +80,8 @@ func (h *handler) Handle(ctx context.Context, senderId string, m *models.ClientM
 		err = h.handleSetAmbassadorMouse(ctx, senderId, x.SetAmbassadorMouse)
 	case *models.ClientMessage_SetPizzaPrice_:
 		err = h.handleSetPizzaPrice(ctx, senderId, x.SetPizzaPrice)
+	case *models.ClientMessage_BuyGeniusFlash_:
+		err = h.handleBuyGeniusFlash(ctx, senderId, x.BuyGeniusFlash)
 	default:
 		log.Debug().Str("senderId", senderId).Msg("Received message")
 	}

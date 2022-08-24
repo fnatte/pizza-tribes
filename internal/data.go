@@ -128,6 +128,198 @@ var AllAppearanceParts = []*models.AppearancePart{
 
 var AppearancePartsMap = map[string]*AppearancePart{}
 
+var ResearchMap = map[int32]*ResearchInfo{
+	// Demand
+	int32(ResearchDiscovery_WEBSITE): {
+		Title:        "Website",
+		Tree:         ResearchTree_DEMAND,
+		ResearchTime: 3600 * 2,
+		Requirements: []ResearchDiscovery{},
+	},
+	int32(ResearchDiscovery_DIGITAL_ORDERING_SYSTEM): {
+		Title:        "Digital Ordering System",
+		Tree:         ResearchTree_DEMAND,
+		ResearchTime: 3600 * 6,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_WEBSITE},
+	},
+	int32(ResearchDiscovery_MOBILE_APP): {
+		Title:        "Mobile App",
+		Tree:         ResearchTree_DEMAND,
+		ResearchTime: 3600 * 24,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_DIGITAL_ORDERING_SYSTEM},
+	},
+	int32(ResearchDiscovery_DURUM_WHEAT): {
+		Title:        "Durum Wheat",
+		Tree:         ResearchTree_DEMAND,
+		ResearchTime: 3600 * 2,
+		Requirements: []ResearchDiscovery{},
+	},
+	int32(ResearchDiscovery_DOUBLE_ZERO_FLOUR): {
+		Title:        "Double Zero Flour",
+		Tree:         ResearchTree_DEMAND,
+		ResearchTime: 3600 * 7,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_DURUM_WHEAT},
+	},
+	int32(ResearchDiscovery_SAN_MARZANO_TOMATOES): {
+		Title:        "San Marzano Tomatoes",
+		Tree:         ResearchTree_DEMAND,
+		ResearchTime: 3600 * 9,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_DOUBLE_ZERO_FLOUR},
+	},
+	int32(ResearchDiscovery_OCIMUM_BASILICUM): {
+		Title:        "Ocimum Basilicum",
+		Tree:         ResearchTree_DEMAND,
+		ResearchTime: 3600 * 10,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_SAN_MARZANO_TOMATOES},
+	},
+	int32(ResearchDiscovery_EXTRA_VIRGIN): {
+		Title:        "Extra Virgin",
+		Tree:         ResearchTree_DEMAND,
+		ResearchTime: 3600 * 12,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_EXTRA_VIRGIN},
+	},
+
+	// Production
+	int32(ResearchDiscovery_MASONRY_OVEN): {
+		Title:        "Masonry Oven",
+		Tree:         ResearchTree_PRODUCTION,
+		ResearchTime: 3600 * 4,
+		Requirements: []ResearchDiscovery{},
+	},
+	int32(ResearchDiscovery_GAS_OVEN): {
+		Title:        "Gas Oven",
+		Tree:         ResearchTree_PRODUCTION,
+		ResearchTime: 3600 * 8,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_MASONRY_OVEN},
+	},
+	int32(ResearchDiscovery_HYBRID_OVEN): {
+		Title:        "Hybrid Oven",
+		Tree:         ResearchTree_PRODUCTION,
+		ResearchTime: 3600 * 24,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_GAS_OVEN},
+	},
+	int32(ResearchDiscovery_WHITEBOARD): {
+		Title:        "Whiteboard",
+		Tree:         ResearchTree_PRODUCTION,
+		ResearchTime: 3600 * 8,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_GAS_OVEN},
+	},
+	int32(ResearchDiscovery_KITCHEN_STRATEGY): {
+		Title:        "Kitchen Strategy",
+		Tree:         ResearchTree_PRODUCTION,
+		ResearchTime: 3600 * 14,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_WHITEBOARD},
+	},
+	int32(ResearchDiscovery_STRESS_HANDLING): {
+		Title:        "Stress Handling",
+		Tree:         ResearchTree_PRODUCTION,
+		ResearchTime: 3600 * 24,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_KITCHEN_STRATEGY, ResearchDiscovery_HYBRID_OVEN},
+	},
+
+	// Tapping
+	int32(ResearchDiscovery_SLAM): {
+		Title:        "Slam",
+		Tree:         ResearchTree_TAPPING,
+		ResearchTime: 3600 * 2,
+		Requirements: []ResearchDiscovery{},
+	},
+	int32(ResearchDiscovery_HIT_IT): {
+		Title:        "Hit It!",
+		Tree:         ResearchTree_TAPPING,
+		ResearchTime: 3600 * 3,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_SLAM},
+	},
+	int32(ResearchDiscovery_GRAND_SLAM): {
+		Title:        "Grand Slam",
+		Tree:         ResearchTree_TAPPING,
+		ResearchTime: 3600 * 4,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_HIT_IT},
+	},
+	int32(ResearchDiscovery_GODS_TOUCH): {
+		Title:        "Gods Touch",
+		Tree:         ResearchTree_TAPPING,
+		ResearchTime: 3600 * 10,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_GRAND_SLAM, ResearchDiscovery_ON_A_ROLL},
+	},
+	int32(ResearchDiscovery_CONSECUTIVE): {
+		Title:        "Consecutive",
+		Tree:         ResearchTree_TAPPING,
+		ResearchTime: 3600 * 2,
+		Requirements: []ResearchDiscovery{},
+	},
+	int32(ResearchDiscovery_ON_A_ROLL): {
+		Title:        "On a Roll",
+		Tree:         ResearchTree_TAPPING,
+		ResearchTime: 3600 * 3,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_CONSECUTIVE},
+	},
+
+	// Thieves
+	int32(ResearchDiscovery_BOOTS_OF_HASTE): {
+		Title:        "Boots of Haste",
+		Tree:         ResearchTree_THIEVES,
+		ResearchTime: 3600 * 2,
+		Requirements: []ResearchDiscovery{},
+	},
+	int32(ResearchDiscovery_TIP_TOE): {
+		Title:        "Tip Toe",
+		Tree:         ResearchTree_THIEVES,
+		ResearchTime: 3600 * 3,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_BOOTS_OF_HASTE},
+	},
+	int32(ResearchDiscovery_BIG_POCKETS): {
+		Title:        "Big Pockets",
+		Tree:         ResearchTree_THIEVES,
+		ResearchTime: 3600 * 2,
+		Requirements: []ResearchDiscovery{},
+	},
+	int32(ResearchDiscovery_THIEVES_FAVORITE_BAG): {
+		Title:        "Thieves Faviorite Bag",
+		Tree:         ResearchTree_THIEVES,
+		ResearchTime: 3600 * 3,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_BIG_POCKETS},
+	},
+	int32(ResearchDiscovery_SHADOW_EXPERT): {
+		Title:        "Shadow Expert",
+		Tree:         ResearchTree_THIEVES,
+		ResearchTime: 3600 * 8,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_THIEVES_FAVORITE_BAG, ResearchDiscovery_TIP_TOE},
+	},
+
+	// Guards
+	int32(ResearchDiscovery_COFFEE): {
+		Title:        "Coffee",
+		Tree:         ResearchTree_GUARDS,
+		ResearchTime: 3600 * 2,
+		Requirements: []ResearchDiscovery{},
+	},
+	int32(ResearchDiscovery_NIGHTS_WATCH): {
+		Title:        "Nights Watch",
+		Tree:         ResearchTree_GUARDS,
+		ResearchTime: 3600 * 3,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_COFFEE},
+	},
+	int32(ResearchDiscovery_TRIP_WIRE): {
+		Title:        "Trip Wire",
+		Tree:         ResearchTree_GUARDS,
+		ResearchTime: 3600 * 2,
+		Requirements: []ResearchDiscovery{},
+	},
+	int32(ResearchDiscovery_CARDIO): {
+		Title:        "Cardio",
+		Tree:         ResearchTree_GUARDS,
+		ResearchTime: 3600 * 3,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_TRIP_WIRE},
+	},
+	int32(ResearchDiscovery_LASER_ALARM): {
+		Title:        "Laser Alarm",
+		Tree:         ResearchTree_GUARDS,
+		ResearchTime: 3600 * 6,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_NIGHTS_WATCH, ResearchDiscovery_CARDIO},
+	},
+}
+
 var FullGameData = GameData{
 	AppearanceParts: AppearancePartsMap,
 	Buildings: map[int32]*BuildingInfo{
@@ -464,97 +656,7 @@ var FullGameData = GameData{
 			Employer:    Building_MARKETINGHQ.Enum(),
 		},
 	},
-	ResearchTracks: []*ResearchTrack{
-		{
-			Title: "IT",
-			RootNode: &ResearchNode{
-				Title:        "Website",
-				Discovery:    ResearchDiscovery_WEBSITE,
-				Cost:         40_000,
-				ResearchTime: 3600 * 2,
-				Nodes: []*ResearchNode{
-					{
-						Title:        "Digital Ordering System",
-						Discovery:    ResearchDiscovery_DIGITAL_ORDERING_SYSTEM,
-						Cost:         110_000,
-						ResearchTime: 3600 * 6,
-						Nodes: []*ResearchNode{
-							{
-								Title:        "Mobile App",
-								Discovery:    ResearchDiscovery_MOBILE_APP,
-								Cost:         230_000,
-								ResearchTime: 3600 * 24,
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			Title: "Tools",
-			RootNode: &ResearchNode{
-				Title:        "Masonry Oven",
-				Discovery:    ResearchDiscovery_MASONRY_OVEN,
-				Cost:         30_000,
-				ResearchTime: 3600 * 4,
-				Nodes: []*ResearchNode{
-					{
-						Title:        "Gas Oven",
-						Discovery:    ResearchDiscovery_GAS_OVEN,
-						Cost:         80_000,
-						ResearchTime: 3600 * 8,
-						Nodes: []*ResearchNode{
-							{
-								Title:        "Hybrid Oven",
-								Discovery:    ResearchDiscovery_HYBRID_OVEN,
-								Cost:         200_000,
-								ResearchTime: 3600 * 24,
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			Title: "Pizza Craft",
-			RootNode: &ResearchNode{
-				Title:        "Durum Wheat",
-				Discovery:    ResearchDiscovery_DURUM_WHEAT,
-				Cost:         15_000,
-				ResearchTime: 3600 * 2,
-				Nodes: []*ResearchNode{
-					{
-						Title:        "Double Zero Flour",
-						Discovery:    ResearchDiscovery_DOUBLE_ZERO_FLOUR,
-						Cost:         150_000,
-						ResearchTime: 3600 * 12,
-					},
-					{
-						Title:        "San Marzano Tomatoes",
-						Discovery:    ResearchDiscovery_SAN_MARZANO_TOMATOES,
-						Cost:         120_000,
-						ResearchTime: 3600 * 9,
-						Nodes: []*ResearchNode{
-							{
-								Title:        "Ocimum Basilicum",
-								Discovery:    ResearchDiscovery_OCIMUM_BASILICUM,
-								Cost:         150_000,
-								ResearchTime: 3600 * 10,
-								Nodes: []*ResearchNode{
-									{
-										Title:        "Extra Virgin",
-										Discovery:    ResearchDiscovery_EXTRA_VIRGIN,
-										Cost:         180_000,
-										ResearchTime: 3600 * 12,
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	},
+	ResearchNodes: map[int32]*ResearchNode{},
 	Quests: []*models.Quest{
 		{
 			Id:          "1",
@@ -679,13 +781,20 @@ var FullGameData = GameData{
 		{
 			Id:          "13",
 			Title:       "Supply and demand",
-			Description: "By upgrading our Town Hall we can unlock the ability to change our pizza price, so that we can tune it for maximum profit!\n- Upgrade Town Hall to level 2",
+			Description: "By upgrading our Town Hall we can unlock the ability to change our pizza price, so that we can tune it for maximum profit!",
 			Reward: &models.Quest_Reward{
 				Coins:  0,
 				Pizzas: 2_500,
 			},
 			Order: 13,
 		},
+	},
+	GeniusFlashCosts: []*models.GeniusFlashCost{
+		{Coins: 5000, Pizzas: 1000},
+		{Coins: 10000, Pizzas: 2000},
+		{Coins: 20000, Pizzas: 4000},
+		{Coins: 30000, Pizzas: 8000},
+		{Coins: 40000, Pizzas: 16000},
 	},
 }
 
