@@ -51,7 +51,7 @@ func (h *handler) handleSteal(ctx context.Context, senderId string, m *models.Cl
 		arrivalAt := internal.CalculateArrivalTime(
 			gsThief.TownX, gsThief.TownY,
 			m.X, m.Y,
-			internal.ThiefSpeed)
+			internal.GetThiefSpeed(&gsThief))
 
 		travel := models.Travel{
 			ArrivalAt:    arrivalAt,

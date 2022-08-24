@@ -1,5 +1,6 @@
 import { Building } from "../../../src/generated/building";
 import { GameStatePatch } from "../../../src/generated/gamestate";
+import { ResearchDiscovery } from "../../../src/generated/research";
 
 describe("research", () => {
   beforeEach(() => {
@@ -7,9 +8,6 @@ describe("research", () => {
     cy.adminPatchGameState(
       GameStatePatch.create({
         gameState: {
-          resources: {
-            coins: 1_000_000,
-          },
           lots: {
             "1": {
               building: Building.RESEARCH_INSTITUTE,
@@ -17,11 +15,10 @@ describe("research", () => {
           },
         },
         patchMask: {
-          paths: ["lots.1", "resources.coins"],
+          paths: ["lots.1"],
         },
       })
     );
-    cy.visit("/town/1");
   });
 
   afterEach(() => {
@@ -29,39 +26,123 @@ describe("research", () => {
   });
 
   it("can research durum wheat", () => {
+    cy.adminPatchGameState(
+      GameStatePatch.create({
+        gameState: { geniusFlashes: 1 },
+        patchMask: {
+          paths: ["geniusFlashes"],
+        },
+      })
+    );
+    cy.visit("/town/1");
+
     cy.get('[data-cy="ongoing-research-row"]').should("not.exist");
 
-    cy.get('[data-cy="research-track"]')
-      .contains("Pizza Craft")
-      .parents('[data-cy="research-track"]')
-      .find('[data-cy="research-track-expand-toggle"]')
-      .click();
+    cy.contains('[data-cy="research-area"]', "Demand").click();
+    cy.contains('[data-cy="research-node"]', "Durum Wheat").click();
 
-    cy.get('[data-cy="research-node-expand-toggle"]:first').click();
-    cy.get('[data-cy="research-node-start-research-button"]').click();
+    cy.get('[data-cy="start-research-button"]').click();
     cy.get('[data-cy="ongoing-research-row"]').should("exist");
-    cy.get('[data-cy="research-node-being-researched"]').should("exist");
+
+    cy.contains('[data-cy="research-area"]', "Demand").click();
+    cy.contains('[data-cy="research-node"]', "Durum Wheat").click();
+    cy.contains("Researching...").should("exist");
+
+    cy.go(-1);
 
     cy.adminCompleteQueues();
 
     cy.get('[data-cy="ongoing-research-row"]').should("not.exist");
-    cy.get('[data-cy="research-node-already-researched"]').should("exist");
+    cy.get('[data-cy="research-area"]').should("contain.text", "1 of");
 
-    cy.get('[data-cy="research-track"]')
-      .invoke("text")
-      .should("match", /durum wheat has already been researched/i);
-
-    cy.get('[data-cy="research-track"]').should("contain.text", "1 of");
+    cy.contains('[data-cy="research-area"]', "Demand").click();
+    cy.contains('[data-cy="research-node"]', "Durum Wheat").click();
+    cy.contains("Already researched").should("exist");
   });
 
-  it("can not research last node before previous are researched", () => {
-    cy.get('[data-cy="research-track"]')
-      .contains("Pizza Craft")
-      .parents('[data-cy="research-track"]')
-      .find('[data-cy="research-track-expand-toggle"]')
-      .click();
+  it("can not research next node before previous are researched", () => {
+    cy.adminPatchGameState(
+      GameStatePatch.create({
+        gameState: { geniusFlashes: 1 },
+        patchMask: {
+          paths: ["geniusFlashes"],
+        },
+      })
+    );
+    cy.visit("/town/1");
 
-    cy.get('[data-cy="research-node-expand-toggle"]').last().click();
-    cy.get('[data-cy="research-node-parent-not-discovered"]').should('exist');
+    cy.contains('[data-cy="research-area"]', "Demand").click();
+    cy.contains('[data-cy="research-node"]', "Double Zero Flour").click();
+
+    cy.get('[data-cy="start-research-button"]').should("be.disabled");
+  });
+
+  it("can research next node when previous is researched", () => {
+    cy.adminPatchGameState(
+      GameStatePatch.create({
+        gameState: {
+          geniusFlashes: 1,
+          discoveries: [ResearchDiscovery.DURUM_WHEAT],
+        },
+        patchMask: {
+          paths: ["geniusFlashes", "discoveries"],
+        },
+      })
+    );
+    cy.visit("/town/1");
+
+    cy.contains('[data-cy="research-area"]', "Demand").click();
+    cy.contains('[data-cy="research-node"]', "Double Zero Flour").click();
+
+    cy.get('[data-cy="start-research-button"]')
+      .should("not.be.disabled")
+      .click();
+    cy.get('[data-cy="ongoing-research-row"]').should("exist");
+  });
+
+  it("can not research if has no genius flashes", () => {
+    cy.visit("/town/1");
+
+    cy.contains('[data-cy="research-area"]', "Demand").click();
+    cy.contains('[data-cy="research-node"]', "Durum Wheat").click();
+
+    cy.get('[data-cy="start-research-button"]').should("be.disabled");
+  });
+
+  it("can buy a genius flash", () => {
+    cy.adminPatchGameState(
+      GameStatePatch.create({
+        gameState: { resources: { coins: 10_000, pizzas: 5_000 } },
+        patchMask: {
+          paths: ["resources.coins", "resources.pizzas"],
+        },
+      })
+    );
+
+    cy.visit("/town/1");
+
+    cy.get('[data-cy="get-more-button"]').click();
+    cy.get('[data-cy="available-genius-flashes"]').should("have.text", "0");
+    cy.get('[data-cy="buy-genius-flash-button"]')
+      .should("not.be.disabled")
+      .click();
+    cy.get('[data-cy="available-genius-flashes"]').should("have.text", "1");
+  });
+
+  it("can not buy a genius flash if not enough resources", () => {
+    cy.adminPatchGameState(
+      GameStatePatch.create({
+        gameState: { resources: { coins: 100, pizzas: 100 } },
+        patchMask: {
+          paths: ["resources.coins", "resources.pizzas"],
+        },
+      })
+    );
+
+    cy.visit("/town/1");
+
+    cy.get('[data-cy="get-more-button"]').click();
+    cy.get('[data-cy="available-genius-flashes"]').should("have.text", "0");
+    cy.get('[data-cy="buy-genius-flash-button"]').should("be.disabled");
   });
 });

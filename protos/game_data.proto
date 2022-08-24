@@ -16,11 +16,17 @@ message EducationInfo {
   optional Building employer = 5;
 }
 
+message GeniusFlashCost {
+  int32 coins = 1;
+  int32 pizzas = 2;
+}
+
 message GameData {
   map<int32, BuildingInfo> buildings = 1;
   map<int32, EducationInfo> educations = 2;
-  repeated ResearchTrack researchTracks = 3;
+  map<int32, ResearchInfo> research = 3;
   repeated Quest quests = 4;
   map<string, AppearancePart> appearanceParts = 5;
+  repeated GeniusFlashCost geniusFlashCosts = 6;
 }
 

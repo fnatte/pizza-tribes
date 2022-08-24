@@ -49,7 +49,7 @@ func (u *GameTx_User) IncrCoins(val int32) {
 }
 
 func (u *GameTx_User) IncrPizzas(val int32) {
-	u.SetCoins(u.Gs.Resources.Pizzas + val)
+	u.SetPizzas(u.Gs.Resources.Pizzas + val)
 }
 
 func (u *GameTx_User) SetPizzaPrice(val int32) {
@@ -193,6 +193,10 @@ func (u *GameTx_User) SetResearchQueue(val []*models.OngoingResearch) {
 	u.PatchMask.AppendPath("researchQueue")
 }
 
+func (u *GameTx_User) AppendResearchQueue(val *models.OngoingResearch) {
+	u.SetResearchQueue(append(u.Gs.ResearchQueue, val))
+}
+
 func (u *GameTx_User) AppendDiscovery(val models.ResearchDiscovery) {
 	u.Gs.Discoveries = append(u.Gs.Discoveries, val)
 	u.PatchMask.AppendPath("discoveries")
@@ -219,6 +223,17 @@ func (u *GameTx_User) SetQuestAvailable(questId string) {
 		u.Gs.Quests[questId] = &models.QuestState{}
 		u.PatchMask.AppendPath(fmt.Sprintf("quests.%s", questId))
 	}
+}
+
+func (u *GameTx_User) SetGeniusFlashes(val int32) {
+	if u.Gs.GeniusFlashes != val {
+		u.Gs.GeniusFlashes = val
+		u.PatchMask.AppendPath("geniusFlashes")
+	}
+}
+
+func (u *GameTx_User) IncrGeniusFlashes(val int32) {
+	u.SetGeniusFlashes(u.Gs.GeniusFlashes + val)
 }
 
 func (u *GameTx_User) ToServerMessage() *models.ServerMessage {

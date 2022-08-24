@@ -14,6 +14,42 @@ import (
 
 const MAX_TAP_STREAK = 12
 
+func getTapBonusFactor(gs *models.GameState) float64 {
+	bonus := 1.0
+
+	if gs.HasDiscovery(models.ResearchDiscovery_SLAM) {
+		bonus += 0.3
+	}
+
+	if gs.HasDiscovery(models.ResearchDiscovery_HIT_IT) {
+		bonus += 0.50
+	}
+
+	if gs.HasDiscovery(models.ResearchDiscovery_GRAND_SLAM) {
+		bonus += 0.75
+	}
+
+	if gs.HasDiscovery(models.ResearchDiscovery_GODS_TOUCH) {
+		bonus += 1.00
+	}
+
+	return bonus
+}
+
+func getTapResetTime(gs *models.GameState) time.Duration {
+	dur := 1 * time.Hour
+
+	if gs.HasDiscovery(models.ResearchDiscovery_CONSECUTIVE) {
+		dur += 1 * time.Hour
+	}
+
+	if gs.HasDiscovery(models.ResearchDiscovery_ON_A_ROLL) {
+		dur += 2 * time.Hour
+	}
+
+	return dur
+}
+
 func (h *handler) handleTap(ctx context.Context, userId string, m *models.ClientMessage_Tap) error {
 	if !internal.IsValidLotId(m.LotId) {
 		return errors.New("Invalid lot id")
@@ -58,7 +94,7 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *models.Client
 		// Determine what resource to increase and how much
 		var incrType string
 		var incrAmount int32
-		factor := math.Sqrt(float64(lot.Level+1) * float64(lot.Streak+1))
+		factor := math.Sqrt(float64(lot.Level+1) * float64(lot.Streak+1)) * getTapBonusFactor(gs)
 		switch lot.Building {
 		case models.Building_KITCHEN:
 			incrType = "pizzas"

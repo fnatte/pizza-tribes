@@ -128,6 +128,414 @@ var AllAppearanceParts = []*models.AppearancePart{
 
 var AppearancePartsMap = map[string]*AppearancePart{}
 
+var ResearchMap = map[int32]*ResearchInfo{
+	// Demand
+	int32(ResearchDiscovery_WEBSITE): {
+		Title:       "Website",
+		Description: "If only there was some kind of online medium that could increase our popularity.",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Marketing",
+			Value:     "+10%",
+		}},
+		Tree:         ResearchTree_DEMAND,
+		ResearchTime: 3600 * 2,
+		Requirements: []ResearchDiscovery{},
+		X:            190,
+		Y:            0,
+	},
+	int32(ResearchDiscovery_DIGITAL_ORDERING_SYSTEM): {
+		Title:       "Digital Ordering System",
+		Description: "With a digital ordering system the salesmice could work more effectively.",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Sale speed",
+			Value:     "+20%",
+		}},
+		Tree:         ResearchTree_DEMAND,
+		ResearchTime: 3600 * 6,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_WEBSITE},
+		X:            215,
+		Y:            140,
+	},
+	int32(ResearchDiscovery_MOBILE_APP): {
+		Title:       "Mobile App",
+		Description: "A mobile app would increase our reach even further which in turn would increase demand of our fine pizzas.",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Marketing",
+			Value:     "+20%",
+		}},
+		Tree:         ResearchTree_DEMAND,
+		ResearchTime: 3600 * 24,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_DIGITAL_ORDERING_SYSTEM},
+		X:            180,
+		Y:            278,
+	},
+	int32(ResearchDiscovery_DURUM_WHEAT): {
+		Title:       "Durum Wheat",
+		Description: "We should deepen our knowledge of durum wheat to improve taste of our pizzas.",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Quality",
+			Value:     "+5%",
+		}},
+		Tree:         ResearchTree_DEMAND,
+		ResearchTime: 3600 * 2,
+		Requirements: []ResearchDiscovery{},
+		X:            50,
+		Y:            20,
+	},
+	int32(ResearchDiscovery_DOUBLE_ZERO_FLOUR): {
+		Title:       "Double Zero Flour",
+		Description: "Lets continue the search for the perfect dough!",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Quality",
+			Value:     "+7.5%",
+		}},
+		Tree:         ResearchTree_DEMAND,
+		ResearchTime: 3600 * 7,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_DURUM_WHEAT},
+		X:            24,
+		Y:            153,
+	},
+	int32(ResearchDiscovery_SAN_MARZANO_TOMATOES): {
+		Title:       "San Marzano Tomatoes",
+		Description: "Our tomatoes have no taste! To improve our tomato sauce we need to find the best tomatoes.",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Quality",
+			Value:     "+10%",
+		}},
+		Tree:         ResearchTree_DEMAND,
+		ResearchTime: 3600 * 9,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_DOUBLE_ZERO_FLOUR},
+		X:            43,
+		Y:            275,
+	},
+	int32(ResearchDiscovery_OCIMUM_BASILICUM): {
+		Title:       "Ocimum Basilicum",
+		Description: "A key ingredient in tomato sauce is basil. Let us learn more about the herb.",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Quality",
+			Value:     "+15%",
+		}},
+		Tree:         ResearchTree_DEMAND,
+		ResearchTime: 3600 * 10,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_SAN_MARZANO_TOMATOES},
+		X:            50,
+		Y:            402,
+	},
+	int32(ResearchDiscovery_EXTRA_VIRGIN): {
+		Title:       "Extra Virgin",
+		Description: "If we could find the perfect olive oil our tomato sauce would be even tastier!",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Quality",
+			Value:     "+20%",
+		}},
+		Tree:         ResearchTree_DEMAND,
+		ResearchTime: 3600 * 12,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_OCIMUM_BASILICUM},
+		X:            78,
+		Y:            527,
+	},
+
+	// Production
+	int32(ResearchDiscovery_MASONRY_OVEN): {
+		Title:       "Masonry Oven",
+		Description: "If we learned how to master the traditional pizza oven our pizzas would taste better &mdash; and that would lead to increased demand!",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Quality",
+			Value:     "+10%",
+		}},
+		Tree:         ResearchTree_PRODUCTION,
+		ResearchTime: 3600 * 4,
+		Requirements: []ResearchDiscovery{},
+		X:            50,
+		Y:            20,
+	},
+	int32(ResearchDiscovery_GAS_OVEN): {
+		Title:       "Gas Oven",
+		Description: "A gas oven would heat much faster than the traditional ones. If we had gas ovens we would be able to bake pizzas faster.",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Production",
+			Value:     "+10%",
+		}},
+		Tree:         ResearchTree_PRODUCTION,
+		ResearchTime: 3600 * 8,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_MASONRY_OVEN},
+		X:            24,
+		Y:            153,
+	},
+	int32(ResearchDiscovery_HYBRID_OVEN): {
+		Title:       "Hybrid Oven",
+		Description: "If we just could get the taste of traditional masonry ovens with the speed of gas ovens...",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Production",
+			Value:     "+20%",
+		}},
+		Tree:         ResearchTree_PRODUCTION,
+		ResearchTime: 3600 * 24,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_GAS_OVEN},
+		X:            35,
+		Y:            275,
+	},
+	int32(ResearchDiscovery_WHITEBOARD): {
+		Title:       "Whiteboard",
+		Description: "Wouldn't it be great with a canvas on which we could keep track of production and sales?",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Production",
+			Value:     "+5%",
+		}, {
+			Attribute: "Sale speed",
+			Value:     "+5%",
+		}},
+		Tree:         ResearchTree_PRODUCTION,
+		ResearchTime: 3600 * 8,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_GAS_OVEN},
+		X:            190,
+		Y:            152,
+	},
+	int32(ResearchDiscovery_KITCHEN_STRATEGY): {
+		Title:       "Kitchen Strategy",
+		Description: "Let's spend some time to think about how we should organize our kitchens.",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Production",
+			Value:     "+15%",
+		}},
+		Tree:         ResearchTree_PRODUCTION,
+		ResearchTime: 3600 * 14,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_WHITEBOARD},
+		X:            200,
+		Y:            289,
+	},
+	int32(ResearchDiscovery_STRESS_HANDLING): {
+		Title:       "Stress Handling",
+		Description: "It can get quite hectic in the pizza business. Further, it seems like mice make more mistakes when stressed -- how can we thrive in this chaotic environment?",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Production",
+			Value:     "+20%",
+		}, {
+			Attribute: "Sale speed",
+			Value:     "+20%",
+		}},
+		Tree:         ResearchTree_PRODUCTION,
+		ResearchTime: 3600 * 24,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_KITCHEN_STRATEGY, ResearchDiscovery_HYBRID_OVEN},
+		X:            80,
+		Y:            402,
+	},
+
+	// Tapping
+	int32(ResearchDiscovery_SLAM): {
+		Title:       "Slam",
+		Description: "Let's see if we can get more out of taps.",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Tap Rewards",
+			Value:     "+30%",
+		}},
+		Tree:         ResearchTree_TAPPING,
+		ResearchTime: 3600 * 1,
+		Requirements: []ResearchDiscovery{},
+		X:            75,
+		Y:            20,
+	},
+	int32(ResearchDiscovery_HIT_IT): {
+		Title:       "Hit It!",
+		Description: "Those instant rewards are very rewarding -- can we get even more out of it?",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Tap Rewards",
+			Value:     "+50%",
+		}},
+		Tree:         ResearchTree_TAPPING,
+		ResearchTime: 3600 * 3,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_SLAM},
+		X:            24,
+		Y:            153,
+	},
+	int32(ResearchDiscovery_GRAND_SLAM): {
+		Title:       "Grand Slam",
+		Description: "Tap away with those juicy rewards!",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Tap Rewards",
+			Value:     "+75%",
+		}},
+		Tree:         ResearchTree_TAPPING,
+		ResearchTime: 3600 * 4,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_HIT_IT},
+		X:            35,
+		Y:            300,
+	},
+	int32(ResearchDiscovery_GODS_TOUCH): {
+		Title:       "Gods Touch",
+		Description: "Harness the greatest painting of all time -- The Creation of Jerry by Mickeylangelo.",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Tap Rewards",
+			Value:     "+100%",
+		}},
+		Tree:         ResearchTree_TAPPING,
+		ResearchTime: 3600 * 10,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_GRAND_SLAM, ResearchDiscovery_ON_A_ROLL},
+		X:            50,
+		Y:            452,
+	},
+	int32(ResearchDiscovery_CONSECUTIVE): {
+		Title:       "Consecutive",
+		Description: "Those streaks are great but hard to keep alive. If only they could be more forgiving.",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Prolonged streak",
+			Value:     "+1h",
+		}},
+		Tree:         ResearchTree_TAPPING,
+		ResearchTime: 3600 * 2,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_SLAM},
+		X:            190,
+		Y:            153,
+	},
+	int32(ResearchDiscovery_ON_A_ROLL): {
+		Title:       "On a Roll",
+		Description: "Unbroken series, but who keeps count?",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Prolonged streak",
+			Value:     "+2h",
+		}},
+		Tree:         ResearchTree_TAPPING,
+		ResearchTime: 3600 * 3,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_CONSECUTIVE},
+		X:            190,
+		Y:            310,
+	},
+
+	// Thieves
+	int32(ResearchDiscovery_BOOTS_OF_HASTE): {
+		Title:       "Boots of Haste",
+		Description: "A classic that is beloved by the veteran bandits. You wouldn't believe the struggle involved to get your hands on a pair of these back in the days. But today, it's just a research away.",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Thief Speed",
+			Value:     "+25%",
+		}},
+		Tree:         ResearchTree_THIEVES,
+		ResearchTime: 3600 * 2,
+		Requirements: []ResearchDiscovery{},
+		X:            50,
+		Y:            20,
+	},
+	int32(ResearchDiscovery_TIP_TOE): {
+		Title:       "Tip Toe",
+		Description: "Sneaky as a fox they say. But sneakier than the fox is a mouse on its toes. This reduces the risk of getting caught!",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Thief Evade",
+			Value:     "+25%",
+		}},
+		Tree:         ResearchTree_THIEVES,
+		ResearchTime: 3600 * 3,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_BOOTS_OF_HASTE},
+		X:            20,
+		Y:            173,
+	},
+	int32(ResearchDiscovery_BIG_POCKETS): {
+		Title:       "Big Pockets",
+		Description: "It's hard to carry all those shiny coins. This allows your thieves to carry more coins.",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Thief Capacity",
+			Value:     "+25%",
+		}},
+		Tree:         ResearchTree_THIEVES,
+		ResearchTime: 3600 * 2,
+		Requirements: []ResearchDiscovery{},
+		X:            175,
+		Y:            20,
+	},
+	int32(ResearchDiscovery_THIEVES_FAVORITE_BAG): {
+		Title:       "Thieves Faviorite Bag",
+		Description: "Pockets only goes so far. Let's get real.",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Thief Capacity",
+			Value:     "+50%",
+		}},
+		Tree:         ResearchTree_THIEVES,
+		ResearchTime: 3600 * 3,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_BIG_POCKETS},
+		X:            210,
+		Y:            173,
+	},
+	int32(ResearchDiscovery_SHADOW_EXPERT): {
+		Title:       "Shadow Expert",
+		Description: "We should make darkness our ally. We weren't born in it, but we could try to eat lots of carrots.",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Thief Evade",
+			Value:     "+50%",
+		}},
+		Tree:         ResearchTree_THIEVES,
+		ResearchTime: 3600 * 8,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_THIEVES_FAVORITE_BAG, ResearchDiscovery_TIP_TOE},
+		X:            100,
+		Y:            328,
+	},
+
+	// Guards
+	int32(ResearchDiscovery_COFFEE): {
+		Title:       "Coffee",
+		Description: "A coffee bean goes a long way for a tiny mouse.",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Guard Awareness",
+			Value:     "+25%",
+		}},
+		Tree:         ResearchTree_GUARDS,
+		ResearchTime: 3600 * 2,
+		Requirements: []ResearchDiscovery{},
+		X:            50,
+		Y:            20,
+	},
+	int32(ResearchDiscovery_NIGHTS_WATCH): {
+		Title:       "Nights Watch",
+		Description: "I shall take no cheese, hold no crib, eat no seeds. I am the protector of coins and pizzas.",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Guard Efficiency",
+			Value:     "+15%",
+		}},
+		Tree:         ResearchTree_GUARDS,
+		ResearchTime: 3600 * 3,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_COFFEE},
+		X:            20,
+		Y:            173,
+	},
+	int32(ResearchDiscovery_TRIP_WIRE): {
+		Title:       "Trip Wire",
+		Description: "Simple but efficient.",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Guard Efficiency",
+			Value:     "+20%",
+		}},
+		Tree:         ResearchTree_GUARDS,
+		ResearchTime: 3600 * 2,
+		Requirements: []ResearchDiscovery{},
+		X:            175,
+		Y:            20,
+	},
+	int32(ResearchDiscovery_CARDIO): {
+		Title:       "Cardio",
+		Description: "It's not easy to pick up a chase after eating pizza. A little bit of training could do.",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Guard Efficiency",
+			Value:     "+25%",
+		}},
+		Tree:         ResearchTree_GUARDS,
+		ResearchTime: 3600 * 3,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_TRIP_WIRE},
+		X:            210,
+		Y:            173,
+	},
+	int32(ResearchDiscovery_LASER_ALARM): {
+		Title:       "Laser Alarm",
+		Description: "Let's watch some agent action movies for inspiration -- it's for research after all.",
+		Rewards: []*models.ResearchInfo_Reward{{
+			Attribute: "Guard Efficiency",
+			Value:     "+30%",
+		}},
+		Tree:         ResearchTree_GUARDS,
+		ResearchTime: 3600 * 6,
+		Requirements: []ResearchDiscovery{ResearchDiscovery_NIGHTS_WATCH, ResearchDiscovery_CARDIO},
+		X:            100,
+		Y:            328,
+	},
+}
+
 var FullGameData = GameData{
 	AppearanceParts: AppearancePartsMap,
 	Buildings: map[int32]*BuildingInfo{
@@ -464,97 +872,7 @@ var FullGameData = GameData{
 			Employer:    Building_MARKETINGHQ.Enum(),
 		},
 	},
-	ResearchTracks: []*ResearchTrack{
-		{
-			Title: "IT",
-			RootNode: &ResearchNode{
-				Title:        "Website",
-				Discovery:    ResearchDiscovery_WEBSITE,
-				Cost:         40_000,
-				ResearchTime: 3600 * 2,
-				Nodes: []*ResearchNode{
-					{
-						Title:        "Digital Ordering System",
-						Discovery:    ResearchDiscovery_DIGITAL_ORDERING_SYSTEM,
-						Cost:         110_000,
-						ResearchTime: 3600 * 6,
-						Nodes: []*ResearchNode{
-							{
-								Title:        "Mobile App",
-								Discovery:    ResearchDiscovery_MOBILE_APP,
-								Cost:         230_000,
-								ResearchTime: 3600 * 24,
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			Title: "Tools",
-			RootNode: &ResearchNode{
-				Title:        "Masonry Oven",
-				Discovery:    ResearchDiscovery_MASONRY_OVEN,
-				Cost:         30_000,
-				ResearchTime: 3600 * 4,
-				Nodes: []*ResearchNode{
-					{
-						Title:        "Gas Oven",
-						Discovery:    ResearchDiscovery_GAS_OVEN,
-						Cost:         80_000,
-						ResearchTime: 3600 * 8,
-						Nodes: []*ResearchNode{
-							{
-								Title:        "Hybrid Oven",
-								Discovery:    ResearchDiscovery_HYBRID_OVEN,
-								Cost:         200_000,
-								ResearchTime: 3600 * 24,
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			Title: "Pizza Craft",
-			RootNode: &ResearchNode{
-				Title:        "Durum Wheat",
-				Discovery:    ResearchDiscovery_DURUM_WHEAT,
-				Cost:         15_000,
-				ResearchTime: 3600 * 2,
-				Nodes: []*ResearchNode{
-					{
-						Title:        "Double Zero Flour",
-						Discovery:    ResearchDiscovery_DOUBLE_ZERO_FLOUR,
-						Cost:         150_000,
-						ResearchTime: 3600 * 12,
-					},
-					{
-						Title:        "San Marzano Tomatoes",
-						Discovery:    ResearchDiscovery_SAN_MARZANO_TOMATOES,
-						Cost:         120_000,
-						ResearchTime: 3600 * 9,
-						Nodes: []*ResearchNode{
-							{
-								Title:        "Ocimum Basilicum",
-								Discovery:    ResearchDiscovery_OCIMUM_BASILICUM,
-								Cost:         150_000,
-								ResearchTime: 3600 * 10,
-								Nodes: []*ResearchNode{
-									{
-										Title:        "Extra Virgin",
-										Discovery:    ResearchDiscovery_EXTRA_VIRGIN,
-										Cost:         180_000,
-										ResearchTime: 3600 * 12,
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	},
+	Research: ResearchMap,
 	Quests: []*models.Quest{
 		{
 			Id:          "1",
@@ -679,13 +997,20 @@ var FullGameData = GameData{
 		{
 			Id:          "13",
 			Title:       "Supply and demand",
-			Description: "By upgrading our Town Hall we can unlock the ability to change our pizza price, so that we can tune it for maximum profit!\n- Upgrade Town Hall to level 2",
+			Description: "By upgrading our Town Hall we can unlock the ability to change our pizza price, so that we can tune it for maximum profit!",
 			Reward: &models.Quest_Reward{
 				Coins:  0,
 				Pizzas: 2_500,
 			},
 			Order: 13,
 		},
+	},
+	GeniusFlashCosts: []*models.GeniusFlashCost{
+		{Coins: 5000, Pizzas: 1000},
+		{Coins: 10000, Pizzas: 2000},
+		{Coins: 20000, Pizzas: 4000},
+		{Coins: 30000, Pizzas: 8000},
+		{Coins: 40000, Pizzas: 16000},
 	},
 }
 
@@ -694,4 +1019,10 @@ func init() {
 	for _, part := range AllAppearanceParts {
 		AppearancePartsMap[part.Id] = part
 	}
+
+	// Assign discovery on research
+	for id, r := range ResearchMap {
+		r.Discovery = models.ResearchDiscovery(id)
+	}
+
 }

@@ -80,6 +80,7 @@ message GameState {
   map<string, QuestState> quests = 13;
   string ambassadorMouseId = 14;
   int32 pizzaPrice = 15;
+  int32 geniusFlashes = 16;
 }
 
 message PatchMask {

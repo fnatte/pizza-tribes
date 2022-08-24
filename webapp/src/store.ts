@@ -69,6 +69,7 @@ export type State = {
   saveMouseAppearance: (mouseId: string, appearance: MouseAppearance) => void;
   setAmbassadorMouse: (mouseId: string) => void;
   setPizzaPrice: (pizzaPrice: number) => void;
+  buyGeniusFlash: (id: number) => void;
 };
 
 const resetQueryDataState = () => {
@@ -93,6 +94,7 @@ const initialGameState: GameState = {
   timestamp: "",
   ambassadorMouseId: "",
   pizzaPrice: 0,
+  geniusFlashes: 0,
 };
 
 const resetAuthState = (state: State) => ({
@@ -464,6 +466,19 @@ export const useStore = create<State>((set, get) => ({
           oneofKind: "setPizzaPrice",
           setPizzaPrice: {
             pizzaPrice,
+          },
+        },
+      })
+    );
+  },
+  buyGeniusFlash: (id: number) => {
+    get().connection?.send(
+      ClientMessage.create({
+        id: generateId(),
+        type: {
+          oneofKind: "buyGeniusFlash",
+          buyGeniusFlash: {
+            id,
           },
         },
       })

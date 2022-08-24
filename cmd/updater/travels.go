@@ -79,6 +79,66 @@ func init() {
 		Parse(targetReportTemplateText))
 }
 
+func getThiefEvadeBonus(gs *models.GameState) float64 {
+	bonus := 0.0
+
+	if gs.HasDiscovery(models.ResearchDiscovery_TIP_TOE) {
+		bonus += 0.25
+	}
+
+	if gs.HasDiscovery(models.ResearchDiscovery_SHADOW_EXPERT) {
+		bonus += 0.50
+	}
+
+	return bonus
+}
+
+func getThiefCapacityBonus(gs *models.GameState) float64 {
+	bonus := 0.0
+
+	if gs.HasDiscovery(models.ResearchDiscovery_BIG_POCKETS) {
+		bonus += 0.25
+	}
+
+	if gs.HasDiscovery(models.ResearchDiscovery_THIEVES_FAVORITE_BAG) {
+		bonus += 0.50
+	}
+
+	return bonus
+}
+
+func getGuardEfficiencyBonus(gs *models.GameState) float64 {
+	bonus := 0.0
+
+	if gs.HasDiscovery(models.ResearchDiscovery_NIGHTS_WATCH) {
+		bonus += 0.15
+	}
+
+	if gs.HasDiscovery(models.ResearchDiscovery_TRIP_WIRE) {
+		bonus += 0.20
+	}
+
+	if gs.HasDiscovery(models.ResearchDiscovery_CARDIO) {
+		bonus += 0.25
+	}
+
+	if gs.HasDiscovery(models.ResearchDiscovery_LASER_ALARM) {
+		bonus += 0.30
+	}
+
+	return bonus
+}
+
+func getGuardAwarenessBonus(gs *models.GameState) float64 {
+	bonus := 0.0
+
+	if gs.HasDiscovery(models.ResearchDiscovery_COFFEE) {
+		bonus += 0.25
+	}
+
+	return bonus
+}
+
 func completeSteal(ctx context.Context, userId string, gs *models.GameState, tx *gamestate.GameTx, r redis.RedisClient, world *internal.WorldService, travel *models.Travel, travelIndex int) error {
 	gsTarget := &models.GameState{}
 	x := travel.DestinationX
@@ -119,6 +179,10 @@ func completeSteal(ctx context.Context, userId string, gs *models.GameState, tx 
 		Guards:      targetEducations[models.Education_GUARD],
 		Thieves:     travel.Thieves,
 		TargetCoins: gsTarget.Resources.Coins,
+		ThiefEvadeBonus: getThiefEvadeBonus(gs),
+		ThiefCapacityBonus: getThiefCapacityBonus(gs),
+		GuardEfficiencyBonus: getThiefEvadeBonus(gsTarget),
+		GuardAwarenessBonus: getGuardAwarenessBonus(gsTarget),
 	}, rand.NewSource(uint64(time.Now().UnixNano())))
 
 	// Make caught thiefs uneducated
@@ -136,7 +200,7 @@ func completeSteal(ctx context.Context, userId string, gs *models.GameState, tx 
 		arrivalAt := internal.CalculateArrivalTime(
 			travel.DestinationX, travel.DestinationY,
 			gs.TownX, gs.TownY,
-			internal.ThiefSpeed,
+			internal.GetThiefSpeed(gs),
 		)
 
 		returnTravel := models.Travel{

@@ -542,7 +542,7 @@ function GamePage(): JSX.Element {
       <Separator />
       <Routes>
         <Route path="map" element={<MapView />} />
-        <Route path="town/:id" element={<TownLot />} />
+        <Route path="town/:id/*" element={<TownLot />} />
         <Route path="town" element={<Town />} />
         <Route path="quests" element={<QuestsView />} />
         <Route path="stats" element={<StatsView />} />
