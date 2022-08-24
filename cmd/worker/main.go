@@ -86,7 +86,7 @@ func main() {
 
 	if useReminders {
 		log.Info().Msg("Starting reminders worker")
-		startRemindersWorker(ctx, rc, userRepo)
+		startRemindersWorker(ctx, rc, userRepo, worldRepo)
 	}
 
 	for {

@@ -85,10 +85,21 @@ func makeAvailableTapsMessage(userId string) *messaging.Message {
 	}
 }
 
-func handleTapReminder(ctx context.Context, rc redis.RedisClient, u persist.UserRepository, r *internal.Reminder) {
+func handleTapReminder(ctx context.Context, rc redis.RedisClient, u persist.UserRepository, w persist.WorldRepository, r *internal.Reminder) {
+	worldState, err := w.GetState(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to perform update")
+		return
+	}
+	if worldState.GetStarted() == nil {
+		// Do not handle tap reminder when world state is not started
+		return
+	}
+
 	users, err := u.GetAllUsers(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get all users when handling tap reminder")
+		return
 	}
 
 	for _, user := range users {
@@ -120,7 +131,17 @@ func handleTapReminder(ctx context.Context, rc redis.RedisClient, u persist.User
 	}
 }
 
-func handleActivityReminder(ctx context.Context, rc redis.RedisClient, u persist.UserRepository, r *internal.Reminder) {
+func handleActivityReminder(ctx context.Context, rc redis.RedisClient, u persist.UserRepository, w persist.WorldRepository, r *internal.Reminder) {
+	worldState, err := w.GetState(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to perform update")
+		return
+	}
+	if worldState.GetStarted() == nil {
+		// Do not handle activity reminder when world state is not started
+		return
+	}
+
 	users, err := u.GetAllUsers(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get all users when handling activity reminder")
@@ -148,7 +169,7 @@ func handleActivityReminder(ctx context.Context, rc redis.RedisClient, u persist
 	}
 }
 
-func startRemindersWorker(ctx context.Context, rc redis.RedisClient, u persist.UserRepository) {
+func startRemindersWorker(ctx context.Context, rc redis.RedisClient, u persist.UserRepository, w persist.WorldRepository) {
 	internal.ScheduleReminder(ctx, rc, &internal.Reminder{
 		Id:       "tap-reminder",
 		Interval: time.Hour,
@@ -164,10 +185,10 @@ func startRemindersWorker(ctx context.Context, rc redis.RedisClient, u persist.U
 		log.Debug().Str("id", r.Id).Msg("Handle reminder")
 		switch r.Id {
 		case "tap-reminder":
-			handleTapReminder(ctx, rc, u, r)
+			handleTapReminder(ctx, rc, u, w, r)
 			break
 		case "activity-reminder":
-			handleActivityReminder(ctx, rc, u, r)
+			handleActivityReminder(ctx, rc, u, w, r)
 			break
 		}
 	})
