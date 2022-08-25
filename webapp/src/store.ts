@@ -93,6 +93,7 @@ const initialGameState: GameState = {
   timestamp: "",
   ambassadorMouseId: "",
   pizzaPrice: 0,
+  geniusFlashes: 0,
 };
 
 const resetAuthState = (state: State) => ({

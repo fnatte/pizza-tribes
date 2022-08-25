@@ -51,10 +51,18 @@ enum ResearchTree {
 }
 
 message ResearchInfo {
+  message Reward {
+    string attribute = 1;
+    string value = 2;
+  }
   string title = 1;
   ResearchDiscovery discovery = 2;
   repeated ResearchDiscovery requirements = 3;
   int32 researchTime = 4;
   ResearchTree tree = 5;
+  string description = 6;
+  repeated Reward rewards = 7;
+  int32 x = 8;
+  int32 y = 9;
 }
 

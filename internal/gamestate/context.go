@@ -193,6 +193,10 @@ func (u *GameTx_User) SetResearchQueue(val []*models.OngoingResearch) {
 	u.PatchMask.AppendPath("researchQueue")
 }
 
+func (u *GameTx_User) AppendResearchQueue(val *models.OngoingResearch) {
+	u.SetResearchQueue(append(u.Gs.ResearchQueue, val))
+}
+
 func (u *GameTx_User) AppendDiscovery(val models.ResearchDiscovery) {
 	u.Gs.Discoveries = append(u.Gs.Discoveries, val)
 	u.PatchMask.AppendPath("discoveries")

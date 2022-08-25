@@ -15,19 +15,19 @@ func calculateQualityScore(gs *models.GameState) float64 {
 		score = score + 0.05
 	}
 	if gs.HasDiscovery(models.ResearchDiscovery_DOUBLE_ZERO_FLOUR) {
-		score = score + 0.05
+		score = score + 0.075
 	}
 	if gs.HasDiscovery(models.ResearchDiscovery_SAN_MARZANO_TOMATOES) {
-		score = score + 0.05
+		score = score + 0.10
 	}
 	if gs.HasDiscovery(models.ResearchDiscovery_OCIMUM_BASILICUM) {
-		score = score + 0.05
+		score = score + 0.15
 	}
 	if gs.HasDiscovery(models.ResearchDiscovery_EXTRA_VIRGIN) {
-		score = score + 0.05
+		score = score + 0.20
 	}
 	if gs.HasDiscovery(models.ResearchDiscovery_MASONRY_OVEN) {
-		score = score + 0.1
+		score = score + 0.10
 	}
 
 	return score
@@ -40,7 +40,7 @@ func calculateMarketingScore(gs *models.GameState, e map[models.Education]int32)
 		marketingBonus += 0.1
 	}
 	if gs.HasDiscovery(models.ResearchDiscovery_MOBILE_APP) {
-		marketingBonus += 0.1
+		marketingBonus += 0.2
 	}
 
 	publicists := float64(e[models.Education_PUBLICIST])

@@ -1,15 +1,17 @@
 import React, { useState } from "react";
 import classnames from "classnames";
+import { Link, Route, Routes, useParams } from "react-router-dom";
 import { useStore } from "../../store";
-import styles from "../../styles";
+import styles, { button, primaryButton } from "../../styles";
 import {
   formatDurationShort,
   formatNanoTimestampToNowShort,
 } from "../../utils";
+import { ReactComponent as SvgArrowRight } from "images/icons/arrow-right.svg";
 import {
   ResearchDiscovery,
-  ResearchNode,
-  ResearchTrack,
+  ResearchInfo,
+  ResearchTree,
 } from "../../generated/research";
 import { ReactComponent as SvgResearchInstitute } from "../../../images/research-institute.svg";
 import { ReactComponent as SvgWebsite } from "../../../images/research/website.svg";
@@ -24,11 +26,14 @@ import { ReactComponent as SvgSanMaraznoTomatoes } from "../../../images/researc
 import { ReactComponent as SvgOcimumBasilicum } from "../../../images/research/ocimum-basilicum.svg";
 import { ReactComponent as SvgExtraVirgin } from "../../../images/research/extra-virgin.svg";
 import { ReactComponent as SvgCheck } from "../../../images/icons/check.svg";
+import { uniq } from "lodash";
+import { GeniusFlash } from "../../icons";
+import ReactMarkdown from "react-markdown";
 
 const title = classnames("text-lg", "md:text-xl", "mb-2");
 const label = classnames("text-xs", "md:text-sm");
 const value = classnames("text-sm");
-const descriptionStyle = classnames("text-sm", "text-gray-600");
+const descriptionStyle = classnames("text-sm", "text-gray-800");
 
 const PlaceholderImage: React.VFC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg
@@ -66,85 +71,38 @@ const svgs: Record<ResearchDiscovery, React.VFC | undefined> = {
   [ResearchDiscovery.SAN_MARZANO_TOMATOES]: SvgSanMaraznoTomatoes,
   [ResearchDiscovery.OCIMUM_BASILICUM]: SvgOcimumBasilicum,
   [ResearchDiscovery.EXTRA_VIRGIN]: SvgExtraVirgin,
-};
 
-const descriptions: Record<ResearchDiscovery, React.VFC | undefined> = {
-  [ResearchDiscovery.WEBSITE]: () => (
-    <p className={descriptionStyle}>
-      If only there was some kind of online medium that could increase our
-      popularity.
-    </p>
-  ),
-  [ResearchDiscovery.DIGITAL_ORDERING_SYSTEM]: () => (
-    <p className={descriptionStyle}>
-      With a digital ordering system the salesmice could work more effectively.
-    </p>
-  ),
-  [ResearchDiscovery.MOBILE_APP]: () => (
-    <p className={descriptionStyle}>
-      A mobile app would increase our reach even further which in turn would
-      increase demand of our fine pizzas.
-    </p>
-  ),
-  [ResearchDiscovery.MASONRY_OVEN]: () => (
-    <p className={descriptionStyle}>
-      If we learned how to master the traditional pizza oven our pizzas would
-      taste better &mdash; and that would lead to increased demand!
-    </p>
-  ),
-  [ResearchDiscovery.GAS_OVEN]: () => (
-    <p className={descriptionStyle}>
-      A gas oven would heat much faster than the traditional ones. If we had gas
-      ovens we would be able to bake pizzas faster.
-    </p>
-  ),
-  [ResearchDiscovery.HYBRID_OVEN]: () => (
-    <p className={descriptionStyle}>
-      If we just could get the taste of traditional masonry ovens with the speed
-      of gas ovens...
-    </p>
-  ),
-  [ResearchDiscovery.DURUM_WHEAT]: () => (
-    <p className={descriptionStyle}>
-      We should deepen our knowledge of durum wheat to improve taste of our
-      pizzas.
-    </p>
-  ),
-  [ResearchDiscovery.DOUBLE_ZERO_FLOUR]: () => (
-    <p className={descriptionStyle}>
-      Lets continue the search for the perfect dough!
-    </p>
-  ),
-  [ResearchDiscovery.SAN_MARZANO_TOMATOES]: () => (
-    <p className={descriptionStyle}>
-      Our tomatoes have no taste! To improve our tomato sauce we need to find
-      the best tomatoes.
-    </p>
-  ),
-  [ResearchDiscovery.OCIMUM_BASILICUM]: () => (
-    <p className={descriptionStyle}>
-      A key ingredient in tomato sauce is basil. Let us learn more about the
-      herb.
-    </p>
-  ),
-  [ResearchDiscovery.EXTRA_VIRGIN]: () => (
-    <p className={descriptionStyle}>
-      If we could find the perfect olive oil our tomato sauce would be even
-      tastier!
-    </p>
-  ),
+  [ResearchDiscovery.SLAM]: PlaceholderImage,
+  [ResearchDiscovery.CARDIO]: PlaceholderImage,
+  [ResearchDiscovery.COFFEE]: PlaceholderImage,
+  [ResearchDiscovery.HIT_IT]: PlaceholderImage,
+  [ResearchDiscovery.TIP_TOE]: PlaceholderImage,
+  [ResearchDiscovery.ON_A_ROLL]: PlaceholderImage,
+  [ResearchDiscovery.TRIP_WIRE]: PlaceholderImage,
+  [ResearchDiscovery.GODS_TOUCH]: PlaceholderImage,
+  [ResearchDiscovery.GRAND_SLAM]: PlaceholderImage,
+  [ResearchDiscovery.WHITEBOARD]: PlaceholderImage,
+  [ResearchDiscovery.BIG_POCKETS]: PlaceholderImage,
+  [ResearchDiscovery.CONSECUTIVE]: PlaceholderImage,
+  [ResearchDiscovery.LASER_ALARM]: PlaceholderImage,
+  [ResearchDiscovery.NIGHTS_WATCH]: PlaceholderImage,
+  [ResearchDiscovery.SHADOW_EXPERT]: PlaceholderImage,
+  [ResearchDiscovery.STRESS_HANDLING]: PlaceholderImage,
+  [ResearchDiscovery.BOOTS_OF_HASTE]: PlaceholderImage,
+  [ResearchDiscovery.KITCHEN_STRATEGY]: PlaceholderImage,
+  [ResearchDiscovery.THIEVES_FAVORITE_BAG]: PlaceholderImage,
 };
 
 const numberFormat = new Intl.NumberFormat();
 
 const ResearchNodeView: React.VFC<{
-  node: ResearchNode;
+  node: ResearchInfo;
   discovered: boolean;
   parentDiscovered: boolean;
   opened: boolean;
   onToggleOpen: () => void;
 }> = ({ node, discovered, opened, onToggleOpen, parentDiscovered }) => {
-  const coins = useStore((state) => state.gameState.resources?.coins ?? 0);
+  const geniusFlashes = useStore((state) => state.gameState.geniusFlashes ?? 0);
   const startResearch = useStore((state) => state.startResearch);
   const researchQueue = useStore((state) => state.gameState.researchQueue);
 
@@ -154,13 +112,12 @@ const ResearchNodeView: React.VFC<{
   };
 
   const SvgImage = svgs[node.discovery] || PlaceholderImage;
-  const Description = descriptions[node.discovery];
 
   const isBeingResearched = researchQueue.some(
     (x) => x.discovery === node.discovery
   );
 
-  const canAfford = node.cost < coins;
+  const canAfford = geniusFlashes > 0;
   const disabled = !canAfford;
   const showResearchButton =
     !isBeingResearched && !discovered && parentDiscovered;
@@ -232,7 +189,7 @@ const ResearchNodeView: React.VFC<{
       </button>
       <div className={classnames("px-2")} data-cy="research-node-item">
         <div className={title}>{node.title}</div>
-        {Description && <Description />}
+        <p>{node.description}</p>
         <table>
           <tbody>
             <tr>
@@ -250,9 +207,7 @@ const ResearchNodeView: React.VFC<{
                 <span className={label}>Cost:</span>
               </td>
               <td className={classnames("px-2")}>
-                <span className={value}>
-                  {numberFormat.format(node.cost)} coins
-                </span>
+                <span className={value}>1 genius flash</span>
               </td>
             </tr>
           </tbody>
@@ -307,8 +262,9 @@ const ResearchNodeView: React.VFC<{
   );
 };
 
+/*
 const ResearchNodesView: React.VFC<{
-  node: ResearchNode;
+  node: ResearchInfo;
   discoveries: ResearchDiscovery[];
   parentDiscovered: boolean;
   openedDiscovery: ResearchDiscovery | null;
@@ -383,25 +339,6 @@ function recursiveSearch<
   return null;
 }
 
-const getTrackCounts = (
-  researchTrack: ResearchTrack,
-  discoveries: ResearchDiscovery[]
-): { count: number; discovered: number } => {
-  let count = 0;
-  let discovered = 0;
-
-  if (researchTrack.rootNode) {
-    recursiveLoop(researchTrack.rootNode, (node) => {
-      count++;
-      if (discoveries.includes(node.discovery)) {
-        discovered++;
-      }
-    });
-  }
-
-  return { count, discovered };
-};
-
 const findNode = (
   researchTracks: ResearchTrack[],
   discovery: ResearchDiscovery
@@ -421,28 +358,157 @@ const findNode = (
 
   return null;
 };
+*/
 
-function ResearchInstitute() {
-  const researchTracks =
-    useStore((state) => state.gameData?.researchTracks) || [];
-  const researchQueue = useStore((state) => state.gameState.researchQueue);
+function getAreaName(area: ResearchTree): string {
+  switch (area) {
+    case ResearchTree.DEMAND:
+      return "Demand";
+    case ResearchTree.GUARDS:
+      return "Guards";
+    case ResearchTree.TAPPING:
+      return "Tapping";
+    case ResearchTree.THIEVES:
+      return "Thieves";
+    case ResearchTree.PRODUCTION:
+      return "Production";
+    default:
+      return "-";
+  }
+}
 
-  const [treeOpen, setTreeOpen] = useState<string | null>(null);
+function getTrackCounts(
+  area: ResearchTree,
+  research: { [idx: number]: ResearchInfo },
+  discoveries: ResearchDiscovery[]
+): { count: number; discovered: number } {
+  const discovered = discoveries.filter((x) => research[x].tree === area)
+    .length;
+  const count = Object.values(research).filter((x) => x.tree === area).length;
 
-  const discoveries = useStore((state) => state.gameState.discoveries);
-  const [
-    openedDiscovery,
-    setOpenedDiscovery,
-  ] = useState<ResearchDiscovery | null>(null);
+  return { count, discovered };
+}
+
+function GeniusFlashesSection() {
+  return (
+    <section>
+      <h3>Genius Flashes</h3>
+    </section>
+  );
+}
+
+function isArea(area: number): area is ResearchTree {
+  return [
+    ResearchTree.PRODUCTION,
+    ResearchTree.THIEVES,
+    ResearchTree.TAPPING,
+    ResearchTree.GUARDS,
+    ResearchTree.DEMAND,
+  ].includes(area);
+}
+
+function ResearchSection() {
+  const [selected, setSelected] = useState<ResearchInfo | null>(null);
+  const research = useStore((state) => state.gameData?.research) || [];
+  const { area: areaParam } = useParams();
+
+  if (!areaParam) {
+    return null;
+  }
+  const area = parseInt(areaParam);
+  if (!isArea(area)) {
+    return null;
+  }
+
+  const nodes = Object.values(research).filter(
+    (x) => x.tree === area && (x.x !== 0 || x.y !== 0)
+  );
 
   return (
-    <div className={classnames("px-2", "w-full", "max-w-2xl", "mb-8")}>
-      <h2>Research Institute</h2>
-      <SvgResearchInstitute height={100} width={100} />
-      <p className={classnames("my-4", "text-gray-700")}>
-        Looking for the next big thing? Spend some coins on research!
-      </p>
+    <section>
+      <h3>{getAreaName(area)}</h3>
+      <div className="w-[340px] h-[750px] mt-6 mx-auto relative">
+        <svg className="w-full h-full absolute">
+          {nodes.flatMap((r) => {
+            const req = r.requirements
+              .map((x) => research[x])
+              .filter((x) => x !== undefined);
+            const to = r;
+            return req.map((from) => (
+              <path
+                key={`${from.discovery}-${to.discovery}`}
+                d={`M${from.x + 50},${from.y + 50} L${to.x + 50},${to.y + 50}`}
+                className="stroke-green-600 stroke-2"
+              />
+            ));
+          })}
+        </svg>
+        {nodes.map((r) => (
+          <button
+            key={r.discovery}
+            onClick={() => setSelected(r)}
+            className={classnames(
+              "w-[100px]",
+              "h-[100px]",
+              "rounded-lg",
+              "bg-green-50",
+              "absolute",
+              "border",
+              "border-gray-400",
+              "flex",
+              "text-center",
+              "justify-center",
+              "items-center",
+              "p-2",
+              {
+                "ring-4 ring-offset-4 ring-green-600": r === selected,
+              }
+            )}
+            style={{ transform: `translate3d(${r.x}px, ${r.y}px, 0)` }}
+          >
+            {r.title}
+          </button>
+        ))}
+      </div>
+      {selected !== null && (
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-green-50 shadow-[0_0_16px_0_rgba(0,0,0,0.3)]">
+          <h4>{selected.title}</h4>
+          <ReactMarkdown className={"prose text-black text-sm md:text-lg"}>
+            {selected.description}
+          </ReactMarkdown>
+          <div className="flex justify-center mt-4 gap-8">
+            {selected.rewards.map((reward) => (
+              <div className="text-black text-center">
+                <div className="text-md text-gray-800">{reward.attribute}</div>
+                <div className="text-3xl">{reward.value}</div>
+              </div>
+            ))}
+          </div>
+          <div className="flex mt-4 gap-8 justify-center">
+            <button
+              className={classnames(...button, "bg-gray-600")}
+              onClick={() => setSelected(null)}
+            >
+              Cancel
+            </button>
+            <button className={primaryButton}>Research</button>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
 
+function MainSection() {
+  const geniusFlashes = useStore((state) => state.gameState.geniusFlashes ?? 0);
+  const research = useStore((state) => state.gameData?.research) || [];
+  const researchQueue = useStore((state) => state.gameState.researchQueue);
+  const discoveries = useStore((state) => state.gameState.discoveries);
+
+  const areas = uniq(Object.values(research).map((x) => x.tree));
+
+  return (
+    <section>
       {researchQueue.length > 0 && (
         <>
           <h3>Ongoing Research</h3>
@@ -454,7 +520,7 @@ function ResearchInstitute() {
                   data-cy="ongoing-research-row"
                 >
                   <td className={classnames("p-2")}>
-                    {findNode(researchTracks, ongoingResearch.discovery)?.title}
+                    {research[ongoingResearch.discovery]?.title}
                   </td>
                   <td className={classnames("p-2")}>
                     {formatNanoTimestampToNowShort(ongoingResearch.completeAt)}
@@ -466,60 +532,76 @@ function ResearchInstitute() {
         </>
       )}
 
+      <h3>Genius Flashes</h3>
+      <section
+        className={classnames(
+          "m-4",
+          "p-4",
+          "bg-green-200",
+          "flex",
+          "items-center",
+          "justify-center",
+          "gap-1"
+        )}
+      >
+        <GeniusFlash className={"h-[3em] w-[3em]"} />
+        <span className="text-2xl">{geniusFlashes}</span>
+        <button className={classnames(primaryButton, "ml-8")}>Get more</button>
+      </section>
+
       <h3>Areas</h3>
       <div className={classnames("flex", "flex-col", "gap-4")}>
-        {researchTracks.map((track) => {
-          const trackCounts = getTrackCounts(track, discoveries);
+        {areas.map((area) => {
+          const trackCounts = getTrackCounts(area, research, discoveries);
           return (
-            <div
-              key={track.title}
-              className={classnames("bg-green-400", "p-1")}
-              data-cy="research-track"
-            >
-              <div className={classnames("flex", "items-center", "p-1")}>
-                <div>
-                  <span className={classnames("ml-4")}>{track.title}</span>
-                  <span
-                    className={classnames("ml-2", "text-sm", "text-gray-800")}
-                  >
-                    ({trackCounts.discovered} of {trackCounts.count})
-                  </span>
+            <Link to={`research/${area}`} key={area}>
+              <button
+                className={classnames(
+                  "bg-green-400",
+                  "p-1",
+                  "inline-block",
+                  "w-full"
+                )}
+                data-cy="research-area"
+              >
+                <div className={classnames("flex", "items-center", "p-1")}>
+                  <div>
+                    <span className={classnames("ml-4")}>
+                      {getAreaName(area)}
+                    </span>
+                    <span
+                      className={classnames("ml-2", "text-sm", "text-gray-800")}
+                    >
+                      ({trackCounts.discovered} of {trackCounts.count})
+                    </span>
+                  </div>
+                  <SvgArrowRight className="ml-auto" />
                 </div>
-                <button
-                  className={classnames(
-                    "p-1",
-                    "bg-white",
-                    "ml-auto",
-                    "flex",
-                    "justify-center",
-                    "items-center"
-                  )}
-                  onClick={() =>
-                    setTreeOpen((x) => (x !== track.title ? track.title : null))
-                  }
-                  aria-expanded={treeOpen === track.title}
-                  data-cy="research-track-expand-toggle"
-                >
-                  {treeOpen === track.title ? "Close" : "Open"}
-                </button>
-              </div>
-              {treeOpen === track.title && (
-                <div className={classnames("p-2", "bg-green-200")}>
-                  {track.rootNode && (
-                    <ResearchNodesView
-                      node={track.rootNode}
-                      discoveries={discoveries}
-                      parentDiscovered={true}
-                      openedDiscovery={openedDiscovery}
-                      setOpenedDiscovery={setOpenedDiscovery}
-                    />
-                  )}
-                </div>
-              )}
-            </div>
+              </button>
+            </Link>
           );
         })}
       </div>
+    </section>
+  );
+}
+
+function ResearchInstitute() {
+  return (
+    <div className={classnames("px-2", "w-full", "max-w-2xl", "mb-8")}>
+      <h2>Research Institute</h2>
+      <Link to="">
+        <SvgResearchInstitute height={100} width={100} />
+      </Link>
+      <p className={classnames("my-4", "text-gray-700")}>
+        Looking for the next big thing? Spend some coins on research!
+      </p>
+
+      <Routes>
+        <Route index element={<MainSection />} />
+        <Route path="genius-flashes" element={<GeniusFlashesSection />} />
+        <Route path="research/:area" element={<ResearchSection />} />
+      </Routes>
     </div>
   );
 }

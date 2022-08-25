@@ -2,67 +2,40 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal"
 	"github.com/fnatte/pizza-tribes/internal/gamestate"
 	"github.com/fnatte/pizza-tribes/internal/models"
-	"github.com/fnatte/pizza-tribes/internal/protojson"
-	"github.com/fnatte/pizza-tribes/internal/redis"
-	"github.com/rs/zerolog/log"
 )
 
-func findDiscoveredNode(gs *models.GameState, node *models.ResearchNode, d models.ResearchDiscovery) *models.ResearchNode {
-	if node.Discovery == d {
-		return node
-	}
-
-	// If the discovery is researched we can traverse its children
-	if gs.HasDiscovery(node.Discovery) {
-		for _, subnode := range node.Nodes {
-			if n := findDiscoveredNode(gs, subnode, d); n != nil {
-				return n
-			}
-		}
-	}
-
-	return nil
-}
-
-func (h *handler) handleStartResearch(ctx context.Context, senderId string, m *models.ClientMessage_StartResearch) error {
-	gsKey := fmt.Sprintf("user:%s:gamestate", senderId)
-
-	var gs models.GameState
-
-	txf := func() error {
-		// Get current game state
-		s, err := redis.RedisJsonGet(h.rdb, ctx, gsKey, ".").Result()
-		if err != nil && err != redis.Nil {
-			return err
-		}
-		if err = protojson.Unmarshal([]byte(s), &gs); err != nil {
-			return err
+func (h *handler) handleStartResearch(ctx context.Context, userId string, m *models.ClientMessage_StartResearch) error {
+	tx, err := h.updater.PerformUpdate(ctx, userId, func(gs *models.GameState, tx *gamestate.GameTx) error {
+		if gs.GeniusFlashes <= 0 {
+			return fmt.Errorf("not enough genius flashes")
 		}
 
-		// Traverse research tracks to find the node
-		var node *models.ResearchNode
-		for _, track := range internal.FullGameData.ResearchTracks {
-			if node = findDiscoveredNode(&gs, track.RootNode, m.Discovery); node != nil {
-				break
+		var r *models.ResearchInfo
+		var ok bool
+		if r, ok = internal.FullGameData.Research[int32(m.Discovery)]; !ok {
+			return fmt.Errorf("discovery not found")
+		}
+
+		if gs.HasDiscovery(m.Discovery) {
+			return fmt.Errorf("research already been discovered")
+		}
+
+		for _, x := range gs.ResearchQueue {
+			if x.Discovery == m.Discovery {
+				return fmt.Errorf("research already being researched")
 			}
 		}
 
-		if node == nil {
-			return fmt.Errorf("All previous research has not been discovered")
-		}
-		if gs.HasDiscovery(node.Discovery) {
-			return fmt.Errorf("This research has already been discovered")
-		}
-
-		if gs.Resources.Coins < node.Cost {
-			return errors.New("Not enough coins")
+		for _, d := range r.Requirements {
+			if !gs.HasDiscovery(d) {
+				return fmt.Errorf("research not available, all requirements were not fulfilled")
+			}
 		}
 
 		// Calculate when this research will be completed.
@@ -73,61 +46,26 @@ func (h *handler) handleStartResearch(ctx context.Context, senderId string, m *m
 		if n := len(gs.ResearchQueue); n > 0 {
 			timeOffset = gs.ResearchQueue[n-1].CompleteAt
 		}
-		completeAt := timeOffset + int64(node.ResearchTime)*1e9
+		completeAt := timeOffset + int64(r.ResearchTime)*1e9
 
-		research := models.OngoingResearch{
+		tx.Users[userId].AppendResearchQueue(&models.OngoingResearch{
 			CompleteAt: completeAt,
 			Discovery:  m.Discovery,
-		}
-
-		researchBytes, err := protojson.Marshal(&research)
-		if err != nil {
-			log.Error().Err(err).Msg("Failed to marshal research")
-			return err
-		}
-
-		_, err = h.rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
-			_, err := redis.RedisJsonNumIncrBy(
-				pipe, ctx, gsKey,
-				".resources.coins",
-				int64(-node.Cost)).Result()
-			if err != nil {
-				log.Error().Err(err).Msg("Failed to decrease coins")
-				return err
-			}
-
-			err = redis.RedisJsonArrAppend(
-				pipe,
-				ctx,
-				fmt.Sprintf("user:%s:gamestate", senderId),
-				".researchQueue",
-				researchBytes,
-			).Err()
-			if err != nil {
-				return err
-			}
-
-			return nil
 		})
+		tx.Users[userId].IncrGeniusFlashes(-1)
+		
 
-		return err
+		return nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("failed to handle start research: %w", err)
 	}
 
-	mutex := h.rdb.NewMutex("lock:" + gsKey)
-	if err := mutex.Lock(); err != nil {
-		return fmt.Errorf("failed to obtain lock: %w", err)
+	err = h.sendGameTx(ctx, tx)
+	if err != nil {
+		return fmt.Errorf("failed to send game tx: %w", err)
 	}
-	err2 := txf()
-	if ok, err := mutex.Unlock(); !ok || err != nil {
-		return fmt.Errorf("failed to unlock: %w", err)
-	}
-	if err2 != nil {
-		return fmt.Errorf("failed to handle research: %w", err2)
-	}
-
-	internal.SetNextUpdate(h.rdb, ctx, senderId, &gs)
-
-	h.sendFullStateUpdate(ctx, senderId)
 
 	return nil
 }

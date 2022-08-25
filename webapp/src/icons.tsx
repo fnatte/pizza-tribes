@@ -4,3 +4,4 @@ export { ReactComponent as Pizza } from "../images/icons/pizza.svg";
 export { ReactComponent as Sparkles } from "../images/icons/sparkles.svg";
 export { ReactComponent as ViewFilled } from "../images/icons/view--filled.svg";
 export { ReactComponent as ViewOffFilled } from "../images/icons/view--off--filled.svg";
+export { ReactComponent as GeniusFlash } from "../images/icons/genius-flash.svg";
