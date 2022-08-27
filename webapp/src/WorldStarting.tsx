@@ -6,6 +6,7 @@ import { WorldState } from "./generated/world";
 import Header from "./Header";
 import { useStore } from "./store";
 import styles from "./styles";
+import { Link } from "react-router-dom";
 
 export const WorldStarting: React.FC<{ state: WorldState }> = ({ state }) => {
   const logout = useStore((state) => state.logout);
@@ -48,12 +49,17 @@ export const WorldStarting: React.FC<{ state: WorldState }> = ({ state }) => {
         </p>
       </div>
       <div className={classnames("mt-8")}>
+        <Link to="/games">
+          <button className={classnames(styles.primaryButton, "mr-2")}>
+            Show Games
+          </button>
+        </Link>
         <button
           className={classnames(styles.primaryButton, "mr-2")}
           onClick={() => onClickLogout()}
         >
           Logout
-        </button>{" "}
+        </button>
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/fnatte/pizza-tribes/cmd/api/ws"
-	"github.com/fnatte/pizza-tribes/internal"
+	"github.com/fnatte/pizza-tribes/internal/game"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/zerolog/log"
 )
@@ -31,7 +31,7 @@ func (p *poller) run(ctx context.Context) {
 			continue
 		}
 
-		msg := &internal.OutgoingMessage{}
+		msg := &game.OutgoingMessage{}
 		msg.UnmarshalBinary([]byte(res[1]))
 
 		p.hub.SendTo(msg.ReceiverId, []byte(msg.Body))

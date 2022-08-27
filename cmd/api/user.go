@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/fnatte/pizza-tribes/internal/models"
-	"github.com/fnatte/pizza-tribes/internal/persist"
-	"github.com/fnatte/pizza-tribes/internal/protojson"
-	"github.com/fnatte/pizza-tribes/internal/redis"
+	"github.com/fnatte/pizza-tribes/internal/game"
+	"github.com/fnatte/pizza-tribes/internal/game/models"
+	"github.com/fnatte/pizza-tribes/internal/game/persist"
+	"github.com/fnatte/pizza-tribes/internal/game/protojson"
+	"github.com/fnatte/pizza-tribes/internal/game/redis"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 )
 
 type UserController struct {
 	r      redis.RedisClient
-	auth   *internal.AuthService
+	auth   *game.AuthService
 	gsRepo persist.GameStateRepository
 }
 

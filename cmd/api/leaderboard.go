@@ -4,17 +4,17 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/fnatte/pizza-tribes/internal/protojson"
-	"github.com/fnatte/pizza-tribes/internal/redis"
+	"github.com/fnatte/pizza-tribes/internal/game"
+	"github.com/fnatte/pizza-tribes/internal/game/protojson"
+	"github.com/fnatte/pizza-tribes/internal/game/redis"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 )
 
 type LeaderboardController struct {
 	r           redis.RedisClient
-	leaderboard *internal.LeaderboardService
-	auth        *internal.AuthService
+	leaderboard *game.LeaderboardService
+	auth        *game.AuthService
 }
 
 func (c *LeaderboardController) Handler() http.Handler {
@@ -28,7 +28,7 @@ func (c *LeaderboardController) Handler() http.Handler {
 			return
 		}
 
-		userId, ok := internal.GetUserIdFromContext(r.Context())
+		userId, ok := game.GetUserIdFromContext(r.Context())
 		if !ok {
 			log.Error().Err(err).Msg("Failed to get user id")
 			return

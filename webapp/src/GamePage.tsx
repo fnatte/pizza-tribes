@@ -476,8 +476,15 @@ function GamePage(): JSX.Element {
   const start = useStore((state) => state.start);
 
   useEffect(() => {
-    start();
-  }, []);
+    if (
+      !connectionState ||
+      (!connectionState.connected &&
+        !connectionState.connecting &&
+        !connectionState.error)
+    ) {
+      start();
+    }
+  }, [connectionState]);
 
   const { isLoading, data, error, refetch } = useWorldState();
 
@@ -507,14 +514,17 @@ function GamePage(): JSX.Element {
     }
   }, [connectionState?.connecting]);
 
+  useEffect(() => {
+    if (gameData === null && !gameDataLoading) {
+      fetchGameData();
+    }
+  }, [gameData, gameDataLoading]);
+
   if (connectionState?.error === "unauthorized") {
     return <Navigate to="/login" replace />;
   }
 
   if (gameData === null) {
-    if (!gameDataLoading) {
-      fetchGameData();
-    }
     return <Loading />;
   }
 

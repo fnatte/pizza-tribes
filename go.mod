@@ -15,12 +15,14 @@ require (
 	github.com/go-redsync/redsync/v4 v4.4.2
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2
-	github.com/google/go-cmp v0.5.6
+	github.com/google/go-cmp v0.5.7
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
+	github.com/mattn/go-sqlite3 v1.14.15
+	github.com/pressly/goose/v3 v3.6.1
 	github.com/rs/xid v1.3.0
 	github.com/rs/zerolog v1.26.0
 	github.com/spf13/cobra v1.4.0
@@ -29,7 +31,6 @@ require (
 	golang.org/x/exp v0.0.0-20211111183329-cb5df436b1a8
 	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
-	golang.org/x/sys v0.0.0-20211113001501-0c823b97ae02 // indirect
 	golang.org/x/text v0.3.7
 	gonum.org/v1/gonum v0.9.3
 	google.golang.org/api v0.60.0 // indirect

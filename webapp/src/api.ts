@@ -26,8 +26,19 @@ const getAuthHeaders = () => {
   }
 };
 
+export const centralApiFetch = (path: string, init?: RequestInit) => {
+  return fetch(`${API_BASE_URL}/central${path[0] === "/" ? "" : "/"}${path}`, {
+    credentials: "same-origin",
+    headers: {
+      ...getAuthHeaders(),
+      ...init?.headers,
+    },
+    ...init,
+  });
+};
+
 export const apiFetch = (path: string, init?: RequestInit) => {
-  return fetch(`${API_BASE_URL}${path[0] === "/" ? "" : "/"}${path}`, {
+  return fetch(`${API_BASE_URL}/game${path[0] === "/" ? "" : "/"}${path}`, {
     credentials: "same-origin",
     headers: {
       ...getAuthHeaders(),

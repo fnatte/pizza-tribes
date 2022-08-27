@@ -5,7 +5,7 @@ export const platform: "web" | "ios" | "android" =
 
 const getWebWsUrl = () => {
   const isSecure = window.location.protocol === "https:";
-  return `${isSecure ? "wss" : "ws"}://${window.location.host}/api/ws`;
+  return `${isSecure ? "wss" : "ws"}://${window.location.host}/api/game/ws`;
 };
 
 const getString = (value: string | boolean | undefined) => {

@@ -6,7 +6,7 @@ FROM golang:1.16-alpine3.13 AS builder
 WORKDIR /app
 
 # Install build tool dependencies
-RUN apk add protobuf protobuf-dev make
+RUN apk add protobuf protobuf-dev make gcc musl-dev
 RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 
 # Install modules
@@ -43,9 +43,17 @@ RUN apk --update add ca-certificates && \
     rm -rf /var/cache/apk/*
 
 RUN adduser -D pizzatribes
+RUN mkdir -p /data && chown -R pizzatribes /data
 USER pizzatribes
 WORKDIR /home/pizzatribes
 EXPOSE 8080
+
+#
+# Gamelet
+#
+FROM base-runner AS gamelet
+COPY --from=builder /app/out/pizza-tribes-gamelet /app/pizza-tribes-gamelet
+CMD ["/app/pizza-tribes-gamelet"]
 
 #
 # API
@@ -81,6 +89,13 @@ CMD ["/app/pizza-tribes-migrator"]
 FROM base-runner AS admin
 COPY --from=builder /app/out/pizza-tribes-admin /app/pizza-tribes-admin
 CMD ["/app/pizza-tribes-admin"]
+
+#
+# Central
+#
+FROM base-runner AS central
+COPY --from=builder /app/out/pizza-tribes-central /app/pizza-tribes-central
+CMD ["/app/pizza-tribes-central"]
 
 #
 # Web App

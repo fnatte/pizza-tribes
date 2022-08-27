@@ -6,15 +6,15 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/fnatte/pizza-tribes/internal/models"
-	"github.com/fnatte/pizza-tribes/internal/protojson"
-	"github.com/fnatte/pizza-tribes/internal/redis"
+	"github.com/fnatte/pizza-tribes/internal/game"
+	"github.com/fnatte/pizza-tribes/internal/game/models"
+	"github.com/fnatte/pizza-tribes/internal/game/protojson"
+	"github.com/fnatte/pizza-tribes/internal/game/redis"
 	"github.com/rs/zerolog/log"
 )
 
 func (h *handler) handleUpgrade(ctx context.Context, senderId string, m *models.ClientMessage_UpgradeBuilding) error {
-	if !internal.IsValidLotId(m.LotId) {
+	if !game.IsValidLotId(m.LotId) {
 		return errors.New("Invalid lot id")
 	}
 
@@ -43,7 +43,7 @@ func (h *handler) handleUpgrade(ctx context.Context, senderId string, m *models.
 			return errors.New("no building in lot")
 		}
 
-		buildingInfo := internal.FullGameData.Buildings[int32(lot.Building)]
+		buildingInfo := game.FullGameData.Buildings[int32(lot.Building)]
 		if int(lot.Level)+1 >= len(buildingInfo.LevelInfos) {
 			return errors.New("building already max level")
 		}
@@ -116,7 +116,7 @@ func (h *handler) handleUpgrade(ctx context.Context, senderId string, m *models.
 		return fmt.Errorf("failed to handle upgrade: %w", err2)
 	}
 
-	internal.SetNextUpdate(h.rdb, ctx, senderId, &gs)
+	game.SetNextUpdate(h.rdb, ctx, senderId, &gs)
 
 	h.sendFullStateUpdate(ctx, senderId)
 

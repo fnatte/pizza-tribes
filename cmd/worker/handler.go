@@ -5,22 +5,22 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/fnatte/pizza-tribes/internal/gamestate"
-	"github.com/fnatte/pizza-tribes/internal/models"
-	"github.com/fnatte/pizza-tribes/internal/persist"
-	"github.com/fnatte/pizza-tribes/internal/protojson"
-	"github.com/fnatte/pizza-tribes/internal/redis"
+	"github.com/fnatte/pizza-tribes/internal/game"
+	"github.com/fnatte/pizza-tribes/internal/game/gamestate"
+	"github.com/fnatte/pizza-tribes/internal/game/models"
+	"github.com/fnatte/pizza-tribes/internal/game/persist"
+	"github.com/fnatte/pizza-tribes/internal/game/protojson"
+	"github.com/fnatte/pizza-tribes/internal/game/redis"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog/log"
 )
 
 type handler struct {
 	rdb   redis.RedisClient
-	world *internal.WorldService
+	world *game.WorldService
 	gsRepo persist.GameStateRepository
 	reportsRepo persist.ReportsRepository
-	userRepo persist.UserRepository
+	userRepo persist.GameUserRepository
 	marketRepo persist.MarketRepository
 	updater gamestate.Updater
 }
@@ -108,7 +108,7 @@ func (h *handler) fetchAndUpdateTimestamp(ctx context.Context, userId string) (i
 		return 0, err
 	}
 
-	return internal.SetNextUpdate(h.rdb, ctx, userId, &gs)
+	return game.SetNextUpdate(h.rdb, ctx, userId, &gs)
 }
 
 func (h *handler) sendFullStateUpdate(ctx context.Context, senderId string) {
@@ -156,7 +156,7 @@ func (h *handler) sendStats(ctx context.Context, userId string, gs *models.GameS
 		return fmt.Errorf("failed to send full state update: %w", err)
 	}
 
-	msg := internal.CalculateStats(gs, globalDemandScore, worldState, userCount).ToServerMessage()
+	msg := game.CalculateStats(gs, globalDemandScore, worldState, userCount).ToServerMessage()
 	err = h.send(ctx, userId, msg)
 	if err != nil {
 		return fmt.Errorf("failed to send full state update: %w", err)
@@ -192,7 +192,7 @@ func (h *handler) sendGameTx(ctx context.Context, tx *gamestate.GameTx) error {
 		}
 
 		if u.NextUpdateInvalidated {
-			_, err = internal.SetNextUpdate(h.rdb, ctx, uid, u.Gs)
+			_, err = game.SetNextUpdate(h.rdb, ctx, uid, u.Gs)
 			if err != nil {
 				errs = append(errs, err)
 			}
@@ -215,7 +215,7 @@ func (h *handler) send(ctx context.Context, senderId string, m *models.ServerMes
 		return err
 	}
 
-	h.rdb.RPush(ctx, "wsout", &internal.OutgoingMessage{
+	h.rdb.RPush(ctx, "wsout", &game.OutgoingMessage{
 		ReceiverId: senderId,
 		Body:       string(b),
 	})

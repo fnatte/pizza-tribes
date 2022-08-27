@@ -6,15 +6,15 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/fnatte/pizza-tribes/internal/models"
-	"github.com/fnatte/pizza-tribes/internal/protojson"
-	"github.com/fnatte/pizza-tribes/internal/redis"
+	"github.com/fnatte/pizza-tribes/internal/game"
+	"github.com/fnatte/pizza-tribes/internal/game/models"
+	"github.com/fnatte/pizza-tribes/internal/game/protojson"
+	"github.com/fnatte/pizza-tribes/internal/game/redis"
 	"github.com/rs/zerolog/log"
 )
 
 func (h *handler) handleConstructBuilding(ctx context.Context, senderId string, m *models.ClientMessage_ConstructBuilding) error {
-	if !internal.IsValidLotId(m.LotId) {
+	if !game.IsValidLotId(m.LotId) {
 		return errors.New("Invalid lot id")
 	}
 
@@ -32,9 +32,9 @@ func (h *handler) handleConstructBuilding(ctx context.Context, senderId string, 
 			return err
 		}
 
-		buildingInfo := internal.FullGameData.Buildings[int32(m.Building)]
-		buildingCount := internal.CountBuildings(&gs)
-		buildingConstrCount := internal.CountBuildingsUnderConstruction(&gs)
+		buildingInfo := game.FullGameData.Buildings[int32(m.Building)]
+		buildingCount := game.CountBuildings(&gs)
+		buildingConstrCount := game.CountBuildingsUnderConstruction(&gs)
 
 		cost := buildingInfo.LevelInfos[0].Cost
 		constructionTime := buildingInfo.LevelInfos[0].ConstructionTime
@@ -124,7 +124,7 @@ func (h *handler) handleConstructBuilding(ctx context.Context, senderId string, 
 		return fmt.Errorf("failed to place on construction queue: %w", err2)
 	}
 
-	internal.SetNextUpdate(h.rdb, ctx, senderId, &gs)
+	game.SetNextUpdate(h.rdb, ctx, senderId, &gs)
 
 	h.sendFullStateUpdate(ctx, senderId)
 

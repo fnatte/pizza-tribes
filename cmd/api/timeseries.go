@@ -3,17 +3,17 @@ package main
 import (
 	"net/http"
 
-	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/fnatte/pizza-tribes/internal/models"
-	"github.com/fnatte/pizza-tribes/internal/protojson"
-	"github.com/fnatte/pizza-tribes/internal/redis"
+	"github.com/fnatte/pizza-tribes/internal/game"
+	"github.com/fnatte/pizza-tribes/internal/game/models"
+	"github.com/fnatte/pizza-tribes/internal/game/protojson"
+	"github.com/fnatte/pizza-tribes/internal/game/redis"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 )
 
 type TimeseriesService struct {
 	r    redis.RedisClient
-	auth *internal.AuthService
+	auth *game.AuthService
 }
 
 func (s *TimeseriesService) Handler() http.Handler {
@@ -33,13 +33,13 @@ func (s *TimeseriesService) Handler() http.Handler {
 			return
 		}
 
-		tsPizzas, err := internal.FetchPizzasTimeseries(r.Context(), s.r, userId)
+		tsPizzas, err := game.FetchPizzasTimeseries(r.Context(), s.r, userId)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to fetch pizzas timeseries")
 			w.WriteHeader(500)
 			return
 		}
-		tsCoins, err := internal.FetchCoinsTimeseries(r.Context(), s.r, userId)
+		tsCoins, err := game.FetchCoinsTimeseries(r.Context(), s.r, userId)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to fetch pizzas timeseries")
 			w.WriteHeader(500)

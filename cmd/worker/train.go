@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/fnatte/pizza-tribes/internal/gamestate"
-	"github.com/fnatte/pizza-tribes/internal/models"
+	"github.com/fnatte/pizza-tribes/internal/game"
+	"github.com/fnatte/pizza-tribes/internal/game/gamestate"
+	"github.com/fnatte/pizza-tribes/internal/game/models"
 	"github.com/rs/zerolog/log"
 )
 
@@ -24,7 +24,7 @@ func (h *handler) handleTrain(ctx context.Context, userId string, m *models.Clie
 			return errors.New("Amount must be greater than 0")
 		}
 
-		if internal.CountUneducated(gs) < m.Amount {
+		if game.CountUneducated(gs) < m.Amount {
 			return errors.New("Too few uneducated")
 		}
 
@@ -44,7 +44,7 @@ func (h *handler) handleTrain(ctx context.Context, userId string, m *models.Clie
 			return errors.New("Too few uneducated")
 		}
 
-		eduInfo := internal.FullGameData.Educations[int32(m.Education)]
+		eduInfo := game.FullGameData.Educations[int32(m.Education)]
 		trainTime := int64(eduInfo.TrainTime)
 		cost := eduInfo.Cost * m.Amount
 

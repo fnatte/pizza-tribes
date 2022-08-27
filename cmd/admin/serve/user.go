@@ -1,19 +1,23 @@
 package serve
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
 
-	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/fnatte/pizza-tribes/internal/gamestate"
-	"github.com/fnatte/pizza-tribes/internal/models"
-	"github.com/fnatte/pizza-tribes/internal/persist"
-	"github.com/fnatte/pizza-tribes/internal/protojson"
-	"github.com/fnatte/pizza-tribes/internal/redis"
-	"github.com/fnatte/pizza-tribes/internal/ws"
+	"github.com/fnatte/pizza-tribes/cmd/admin/services"
+	"github.com/fnatte/pizza-tribes/internal/game"
+	"github.com/fnatte/pizza-tribes/internal/game/gamestate"
+	"github.com/fnatte/pizza-tribes/internal/game/models"
+	"github.com/fnatte/pizza-tribes/internal/game/persist"
+	persistsql "github.com/fnatte/pizza-tribes/internal/game/persist/sql"
+	"github.com/fnatte/pizza-tribes/internal/game/protojson"
+	"github.com/fnatte/pizza-tribes/internal/game/redis"
+	"github.com/fnatte/pizza-tribes/internal/game/ws"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/protobuf/proto"
@@ -65,7 +69,9 @@ type incrCoinsRequest struct {
 
 type userController struct {
 	rc      redis.RedisClient
+	sqldb   *sql.DB
 	updater gamestate.Updater
+	userDeleter services.UserDeleter
 }
 
 func contains(slice []string, item string) bool {
@@ -78,10 +84,12 @@ func contains(slice []string, item string) bool {
 	return false
 }
 
-func NewUserController(r redis.RedisClient, updater gamestate.Updater) *userController {
+func NewUserController(r redis.RedisClient, sqldb *sql.DB, updater gamestate.Updater, userDeleter services.UserDeleter) *userController {
 	return &userController{
 		rc:      r,
 		updater: updater,
+		sqldb:   sqldb,
+		userDeleter: userDeleter,
 	}
 }
 
@@ -95,28 +103,10 @@ func (c *userController) HandleDeleteUser(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	userRepo := persist.NewUserRepository(c.rc)
-	gsRepo := persist.NewGameStateRepository(c.rc)
-	world := internal.NewWorldService(c.rc)
-
-	gs, err := gsRepo.Get(ctx, userId)
+	err := c.userDeleter.DeleteUser(ctx, userId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
-	}
-
-	err = userRepo.DeleteUser(ctx, userId)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if gs != nil {
-		err = world.RemoveEntry(ctx, int(gs.TownX), int(gs.TownY))
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
 	}
 
 	w.WriteHeader(204)
@@ -131,9 +121,7 @@ func (c *userController) HandleBatchDeleteUser(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	userRepo := persist.NewUserRepository(c.rc)
-	gsRepo := persist.NewGameStateRepository(c.rc)
-	world := internal.NewWorldService(c.rc)
+	userRepo := persistsql.NewUserRepo(c.sqldb)
 
 	resp := batchDeleteUserResponse{
 		Users: []*batchDeleteUserResponseItem{},
@@ -142,44 +130,34 @@ func (c *userController) HandleBatchDeleteUser(w http.ResponseWriter, r *http.Re
 	userIds := req.UserIds
 
 	for _, username := range req.Usernames {
-		userId, err := userRepo.FindUser(ctx, username)
+		u, err := userRepo.GetUserByUsername(ctx, username)
 		if err != nil {
 			respItem := batchDeleteUserResponseItem{}
+			resp.Users = append(resp.Users, &respItem)
 			respItem.Id = username
 			respItem.StatusText = err.Error()
-			respItem.Status = http.StatusInternalServerError
-			resp.Users = append(resp.Users, &respItem)
+
+			if errors.Is(err, persist.ErrUserNotFound) {
+				respItem.Status = http.StatusNotFound
+			} else {
+				respItem.Status = http.StatusInternalServerError
+			}
+
 			continue
 		}
 
-		userIds = append(userIds, userId)
+		userIds = append(userIds, u.Id)
 	}
 
 	for _, userId := range userIds {
 		respItem := batchDeleteUserResponseItem{}
 		resp.Users = append(resp.Users, &respItem)
 
-		gs, err := gsRepo.Get(ctx, userId)
+		err := c.userDeleter.DeleteUser(ctx, userId)
 		if err != nil {
 			respItem.Status = http.StatusInternalServerError
 			respItem.StatusText = err.Error()
 			continue
-		}
-
-		err = userRepo.DeleteUser(ctx, userId)
-		if err != nil {
-			respItem.Status = http.StatusInternalServerError
-			respItem.StatusText = err.Error()
-			continue
-		}
-
-		if gs != nil {
-			err = world.RemoveEntry(ctx, int(gs.TownX), int(gs.TownY))
-			if err != nil {
-				respItem.Status = http.StatusInternalServerError
-				respItem.StatusText = err.Error()
-				continue
-			}
 		}
 
 		respItem.Id = userId
@@ -207,15 +185,23 @@ func (c *userController) HandleCreateUser(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	userRepo := persist.NewUserRepository(c.rc)
+	userRepo := persistsql.NewUserRepo(c.sqldb)
+	users := game.NewUserService(userRepo)
+	gameUserRepo := persist.NewGameUserRepository(c.rc)
 	gsRepo := persist.NewGameStateRepository(c.rc)
-	world := internal.NewWorldService(c.rc)
-	leaderboard := internal.NewLeaderboardService(c.rc)
-	users := internal.NewUserService(userRepo, gsRepo, world, leaderboard)
+	world := game.NewWorldService(c.rc)
+	leaderboard := game.NewLeaderboardService(c.rc)
+	gameCtrl := game.NewGameCtrl(gsRepo, gameUserRepo, world, leaderboard)
 
 	u, err := users.CreateUser(ctx, req.Username, req.Password)
 	if err != nil {
 		err = fmt.Errorf("failed to create user: %w", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = gameCtrl.JoinGame(ctx, u.Id, u.Username)
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -243,11 +229,13 @@ func (c *userController) HandleBatchCreateUser(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	userRepo := persist.NewUserRepository(c.rc)
+	userRepo := persistsql.NewUserRepo(c.sqldb)
+	users := game.NewUserService(userRepo)
+	gameUserRepo := persist.NewGameUserRepository(c.rc)
 	gsRepo := persist.NewGameStateRepository(c.rc)
-	world := internal.NewWorldService(c.rc)
-	leaderboard := internal.NewLeaderboardService(c.rc)
-	users := internal.NewUserService(userRepo, gsRepo, world, leaderboard)
+	world := game.NewWorldService(c.rc)
+	leaderboard := game.NewLeaderboardService(c.rc)
+	gameCtrl := game.NewGameCtrl(gsRepo, gameUserRepo, world, leaderboard)
 
 	resp := batchCreateUserResponse{
 		Users: []*batchCreateUserResponseItem{},
@@ -258,6 +246,14 @@ func (c *userController) HandleBatchCreateUser(w http.ResponseWriter, r *http.Re
 		resp.Users = append(resp.Users, &respItem)
 
 		u, err := users.CreateUser(ctx, user.Username, user.Password)
+		if err != nil {
+			respItem.Username = user.Username
+			respItem.Status = http.StatusInternalServerError
+			respItem.StatusText = fmt.Errorf("failed to create user: %w", err).Error()
+			continue
+		}
+
+		err = gameCtrl.JoinGame(ctx, u.Id, u.Username)
 		if err != nil {
 			respItem.Username = user.Username
 			respItem.Status = http.StatusInternalServerError
@@ -290,7 +286,7 @@ func (c *userController) HandleShowUser(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	userRepo := persist.NewUserRepository(c.rc)
+	userRepo := persistsql.NewUserRepo(c.sqldb)
 	u, err := userRepo.GetUser(r.Context(), userId)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
@@ -323,7 +319,7 @@ func (c *userController) HandleCompleteUserQueues(w http.ResponseWriter, r *http
 		return
 	}
 
-	userRepo := persist.NewUserRepository(c.rc)
+	userRepo := persist.NewGameUserRepository(c.rc)
 
 	u, err := userRepo.GetUser(r.Context(), userId)
 	if err != nil {
@@ -383,7 +379,7 @@ func (c *userController) HandleCompleteUserQueues(w http.ResponseWriter, r *http
 		return nil
 	})
 
-	internal.SetNextUpdateTo(c.rc, r.Context(), userId, time.Now().UnixNano())
+	game.SetNextUpdateTo(c.rc, r.Context(), userId, time.Now().UnixNano())
 
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -482,7 +478,7 @@ func (c *userController) HandlePatchGameState(w http.ResponseWriter, r *http.Req
 	// Update leaderboard
 	if contains(req.PatchMask.Paths, "resources") || contains(req.PatchMask.Paths, "resources.coins") {
 		coins := int64(req.GameState.Resources.Coins)
-		leaderboard := internal.NewLeaderboardService(c.rc)
+		leaderboard := game.NewLeaderboardService(c.rc)
 		if err = leaderboard.UpdateUser(ctx, userId, coins); err != nil {
 			log.Error().Err(err).Msg("Failed to update leaderboard")
 		}
@@ -493,7 +489,7 @@ func (c *userController) HandlePatchGameState(w http.ResponseWriter, r *http.Req
 		log.Error().Err(err).Msg("Failed to send state change")
 	}
 
-	internal.SetNextUpdateTo(c.rc, r.Context(), userId, time.Now().UnixNano())
+	game.SetNextUpdateTo(c.rc, r.Context(), userId, time.Now().UnixNano())
 
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -501,29 +497,34 @@ func (c *userController) HandlePatchGameState(w http.ResponseWriter, r *http.Req
 func (c *userController) HandleListUsers(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("username")
 
-	var users []string
-	userRepo := persist.NewUserRepository(c.rc)
+	var userIds []string
+	userRepo := persistsql.NewUserRepo(c.sqldb)
 	if username != "" {
-		userId, err := userRepo.FindUser(r.Context(), username)
+		u, err := userRepo.GetUserByUsername(r.Context(), username)
 		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
+			if errors.Is(err, persist.ErrUserNotFound) {
+				userIds = []string{}
+			} else {
+				http.Error(w, err.Error(), 500)
+				return
+			}
 		}
-		if userId == "" {
-			users = []string{}
-		} else {
-			users = []string{userId}
+		if u != nil {
+			userIds = []string{u.Id}
 		}
 	} else {
 		var err error
-		users, err = userRepo.GetAllUsers(r.Context())
+		users, err := userRepo.GetAllUsers(r.Context())
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
+		for _, u := range users {
+			userIds = append(userIds, u.Id)
+		}
 	}
 
-	b, err := json.Marshal(users)
+	b, err := json.Marshal(userIds)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return

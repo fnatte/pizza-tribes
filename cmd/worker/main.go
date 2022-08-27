@@ -7,12 +7,12 @@ import (
 
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/messaging"
-	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/fnatte/pizza-tribes/internal/gamestate"
-	"github.com/fnatte/pizza-tribes/internal/models"
-	"github.com/fnatte/pizza-tribes/internal/persist"
-	"github.com/fnatte/pizza-tribes/internal/protojson"
-	"github.com/fnatte/pizza-tribes/internal/redis"
+	"github.com/fnatte/pizza-tribes/internal/game"
+	"github.com/fnatte/pizza-tribes/internal/game/gamestate"
+	"github.com/fnatte/pizza-tribes/internal/game/models"
+	"github.com/fnatte/pizza-tribes/internal/game/persist"
+	"github.com/fnatte/pizza-tribes/internal/game/protojson"
+	"github.com/fnatte/pizza-tribes/internal/game/redis"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -40,11 +40,11 @@ func main() {
 		DB:       0, // use default DB
 	})
 
-	world := internal.NewWorldService(rc)
+	world := game.NewWorldService(rc)
 
 	gsRepo := persist.NewGameStateRepository(rc)
 	reportsRepo := persist.NewReportsRepository(rc)
-	userRepo := persist.NewUserRepository(rc)
+	userRepo := persist.NewGameUserRepository(rc)
 	notifyRepo := persist.NewNotifyRepository(rc)
 	worldRepo := persist.NewWorldRepository(rc)
 	marketRepo := persist.NewMarketRepository(rc)
@@ -103,7 +103,7 @@ func main() {
 			continue
 		}
 
-		msg := &internal.IncomingMessage{}
+		msg := &game.IncomingMessage{}
 		msg.UnmarshalBinary([]byte(res[1]))
 
 		m := &models.ClientMessage{}

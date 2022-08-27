@@ -5,11 +5,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/fnatte/pizza-tribes/internal/gamestate"
-	"github.com/fnatte/pizza-tribes/internal/models"
-	"github.com/fnatte/pizza-tribes/internal/protojson"
-	"github.com/fnatte/pizza-tribes/internal/redis"
+	"github.com/fnatte/pizza-tribes/internal/game"
+	"github.com/fnatte/pizza-tribes/internal/game/gamestate"
+	"github.com/fnatte/pizza-tribes/internal/game/models"
+	"github.com/fnatte/pizza-tribes/internal/game/protojson"
+	"github.com/fnatte/pizza-tribes/internal/game/redis"
 	"github.com/rs/zerolog/log"
 )
 
@@ -93,9 +93,9 @@ func (h *handler) handleClaimQuestReward(ctx context.Context, senderId string, m
 		}
 
 		var q *models.Quest
-		for i := range internal.FullGameData.Quests {
-			if internal.FullGameData.Quests[i].Id == m.QuestId {
-				q = internal.FullGameData.Quests[i]
+		for i := range game.FullGameData.Quests {
+			if game.FullGameData.Quests[i].Id == m.QuestId {
+				q = game.FullGameData.Quests[i]
 			}
 		}
 

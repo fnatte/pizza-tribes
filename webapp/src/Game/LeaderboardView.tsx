@@ -35,12 +35,12 @@ function TopThree({ rows }: { rows: { username: string; coins: string }[] }) {
               className={classnames(
                 "w-full",
                 "h-8",
-                "px-2",
+                "p-1",
                 "bg-green-200",
                 "rounded",
-                "relative"
               )}
             >
+              <div className="relative w-full h-full">
               <div
                 className={classnames(
                   "h-6",
@@ -49,13 +49,13 @@ function TopThree({ rows }: { rows: { username: string; coins: string }[] }) {
                   "absolute",
                   "top-0",
                   "left-0",
-                  "m-1"
                 )}
                 style={{
-                  width: `${(Number(coins) / 10_000_000) * 100}%`,
+                  width: `${Math.min(100, (Number(coins) / 10_000_000) * 100)}%`,
                   minWidth: 5,
                 }}
               />
+              </div>
             </div>
           </React.Fragment>
         ))}

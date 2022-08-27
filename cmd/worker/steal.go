@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"firebase.google.com/go/messaging"
-	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/fnatte/pizza-tribes/internal/models"
-	"github.com/fnatte/pizza-tribes/internal/protojson"
-	"github.com/fnatte/pizza-tribes/internal/redis"
+	"github.com/fnatte/pizza-tribes/internal/game"
+	"github.com/fnatte/pizza-tribes/internal/game/models"
+	"github.com/fnatte/pizza-tribes/internal/game/protojson"
+	"github.com/fnatte/pizza-tribes/internal/game/redis"
 	"github.com/rs/zerolog/log"
 )
 
@@ -43,15 +43,15 @@ func (h *handler) handleSteal(ctx context.Context, senderId string, m *models.Cl
 		}
 
 		// Validate game state of thief
-		e := internal.CountTownPopulationEducations(&gsThief)
+		e := game.CountTownPopulationEducations(&gsThief)
 		if e[models.Education_THIEF] < m.Amount {
 			return errors.New("not enough thieves")
 		}
 
-		arrivalAt := internal.CalculateArrivalTime(
+		arrivalAt := game.CalculateArrivalTime(
 			gsThief.TownX, gsThief.TownY,
 			m.X, m.Y,
-			internal.GetThiefSpeed(&gsThief))
+			game.GetThiefSpeed(&gsThief))
 
 		travel := models.Travel{
 			ArrivalAt:    arrivalAt,
@@ -98,7 +98,7 @@ func (h *handler) handleSteal(ctx context.Context, senderId string, m *models.Cl
 
 	h.sendFullStateUpdate(ctx, senderId)
 
-	_, err = internal.SchedulePushNotification(ctx, h.rdb, &messaging.Message{
+	_, err = game.SchedulePushNotification(ctx, h.rdb, &messaging.Message{
 		Data: map[string]string{
 			"userId": town.UserId,
 		},

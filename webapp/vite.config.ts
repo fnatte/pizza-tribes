@@ -41,11 +41,16 @@ export default defineConfig({
   clearScreen,
   server: {
     proxy: {
-      "/api": {
+      "/api/game": {
         target: "http://localhost:8080",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ""),
+        rewrite: (path) => path.replace(/^\/api\/game/, ""),
         ws: true,
+      },
+      "/api/central": {
+        target: "http://localhost:8083",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/central/, ""),
       },
     },
     cors: {

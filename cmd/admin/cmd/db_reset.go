@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/fnatte/pizza-tribes/cmd/admin/db"
-	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/fnatte/pizza-tribes/internal/redis"
+	"github.com/fnatte/pizza-tribes/internal/game"
+	"github.com/fnatte/pizza-tribes/internal/game/redis"
 	"github.com/spf13/cobra"
 )
 
@@ -20,7 +20,7 @@ func envOrDefault(key string, defaultVal string) string{
 }
 
 func ensureWorld(ctx context.Context, r redis.RedisClient) error {
-	world := internal.NewWorldService(r)
+	world := game.NewWorldService(r)
 	if err := world.Initialize(ctx); err != nil {
 		return err
 	}

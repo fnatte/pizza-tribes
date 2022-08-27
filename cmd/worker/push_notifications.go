@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"firebase.google.com/go/messaging"
-	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/fnatte/pizza-tribes/internal/redis"
+	"github.com/fnatte/pizza-tribes/internal/game"
+	"github.com/fnatte/pizza-tribes/internal/game/redis"
 	"github.com/rs/zerolog/log"
 )
 
@@ -84,7 +84,7 @@ func pushNotificationsWorker(ctx context.Context, client *messaging.Client, r re
 		if len(fcmTokens) == 0 {
 			// If there are no fcm tokens registered for the user, lets reschedule this message
 			// at a later time, at which hopefully the user might have registered.
-			_, err = internal.SchedulePushNotification(ctx, r, msg, time.Now().Add(3*time.Minute))
+			_, err = game.SchedulePushNotification(ctx, r, msg, time.Now().Add(3*time.Minute))
 			if err != nil {
 				log.Error().Err(err).Msg("Failed to reschedule push notification when there was no fcm tokens - it will be lost")
 			}
@@ -104,7 +104,7 @@ func pushNotificationsWorker(ctx context.Context, client *messaging.Client, r re
 		resp, err := client.SendMulticast(ctx, mm)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to send push notification")
-			_, err = internal.SchedulePushNotification(ctx, r, msg, time.Now().Add(3*time.Second))
+			_, err = game.SchedulePushNotification(ctx, r, msg, time.Now().Add(3*time.Second))
 			if err != nil {
 				log.Error().Err(err).Msg("Failed to reschedule push notification when send failed - it will be lost")
 			}

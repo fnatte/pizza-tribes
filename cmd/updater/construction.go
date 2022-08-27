@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"firebase.google.com/go/messaging"
-	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/fnatte/pizza-tribes/internal/gamestate"
-	"github.com/fnatte/pizza-tribes/internal/models"
+	"github.com/fnatte/pizza-tribes/internal/game"
+	"github.com/fnatte/pizza-tribes/internal/game/gamestate"
+	"github.com/fnatte/pizza-tribes/internal/game/models"
 	"github.com/rs/zerolog/log"
 )
 
@@ -40,7 +40,7 @@ func completedConstructions(userId string, gs *models.GameState, tx *gamestate.G
 			}
 		}
 
-		buildInfo = internal.FullGameData.Buildings[int32(lot.Building)]
+		buildInfo = game.FullGameData.Buildings[int32(lot.Building)]
 		if buildInfo == nil {
 			log.Error().Int32("building", int32(lot.Building)).Msg("Could not find building info")
 			continue
@@ -139,7 +139,7 @@ func newConstructionCompletedMessage(userId string, constr *models.Construction)
 	var title string
 	var body string
 
-	buildInfo := internal.FullGameData.Buildings[int32(constr.Building)]
+	buildInfo := game.FullGameData.Buildings[int32(constr.Building)]
 	if buildInfo != nil {
 		title = "Construction completed!"
 		if constr.Level > 0 {

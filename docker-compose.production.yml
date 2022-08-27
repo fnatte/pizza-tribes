@@ -10,8 +10,22 @@ services:
     image: "redislabs/redisinsight:latest"
     volumes:
       - redisinsight_data:/db
+  central:
+    image: "ghcr.io/fnatte/pizza-tribes-central:latest"
+    volumes:
+      - central_data:/data
+    env_file: .env
+    environment:
+      PORT: 8080
+      SQLITE_DSN: /data/pizzatribes.db
   api:
     image: "ghcr.io/fnatte/pizza-tribes-api:latest"
+    env_file: .env
+    environment:
+      PORT: 8080
+      REDIS_ADDR: "redis:6379"
+  gamelet:
+    image: "ghcr.io/fnatte/pizza-tribes-gamelet:latest"
     env_file: .env
     environment:
       PORT: 8080
@@ -40,8 +54,17 @@ services:
       - "443:443"
     volumes:
       - caddy_data:/data
+  admin:
+    image: "ghcr.io/fnatte/pizza-tribes-admin:latest"
+    volumes:
+      - central_data:/data
+    environment:
+      REDIS_ADDR: "redis:6379"
+      SQLITE_DSN: /data/pizzatribes.db
 
 volumes:
   redis_data:
   redisinsight_data:
   caddy_data:
+  central_data:
+

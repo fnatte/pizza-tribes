@@ -1,5 +1,5 @@
 GO_MODULE := github.com/fnatte/pizza-tribes
-GO_FLAGS := -ldflags '-s -w -extldflags "-static"'
+GO_FLAGS := 
 
 PROTOS := $(wildcard protos/*.proto)
 PBGO := $(patsubst protos/%.proto,internal/%.pb.go,$(PROTOS))
@@ -35,7 +35,15 @@ build-migrator: $(PBGO)
 build-admin: $(PBGO)
 	go build $(GO_FLAGS) -o out/pizza-tribes-admin github.com/fnatte/pizza-tribes/cmd/admin
 
-build: build-api build-worker build-updater build-migrator build-admin
+.PHONY: build-central
+build-central: $(PBGO)
+	go build $(GO_FLAGS) -o out/pizza-tribes-central github.com/fnatte/pizza-tribes/cmd/central
+
+.PHONY: build-gamelet
+build-gamelet: $(PBGO)
+	go build $(GO_FLAGS) -o out/pizza-tribes-gamelet github.com/fnatte/pizza-tribes/cmd/gamelet
+
+build: build-api build-worker build-updater build-migrator build-admin build-central build-gamelet
 
 start-migrator: build-migrator
 	out/pizza-tribes-migrator
@@ -52,4 +60,10 @@ start-updater: build-updater
 start-admin: build-admin
 	out/pizza-tribes-admin serve
 
-start: start-api start-worker start-updater start-migrator start-admin
+start-central: build-central
+	out/pizza-tribes-central serve
+
+start-gamelet: build-gamelet
+	out/pizza-tribes-gamelet serve
+
+start: start-api start-worker start-updater start-migrator start-admin start-central start-gamelet
