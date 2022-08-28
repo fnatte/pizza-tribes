@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal/game/models"
@@ -15,114 +16,154 @@ var AllAppearanceParts = []*models.AppearancePart{
 	{
 		Id:       "redHat1",
 		Category: models.AppearanceCategory_HAT,
+		Free: true,
 	},
 	{
 		Id:       "thiefHat1",
 		Category: models.AppearanceCategory_HAT,
+		Free: true,
 	},
 	{
 		Id:       "chefHat1",
 		Category: models.AppearanceCategory_HAT,
+		Free: true,
 	},
 	{
 		Id:       "guardHat1",
+		Category: models.AppearanceCategory_HAT,
+		Free: true,
+	},
+	{
+		Id:       "hat1",
+		Category: models.AppearanceCategory_HAT,
+	},
+	{
+		Id:       "bucketHat1",
+		Category: models.AppearanceCategory_HAT,
+	},
+	{
+		Id:       "cap1",
 		Category: models.AppearanceCategory_HAT,
 	},
 	{
 		Id:       "basicFeet1",
 		Category: models.AppearanceCategory_FEET,
+		Free: true,
 	},
 	{
 		Id:       "bigFeet1",
 		Category: models.AppearanceCategory_FEET,
+		Free: true,
 	},
 	{
 		Id:       "smallFeet1",
 		Category: models.AppearanceCategory_FEET,
+		Free: true,
 	},
 	{
 		Id:       "mixedSmile1",
 		Category: models.AppearanceCategory_MOUTH,
+		Free: true,
 	},
 	{
 		Id:       "smile1",
 		Category: models.AppearanceCategory_MOUTH,
+		Free: true,
 	},
 	{
 		Id:       "smile2",
 		Category: models.AppearanceCategory_MOUTH,
+		Free: true,
 	},
 	{
 		Id:       "smile3",
 		Category: models.AppearanceCategory_MOUTH,
+		Free: true,
 	},
 	{
 		Id:       "tail1",
 		Category: models.AppearanceCategory_TAIL,
+		Free: true,
 	},
 	{
 		Id:       "tail2",
 		Category: models.AppearanceCategory_TAIL,
+		Free: true,
 	},
 	{
 		Id:       "tail3",
 		Category: models.AppearanceCategory_TAIL,
+		Free: true,
 	},
 	{
 		Id:       "tail4",
 		Category: models.AppearanceCategory_TAIL,
+		Free: true,
 	},
 	{
 		Id:       "tail5",
 		Category: models.AppearanceCategory_TAIL,
+		Free: true,
 	},
 	{
 		Id:       "glasses1",
 		Category: models.AppearanceCategory_EYES_EXTRA2,
+		Free: true,
 	},
 	{
 		Id:       "glasses2",
 		Category: models.AppearanceCategory_EYES_EXTRA2,
+		Free: true,
 	},
 	{
 		Id:       "eyePatch1",
 		Category: models.AppearanceCategory_EYES_EXTRA2,
+		Free: true,
 	},
 	{
 		Id:       "eyeCover1",
 		Category: models.AppearanceCategory_EYES_EXTRA1,
+		Free: true,
 	},
 	{
 		Id:       "eyeStars1",
 		Category: models.AppearanceCategory_EYES_EXTRA1,
+		Free: true,
 	},
 	{
 		Id:       "eyes1",
 		Category: models.AppearanceCategory_EYES,
+		Free: true,
 	},
 	{
 		Id:       "eyes2",
 		Category: models.AppearanceCategory_EYES,
+		Free: true,
 	},
 	{
 		Id:       "eyes3",
 		Category: models.AppearanceCategory_EYES,
+		Free: true,
 	},
 	{
 		Id:       "outfit1",
 		Category: models.AppearanceCategory_OUTFIT,
+		Free: true,
 	},
 	{
 		Id:       "thiefOutfit1",
 		Category: models.AppearanceCategory_OUTFIT,
+		Free: true,
 	},
 	{
 		Id:       "guardOutfit1",
 		Category: models.AppearanceCategory_OUTFIT,
+		Free: true,
 	},
 	{
 		Id:       "mouse1",
 		Category: models.AppearanceCategory_BODY,
+		Free: true,
 	},
 }
 
@@ -1004,6 +1045,15 @@ var FullGameData = GameData{
 			},
 			Order: 13,
 		},
+		{
+			Id:          "14",
+			Title:       "Hats, hats, hats",
+			Description: "Coins can make you win, but hats can let you do so with style.\n- Visit a mouse and change its",
+			Reward: &models.Quest_Reward{
+				OneOfItems: []string{"hat1", "cap1", "bucketHat1"},
+			},
+			Order: 6,
+		},
 	},
 	GeniusFlashCosts: []*models.GeniusFlashCost{
 		{Coins: 5000, Pizzas: 1000},
@@ -1023,6 +1073,15 @@ func init() {
 	// Assign discovery on research
 	for id, r := range ResearchMap {
 		r.Discovery = models.ResearchDiscovery(id)
+	}
+
+	// Make sure every query reward item exisits
+	for _, q := range FullGameData.Quests {
+		for _, id := range q.Reward.OneOfItems {
+			if _, ok := AppearancePartsMap[id]; !ok {
+				panic(fmt.Sprintf("Quest %s has an item reward that does not exist: %s", q.Id, id))
+			}
+		}
 	}
 
 }

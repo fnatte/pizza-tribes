@@ -67,6 +67,7 @@ message ClientMessage {
 
   message ClaimQuestReward {
     string questId = 2;
+    string selectedOneOfItem = 3;
   }
 
   message CompleteQuest {

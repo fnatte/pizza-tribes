@@ -63,7 +63,7 @@ export type State = {
   reschool: (mouseId: string) => void;
   renameMouse: (mouseId: string, name: string) => void;
   openQuest: (questId: string) => void;
-  claimQuestReward: (questId: string) => void;
+  claimQuestReward: (questId: string, selectedOneOfItem?: string) => void;
   completeQuest: (questId: string) => void;
   reportActivity: () => void;
   saveMouseAppearance: (mouseId: string, appearance: MouseAppearance) => void;
@@ -95,6 +95,7 @@ const initialGameState: GameState = {
   ambassadorMouseId: "",
   pizzaPrice: 0,
   geniusFlashes: 0,
+  appearanceParts: [],
 };
 
 const resetAuthState = (state: State) => ({
@@ -394,7 +395,7 @@ export const useStore = create<State>((set, get) => ({
       })
     );
   },
-  claimQuestReward: (questId) => {
+  claimQuestReward: (questId, selectedOneOfItem = "") => {
     get().connection?.send(
       ClientMessage.create({
         id: generateId(),
@@ -402,6 +403,7 @@ export const useStore = create<State>((set, get) => ({
           oneofKind: "claimQuestReward",
           claimQuestReward: {
             questId,
+            selectedOneOfItem,
           },
         },
       })

@@ -2,7 +2,6 @@ import React, { ReactNode, useCallback } from "react";
 import classnames from "classnames";
 import { useStore } from "../store";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import produce from "immer";
 import { MouseEditor } from "./components/MouseEditor";
 import { MouseAppearance } from "../generated/appearance";
 

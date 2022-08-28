@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/rand"
 
 	"github.com/fnatte/pizza-tribes/internal/game"
 	"github.com/fnatte/pizza-tribes/internal/game/gamestate"
@@ -68,91 +69,51 @@ func (h *handler) handleOpenQuest(ctx context.Context, senderId string, m *model
 	return nil
 }
 
-func (h *handler) handleClaimQuestReward(ctx context.Context, senderId string, m *models.ClientMessage_ClaimQuestReward) error {
+func (h *handler) handleClaimQuestReward(ctx context.Context, userId string, m *models.ClientMessage_ClaimQuestReward) error {
 	log.Info().
-		Str("senderId", senderId).
-		Str("QuestId", m.QuestId).
+		Str("userId", userId).
+		Str("questId", m.QuestId).
 		Msg("Received claim quest reward message")
 
-	gsKey := fmt.Sprintf("user:%s:gamestate", senderId)
-
-	var gs models.GameState
-
-	txf := func() error {
-		// Get current game state
-		s, err := redis.RedisJsonGet(h.rdb, ctx, gsKey, ".").Result()
-		if err != nil && err != redis.Nil {
-			return err
+	var q *models.Quest
+	for i := range game.FullGameData.Quests {
+		if game.FullGameData.Quests[i].Id == m.QuestId {
+			q = game.FullGameData.Quests[i]
+			break
 		}
-		if err = protojson.Unmarshal([]byte(s), &gs); err != nil {
-			return err
-		}
+	}
+	if q == nil {
+		return errors.New("could not find quest")
+	}
 
-		if q, ok := gs.Quests[m.QuestId]; !ok || q.ClaimedReward {
+	tx, err := h.updater.PerformUpdate(ctx, userId, func(gs *models.GameState, tx *gamestate.GameTx) error {
+		if qs, ok := gs.Quests[m.QuestId]; !ok || qs.ClaimedReward {
 			return nil
 		}
 
-		var q *models.Quest
-		for i := range game.FullGameData.Quests {
-			if game.FullGameData.Quests[i].Id == m.QuestId {
-				q = game.FullGameData.Quests[i]
-			}
+		txu := tx.Users[userId]
+		txu.SetQuestClaimedReward(m.QuestId)
+		if q.Reward.Coins > 0 {
+			txu.IncrCoins(q.Reward.Coins)
+		}
+		if q.Reward.Pizzas > 0 {
+			txu.IncrPizzas(q.Reward.Pizzas)
+		}
+		if len(q.Reward.OneOfItems) > 0 {
+			item := q.Reward.OneOfItems[rand.Intn(len(q.Reward.OneOfItems))]
+			txu.AppendAppearancePart(item)
 		}
 
-		if q == nil {
-			log.Error().Msg("Could not find quest")
-			return nil
-		}
-
-		_, err = h.rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
-			path := fmt.Sprintf(".quests[\"%s\"].claimedReward", m.QuestId)
-			value := "true"
-			err := redis.RedisJsonSet(pipe, ctx, gsKey, path, value).Err()
-			if err != nil {
-				return fmt.Errorf("failed to set claimed reward to true: %w", err)
-			}
-
-			if q.Reward.Coins > 0 {
-				err := redis.RedisJsonNumIncrBy(
-					pipe, ctx, gsKey,
-					".resources.coins",
-					int64(q.Reward.Coins)).Err()
-				if err != nil {
-					log.Error().Err(err).Msg("Failed to increase coins")
-					return err
-				}
-			}
-
-			if q.Reward.Pizzas > 0 {
-				err := redis.RedisJsonNumIncrBy(
-					pipe, ctx, gsKey,
-					".resources.pizzas",
-					int64(q.Reward.Pizzas)).Err()
-				if err != nil {
-					log.Error().Err(err).Msg("Failed to increase coins")
-					return err
-				}
-			}
-
-			return nil
-		})
-		return err
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("failed to perform update on claim quest reward: %w", err)
 	}
 
-	mutex := h.rdb.NewMutex("lock:" + gsKey)
-	if err := mutex.Lock(); err != nil {
-		return fmt.Errorf("failed to obtain lock: %w", err)
+	err = h.sendGameTx(ctx, tx)
+	if err != nil {
+		return fmt.Errorf("failed to send game tx: %w", err)
 	}
-	err2 := txf()
-	if ok, err := mutex.Unlock(); !ok || err != nil {
-		return fmt.Errorf("failed to unlock: %w", err)
-	}
-	if err2 != nil {
-		return fmt.Errorf("failed to handle claim quest reward: %w", err2)
-	}
-
-	h.fetchAndUpdateTimestamp(ctx, senderId)
-	h.sendFullStateUpdate(ctx, senderId)
 
 	return nil
 }

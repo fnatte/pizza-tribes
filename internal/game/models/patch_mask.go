@@ -83,6 +83,13 @@ func GetValueByPath(m proto.Message, path string) (interface{}, error) {
 				slice = reflect.Append(slice, reflect.ValueOf(mt.New(list.Get(i).Enum())))
 			}
 			return slice.Interface(), nil
+		case protoreflect.StringKind:
+			list := fv.List()
+			slice := make([]string, list.Len())
+			for i := 0; i < list.Len(); i++ {
+				slice[i] = list.Get(i).String()
+			}
+			return slice, nil
 		}
 	}
 

@@ -81,6 +81,7 @@ message GameState {
   string ambassadorMouseId = 14;
   int32 pizzaPrice = 15;
   int32 geniusFlashes = 16;
+  repeated string appearanceParts = 17;
 }
 
 message PatchMask {

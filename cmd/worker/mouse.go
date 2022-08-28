@@ -174,6 +174,11 @@ func (h *handler) handleSaveMouseAppearance(ctx context.Context, userId string, 
 
 		tx.Users[userId].SetMouseAppearance(m.MouseId, m.Appearance)
 
+		// Complete the set mouse appearance quest
+		if q, ok := gs.Quests["14"]; ok && !q.Completed {
+			tx.Users[userId].SetQuestCompleted("14")
+		}
+
 		return nil
 	})
 

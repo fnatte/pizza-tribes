@@ -175,6 +175,10 @@ func jsonValue(v interface{}) (interface{}, error) {
 			buf = append(buf, ']')
 			return buf, nil
 		}
+
+		if val.Type().Elem().Kind() == reflect.String {
+			return json.Marshal(v)
+		}
 	}
 
 	if val.Kind() == reflect.Map {

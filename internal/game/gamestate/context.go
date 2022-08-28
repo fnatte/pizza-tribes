@@ -225,6 +225,13 @@ func (u *GameTx_User) SetQuestAvailable(questId string) {
 	}
 }
 
+func (u *GameTx_User) SetQuestClaimedReward(questId string) {
+	if !u.Gs.Quests[questId].ClaimedReward {
+		u.Gs.Quests[questId].ClaimedReward = true
+		u.PatchMask.AppendPath(fmt.Sprintf("quests.%s.claimedReward", questId))
+	}
+}
+
 func (u *GameTx_User) SetGeniusFlashes(val int32) {
 	if u.Gs.GeniusFlashes != val {
 		u.Gs.GeniusFlashes = val
@@ -234,6 +241,17 @@ func (u *GameTx_User) SetGeniusFlashes(val int32) {
 
 func (u *GameTx_User) IncrGeniusFlashes(val int32) {
 	u.SetGeniusFlashes(u.Gs.GeniusFlashes + val)
+}
+
+func (u *GameTx_User) AppendAppearancePart(val string) {
+	for _, p := range u.Gs.AppearanceParts {
+		if p == val {
+			return
+		}
+	}
+
+	u.Gs.AppearanceParts = append(u.Gs.AppearanceParts, val)
+	u.PatchMask.AppendPath("appearanceParts")
 }
 
 func (u *GameTx_User) ToServerMessage() *models.ServerMessage {

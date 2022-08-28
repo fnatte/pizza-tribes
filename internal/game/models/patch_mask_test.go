@@ -75,9 +75,13 @@ func TestGetValueByPath(t *testing.T) {
 			path: "researchQueue",
 			want: []*OngoingResearch{},
 		},
-		"string slice": {
+		"enum slice": {
 			path: "discoveries",
 			want: []ResearchDiscovery{ResearchDiscovery_DURUM_WHEAT, ResearchDiscovery_MOBILE_APP},
+		},
+		"string slice": {
+			path: "appearanceParts",
+			want: []string{"test"},
 		},
 		// TODO: add case for invalid field
 	}
@@ -117,6 +121,7 @@ func TestGetValueByPath(t *testing.T) {
 					},
 				},
 				ResearchQueue: []*OngoingResearch{},
+				AppearanceParts: []string{"test"},
 				Discoveries: []ResearchDiscovery{ResearchDiscovery_DURUM_WHEAT, ResearchDiscovery_MOBILE_APP},
 			}
 

@@ -6,8 +6,9 @@ option go_package = "github.com/fnatte/pizza-tribes/internal/game/models";
 
 message Quest {
   message Reward {
-    int32 coins = 1;  
-    int32 pizzas = 2;  
+    int32 coins = 1;
+    int32 pizzas = 2;
+    repeated string oneOfItems = 3;
   }
 
   string id = 1;

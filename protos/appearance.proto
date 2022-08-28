@@ -20,6 +20,7 @@ enum AppearanceCategory {
 message AppearancePart {
   string id = 1;
   AppearanceCategory category = 2;
+  bool free = 3;
 }
 
 message MouseAppearance {
@@ -29,18 +30,4 @@ message MouseAppearance {
   }
 
   map<int32, PartRef> parts = 1;
-
-/*
-  PartRef body = 1;
-  PartRef eyes = 2;
-  PartRef mouth = 3;
-  PartRef feet = 4;
-  PartRef tail = 5;
-  PartRef outfits = 6;
-  PartRef eyesExtra1 = 7;
-  PartRef eyesExtra2 = 8;
-  PartRef hats = 9;
-  PartRef leftHand = 10;
-  PartRef rightHand = 11;
-  */
 }

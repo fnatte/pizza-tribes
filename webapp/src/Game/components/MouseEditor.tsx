@@ -30,8 +30,13 @@ function GallerySection({
   allowEmpty?: boolean;
 }) {
   const appearanceParts = useStore((state) => state.gameData?.appearanceParts);
+  const unlockedAppearanceParts = useStore(
+    (state) => state.gameState.appearanceParts
+  );
   const sectionParts = Object.values(appearanceParts ?? {}).filter(
-    (part) => part.category === category
+    (part) =>
+      part.category === category &&
+      (part.free || unlockedAppearanceParts.includes(part.id))
   );
 
   return (

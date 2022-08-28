@@ -8,6 +8,8 @@ import { primaryButton } from "../../styles";
 import { LEADERBOARD_QUEST_ID, STATS_QUEST_ID } from "./ids";
 import { StatsQuestForm } from "./StatsQuestForm";
 import { LeaderboardQuestForm } from "./LeaderboardQuestForm";
+import { MouseImagePart } from "../components/MouseImage";
+import { QuestState } from "../../generated/gamestate";
 
 function Container({ children }: { children?: ReactNode | undefined }) {
   return (
@@ -25,10 +27,79 @@ function Container({ children }: { children?: ReactNode | undefined }) {
   );
 }
 
+function QuestRewardSection({
+  quest,
+  questState,
+}: {
+  quest: Quest;
+  questState: QuestState;
+}) {
+  const claimQuestReward = useStore((state) => state.claimQuestReward);
+  const canClaimReward = questState.completed && !questState.claimedReward;
+
+  const hasOneOfItems = (quest.reward?.oneOfItems.length ?? 0) > 0;
+
+  const [selectedReward, setSelectedReward] = useState<string>();
+
+  return (
+    <>
+      <h4>Reward</h4>
+      <div className="flex gap-4 items-center flex-wrap">
+        {(quest.reward?.coins ?? 0) > 0 && (
+          <div className="flex gap-1 items-center">
+            <Coin className={"h-[3em] w-[3em]"} />{" "}
+            <span className="text-xl" data-cy="quest-item-reward-coins">
+              {quest.reward?.coins}
+            </span>
+          </div>
+        )}
+        {(quest.reward?.pizzas ?? 0) > 0 && (
+          <div className="flex gap-1 items-center">
+            <Pizza className={"h-[3em] w-[3em]"} />{" "}
+            <span className="text-xl" data-cy="quest-item-reward-pizzas">
+              {quest.reward?.pizzas}
+            </span>
+          </div>
+        )}
+        {hasOneOfItems && (
+          <div className="flex gap-2 items-center">
+            <span className="mr-4">Pick one</span>
+            {quest.reward?.oneOfItems.map((item) => (
+              <button
+                key={item}
+                className={classnames("bg-white p-2 border", {
+                  ring: selectedReward === item,
+                })}
+                onClick={() => setSelectedReward(item)}
+              >
+                <MouseImagePart id={item} />
+              </button>
+            ))}
+          </div>
+        )}
+        {questState.claimedReward && (
+          <div className="text-gray-700">(Reward has been claimed)</div>
+        )}
+      </div>
+      {canClaimReward && (
+        <div className="mt-4">
+          <button
+            className={primaryButton}
+            onClick={() => claimQuestReward(quest.id)}
+            disabled={hasOneOfItems && !selectedReward}
+            data-cy="quest-item-claim-reward-button"
+          >
+            Claim Reward
+          </button>
+        </div>
+      )}
+    </>
+  );
+}
+
 export default function QuestsView() {
   const questStates = useStore((state) => state.gameState.quests);
   const gameData = useStore((state) => state.gameData);
-  const claimQuestReward = useStore((state) => state.claimQuestReward);
   const openQuest = useStore((state) => state.openQuest);
 
   const quests = useMemo(() => {
@@ -126,47 +197,10 @@ export default function QuestsView() {
                     )}
 
                     <div className="my-4">
-                      <h4>Reward</h4>
-                      <div className="flex gap-4 items-center flex-wrap">
-                        {(quest.reward?.coins ?? 0) > 0 && (
-                          <div className="flex gap-1 items-center">
-                            <Coin className={"h-[3em] w-[3em]"} />{" "}
-                            <span
-                              className="text-xl"
-                              data-cy="quest-item-reward-coins"
-                            >
-                              {quest.reward?.coins}
-                            </span>
-                          </div>
-                        )}
-                        {(quest.reward?.pizzas ?? 0) > 0 && (
-                          <div className="flex gap-1 items-center">
-                            <Pizza className={"h-[3em] w-[3em]"} />{" "}
-                            <span
-                              className="text-xl"
-                              data-cy="quest-item-reward-pizzas"
-                            >
-                              {quest.reward?.pizzas}
-                            </span>
-                          </div>
-                        )}
-                        {questState.claimedReward && (
-                          <div className="text-gray-700">
-                            (Reward has been claimed)
-                          </div>
-                        )}
-                      </div>
-                      {canClaimReward && (
-                        <div className="mt-4">
-                          <button
-                            className={primaryButton}
-                            onClick={() => claimQuestReward(id)}
-                            data-cy="quest-item-claim-reward-button"
-                          >
-                            Claim Reward
-                          </button>
-                        </div>
-                      )}
+                      <QuestRewardSection
+                        quest={quest}
+                        questState={questState}
+                      />
                     </div>
                   </div>
                 )}

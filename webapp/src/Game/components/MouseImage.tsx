@@ -32,6 +32,9 @@ import { ReactComponent as SvgHatsRedHat1 } from "images/parts/hats_RedHat1.svg"
 import { ReactComponent as SvgHatsThiefHat1 } from "images/parts/hats_ThiefHat1.svg";
 import { ReactComponent as SvgHatsChefHat1 } from "images/parts/hats_ChefHat1.svg";
 import { ReactComponent as SvgHatsGuardHat1 } from "images/parts/hats_GuardHat1.svg";
+import { ReactComponent as SvgHatsHat1 } from "images/parts/hats_Hat1.svg";
+import { ReactComponent as SvgHatsBucketHat1 } from "images/parts/hats_BucketHat1.svg";
+import { ReactComponent as SvgHatsCap1 } from "images/parts/hats_Cap1.svg";
 import {
   AppearanceCategory,
   MouseAppearance,
@@ -68,6 +71,21 @@ const partInfosById: Record<string, PartInfo | undefined> = {
     component: SvgHatsGuardHat1,
     x: 22,
     y: 14,
+  },
+  hat1: {
+    component: SvgHatsHat1,
+    x: 19.5,
+    y: 13,
+  },
+  bucketHat1: {
+    component: SvgHatsBucketHat1,
+    x: 15.5,
+    y: 20,
+  },
+  cap1: {
+    component: SvgHatsCap1,
+    x: 21.5,
+    y: 19.5,
   },
   basic: {
     component: SvgArmsBasic,
