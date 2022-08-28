@@ -271,7 +271,7 @@ export function MouseImage({
       viewBox="0 0 160 200"
       className={classnames(
         {
-          "translate-x-16": shiftRight,
+          "translate-x-4 xs:translate-x-16": shiftRight,
         },
         className
       )}

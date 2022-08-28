@@ -153,7 +153,7 @@ export default function MouseView() {
             ) : (
               <FallbackSvg
                 height={400}
-                className="translate-x-16 h-[400px] w-full"
+                className="translate-x-4 xs:translate-x-16 h-[400px] w-full"
               />
             )}
           </Link>
