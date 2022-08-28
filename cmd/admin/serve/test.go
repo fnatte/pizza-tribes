@@ -1,13 +1,16 @@
 package serve
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"time"
 
-	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/fnatte/pizza-tribes/internal/persist"
-	"github.com/fnatte/pizza-tribes/internal/redis"
+	"github.com/fnatte/pizza-tribes/cmd/admin/services"
+	"github.com/fnatte/pizza-tribes/internal/game"
+	"github.com/fnatte/pizza-tribes/internal/game/persist"
+	sqlrepo "github.com/fnatte/pizza-tribes/internal/game/persist/sql"
+	"github.com/fnatte/pizza-tribes/internal/game/redis"
 	"github.com/gorilla/mux"
 )
 
@@ -23,11 +26,15 @@ type setupTestRequest struct {
 
 type testController struct {
 	rc redis.RedisClient
+	sqldb *sql.DB
+	userDeleter services.UserDeleter
 }
 
-func NewTestController(r redis.RedisClient) *testController {
+func NewTestController(r redis.RedisClient, sqldb *sql.DB, userDeleter services.UserDeleter) *testController {
 	return &testController{
 		rc: r,
+		sqldb: sqldb,
+		userDeleter: userDeleter,
 	}
 }
 
@@ -41,38 +48,23 @@ func (c *testController) HandleSetupTest(w http.ResponseWriter, r *http.Request)
 
 	ctx := r.Context()
 
-	userRepo := persist.NewUserRepository(c.rc)
+	userRepo := sqlrepo.NewUserRepo(c.sqldb)
+	gameUserRepo := persist.NewGameUserRepository(c.rc)
 	gsRepo := persist.NewGameStateRepository(c.rc)
-	world := internal.NewWorldService(c.rc)
-	leaderboard := internal.NewLeaderboardService(c.rc)
-	users := internal.NewUserService(userRepo, gsRepo, world, leaderboard)
+	world := game.NewWorldService(c.rc)
+	users := game.NewUserService(userRepo)
+	leaderboard := game.NewLeaderboardService(c.rc)
+	gameCtrl := game.NewGameCtrl(gsRepo, gameUserRepo, world, leaderboard)
 
 	// Delete previous user
-	userId, err := userRepo.FindUser(ctx, req.Username)
-	if err != nil {
+	u, err := userRepo.GetUserByUsername(ctx, req.Username)
+	if err != nil && err != persist.ErrUserNotFound {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+
 	}
-	if userId != "" {
-		gs, err := gsRepo.Get(ctx, userId)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		err = userRepo.DeleteUser(ctx, userId)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		if gs != nil {
-			err = world.RemoveEntry(ctx, int(gs.TownX), int(gs.TownY))
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-		}
+	if u != nil {
+		c.userDeleter.DeleteUser(ctx, u.Id)
 	}
 
 	// Create new user
@@ -82,7 +74,13 @@ func (c *testController) HandleSetupTest(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	a := internal.AuthService{}
+	err = gameCtrl.JoinGame(ctx, usr.Id, usr.Username)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	a := game.AuthService{}
 	token, err := a.CreateToken(usr.Id, time.Now().Add(2*time.Minute))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

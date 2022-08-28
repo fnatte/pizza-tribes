@@ -38,7 +38,7 @@ function CreateAccountPromotion() {
 function LoginPage() {
   const navigate = useNavigate();
   const onLogin = () => {
-    navigate("/");
+    navigate("/games");
   };
   const connectionState = useStore((state) => state.connectionState);
   const user = useStore((state) => state.user);

@@ -1,5 +1,9 @@
 {$HOST} {
-  handle_path /api/* {
+  handle_path /api/central/* {
+    reverse_proxy central:8080
+  }
+
+  handle_path /api/game/* {
     reverse_proxy api:8080
   }
 

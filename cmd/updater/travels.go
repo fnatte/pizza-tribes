@@ -9,11 +9,11 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/fnatte/pizza-tribes/internal/gamestate"
-	"github.com/fnatte/pizza-tribes/internal/models"
-	"github.com/fnatte/pizza-tribes/internal/protojson"
-	"github.com/fnatte/pizza-tribes/internal/redis"
+	"github.com/fnatte/pizza-tribes/internal/game"
+	"github.com/fnatte/pizza-tribes/internal/game/gamestate"
+	"github.com/fnatte/pizza-tribes/internal/game/models"
+	"github.com/fnatte/pizza-tribes/internal/game/protojson"
+	"github.com/fnatte/pizza-tribes/internal/game/redis"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/text/message"
@@ -139,7 +139,7 @@ func getGuardAwarenessBonus(gs *models.GameState) float64 {
 	return bonus
 }
 
-func completeSteal(ctx context.Context, userId string, gs *models.GameState, tx *gamestate.GameTx, r redis.RedisClient, world *internal.WorldService, travel *models.Travel, travelIndex int) error {
+func completeSteal(ctx context.Context, userId string, gs *models.GameState, tx *gamestate.GameTx, r redis.RedisClient, world *game.WorldService, travel *models.Travel, travelIndex int) error {
 	gsTarget := &models.GameState{}
 	x := travel.DestinationX
 	y := travel.DestinationY
@@ -174,8 +174,8 @@ func completeSteal(ctx context.Context, userId string, gs *models.GameState, tx 
 	}
 
 	// Calculate outcome
-	targetEducations := internal.CountTownPopulationEducations(gsTarget)
-	outcome := internal.CalculateHeist(internal.Heist{
+	targetEducations := game.CountTownPopulationEducations(gsTarget)
+	outcome := game.CalculateHeist(game.Heist{
 		Guards:      targetEducations[models.Education_GUARD],
 		Thieves:     travel.Thieves,
 		TargetCoins: gsTarget.Resources.Coins,
@@ -197,10 +197,10 @@ func completeSteal(ctx context.Context, userId string, gs *models.GameState, tx 
 
 	// Prepare return travel - but not if all thieves got caught
 	if outcome.SuccessfulThieves > 0 {
-		arrivalAt := internal.CalculateArrivalTime(
+		arrivalAt := game.CalculateArrivalTime(
 			travel.DestinationX, travel.DestinationY,
 			gs.TownX, gs.TownY,
-			internal.GetThiefSpeed(gs),
+			game.GetThiefSpeed(gs),
 		)
 
 		returnTravel := models.Travel{
@@ -272,7 +272,7 @@ func completeSteal(ctx context.Context, userId string, gs *models.GameState, tx 
 	return nil
 }
 
-func completeStealReturn(userId string, gs *models.GameState, tx *gamestate.GameTx, world *internal.WorldService, travel *models.Travel, travelIndex int) error {
+func completeStealReturn(userId string, gs *models.GameState, tx *gamestate.GameTx, world *game.WorldService, travel *models.Travel, travelIndex int) error {
 	u := tx.Users[userId]
 	u.IncrCoins(int32(travel.Coins))
 
@@ -284,8 +284,8 @@ func completeStealReturn(userId string, gs *models.GameState, tx *gamestate.Game
 	return nil
 }
 
-func completeTravels(ctx context.Context, userId string, gs *models.GameState, tx *gamestate.GameTx, r redis.RedisClient, world *internal.WorldService) error {
-	completedTravels := internal.GetCompletedTravels(gs)
+func completeTravels(ctx context.Context, userId string, gs *models.GameState, tx *gamestate.GameTx, r redis.RedisClient, world *game.WorldService) error {
+	completedTravels := game.GetCompletedTravels(gs)
 	if len(completedTravels) == 0 {
 		return nil
 	}

@@ -9,7 +9,7 @@ export type ConnectionState = {
   connected: boolean;
   connecting: boolean;
   reconnectAttempts: number;
-  error: "unknown" | "unauthorized" | false;
+  error: "unknown" | "unauthorized" | "reconnect-failed" | false;
 };
 
 export type ConnectionApi = {
@@ -44,7 +44,7 @@ const connect = (
 
     if (state.reconnectAttempts >= 100) {
       targetState = "disconnected";
-      setState({ connecting: false });
+      setState({ connecting: false, error: "reconnect-failed" });
       return;
     }
 
@@ -145,6 +145,7 @@ const connect = (
     },
     close: () => {
       targetState = "disconnected";
+      setState({ connected: false });
       if (pendingReconnectAttempt !== null) {
         window.clearTimeout(pendingReconnectAttempt);
         pendingReconnectAttempt = null;

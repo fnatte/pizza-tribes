@@ -6,14 +6,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/fnatte/pizza-tribes/internal/models"
-	"github.com/fnatte/pizza-tribes/internal/protojson"
-	"github.com/fnatte/pizza-tribes/internal/redis"
+	"github.com/fnatte/pizza-tribes/internal/game"
+	"github.com/fnatte/pizza-tribes/internal/game/models"
+	"github.com/fnatte/pizza-tribes/internal/game/protojson"
+	"github.com/fnatte/pizza-tribes/internal/game/redis"
 )
 
 func (h *handler) handleRazeBuilding(ctx context.Context, senderId string, m *models.ClientMessage_RazeBuilding) error {
-	if !internal.IsValidLotId(m.LotId) {
+	if !game.IsValidLotId(m.LotId) {
 		return errors.New("Invalid lot id")
 	}
 
@@ -43,7 +43,7 @@ func (h *handler) handleRazeBuilding(ctx context.Context, senderId string, m *mo
 
 		lot := gs.Lots[m.LotId]
 
-		buildingInfo := internal.FullGameData.Buildings[int32(lot.Building)]
+		buildingInfo := game.FullGameData.Buildings[int32(lot.Building)]
 		constructionTime := buildingInfo.LevelInfos[lot.Level].ConstructionTime * 2
 		cost := buildingInfo.LevelInfos[lot.Level].Cost / 2
 
@@ -112,7 +112,7 @@ func (h *handler) handleRazeBuilding(ctx context.Context, senderId string, m *mo
 		return fmt.Errorf("failed to place on construction queue: %w", err2)
 	}
 
-	internal.SetNextUpdate(h.rdb, ctx, senderId, &gs)
+	game.SetNextUpdate(h.rdb, ctx, senderId, &gs)
 
 	h.sendFullStateUpdate(ctx, senderId)
 
@@ -120,7 +120,7 @@ func (h *handler) handleRazeBuilding(ctx context.Context, senderId string, m *mo
 }
 
 func (h *handler) handleCancelRazeBuilding(ctx context.Context, senderId string, m *models.ClientMessage_CancelRazeBuilding) error {
-	if !internal.IsValidLotId(m.LotId) {
+	if !game.IsValidLotId(m.LotId) {
 		return errors.New("Invalid lot id")
 	}
 
@@ -176,7 +176,7 @@ func (h *handler) handleCancelRazeBuilding(ctx context.Context, senderId string,
 		return fmt.Errorf("failed to cancel raze building: %w", err2)
 	}
 
-	internal.SetNextUpdate(h.rdb, ctx, senderId, &gs)
+	game.SetNextUpdate(h.rdb, ctx, senderId, &gs)
 
 	h.sendFullStateUpdate(ctx, senderId)
 

@@ -125,7 +125,7 @@ Cypress.Commands.add("adminBatchDeleteUser", (usernames) => {
   ).then((x) => {
     expect(x.status).to.eq(207);
     x.body.users.forEach((user) => {
-      expect(user.status).to.be.within(200, 299);
+      expect(user.status).to.be.satisfy(status => (status >= 200 && status < 300) || status === 404);
     });
   });
 });
@@ -198,7 +198,7 @@ Cypress.Commands.add(
     cy.get('input[name="username"').type(username);
     cy.get('input[name="password"').type(password);
     cy.get('button[type="submit"').click();
-    cy.location("pathname").should("eq", "/");
+    cy.location("pathname").should("eq", "/games");
   }
 );
 

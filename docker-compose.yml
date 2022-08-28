@@ -9,6 +9,17 @@ services:
       - "8001:8001"
     environment:
       REDIS_ARGS: "--appendonly yes --aof-use-rdb-preamble yes"
+  central:
+    image: "ghcr.io/fnatte/pizza-tribes-central:latest"
+    volumes:
+      - central_data:/data
+    build:
+      context: .
+      target: central
+    env_file: .env
+    environment:
+      PORT: 8080
+      SQLITE_DSN: /data/pizzatribes.db
   api:
     image: "ghcr.io/fnatte/pizza-tribes-api:latest"
     build:
@@ -18,11 +29,21 @@ services:
     environment:
       PORT: 8080
       REDIS_ADDR: "redis:6379"
+  gamelet:
+    image: "ghcr.io/fnatte/pizza-tribes-gamelet:latest"
+    build:
+      context: .
+      target: gamelet
+    env_file: .env
+    environment:
+      PORT: 8080
+      REDIS_ADDR: "redis:6379"
   worker:
     image: "ghcr.io/fnatte/pizza-tribes-worker:latest"
     build:
       context: .
       target: worker
+    env_file: .env
     environment:
       REDIS_ADDR: "redis:6379"
   updater:
@@ -30,6 +51,7 @@ services:
     build:
       context: .
       target: updater
+    env_file: .env
     environment:
       REDIS_ADDR: "redis:6379"
   webapp:
@@ -39,11 +61,24 @@ services:
       target: webapp
   migrator:
     image: "ghcr.io/fnatte/pizza-tribes-migrator:latest"
+    volumes:
+      - central_data:/data
     build:
       context: .
       target: migrator
     environment:
       REDIS_ADDR: "redis:6379"
+      SQLITE_DSN: /data/pizzatribes.db
+  admin:
+    image: "ghcr.io/fnatte/pizza-tribes-admin:latest"
+    volumes:
+      - central_data:/data
+    build:
+      context: .
+      target: admin
+    environment:
+      REDIS_ADDR: "redis:6379"
+      SQLITE_DSN: /data/pizzatribes.db
   front:
     image: "ghcr.io/fnatte/pizza-tribes-front:latest"
     env_file: .env
@@ -58,3 +93,5 @@ services:
 volumes:
   redis_data:
   caddy_data:
+  central_data:
+

@@ -9,9 +9,9 @@ import (
 	"strings"
 
 	"github.com/fnatte/pizza-tribes/cmd/api/ws"
-	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/fnatte/pizza-tribes/internal/persist"
-	"github.com/fnatte/pizza-tribes/internal/redis"
+	"github.com/fnatte/pizza-tribes/internal/game"
+	"github.com/fnatte/pizza-tribes/internal/game/persist"
+	"github.com/fnatte/pizza-tribes/internal/game/redis"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog"
@@ -44,19 +44,18 @@ func main() {
 	})
 
 	// Initialize services and controllers
-	auth := internal.NewAuthService()
-	world := internal.NewWorldService(rc)
-	leaderboard := internal.NewLeaderboardService(rc)
-	userRepo := persist.NewUserRepository(rc)
+	auth := game.NewAuthService()
+	world := game.NewWorldService(rc)
+	leaderboard := game.NewLeaderboardService(rc)
+	gameUserRepo := persist.NewGameUserRepository(rc)
 	gsRepo := persist.NewGameStateRepository(rc)
 	marketRepo := persist.NewMarketRepository(rc)
-	users := internal.NewUserService(userRepo, gsRepo, world, leaderboard)
 	wsHub := ws.NewHub()
-	handler := wsHandler{rc: rc, world: world, gsRepo: gsRepo, marketRepo: marketRepo, userRepo: userRepo}
+	handler := wsHandler{rc: rc, world: world, gsRepo: gsRepo, marketRepo: marketRepo, userRepo: gameUserRepo}
 	wsEndpoint := ws.NewEndpoint(auth.Authorize, wsHub, &handler, origins)
 	poller := poller{rdb: rc, hub: wsHub}
 	ts := &TimeseriesService{r: rc, auth: auth}
-	authController := NewAuthController(rc, auth, users)
+
 	worldController := &WorldController{auth: auth, world: world}
 	userController := &UserController{auth: auth, r: rc, gsRepo: gsRepo}
 	leaderboardController := &LeaderboardController{
@@ -69,7 +68,6 @@ func main() {
 	r := mux.NewRouter()
 	r.Handle("/ws", wsEndpoint)
 	r.HandleFunc("/gamedata", GameDataHandler)
-	registerSubrouter(r, "/auth", authController.Handler())
 	registerSubrouter(r, "/timeseries", ts.Handler())
 	registerSubrouter(r, "/world", worldController.Handler())
 	registerSubrouter(r, "/user", userController.Handler())

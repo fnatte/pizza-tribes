@@ -7,9 +7,9 @@ import (
 	"math"
 	"time"
 
-	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/fnatte/pizza-tribes/internal/gamestate"
-	"github.com/fnatte/pizza-tribes/internal/models"
+	"github.com/fnatte/pizza-tribes/internal/game"
+	"github.com/fnatte/pizza-tribes/internal/game/gamestate"
+	"github.com/fnatte/pizza-tribes/internal/game/models"
 )
 
 const MAX_TAP_STREAK = 12
@@ -51,7 +51,7 @@ func getTapResetTime(gs *models.GameState) time.Duration {
 }
 
 func (h *handler) handleTap(ctx context.Context, userId string, m *models.ClientMessage_Tap) error {
-	if !internal.IsValidLotId(m.LotId) {
+	if !game.IsValidLotId(m.LotId) {
 		return errors.New("Invalid lot id")
 	}
 

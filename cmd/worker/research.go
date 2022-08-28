@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/fnatte/pizza-tribes/internal/gamestate"
-	"github.com/fnatte/pizza-tribes/internal/models"
+	"github.com/fnatte/pizza-tribes/internal/game"
+	"github.com/fnatte/pizza-tribes/internal/game/gamestate"
+	"github.com/fnatte/pizza-tribes/internal/game/models"
 	"github.com/rs/zerolog/log"
 )
 
@@ -19,7 +19,7 @@ func (h *handler) handleStartResearch(ctx context.Context, userId string, m *mod
 
 		var r *models.ResearchInfo
 		var ok bool
-		if r, ok = internal.FullGameData.Research[int32(m.Discovery)]; !ok {
+		if r, ok = game.FullGameData.Research[int32(m.Discovery)]; !ok {
 			return fmt.Errorf("discovery not found")
 		}
 
@@ -80,7 +80,7 @@ func (h *handler) handleBuyGeniusFlash(ctx context.Context, userId string, m *mo
 			return fmt.Errorf("not current genius id")
 		}
 
-		costs := internal.FullGameData.GeniusFlashCosts
+		costs := game.FullGameData.GeniusFlashCosts
 		if nextId >= len(costs) {
 			return fmt.Errorf("invalid genius id")
 		}

@@ -3,10 +3,10 @@ package main
 import (
 	"time"
 
-	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/fnatte/pizza-tribes/internal/gamestate"
-	"github.com/fnatte/pizza-tribes/internal/models"
-	"github.com/fnatte/pizza-tribes/internal/mtime"
+	"github.com/fnatte/pizza-tribes/internal/game"
+	"github.com/fnatte/pizza-tribes/internal/game/gamestate"
+	"github.com/fnatte/pizza-tribes/internal/game/models"
+	"github.com/fnatte/pizza-tribes/internal/game/mtime"
 	"github.com/rs/zerolog/log"
 )
 
@@ -29,7 +29,7 @@ func extrapolate(userId string, gs *models.GameState, tx *gamestate.GameTx, worl
 
 func calculateExtrapolateChanges(gs *models.GameState, worldState *models.WorldState, globalDemandScore float64, userCount int64) extrapolateChanges {
 	// No changes if there are no population
-	if internal.CountTownPopulation(gs) == 0 {
+	if game.CountTownPopulation(gs) == 0 {
 		return extrapolateChanges{}
 	}
 
@@ -44,7 +44,7 @@ func calculateExtrapolateChanges(gs *models.GameState, worldState *models.WorldS
 
 	rush, offpeak := mtime.GetRush(then, now.Unix())
 
-	stats := internal.CalculateStats(gs, globalDemandScore, worldState, userCount)
+	stats := game.CalculateStats(gs, globalDemandScore, worldState, userCount)
 
 	demand := int32(stats.DemandOffpeak*float64(offpeak) +
 		stats.DemandRushHour*float64(rush))
@@ -53,8 +53,8 @@ func calculateExtrapolateChanges(gs *models.GameState, worldState *models.WorldS
 	pizzasAvailable := gs.Resources.Pizzas + pizzasProduced
 
 	maxSellsByMice := int32(stats.MaxSellsByMicePerSecond * dt)
-	pizzasSold := internal.MinInt32(demand,
-		internal.MinInt32(maxSellsByMice, pizzasAvailable))
+	pizzasSold := game.MinInt32(demand,
+		game.MinInt32(maxSellsByMice, pizzasAvailable))
 
 	pizzaPrice :=  gs.GetValidPizzaPrice()
 

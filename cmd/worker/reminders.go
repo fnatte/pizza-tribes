@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"firebase.google.com/go/messaging"
-	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/fnatte/pizza-tribes/internal/persist"
-	"github.com/fnatte/pizza-tribes/internal/redis"
+	"github.com/fnatte/pizza-tribes/internal/game"
+	"github.com/fnatte/pizza-tribes/internal/game/persist"
+	"github.com/fnatte/pizza-tribes/internal/game/redis"
 	"github.com/rs/zerolog/log"
 )
 
@@ -85,7 +85,7 @@ func makeAvailableTapsMessage(userId string) *messaging.Message {
 	}
 }
 
-func handleTapReminder(ctx context.Context, rc redis.RedisClient, u persist.UserRepository, w persist.WorldRepository, r *internal.Reminder) {
+func handleTapReminder(ctx context.Context, rc redis.RedisClient, u persist.GameUserRepository, w persist.WorldRepository, r *game.Reminder) {
 	worldState, err := w.GetState(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to perform update")
@@ -123,15 +123,15 @@ func handleTapReminder(ctx context.Context, rc redis.RedisClient, u persist.User
 			// If user was not active last hour either the streak is over,
 			// so send a more suitable push notification.
 			if t.Before(time.Now().Truncate(time.Hour).Add(-time.Hour - time.Minute)) {
-				internal.SchedulePushNotification(ctx, rc, makeAvailableTapsMessage(user), time.Now())
+				game.SchedulePushNotification(ctx, rc, makeAvailableTapsMessage(user), time.Now())
 			} else {
-				internal.SchedulePushNotification(ctx, rc, makeKeepStreakMessage(user), time.Now())
+				game.SchedulePushNotification(ctx, rc, makeKeepStreakMessage(user), time.Now())
 			}
 		}
 	}
 }
 
-func handleActivityReminder(ctx context.Context, rc redis.RedisClient, u persist.UserRepository, w persist.WorldRepository, r *internal.Reminder) {
+func handleActivityReminder(ctx context.Context, rc redis.RedisClient, u persist.GameUserRepository, w persist.WorldRepository, r *game.Reminder) {
 	worldState, err := w.GetState(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to perform update")
@@ -164,24 +164,24 @@ func handleActivityReminder(ctx context.Context, rc redis.RedisClient, u persist
 		// Check if user has not been active for over 24 hours
 		if t.Before(time.Now().Add(-24 * time.Hour)) {
 			log.Debug().Str("userId", user).Msg("Scheduling activity reminder push notification")
-			internal.SchedulePushNotification(ctx, rc, makeActivityReminderMessage(user), time.Now())
+			game.SchedulePushNotification(ctx, rc, makeActivityReminderMessage(user), time.Now())
 		}
 	}
 }
 
-func startRemindersWorker(ctx context.Context, rc redis.RedisClient, u persist.UserRepository, w persist.WorldRepository) {
-	internal.ScheduleReminder(ctx, rc, &internal.Reminder{
+func startRemindersWorker(ctx context.Context, rc redis.RedisClient, u persist.GameUserRepository, w persist.WorldRepository) {
+	game.ScheduleReminder(ctx, rc, &game.Reminder{
 		Id:       "tap-reminder",
 		Interval: time.Hour,
 		Offset:   20 * time.Minute,
 	})
-	internal.ScheduleReminder(ctx, rc, &internal.Reminder{
+	game.ScheduleReminder(ctx, rc, &game.Reminder{
 		Id:       "activity-reminder",
 		Interval: time.Hour,
 		Offset:   40 * time.Minute,
 	})
 
-	go internal.HandleReminders(ctx, rc, func(r *internal.Reminder) {
+	go game.HandleReminders(ctx, rc, func(r *game.Reminder) {
 		log.Debug().Str("id", r.Id).Msg("Handle reminder")
 		switch r.Id {
 		case "tap-reminder":

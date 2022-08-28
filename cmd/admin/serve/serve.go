@@ -8,8 +8,11 @@ import (
 	"strings"
 
 	"github.com/fnatte/pizza-tribes/cmd/admin/db"
-	"github.com/fnatte/pizza-tribes/internal/gamestate"
-	"github.com/fnatte/pizza-tribes/internal/persist"
+	"github.com/fnatte/pizza-tribes/cmd/admin/services"
+	"github.com/fnatte/pizza-tribes/internal/game"
+	"github.com/fnatte/pizza-tribes/internal/game/gamestate"
+	"github.com/fnatte/pizza-tribes/internal/game/persist"
+	persistsql "github.com/fnatte/pizza-tribes/internal/game/persist/sql"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
@@ -34,17 +37,22 @@ func Serve() {
 	}
 
 	rc := db.NewRedisClient()
+	sqldb := db.NewSqlClient()
 
 	gsRepo := persist.NewGameStateRepository(rc)
 	reportsRepo := persist.NewReportsRepository(rc)
-	userRepo := persist.NewUserRepository(rc)
 	notifyRepo := persist.NewNotifyRepository(rc)
 	worldRepo := persist.NewWorldRepository(rc)
+	gameUserRepo := persist.NewGameUserRepository(rc)
 	// marketRepo := persist.NewMarketRepository(rc)
-	updater := gamestate.NewUpdater(gsRepo, reportsRepo, userRepo, notifyRepo, worldRepo)
+	world := game.NewWorldService(rc)
+	userRepo := persistsql.NewUserRepo(sqldb)
+	updater := gamestate.NewUpdater(gsRepo, reportsRepo, gameUserRepo, notifyRepo, worldRepo)
 
-	userController := NewUserController(rc, updater)
-	testController := NewTestController(rc)
+	userDeleter := services.NewUserDeleter(gameUserRepo, gsRepo, world, userRepo)
+
+	userController := NewUserController(rc, sqldb, updater, userDeleter)
+	testController := NewTestController(rc, sqldb, userDeleter)
 
 	r := mux.NewRouter()
 	r.PathPrefix("/users").Handler(userController.Handler())

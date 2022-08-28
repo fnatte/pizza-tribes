@@ -3,8 +3,8 @@ package main
 import (
 	"time"
 
-	"github.com/fnatte/pizza-tribes/internal/gamestate"
-	"github.com/fnatte/pizza-tribes/internal/models"
+	"github.com/fnatte/pizza-tribes/internal/game/gamestate"
+	"github.com/fnatte/pizza-tribes/internal/game/models"
 	"github.com/rs/zerolog/log"
 )
 

@@ -8,12 +8,12 @@ import (
 	"os"
 	"time"
 
-	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/fnatte/pizza-tribes/internal/gamestate"
-	"github.com/fnatte/pizza-tribes/internal/models"
-	"github.com/fnatte/pizza-tribes/internal/persist"
-	"github.com/fnatte/pizza-tribes/internal/redis"
-	"github.com/fnatte/pizza-tribes/internal/ws"
+	"github.com/fnatte/pizza-tribes/internal/game"
+	"github.com/fnatte/pizza-tribes/internal/game/gamestate"
+	"github.com/fnatte/pizza-tribes/internal/game/models"
+	"github.com/fnatte/pizza-tribes/internal/game/persist"
+	"github.com/fnatte/pizza-tribes/internal/game/redis"
+	"github.com/fnatte/pizza-tribes/internal/game/ws"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -38,13 +38,13 @@ func getPopulationKey(edu models.Education) (string, error) {
 
 type updater struct {
 	r           redis.RedisClient
-	world       *internal.WorldService
-	leaderboard *internal.LeaderboardService
+	world       *game.WorldService
+	leaderboard *game.LeaderboardService
 	gsRepo      persist.GameStateRepository
 	reportsRepo persist.ReportsRepository
 	worldRepo   persist.WorldRepository
 	marketRepo  persist.MarketRepository
-	userRepo    persist.UserRepository
+	userRepo    persist.GameUserRepository
 	updater     gamestate.Updater
 }
 
@@ -124,14 +124,14 @@ func (u *updater) update(ctx context.Context, userId string) {
 }
 
 func (u *updater) scheduleNextUpdateAfterError(ctx context.Context, userId string) {
-	_, err := internal.SetNextUpdateTo(u.r, ctx, userId, time.Now().Add(2*time.Second).UnixNano())
+	_, err := game.SetNextUpdateTo(u.r, ctx, userId, time.Now().Add(2*time.Second).UnixNano())
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to set next update after error")
 	}
 }
 
 func (u *updater) scheduleNextUpdate(ctx context.Context, userId string, gs *models.GameState) {
-	_, err := internal.SetNextUpdate(u.r, ctx, userId, gs)
+	_, err := game.SetNextUpdate(u.r, ctx, userId, gs)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to set next update")
 	}
@@ -180,7 +180,7 @@ func (u *updater) postProcessPatch(ctx context.Context, userId string, txu *game
 		}
 
 		// Update user demand score
-		demandScore := internal.CalculateDemandScore(txu.Gs)
+		demandScore := game.CalculateDemandScore(txu.Gs)
 		if err = u.marketRepo.SetUserDemandScore(ctx, userId, demandScore); err != nil {
 			log.Error().Err(err).Msg("Failed to set user demand score")
 		}
@@ -213,7 +213,7 @@ func addTimeseriesDataPoints(ctx context.Context, userId string, txu *gamestate.
 		return nil
 	}
 
-	err := internal.EnsureTimeseries(ctx, r, userId)
+	err := game.EnsureTimeseries(ctx, r, userId)
 	if err != nil {
 		return fmt.Errorf("failed to ensure timeseries: %w", err)
 	}
@@ -223,14 +223,14 @@ func addTimeseriesDataPoints(ctx context.Context, userId string, txu *gamestate.
 	pizzas := txu.Gs.Resources.Pizzas
 
 	if txu.CoinsChanged {
-		err = internal.AddMetricCoins(ctx, r, userId, time, int64(coins))
+		err = game.AddMetricCoins(ctx, r, userId, time, int64(coins))
 		if err != nil {
 			return fmt.Errorf("failed to add coins metric: %w", err)
 		}
 	}
 
 	if txu.PizzasChanged {
-		err = internal.AddMetricPizzas(ctx, r, userId, time, int64(pizzas))
+		err = game.AddMetricPizzas(ctx, r, userId, time, int64(pizzas))
 		if err != nil {
 			return fmt.Errorf("failed to add pizzas metric: %w", err)
 		}
@@ -240,7 +240,7 @@ func addTimeseriesDataPoints(ctx context.Context, userId string, txu *gamestate.
 }
 
 func sendReports(ctx context.Context, r redis.RedisClient, userId string) error {
-	reports, err := internal.GetReports(ctx, r, userId)
+	reports, err := game.GetReports(ctx, r, userId)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to send updated reports")
 		return fmt.Errorf("failed to get reports: %w", err)
@@ -277,7 +277,7 @@ func (u *updater) getStats(ctx context.Context, userId string) (*models.Stats, e
 		return nil, fmt.Errorf("failed to send full state update: %w", err)
 	}
 
-	return internal.CalculateStats(gs, globalDemandScore, worldState, userCount), nil
+	return game.CalculateStats(gs, globalDemandScore, worldState, userCount), nil
 }
 
 func (u *updater) next(ctx context.Context) (string, error) {
@@ -337,7 +337,7 @@ func handleStarted(ctx context.Context, u *updater) {
 	time.Sleep(1 * time.Millisecond)
 }
 
-func handleStarting(ctx context.Context, world *internal.WorldService, worldState *models.WorldState) {
+func handleStarting(ctx context.Context, world *game.WorldService, worldState *models.WorldState, r redis.RedisClient) {
 	if time.Now().Unix() >= worldState.StartTime {
 		log.Info().Msg("Starting new round")
 		// Let's get this game started.
@@ -347,6 +347,25 @@ func handleStarting(ctx context.Context, world *internal.WorldService, worldStat
 			time.Sleep(1 * time.Second)
 			return
 		}
+
+		worldState, err = world.GetState(ctx)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to get world state after started so it is not possible to annonuce")
+			time.Sleep(1 * time.Second)
+			return
+		}
+
+		// Announce new world state to all connected players
+		err = ws.Send(ctx, r, "everyone", &models.ServerMessage{
+			Id: xid.New().String(),
+			Payload: &models.ServerMessage_WorldState{
+				WorldState: worldState,
+			},
+		})
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to annonuce started world state")
+		}
+
 	} else {
 		time.Sleep(1 * time.Second)
 	}
@@ -376,11 +395,11 @@ func main() {
 		rc.AddDebugHook()
 	}
 
-	world := internal.NewWorldService(rc)
-	leaderboard := internal.NewLeaderboardService(rc)
+	world := game.NewWorldService(rc)
+	leaderboard := game.NewLeaderboardService(rc)
 	gsRepo := persist.NewGameStateRepository(rc)
 	reportsRepo := persist.NewReportsRepository(rc)
-	userRepo := persist.NewUserRepository(rc)
+	userRepo := persist.NewGameUserRepository(rc)
 	notifyRepo := persist.NewNotifyRepository(rc)
 	worldRepo := persist.NewWorldRepository(rc)
 	marketRepo := persist.NewMarketRepository(rc)
@@ -405,7 +424,7 @@ func main() {
 			handleStarted(ctx, &u)
 			break
 		case *models.WorldState_Starting_:
-			handleStarting(ctx, world, worldState)
+			handleStarting(ctx, world, worldState, rc)
 			break
 		case *models.WorldState_Ended_:
 			time.Sleep(1 * time.Second)

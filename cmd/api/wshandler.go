@@ -5,26 +5,26 @@ import (
 	"fmt"
 
 	"github.com/fnatte/pizza-tribes/cmd/api/ws"
-	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/fnatte/pizza-tribes/internal/models"
-	"github.com/fnatte/pizza-tribes/internal/persist"
-	"github.com/fnatte/pizza-tribes/internal/protojson"
-	"github.com/fnatte/pizza-tribes/internal/redis"
+	"github.com/fnatte/pizza-tribes/internal/game"
+	"github.com/fnatte/pizza-tribes/internal/game/models"
+	"github.com/fnatte/pizza-tribes/internal/game/persist"
+	"github.com/fnatte/pizza-tribes/internal/game/protojson"
+	"github.com/fnatte/pizza-tribes/internal/game/redis"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog/log"
 )
 
 type wsHandler struct {
 	rc         redis.RedisClient
-	world      *internal.WorldService
+	world      *game.WorldService
 	gsRepo     persist.GameStateRepository
 	marketRepo persist.MarketRepository
-	userRepo   persist.UserRepository
+	userRepo   persist.GameUserRepository
 }
 
 func (h *wsHandler) HandleMessage(ctx context.Context, m []byte, c *ws.Client) {
 	log.Debug().Str("userId", c.UserId()).Msg("Received message")
-	err := h.rc.RPush(ctx, "wsin", &internal.IncomingMessage{
+	err := h.rc.RPush(ctx, "wsin", &game.IncomingMessage{
 		SenderId: c.UserId(),
 		Body:     string(m),
 	}).Err()
@@ -81,7 +81,7 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 	}
 
 	// Make sure the user is enqueued for updates
-	_, err = internal.SetNextUpdate(h.rc, ctx, c.UserId(), gs)
+	_, err = game.SetNextUpdate(h.rc, ctx, c.UserId(), gs)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to ensure user updates")
 		return err
@@ -134,7 +134,7 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 
 		c.Send(b)
 
-		msg = internal.CalculateStats(gs, globalDemandScore, worldState, userCount).ToServerMessage()
+		msg = game.CalculateStats(gs, globalDemandScore, worldState, userCount).ToServerMessage()
 		b, err = protojson.Marshal(msg)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to send init stats")
@@ -147,7 +147,7 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 
 	// Send reports
 	go (func() {
-		r, err := internal.GetReports(ctx, h.rc, c.UserId())
+		r, err := game.GetReports(ctx, h.rc, c.UserId())
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to send inital reports")
 			return

@@ -18,7 +18,7 @@ import { MouseAppearance } from "./generated/appearance";
 import { generateId } from "./utils";
 import { enablePatches, produce } from "immer";
 import { queryClient } from "./queryClient";
-import { apiFetch } from "./api";
+import { apiFetch, centralApiFetch } from "./api";
 import { extractMessage } from "./protobuf/extractMessage";
 import { reflectionMergePartial } from "./protobuf/protobuf-ts/reflectionMergePartial";
 
@@ -134,7 +134,7 @@ export const useStore = create<State>((set, get) => ({
     get().connection?.close();
     set(resetAuthState);
     resetQueryDataState();
-    await apiFetch("/auth/logout");
+    await centralApiFetch("/auth/logout");
   },
   tap: (lotId: string) => {
     set((state) =>

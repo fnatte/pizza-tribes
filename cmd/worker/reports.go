@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 
-	"github.com/fnatte/pizza-tribes/internal"
-	"github.com/fnatte/pizza-tribes/internal/models"
+	"github.com/fnatte/pizza-tribes/internal/game"
+	"github.com/fnatte/pizza-tribes/internal/game/models"
 )
 
 func (h *handler) handleReadReport(ctx context.Context, userId string, m *models.ClientMessage_ReadReport) error {
-	return internal.MarkReportAsRead(ctx, h.rdb, userId, m.Id)
+	return game.MarkReportAsRead(ctx, h.rdb, userId, m.Id)
 }
