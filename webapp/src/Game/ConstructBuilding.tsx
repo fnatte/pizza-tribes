@@ -89,11 +89,14 @@ const ConstructBuilding = ({ lotId }: Props) => {
 
           // First construction of a building types can have a discount
           if (buildingCounts[id] + buildingConstrCounts[id] === 0) {
-            discountCost = buildings[id].levelInfos[0].firstCost?.value;
-            reducedTime =
-              buildings[id].levelInfos[0].firstConstructionTime?.value;
+            const levelInfo = buildings[id].levelInfos[0];
+            discountCost = levelInfo.firstCost?.value;
+            reducedTime = levelInfo.firstConstructionTime?.value;
             if (discountCost !== undefined || reducedTime !== undefined) {
-              discountText = "First one is free and fast!";
+              discountText =
+                discountCost === 0
+                  ? "First one is free and fast!"
+                  : "First one is cheaper and fast";
             }
           }
 
@@ -110,11 +113,7 @@ const ConstructBuilding = ({ lotId }: Props) => {
 
           return (
             <div
-              className={classnames(
-                "flex",
-                "gap-4",
-                "mb-8",
-              )}
+              className={classnames("flex", "gap-4", "mb-8")}
               data-cy="construct-building"
               key={id}
             >
@@ -144,15 +143,23 @@ const ConstructBuilding = ({ lotId }: Props) => {
                               >
                                 {numberFormat.format(
                                   buildings[id].levelInfos[0].cost
-                                )}<Nbsp />coins
+                                )}
+                                <Nbsp />
+                                coins
                               </span>
-                              <span>{discountCost}<Nbsp />coins</span>
+                              <span>
+                                {discountCost}
+                                <Nbsp />
+                                coins
+                              </span>
                             </>
                           ) : (
                             <span>
                               {numberFormat.format(
                                 buildings[id].levelInfos[0].cost
-                              )}<Nbsp />coins
+                              )}
+                              <Nbsp />
+                              coins
                             </span>
                           )}
                         </span>
