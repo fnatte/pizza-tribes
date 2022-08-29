@@ -600,57 +600,57 @@ var FullGameData = GameData{
 					},
 				},
 				{
-					Cost:             3_500,
+					Cost:             2_500,
 					ConstructionTime: 450,
 					Employer: &Employer{
 						MaxWorkforce: 4,
 					},
 				},
 				{
-					Cost:             10_000,
+					Cost:             6_500,
 					ConstructionTime: 900,
 					Employer: &Employer{
 						MaxWorkforce: 7,
 					},
 				},
 				{
-					Cost:             20_000,
+					Cost:             15_500,
 					ConstructionTime: 3600,
 					Employer: &Employer{
 						MaxWorkforce: 12,
 					},
 				},
 				{
-					Cost:             40_000,
+					Cost:             36_500,
 					ConstructionTime: 2 * 3600,
 					Employer: &Employer{
 						MaxWorkforce: 20,
 					},
 				},
 				{
-					Cost:             85_000,
-					ConstructionTime: 6 * 3600,
+					Cost:             78_000,
+					ConstructionTime: 3 * 3600,
 					Employer: &Employer{
 						MaxWorkforce: 35,
 					},
 				},
 				{
-					Cost:             180_000,
-					ConstructionTime: 14 * 3600,
+					Cost:             160_000,
+					ConstructionTime: 4 * 3600,
 					Employer: &Employer{
 						MaxWorkforce: 60,
 					},
 				},
 				{
 					Cost:             370_000,
-					ConstructionTime: 24 * 3600,
+					ConstructionTime: 6 * 3600,
 					Employer: &Employer{
 						MaxWorkforce: 110,
 					},
 				},
 				{
 					Cost:             750_000,
-					ConstructionTime: 36 * 3600,
+					ConstructionTime: 8 * 3600,
 					Employer: &Employer{
 						MaxWorkforce: 200,
 					},
@@ -678,21 +678,21 @@ var FullGameData = GameData{
 					},
 				},
 				{
-					Cost:             5_500,
+					Cost:             4_250,
 					ConstructionTime: 1 * 1200,
 					Employer: &Employer{
 						MaxWorkforce: 5,
 					},
 				},
 				{
-					Cost:             18_500,
+					Cost:             16_500,
 					ConstructionTime: 3 * 1200,
 					Employer: &Employer{
 						MaxWorkforce: 9,
 					},
 				},
 				{
-					Cost:             40_000,
+					Cost:             38_000,
 					ConstructionTime: 8 * 1200,
 					Employer: &Employer{
 						MaxWorkforce: 15,
@@ -700,21 +700,21 @@ var FullGameData = GameData{
 				},
 				{
 					Cost:             95_000,
-					ConstructionTime: 14 * 3600,
+					ConstructionTime: 5 * 3600,
 					Employer: &Employer{
 						MaxWorkforce: 25,
 					},
 				},
 				{
 					Cost:             200_000,
-					ConstructionTime: 25 * 3600,
+					ConstructionTime: 8 * 3600,
 					Employer: &Employer{
 						MaxWorkforce: 40,
 					},
 				},
 				{
 					Cost:             420_000,
-					ConstructionTime: 40 * 3600,
+					ConstructionTime: 12 * 3600,
 					Employer: &Employer{
 						MaxWorkforce: 70,
 					},
@@ -811,38 +811,52 @@ var FullGameData = GameData{
 			MaxCount:    wrapperspb.Int32(1),
 			LevelInfos: []*BuildingInfo_LevelInfo{
 				{
-					Cost:             1 * 30_000,
+					Cost:             1 * 25_000,
 					ConstructionTime: 1 * 3600,
 					Employer: &Employer{
-						MaxWorkforce: 3,
+						MaxWorkforce: 2,
 					},
 				},
 				{
-					Cost:             2 * 30_000,
+					Cost:             2 * 25_000,
 					ConstructionTime: 2 * 3600,
 					Employer: &Employer{
-						MaxWorkforce: 6,
+						MaxWorkforce: 5,
 					},
 				},
 				{
-					Cost:             5 * 30_000,
-					ConstructionTime: 8 * 3600,
+					Cost:             4 * 25_000,
+					ConstructionTime: 3 * 3600,
 					Employer: &Employer{
-						MaxWorkforce: 12,
+						MaxWorkforce: 10,
 					},
 				},
 				{
-					Cost:             12 * 30_000,
-					ConstructionTime: 20 * 3600,
+					Cost:             8 * 25_000,
+					ConstructionTime: 5 * 3600,
 					Employer: &Employer{
-						MaxWorkforce: 25,
+						MaxWorkforce: 18,
 					},
 				},
 				{
-					Cost:             30 * 30_000,
-					ConstructionTime: 48 * 3600,
+					Cost:             16 * 25_000,
+					ConstructionTime: 7 * 3600,
 					Employer: &Employer{
-						MaxWorkforce: 55,
+						MaxWorkforce: 30,
+					},
+				},
+				{
+					Cost:             32 * 25_000,
+					ConstructionTime: 9 * 3600,
+					Employer: &Employer{
+						MaxWorkforce: 45,
+					},
+				},
+				{
+					Cost:             60 * 25_000,
+					ConstructionTime: 12 * 3600,
+					Employer: &Employer{
+						MaxWorkforce: 65,
 					},
 				},
 			},
@@ -853,8 +867,8 @@ var FullGameData = GameData{
 			MaxCount:    wrapperspb.Int32(1),
 			LevelInfos: []*BuildingInfo_LevelInfo{
 				{
-					Cost:             100_000,
-					ConstructionTime: 9600,
+					Cost:             50_000,
+					ConstructionTime: 7200,
 				},
 			},
 		},
