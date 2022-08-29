@@ -119,6 +119,9 @@ var setGameStartTimeCmd = &cobra.Command{
 				os.Exit(1)
 				return
 			}
+
+			fmt.Printf("Start time set to %s\n", time.Unix(startTime, 0).Format(time.RFC3339))
+
 			break
 		}
 	},
