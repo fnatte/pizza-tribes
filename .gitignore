@@ -1,5 +1,6 @@
 out
 internal/models/*.pb.go
+pizzatribes.db
 .env
 .ipynb_checkpoints
 .DS_Store
