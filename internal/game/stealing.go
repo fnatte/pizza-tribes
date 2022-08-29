@@ -42,7 +42,7 @@ func CalculateHeist(h Heist, rsrc rand.Source) HeistOutcome {
 	guardsf = float64(guards)
 	thievesf := float64(thieves)
 
-	guardsp := guardsf * (h.GuardEfficiencyBonus + 1) / 2
+	guardsp := guardsf * (h.GuardEfficiencyBonus + 1) / 3
 	thievesp := thievesf * (h.ThiefEvadeBonus + 1)
 
 	dist = distuv.Binomial{
@@ -51,7 +51,7 @@ func CalculateHeist(h Heist, rsrc rand.Source) HeistOutcome {
 		Src: rsrc,
 	}
 	successfulThieves := int32(dist.Rand())
-	caughtThieves := thieves - successfulThieves
+	caughtThieves := MinInt32(thieves - successfulThieves, guards)
 	guardsProtectingLoot := float64(MaxInt32(guards-caughtThieves, 0))
 	thiefEfficiency := 0.5 + 0.5/(1+math.Pow(guardsProtectingLoot/12, 0.7))
 
