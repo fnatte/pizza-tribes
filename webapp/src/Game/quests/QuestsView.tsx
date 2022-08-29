@@ -62,19 +62,22 @@ function QuestRewardSection({
           </div>
         )}
         {hasOneOfItems && (
-          <div className="flex gap-2 items-center">
-            <span className="mr-4">Pick one</span>
-            {quest.reward?.oneOfItems.map((item) => (
-              <button
-                key={item}
-                className={classnames("bg-white p-2 border", {
-                  ring: selectedReward === item,
-                })}
-                onClick={() => setSelectedReward(item)}
-              >
-                <MouseImagePart id={item} />
-              </button>
-            ))}
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="mr-4">{canClaimReward ? "Pick one" : "One of"}</span>
+            <div className="flex gap-2 items-center">
+              {quest.reward?.oneOfItems.map((item) => (
+                <button
+                  key={item}
+                  className={classnames("bg-white p-2 border", {
+                    ring: selectedReward === item,
+                  })}
+                  onClick={() => setSelectedReward(item)}
+                  disabled={!canClaimReward}
+                >
+                  <MouseImagePart id={item} />
+                </button>
+              ))}
+            </div>
           </div>
         )}
         {questState.claimedReward && (

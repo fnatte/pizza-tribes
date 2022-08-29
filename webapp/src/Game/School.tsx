@@ -114,7 +114,7 @@ const SchoolEducation: React.VFC<{
       <div style={{ width: 110 }}>
         {SvgImage ? <SvgImage /> : <PlaceholderImage />}
       </div>
-      <div className={classnames("ml-6", "lg:ml-8")}>
+      <div className={classnames("ml-6", "lg:ml-8", "bg-green-100")}>
         <div className={title} data-cy="school-education-title">
           {educationInfo.title}
         </div>
@@ -151,7 +151,7 @@ const SchoolEducation: React.VFC<{
           noValidate
         >
           <input
-            className={classnames("w-20", "mr-2", "text-right")}
+            className="w-16 xxs:w-20 mr-2 text-right"
             type="number"
             min={0}
             max={max}

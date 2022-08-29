@@ -18,10 +18,11 @@ import { ReactComponent as SvgSchool } from "../../images/school.svg";
 import { ReactComponent as SvgMarketingHQ } from "../../images/marketing-hq.svg";
 import { ReactComponent as SvgResearchInstitute } from "../../images/research-institute.svg";
 import { ReactComponent as SvgTownCentre } from "../../images/town-centre.svg";
+import { Nbsp } from "./Nbsp";
 
 const title = classnames("text-lg", "md:text-xl", "mb-2");
-const label = classnames("text-xs", "md:text-sm", "mr-1");
-const value = classnames("text-sm", "md:text-lg", "ml-1");
+const label = classnames("text-xs", "md:text-sm", "mr-1", "whitespace-nowrap");
+const value = classnames("text-sm", "md:text-lg", "ml-1", "whitespace-nowrap");
 
 const svgs: Record<
   Building,
@@ -109,7 +110,11 @@ const ConstructBuilding = ({ lotId }: Props) => {
 
           return (
             <div
-              className={classnames("flex", "flex-wrap", "gap-4", "mb-8")}
+              className={classnames(
+                "flex",
+                "gap-4",
+                "mb-8",
+              )}
               data-cy="construct-building"
               key={id}
             >
@@ -139,17 +144,15 @@ const ConstructBuilding = ({ lotId }: Props) => {
                               >
                                 {numberFormat.format(
                                   buildings[id].levelInfos[0].cost
-                                )}{" "}
-                                coins
+                                )}<Nbsp />coins
                               </span>
-                              <span>{discountCost} coins</span>
+                              <span>{discountCost}<Nbsp />coins</span>
                             </>
                           ) : (
                             <span>
                               {numberFormat.format(
                                 buildings[id].levelInfos[0].cost
-                              )}{" "}
-                              coins
+                              )}<Nbsp />coins
                             </span>
                           )}
                         </span>
