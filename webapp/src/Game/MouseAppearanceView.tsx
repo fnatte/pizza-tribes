@@ -53,6 +53,7 @@ export default function MouseAppearanceView() {
   const onSave = (appearance: MouseAppearance) => {
     saveMouseAppearance(id, appearance);
     navigate(`/mouse/${id}`);
+    window.scrollTo(0, 0);
   };
 
   return (

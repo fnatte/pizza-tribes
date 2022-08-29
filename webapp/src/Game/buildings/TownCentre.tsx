@@ -54,7 +54,12 @@ function MouseTable({ className }: { className?: string }) {
                   : educations[mouse.education].title}
               </td>
               <td className="p-2">
-                <Link to={`/mouse/${id}`}>
+                <Link
+                  to={`/mouse/${id}`}
+                  onClick={() => {
+                    window.scrollTo(0, 0);
+                  }}
+                >
                   <button className={classnames(smallPrimaryButton)}>
                     Visit
                   </button>

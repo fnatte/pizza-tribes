@@ -8,6 +8,7 @@ import (
 	"github.com/fnatte/pizza-tribes/internal/game"
 	"github.com/fnatte/pizza-tribes/internal/game/models"
 	"github.com/rs/xid"
+	"github.com/rs/zerolog/log"
 )
 
 type GameTx_User struct {
@@ -212,7 +213,11 @@ func (u *GameTx_User) AppendMessage(val *messaging.Message) {
 }
 
 func (u *GameTx_User) SetQuestCompleted(questId string) {
-	if !u.Gs.Quests[questId].Completed {
+	if u.Gs.Quests[questId] == nil {
+		log.Warn().Str("questId", questId).Msgf("Quest %s completed before being available", questId)
+		u.Gs.Quests[questId] = &models.QuestState{ Completed: true }
+		u.PatchMask.AppendPath(fmt.Sprintf("quests.%s", questId))
+	} else if !u.Gs.Quests[questId].Completed {
 		u.Gs.Quests[questId].Completed = true
 		u.PatchMask.AppendPath(fmt.Sprintf("quests.%s.completed", questId))
 	}

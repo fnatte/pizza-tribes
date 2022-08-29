@@ -202,6 +202,11 @@ func (h *handler) handleSetAmbassadorMouse(ctx context.Context, userId string, m
 
 		tx.Users[userId].SetAmbassadorMouse(m.MouseId)
 
+		// Complete the assign ambassador quest
+		if q, ok := gs.Quests["15"]; ok && !q.Completed {
+			tx.Users[userId].SetQuestCompleted("15")
+		}
+
 		return nil
 	})
 

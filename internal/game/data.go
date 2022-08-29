@@ -1,7 +1,6 @@
 package game
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal/game/models"
@@ -950,8 +949,7 @@ var FullGameData = GameData{
 			Title:       "It takes all kinds to make a tribe",
 			Description: "Your tribe is made up of individuals. Find the Town Centre, visit a mouse and change its name.",
 			Reward: &models.Quest_Reward{
-				Coins:  450,
-				Pizzas: 75,
+				OneOfItems: []string{"hat1", "cap1", "bucketHat1"},
 			},
 			Order: 3,
 		},
@@ -963,7 +961,7 @@ var FullGameData = GameData{
 				Coins:  500,
 				Pizzas: 0,
 			},
-			Order: 6,
+			Order: 8,
 		},
 		{
 			Id:          "6",
@@ -973,7 +971,7 @@ var FullGameData = GameData{
 				Coins:  750,
 				Pizzas: 0,
 			},
-			Order: 7,
+			Order: 9,
 		},
 		{
 			Id:          "7",
@@ -983,7 +981,7 @@ var FullGameData = GameData{
 				Coins:  500,
 				Pizzas: 500,
 			},
-			Order: 8,
+			Order: 10,
 		},
 		{
 			Id:          "8",
@@ -993,7 +991,7 @@ var FullGameData = GameData{
 				Coins:  1_500,
 				Pizzas: 300,
 			},
-			Order: 9,
+			Order: 11,
 		},
 		{
 			Id:          "9",
@@ -1003,7 +1001,7 @@ var FullGameData = GameData{
 				Coins:  1_000,
 				Pizzas: 0,
 			},
-			Order: 10,
+			Order: 12,
 		},
 		{
 			Id:          "10",
@@ -1013,7 +1011,7 @@ var FullGameData = GameData{
 				Coins:  5_000,
 				Pizzas: 1_000,
 			},
-			Order: 11,
+			Order: 13,
 		},
 		{
 			Id:          "11",
@@ -1023,7 +1021,7 @@ var FullGameData = GameData{
 				Coins:  1_000,
 				Pizzas: 1_000,
 			},
-			Order: 12,
+			Order: 14,
 		},
 		{
 			Id:          "12",
@@ -1043,16 +1041,27 @@ var FullGameData = GameData{
 				Coins:  0,
 				Pizzas: 2_500,
 			},
-			Order: 13,
+			Order: 15,
 		},
 		{
 			Id:          "14",
 			Title:       "Hats, hats, hats",
-			Description: "Coins can make you win, but hats can let you do so with style.\n- Visit a mouse and change its",
+			Description: "Coins can make you win, but hats can let you do so with style.\n- Visit a mouse and change its appearance",
 			Reward: &models.Quest_Reward{
-				OneOfItems: []string{"hat1", "cap1", "bucketHat1"},
+				Coins:  450,
+				Pizzas: 75,
 			},
 			Order: 6,
+		},
+		{
+			Id:          "15",
+			Title:       "Effort on Display",
+			Description: "Did you visit any neighbor towns yet? If you do so you may meet their ambassador. You should select one of your own mice as ambassador to greet your friends and foes.\n- Visit a mouse and assign it as ambassador",
+			Reward: &models.Quest_Reward{
+				Coins:  480,
+				Pizzas: 250,
+			},
+			Order: 7,
 		},
 	},
 	GeniusFlashCosts: []*models.GeniusFlashCost{
@@ -1074,14 +1083,4 @@ func init() {
 	for id, r := range ResearchMap {
 		r.Discovery = models.ResearchDiscovery(id)
 	}
-
-	// Make sure every query reward item exisits
-	for _, q := range FullGameData.Quests {
-		for _, id := range q.Reward.OneOfItems {
-			if _, ok := AppearancePartsMap[id]; !ok {
-				panic(fmt.Sprintf("Quest %s has an item reward that does not exist: %s", q.Id, id))
-			}
-		}
-	}
-
 }
