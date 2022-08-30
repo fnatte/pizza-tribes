@@ -138,10 +138,10 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
           className={classnames("pointer-events-none")}
         />
       </div>
-      {
+      <div className="mt-2 w-64 xs:w-80 h-6">
         <div
-          className={classnames("mt-2", "w-64", "xs:w-80", "text-center", {
-            invisible: canTap || tapsRemaining > 0,
+          className={classnames("text-center text-sm xs:text-base", {
+            hidden: canTap || tapsRemaining > 0,
           })}
         >
           Next tap{" "}
@@ -150,7 +150,7 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
             addSuffix: true,
           })}
         </div>
-      }
+      </div>
       <div className={classnames("mt-2")}>
         <div className={classnames("text-center")}>Streak:</div>
         <TapStreak value={streak} max={12} />
