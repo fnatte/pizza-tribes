@@ -29,20 +29,21 @@ type HeistOutcome struct {
 func CalculateHeist(h Heist, rsrc rand.Source) HeistOutcome {
 	guards := h.Guards
 	thieves := h.Thieves
-
 	guardsf := float64(guards)
+	thievesf := float64(thieves)
+
 	dist := distuv.Binomial{
-		N:   guardsf,
-		P:   0.075 * (1 - h.GuardAwarenessBonus),
+		N:   math.Min(guardsf/3, thievesf),
+		P:   0.15 * (1 - h.GuardAwarenessBonus),
 		Src: rsrc,
 	}
-	sleepingGuards := MinInt32(MinInt32(int32(dist.Rand()), (guards+1)/3), thieves)
+	sleepingGuards := int32(dist.Rand())
 
 	guards = guards - sleepingGuards
 	guardsf = float64(guards)
-	thievesf := float64(thieves)
+	thievesf = float64(thieves)
 
-	guardsp := guardsf * (h.GuardEfficiencyBonus + 1) / 3
+	guardsp := guardsf * (h.GuardEfficiencyBonus + 1) * 0.43
 	thievesp := thievesf * (h.ThiefEvadeBonus + 1)
 
 	dist = distuv.Binomial{
