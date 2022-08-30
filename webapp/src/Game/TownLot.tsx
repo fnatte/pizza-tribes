@@ -140,7 +140,7 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
       </div>
       {
         <div
-          className={classnames("mt-2", "w-80", "text-center", {
+          className={classnames("mt-2", "w-64", "xs:w-80", "text-center", {
             invisible: canTap || tapsRemaining > 0,
           })}
         >
@@ -385,7 +385,9 @@ function TownLot() {
         </>
       )}
       {lot?.building === Building.RESEARCH_INSTITUTE && <ResearchInstitute />}
-      {lot?.building === Building.TOWN_CENTRE && <TownCentre lot={lot} lotId={id} />}
+      {lot?.building === Building.TOWN_CENTRE && (
+        <TownCentre lot={lot} lotId={id} />
+      )}
       {lot?.building === Building.SCHOOL && <School />}
     </div>
   );
