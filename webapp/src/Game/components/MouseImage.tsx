@@ -15,6 +15,8 @@ import { ReactComponent as SvgMouthsMixed1 } from "images/parts/mouths_Mixed1.sv
 import { ReactComponent as SvgMouthsSmile1 } from "images/parts/mouths_Smile1.svg";
 import { ReactComponent as SvgMouthsSmile2 } from "images/parts/mouths_Smile2.svg";
 import { ReactComponent as SvgMouthsSmile3 } from "images/parts/mouths_Smile3.svg";
+import { ReactComponent as SvgMouthsSmile4 } from "images/parts/mouths_Smile4.svg";
+import { ReactComponent as SvgMouthsSmile5 } from "images/parts/mouths_Smile5.svg";
 import { ReactComponent as SvgTailsTail1 } from "images/parts/tails_Tail1.svg";
 import { ReactComponent as SvgTailsTail2 } from "images/parts/tails_Tail2.svg";
 import { ReactComponent as SvgTailsTail3 } from "images/parts/tails_Tail3.svg";
@@ -25,14 +27,19 @@ import { ReactComponent as SvgEyesExtra1EyeStars1 } from "images/parts/eyes_extr
 import { ReactComponent as SvgEyesExtra2Glasses1 } from "images/parts/eyes_extra2_Glasses1.svg";
 import { ReactComponent as SvgEyesExtra2Glasses2 } from "images/parts/eyes_extra2_Glasses2.svg";
 import { ReactComponent as SvgEyesExtra2EyePatch1 } from "images/parts/eyes_extra2_EyePatch1.svg";
+import { ReactComponent as SvgEyesExtra2Monocle1 } from "images/parts/eyes_extra2_Monocle1.svg";
+import { ReactComponent as SvgEyesExtra2Monocle2 } from "images/parts/eyes_extra2_Monocle2.svg";
 import { ReactComponent as SvgOutfitsThiefOutfit1 } from "images/parts/outfits_ThiefOutfit1.svg";
 import { ReactComponent as SvgOutfitsOutfit1 } from "images/parts/outfits_Outfit1.svg";
 import { ReactComponent as SvgOutfitsGuardOutfit1 } from "images/parts/outfits_GuardOutfit1.svg";
 import { ReactComponent as SvgHatsRedHat1 } from "images/parts/hats_RedHat1.svg";
 import { ReactComponent as SvgHatsThiefHat1 } from "images/parts/hats_ThiefHat1.svg";
 import { ReactComponent as SvgHatsChefHat1 } from "images/parts/hats_ChefHat1.svg";
+import { ReactComponent as SvgHatsChefHat2 } from "images/parts/hats_ChefHat2.svg";
 import { ReactComponent as SvgHatsGuardHat1 } from "images/parts/hats_GuardHat1.svg";
 import { ReactComponent as SvgHatsHat1 } from "images/parts/hats_Hat1.svg";
+import { ReactComponent as SvgHatsHat2 } from "images/parts/hats_Hat2.svg";
+import { ReactComponent as SvgHatsHat3 } from "images/parts/hats_Hat3.svg";
 import { ReactComponent as SvgHatsBucketHat1 } from "images/parts/hats_BucketHat1.svg";
 import { ReactComponent as SvgHatsCap1 } from "images/parts/hats_Cap1.svg";
 import {
@@ -67,6 +74,11 @@ const partInfosById: Record<string, PartInfo | undefined> = {
     x: 16,
     y: 4,
   },
+  chefHat2: {
+    component: SvgHatsChefHat2,
+    x: 18.5,
+    y: 6,
+  },
   guardHat1: {
     component: SvgHatsGuardHat1,
     x: 22,
@@ -76,6 +88,16 @@ const partInfosById: Record<string, PartInfo | undefined> = {
     component: SvgHatsHat1,
     x: 19.5,
     y: 13,
+  },
+  hat2: {
+    component: SvgHatsHat2,
+    x: 20.3,
+    y: 6,
+  },
+  hat3: {
+    component: SvgHatsHat3,
+    x: 28,
+    y: 10,
   },
   bucketHat1: {
     component: SvgHatsBucketHat1,
@@ -127,6 +149,16 @@ const partInfosById: Record<string, PartInfo | undefined> = {
     x: 30,
     y: 70,
   },
+  smile4: {
+    component: SvgMouthsSmile4,
+    x: 30,
+    y: 70,
+  },
+  smile5: {
+    component: SvgMouthsSmile5,
+    x: 30,
+    y: 70,
+  },
   tail1: {
     component: SvgTailsTail1,
     x: 35,
@@ -166,6 +198,16 @@ const partInfosById: Record<string, PartInfo | undefined> = {
     component: SvgEyesExtra2EyePatch1,
     x: 9.85,
     y: 45.5,
+  },
+  monocle1: {
+    component: SvgEyesExtra2Monocle1,
+    x: 1,
+    y: 31.8,
+  },
+  monocle2: {
+    component: SvgEyesExtra2Monocle2,
+    x: 1.5,
+    y: 30.8,
   },
   eyeCover1: {
     component: SvgEyesExtra1EyeCover1,

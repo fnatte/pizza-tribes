@@ -28,12 +28,24 @@ var AllAppearanceParts = []*models.AppearancePart{
 		Free: true,
 	},
 	{
+		Id:       "chefHat2",
+		Category: models.AppearanceCategory_HAT,
+	},
+	{
 		Id:       "guardHat1",
 		Category: models.AppearanceCategory_HAT,
 		Free: true,
 	},
 	{
 		Id:       "hat1",
+		Category: models.AppearanceCategory_HAT,
+	},
+	{
+		Id:       "hat2",
+		Category: models.AppearanceCategory_HAT,
+	},
+	{
+		Id:       "hat3",
 		Category: models.AppearanceCategory_HAT,
 	},
 	{
@@ -80,6 +92,14 @@ var AllAppearanceParts = []*models.AppearancePart{
 		Free: true,
 	},
 	{
+		Id:       "smile4",
+		Category: models.AppearanceCategory_MOUTH,
+	},
+	{
+		Id:       "smile5",
+		Category: models.AppearanceCategory_MOUTH,
+	},
+	{
 		Id:       "tail1",
 		Category: models.AppearanceCategory_TAIL,
 		Free: true,
@@ -118,6 +138,14 @@ var AllAppearanceParts = []*models.AppearancePart{
 		Id:       "eyePatch1",
 		Category: models.AppearanceCategory_EYES_EXTRA2,
 		Free: true,
+	},
+	{
+		Id:       "monocle1",
+		Category: models.AppearanceCategory_EYES_EXTRA2,
+	},
+	{
+		Id:       "monocle2",
+		Category: models.AppearanceCategory_EYES_EXTRA2,
 	},
 	{
 		Id:       "eyeCover1",
