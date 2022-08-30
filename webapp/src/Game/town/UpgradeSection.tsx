@@ -41,11 +41,11 @@ export const UpgradeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
   if (constr) {
     return !constr.razing ? (
       <section
-        className={classnames("m-4", "p-4", "bg-green-200")}
+        className="bg-green-200 my-2 p-4 xs:m-4 xs:p-4"
         data-cy="upgrade-section"
       >
         <p>This building is being upgraded.</p>
-        <p>
+        <p className="mt-2">
           It will be ready <CountDown time={constr.completeAt} />.
         </p>
       </section>

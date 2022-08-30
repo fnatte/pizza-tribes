@@ -78,7 +78,7 @@ export function LevelInfoTable({
   });
 
   return (
-    <div className={classnames("bg-green-50 p-4", className)}>
+    <div className={classnames("bg-green-50 p-2 xs:p-4", className)}>
       <table className="m-0">
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
