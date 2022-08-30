@@ -74,7 +74,7 @@ func (c *testController) HandleSetupTest(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = gameCtrl.JoinGame(ctx, usr.Id, usr.Username)
+	err = gameCtrl.JoinGame(ctx, usr.Id, usr.Username, []string{})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

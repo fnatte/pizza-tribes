@@ -136,8 +136,15 @@ func (c *GamesController) JoinGame(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	items, err := c.userRepo.GetUserItems(ctx, userId)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get user items")
+		w.WriteHeader(500)
+		return
+	}
+
 	gcClient := gamelet.NewGameletClient(game.Host)
-	err = gcClient.JoinGame(userId, user.Username)
+	err = gcClient.JoinGame(userId, user.Username, items)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to post join game to gamelet")
 		w.WriteHeader(500)

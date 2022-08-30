@@ -106,6 +106,26 @@ func (db *userDb) GetUserByUsername(ctx context.Context, username string) (*pers
 	return &u, nil
 }
 
+func (db *userDb) GetUserItems(ctx context.Context, userId string) ([]string, error) {
+	rows, err := db.db.QueryContext(ctx, `SELECT item_id FROM user_item WHERE user_id = ?`, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	items := []string{}
+
+	for rows.Next() {
+		var item string
+		err = rows.Scan(&item)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+
+	return items, nil
+}
+
 func (db *userDb) GetUserCount(ctx context.Context) (int64, error) {
 	row := db.db.QueryRowContext(ctx, `SELECT COUNT(1) FROM user`)
 

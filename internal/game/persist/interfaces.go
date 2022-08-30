@@ -53,6 +53,7 @@ type UserRepository interface {
 	GetAllUsers(ctx context.Context) ([]*User, error)
 	GetUser(ctx context.Context, userId string) (*User, error)
 	GetUserByUsername(ctx context.Context, username string) (*User, error)
+	GetUserItems(ctx context.Context, userId string) ([]string, error)
 	DeleteUser(ctx context.Context, userId string) (error)
 }
 

@@ -19,10 +19,11 @@ func NewGameletClient(host string) *GameletClient {
 	}
 }
 
-func (gc *GameletClient) JoinGame(userId, username string) error {
-	data, err := json.Marshal(map[string]string{
+func (gc *GameletClient) JoinGame(userId, username string, items []string) error {
+	data, err := json.Marshal(map[string]interface{}{
 		"user_id":  userId,
 		"username": username,
+		"items": items,
 	})
 	if err != nil {
 		return err

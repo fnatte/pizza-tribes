@@ -200,7 +200,7 @@ func (c *userController) HandleCreateUser(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	err = gameCtrl.JoinGame(ctx, u.Id, u.Username)
+	err = gameCtrl.JoinGame(ctx, u.Id, u.Username, []string{})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -253,7 +253,7 @@ func (c *userController) HandleBatchCreateUser(w http.ResponseWriter, r *http.Re
 			continue
 		}
 
-		err = gameCtrl.JoinGame(ctx, u.Id, u.Username)
+		err = gameCtrl.JoinGame(ctx, u.Id, u.Username, []string{})
 		if err != nil {
 			respItem.Username = user.Username
 			respItem.Status = http.StatusInternalServerError

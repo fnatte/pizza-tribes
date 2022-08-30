@@ -29,12 +29,20 @@ func NewGameCtrl(
 	}
 }
 
-func (g *GameCtrl) JoinGame(ctx context.Context, userId string, username string) error {
+func (g *GameCtrl) JoinGame(ctx context.Context, userId string, username string, items []string) error {
 	if err := g.gameUserRepo.CreateUser(ctx, userId, username); err != nil {
 		return fmt.Errorf("failed to create game user: %w", err)
 	}
 
 	gs := models.NewGameState()
+
+	// Copy all items to the new game state
+	if items != nil && len(items) > 0 {
+		for _, item := range items {
+			gs.AppearanceParts = append(gs.AppearanceParts, item)
+		}
+	}
+
 	err := g.gsRepo.Save(ctx, userId, gs)
 	if err != nil {
 		return fmt.Errorf("failed to save game state: %w", err)
