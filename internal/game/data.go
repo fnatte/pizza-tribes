@@ -1,6 +1,7 @@
 package game
 
 import (
+	"math"
 	"time"
 
 	"github.com/fnatte/pizza-tribes/internal/game/models"
@@ -15,17 +16,17 @@ var AllAppearanceParts = []*models.AppearancePart{
 	{
 		Id:       "redHat1",
 		Category: models.AppearanceCategory_HAT,
-		Free: true,
+		Free:     true,
 	},
 	{
 		Id:       "thiefHat1",
 		Category: models.AppearanceCategory_HAT,
-		Free: true,
+		Free:     true,
 	},
 	{
 		Id:       "chefHat1",
 		Category: models.AppearanceCategory_HAT,
-		Free: true,
+		Free:     true,
 	},
 	{
 		Id:       "chefHat2",
@@ -34,7 +35,7 @@ var AllAppearanceParts = []*models.AppearancePart{
 	{
 		Id:       "guardHat1",
 		Category: models.AppearanceCategory_HAT,
-		Free: true,
+		Free:     true,
 	},
 	{
 		Id:       "hat1",
@@ -59,37 +60,37 @@ var AllAppearanceParts = []*models.AppearancePart{
 	{
 		Id:       "basicFeet1",
 		Category: models.AppearanceCategory_FEET,
-		Free: true,
+		Free:     true,
 	},
 	{
 		Id:       "bigFeet1",
 		Category: models.AppearanceCategory_FEET,
-		Free: true,
+		Free:     true,
 	},
 	{
 		Id:       "smallFeet1",
 		Category: models.AppearanceCategory_FEET,
-		Free: true,
+		Free:     true,
 	},
 	{
 		Id:       "mixedSmile1",
 		Category: models.AppearanceCategory_MOUTH,
-		Free: true,
+		Free:     true,
 	},
 	{
 		Id:       "smile1",
 		Category: models.AppearanceCategory_MOUTH,
-		Free: true,
+		Free:     true,
 	},
 	{
 		Id:       "smile2",
 		Category: models.AppearanceCategory_MOUTH,
-		Free: true,
+		Free:     true,
 	},
 	{
 		Id:       "smile3",
 		Category: models.AppearanceCategory_MOUTH,
-		Free: true,
+		Free:     true,
 	},
 	{
 		Id:       "smile4",
@@ -102,42 +103,42 @@ var AllAppearanceParts = []*models.AppearancePart{
 	{
 		Id:       "tail1",
 		Category: models.AppearanceCategory_TAIL,
-		Free: true,
+		Free:     true,
 	},
 	{
 		Id:       "tail2",
 		Category: models.AppearanceCategory_TAIL,
-		Free: true,
+		Free:     true,
 	},
 	{
 		Id:       "tail3",
 		Category: models.AppearanceCategory_TAIL,
-		Free: true,
+		Free:     true,
 	},
 	{
 		Id:       "tail4",
 		Category: models.AppearanceCategory_TAIL,
-		Free: true,
+		Free:     true,
 	},
 	{
 		Id:       "tail5",
 		Category: models.AppearanceCategory_TAIL,
-		Free: true,
+		Free:     true,
 	},
 	{
 		Id:       "glasses1",
 		Category: models.AppearanceCategory_EYES_EXTRA2,
-		Free: true,
+		Free:     true,
 	},
 	{
 		Id:       "glasses2",
 		Category: models.AppearanceCategory_EYES_EXTRA2,
-		Free: true,
+		Free:     true,
 	},
 	{
 		Id:       "eyePatch1",
 		Category: models.AppearanceCategory_EYES_EXTRA2,
-		Free: true,
+		Free:     true,
 	},
 	{
 		Id:       "monocle1",
@@ -150,47 +151,47 @@ var AllAppearanceParts = []*models.AppearancePart{
 	{
 		Id:       "eyeCover1",
 		Category: models.AppearanceCategory_EYES_EXTRA1,
-		Free: true,
+		Free:     true,
 	},
 	{
 		Id:       "eyeStars1",
 		Category: models.AppearanceCategory_EYES_EXTRA1,
-		Free: true,
+		Free:     true,
 	},
 	{
 		Id:       "eyes1",
 		Category: models.AppearanceCategory_EYES,
-		Free: true,
+		Free:     true,
 	},
 	{
 		Id:       "eyes2",
 		Category: models.AppearanceCategory_EYES,
-		Free: true,
+		Free:     true,
 	},
 	{
 		Id:       "eyes3",
 		Category: models.AppearanceCategory_EYES,
-		Free: true,
+		Free:     true,
 	},
 	{
 		Id:       "outfit1",
 		Category: models.AppearanceCategory_OUTFIT,
-		Free: true,
+		Free:     true,
 	},
 	{
 		Id:       "thiefOutfit1",
 		Category: models.AppearanceCategory_OUTFIT,
-		Free: true,
+		Free:     true,
 	},
 	{
 		Id:       "guardOutfit1",
 		Category: models.AppearanceCategory_OUTFIT,
-		Free: true,
+		Free:     true,
 	},
 	{
 		Id:       "mouse1",
 		Category: models.AppearanceCategory_BODY,
-		Free: true,
+		Free:     true,
 	},
 }
 
@@ -839,7 +840,7 @@ var FullGameData = GameData{
 			MaxCount:    wrapperspb.Int32(1),
 			LevelInfos: []*BuildingInfo_LevelInfo{
 				{
-					Cost:             1 * 25_000,
+					Cost:             1 * 20_000,
 					ConstructionTime: 1 * 3600,
 					Employer: &Employer{
 						MaxWorkforce: 2,
@@ -895,7 +896,7 @@ var FullGameData = GameData{
 			MaxCount:    wrapperspb.Int32(1),
 			LevelInfos: []*BuildingInfo_LevelInfo{
 				{
-					Cost:             50_000,
+					Cost:             40_000,
 					ConstructionTime: 7200,
 				},
 			},
@@ -949,7 +950,7 @@ var FullGameData = GameData{
 		int32(Education_PUBLICIST): {
 			Title:       "Publicist",
 			TitlePlural: "Publicists",
-			Cost:        50_000,
+			Cost:        25_000,
 			TrainTime:   20 * 60,
 			Employer:    Building_MARKETINGHQ.Enum(),
 		},
@@ -1106,13 +1107,25 @@ var FullGameData = GameData{
 			Order: 7,
 		},
 	},
-	GeniusFlashCosts: []*models.GeniusFlashCost{
-		{Coins: 5000, Pizzas: 1000},
-		{Coins: 10000, Pizzas: 2000},
-		{Coins: 20000, Pizzas: 4000},
-		{Coins: 30000, Pizzas: 8000},
-		{Coins: 40000, Pizzas: 16000},
-	},
+	GeniusFlashCosts: []*models.GeniusFlashCost{},
+}
+
+func polynomial1(x float64, a ...float64) float64 {
+	v := 0.0
+	for i := 0; i < len(a); i++ {
+		v += a[i] * math.Pow(x, float64(i+1))
+	}
+	return v
+}
+
+func smartround(x float64) float64 {
+	if x < 20_000 {
+		return math.Round(x/100) * 100
+	} else if x < 200_000 {
+		return math.Round(x/1_000) * 1_000
+	} else {
+		return math.Round(x/10_000) * 10_000
+	}
 }
 
 func init() {
@@ -1124,5 +1137,14 @@ func init() {
 	// Assign discovery on research
 	for id, r := range ResearchMap {
 		r.Discovery = models.ResearchDiscovery(id)
+	}
+
+	// Setup genius flash costs
+	for n := 0; n < len(FullGameData.Research); n++ {
+		cost := &GeniusFlashCost{
+			Coins:  int32(smartround(polynomial1(float64(n+1), 3100, 700, -15))),
+			Pizzas: int32(smartround(polynomial1(float64(n+1), 2000, 1500, -12))),
+		}
+		FullGameData.GeniusFlashCosts = append(FullGameData.GeniusFlashCosts, cost)
 	}
 }
