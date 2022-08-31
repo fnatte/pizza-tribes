@@ -45,8 +45,11 @@ services:
     image: "ghcr.io/fnatte/pizza-tribes-webapp:latest"
   migrator:
     image: "ghcr.io/fnatte/pizza-tribes-migrator:latest"
+    volumes:
+      - central_data:/data
     environment:
       REDIS_ADDR: "redis:6379"
+      SQLITE_DSN: /data/pizzatribes.db
   front:
     image: "ghcr.io/fnatte/pizza-tribes-front:latest"
     env_file: .env
