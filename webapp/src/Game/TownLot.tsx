@@ -25,6 +25,7 @@ import { TownCentre } from "./buildings/TownCentre";
 import { CountDown } from "./CountDown";
 import { useEducationCount } from "./useEducationCount";
 import { UpgradeSection } from "./town/UpgradeSection";
+import { ResearchDiscovery } from "../generated/research";
 
 const label = classnames("text-xs", "md:text-sm", "mr-1");
 const value = classnames("text-sm", "md:text-lg", "ml-1");
@@ -35,15 +36,35 @@ ReactDOM.render(<Pizza className={classnames("w-12 h-12")} />, pizzaElement);
 const coinElement = document.createElement("div");
 ReactDOM.render(<Coin className={classnames("w-12 h-12")} />, coinElement);
 
+function getTapBonusFactor(discoveries: ResearchDiscovery[]): number {
+  let tapBonusFactor = 1.0;
+
+  if (discoveries.includes(ResearchDiscovery.SLAM)) {
+    tapBonusFactor += 0.3;
+  }
+  if (discoveries.includes(ResearchDiscovery.HIT_IT)) {
+    tapBonusFactor += 0.5;
+  }
+  if (discoveries.includes(ResearchDiscovery.GRAND_SLAM)) {
+    tapBonusFactor += 0.75;
+  }
+  if (discoveries.includes(ResearchDiscovery.GODS_TOUCH)) {
+    tapBonusFactor += 1.0;
+  }
+  return tapBonusFactor;
+}
+
 const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
   const [now, setNow] = useState(new Date());
   const [tapBackoff, setTapBackoff] = useState(false);
   const buttonConfettiRef = useRef<HTMLDivElement>(null);
+  const discoveries = useStore((state) => state.gameState.discoveries);
 
   const tap = useStore((state) => state.tap);
 
   const { nextTapAt, canTap, taps, tapsRemaining, streak } = getTapInfo(
     lot,
+    discoveries,
     now
   );
 
@@ -69,7 +90,8 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
 
   let tapResource: "pizzas" | "coins";
   let tapGains;
-  const factor = Math.sqrt((lot.level + 1) * (streak + 1));
+  const factor =
+    Math.sqrt((lot.level + 1) * (streak + 1)) * getTapBonusFactor(discoveries);
   switch (lot.building) {
     case Building.KITCHEN:
       tapResource = "pizzas";

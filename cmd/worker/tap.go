@@ -36,7 +36,7 @@ func getTapBonusFactor(gs *models.GameState) float64 {
 	return bonus
 }
 
-func getTapResetTime(gs *models.GameState) time.Duration {
+func getTapResetStreakTime(gs *models.GameState) time.Duration {
 	dur := 1 * time.Hour
 
 	if gs.HasDiscovery(models.ResearchDiscovery_CONSECUTIVE) {
@@ -72,7 +72,7 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *models.Client
 		// Set reset time to the beginning of the next hour after TappedAt,
 		// and streak time to the hour after that.
 		resetTime := time.Unix(0, lot.TappedAt).Add(1 * time.Hour).Truncate(1 * time.Hour)
-		resetStreakTime := resetTime.Add(1 * time.Hour)
+		resetStreakTime := resetTime.Add(getTapResetStreakTime(gs))
 
 		// Reset streak if we are past the reset streak time
 		if time.Now().After(resetStreakTime) {

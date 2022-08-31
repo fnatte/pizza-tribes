@@ -105,6 +105,7 @@ function Navigation() {
   const isMinXl = useMedia("(min-width: 1280px)", false);
   const menuRef = useRef(null);
   const logout = useStore((state) => state.logout);
+  const discoveries = useStore((state) => state.gameState.discoveries);
   const navigate = useNavigate();
   const [menuExpanded, setMenuExpaded] = useState(false);
 
@@ -115,7 +116,7 @@ function Navigation() {
 
   const tapBadgeCount = useStore((store) =>
     Object.values(store.gameState.lots).reduce(
-      (count, lot) => count + (getTapInfo(lot, now).tapsRemaining > 0 ? 1 : 0),
+      (count, lot) => count + (getTapInfo(lot, discoveries, now).tapsRemaining > 0 ? 1 : 0),
       0
     )
   );

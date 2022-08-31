@@ -21,6 +21,7 @@ import { Construction } from "../generated/gamestate";
 import { useMemo, useState } from "react";
 import { useInterval } from "react-use";
 import { GameData } from "../generated/game_data";
+import { ResearchDiscovery } from "../generated/research";
 
 const Badge: React.FC<
   {
@@ -220,6 +221,7 @@ const renderLot = (
   constructionQueue: Construction[],
   lotId: string,
   now: Date,
+  discoveries: ResearchDiscovery[],
   gameData: GameData | null
 ) => {
   const lot = lots[lotId];
@@ -232,7 +234,7 @@ const renderLot = (
   if (lot) {
     return renderBuilding(
       lot.building,
-      getTapInfo(lot, now).canTap,
+      getTapInfo(lot, discoveries, now).canTap,
       lot.level + 1,
       gameData
     );
@@ -256,6 +258,7 @@ function SvgTown(
   useInterval(() => setNow(new Date()), 10_000);
 
   const gameData = useStore((state) => state.gameData);
+  const discoveries = useStore((state) => state.gameState.discoveries);
 
   return (
     <svg
@@ -473,7 +476,8 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "11", now, gameData)};
+          {renderLot(lots, constructionQueue, "11", now, discoveries, gameData)}
+          ;
         </g>
         <g
           id="lot10"
@@ -492,7 +496,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "10", now, gameData)}
+          {renderLot(lots, constructionQueue, "10", now, discoveries, gameData)}
         </g>
         <g
           id="lot9"
@@ -511,7 +515,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "9", now, gameData)}
+          {renderLot(lots, constructionQueue, "9", now, discoveries, gameData)}
         </g>
         <g
           id="lot8"
@@ -530,7 +534,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "8", now, gameData)}
+          {renderLot(lots, constructionQueue, "8", now, discoveries, gameData)}
         </g>
         <g
           id="lot7"
@@ -549,7 +553,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "7", now, gameData)}
+          {renderLot(lots, constructionQueue, "7", now, discoveries, gameData)}
         </g>
         <g
           id="lot6"
@@ -568,7 +572,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "6", now, gameData)}
+          {renderLot(lots, constructionQueue, "6", now, discoveries, gameData)}
         </g>
         <g
           id="lot5"
@@ -587,7 +591,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "5", now, gameData)}
+          {renderLot(lots, constructionQueue, "5", now, discoveries, gameData)}
         </g>
         <g
           id="lot4"
@@ -606,7 +610,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "4", now, gameData)}
+          {renderLot(lots, constructionQueue, "4", now, discoveries, gameData)}
         </g>
         <g
           id="lot3"
@@ -625,7 +629,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "3", now, gameData)}
+          {renderLot(lots, constructionQueue, "3", now, discoveries, gameData)}
         </g>
         <g
           id="lot2"
@@ -644,7 +648,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "2", now, gameData)}
+          {renderLot(lots, constructionQueue, "2", now, discoveries, gameData)}
         </g>
         <g
           id="lot1"
@@ -663,7 +667,7 @@ function SvgTown(
             fillOpacity={1}
             strokeWidth={0.379}
           />
-          {renderLot(lots, constructionQueue, "1", now, gameData)}
+          {renderLot(lots, constructionQueue, "1", now, discoveries, gameData)}
         </g>
       </g>
     </svg>

@@ -8,6 +8,7 @@ import {
 import JSBI from "jsbi";
 import { Building } from "./generated/building";
 import { GameData } from "./generated/game_data";
+import { ResearchDiscovery } from "./generated/research";
 import { GameState, Lot } from "./store";
 
 export type RemoveIndex<T> = {
@@ -179,7 +180,21 @@ export const parseDateNano = (ns: string) => {
 const numberFormat = new Intl.NumberFormat();
 export const formatNumber = (n: number) => numberFormat.format(n);
 
-export const getTapInfo = (lot: Lot, now: Date) => {
+const getTapResetStreakTimeHours = (discoveries: ResearchDiscovery[]): number => {
+	let hours = 1
+
+	if (discoveries.includes(ResearchDiscovery.CONSECUTIVE)) {
+		hours += 1
+	}
+
+	if (discoveries.includes(ResearchDiscovery.ON_A_ROLL)) {
+		hours += 2
+	}
+
+	return hours
+}
+
+export const getTapInfo = (lot: Lot, discoveries: ResearchDiscovery[], now: Date) => {
   if (lot.building !== Building.KITCHEN && lot.building !== Building.SHOP) {
     return { canTap: false, nextTapAt: 0, taps: 0, tapsRemaining: 0, streak: 0 };
   }
@@ -190,7 +205,7 @@ export const getTapInfo = (lot: Lot, now: Date) => {
   );
 
   const resetTime = addHours(startOfHour(tappedAt), 1);
-  const resetStreakTime = addHours(resetTime, 1);
+  const resetStreakTime = addHours(resetTime, getTapResetStreakTimeHours(discoveries));
 
   const taps = isAfter(now, resetTime) ? 0 : lot.taps;
 
