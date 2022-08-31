@@ -381,6 +381,7 @@ function TownLot() {
           <p className={classnames("my-4", "text-gray-700")}>
             This is were your marketing personel work.
           </p>
+          <UpgradeSection lot={lot} lotId={id} />
           <RazeSection lot={lot} lotId={id} />
         </>
       )}
