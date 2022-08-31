@@ -41,6 +41,20 @@ jobs:
           target: worker
           push: true
           tags: ghcr.io/fnatte/pizza-tribes-worker:latest
+      - name: Build and push - Central
+        id: docker_build_central
+        uses: docker/build-push-action@v2
+        with:
+          target: central
+          push: true
+          tags: ghcr.io/fnatte/pizza-tribes-central:latest
+      - name: Build and push - Gamelet
+        id: docker_build_gamelet
+        uses: docker/build-push-action@v2
+        with:
+          target: gamelet
+          push: true
+          tags: ghcr.io/fnatte/pizza-tribes-gamelet:latest
       - name: Build and push - Migrator
         id: docker_build_migrator
         uses: docker/build-push-action@v2
