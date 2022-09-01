@@ -1,7 +1,7 @@
 -- +goose Up
 CREATE TABLE user (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL,
+    username TEXT NOT NULL COLLATE NOCASE,
     email TEXT,
     hashed_password TEXT NOT NULL
 );
