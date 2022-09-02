@@ -337,7 +337,7 @@ func handleStarted(ctx context.Context, u *updater) {
 	time.Sleep(1 * time.Millisecond)
 }
 
-func handleStarting(ctx context.Context, world *game.WorldService, worldState *models.WorldState, r redis.RedisClient) {
+func handleStarting(ctx context.Context, world *game.WorldService, worldState *models.WorldState, userRepo persist.GameUserRepository, r redis.RedisClient) {
 	if time.Now().Unix() >= worldState.StartTime {
 		log.Info().Msg("Starting new round")
 		// Let's get this game started.
@@ -364,6 +364,19 @@ func handleStarting(ctx context.Context, world *game.WorldService, worldState *m
 		})
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to annonuce started world state")
+			return
+		}
+
+		// Send notifications
+		users, err := userRepo.GetAllUsers(ctx)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to get all users - not able to send notifications")
+			return
+		}
+		log.Debug().Int("numberOfUsers", len(users)).Msg("Scheduling activity reminder push notifications")
+		for _, u := range users {
+			// TODO: might be able to batch this into 500 notification chunks
+			game.SchedulePushNotification(ctx, r, makeGameStartedMessage(u), time.Now())
 		}
 
 	} else {
@@ -424,7 +437,7 @@ func main() {
 			handleStarted(ctx, &u)
 			break
 		case *models.WorldState_Starting_:
-			handleStarting(ctx, world, worldState, rc)
+			handleStarting(ctx, world, worldState, userRepo, rc)
 			break
 		case *models.WorldState_Ended_:
 			time.Sleep(1 * time.Second)
