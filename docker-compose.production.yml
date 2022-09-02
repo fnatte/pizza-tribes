@@ -6,6 +6,8 @@ services:
       - redis_data:/data
     environment:
       REDIS_ARGS: "--appendonly yes --aof-use-rdb-preamble yes"
+    ports:
+      - "127.0.0.1:6379:6379"
   redisinsight:
     image: "redislabs/redisinsight:latest"
     volumes:
