@@ -10,9 +10,9 @@
     "test": "jest"
   },
   "dependencies": {
-    "@capacitor/keyboard": "^4.0.0",
-    "@capacitor/preferences": "^4.0.0",
-    "@capacitor/push-notifications": "^4.0.0",
+    "@capacitor/keyboard": "^4.0.1",
+    "@capacitor/preferences": "^4.0.1",
+    "@capacitor/push-notifications": "^4.0.1",
     "@hookform/resolvers": "^2.9.7",
     "@protobuf-ts/plugin": "^2.8.0",
     "@svgr/core": "^6.3.1",
@@ -39,10 +39,10 @@
     "zustand": "^4.1.1"
   },
   "devDependencies": {
-    "@capacitor/android": "^4.0.0",
-    "@capacitor/cli": "^4.0.0",
-    "@capacitor/core": "^4.0.0",
-    "@capacitor/ios": "^4.0.0",
+    "@capacitor/android": "^4.1.0",
+    "@capacitor/cli": "^4.1.0",
+    "@capacitor/core": "^4.1.0",
+    "@capacitor/ios": "^4.1.0",
     "@types/jest": "^28.1.6",
     "@types/node": "^18.7.14",
     "@types/react": "^18.0.18",
