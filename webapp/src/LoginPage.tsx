@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import classnames from "classnames";
 import Header from "./Header";
@@ -41,13 +41,21 @@ function LoginPage() {
     navigate("/games");
   };
   const connectionState = useStore((state) => state.connectionState);
+  const connection = useStore((state) => state.connection);
   const user = useStore((state) => state.user);
 
-  if (
-    connectionState?.connected ||
-    connectionState?.connecting ||
-    user !== null
-  ) {
+  const shouldRedirectToLoggedInState =
+    connectionState?.connected || connectionState?.connecting || user !== null;
+
+  // Make sure we reset any existing connection state so that
+  // no previous connection errors affects the new login
+  useEffect(() => {
+    if (!shouldRedirectToLoggedInState && connection) {
+      connection.reset();
+    }
+  }, [shouldRedirectToLoggedInState, connection]);
+
+  if (shouldRedirectToLoggedInState) {
     return <Navigate to="/" replace />;
   }
 

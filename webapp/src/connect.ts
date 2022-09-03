@@ -16,6 +16,7 @@ export type ConnectionApi = {
   reconnect: () => void;
   send: (msg: ClientMessage) => void;
   close: () => void;
+  reset: () => void;
 };
 
 const connect = (
@@ -155,6 +156,20 @@ const connect = (
       }
       conn?.close();
       conn = null;
+    },
+    reset: () => {
+      if (state.connected || state.connecting) {
+        throw new Error(
+          "Cannot reset connect state while connected or connecting"
+        );
+      }
+
+      setState({
+        connected: false,
+        connecting: false,
+        reconnectAttempts: 0,
+        error: false,
+      });
     },
   };
 };

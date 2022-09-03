@@ -13,6 +13,11 @@ export const setAccessToken = (accessToken: string) => {
   Storage.set({ key: "accessToken", value: _accessToken });
 };
 
+export const removeAccessToken = () => {
+  _accessToken = null;
+  Storage.remove({ key: "accessToken" });
+};
+
 export const getAccessToken = () => _accessToken;
 
 const getAuthHeaders = () => {

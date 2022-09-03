@@ -18,7 +18,7 @@ import { MouseAppearance } from "./generated/appearance";
 import { generateId } from "./utils";
 import { enablePatches, produce } from "immer";
 import { queryClient } from "./queryClient";
-import { apiFetch, centralApiFetch } from "./api";
+import { apiFetch, centralApiFetch, removeAccessToken } from "./api";
 import { extractMessage } from "./protobuf/extractMessage";
 import { reflectionMergePartial } from "./protobuf/protobuf-ts/reflectionMergePartial";
 
@@ -100,8 +100,6 @@ const initialGameState: GameState = {
 
 const resetAuthState = (state: State) => ({
   ...state,
-  connection: null,
-  connectionState: null,
   user: null,
   gameState: initialGameState,
   gameStats: null,
@@ -135,6 +133,7 @@ export const useStore = create<State>((set, get) => ({
     get().connection?.close();
     set(resetAuthState);
     resetQueryDataState();
+    removeAccessToken();
     await centralApiFetch("/auth/logout");
   },
   tap: (lotId: string) => {

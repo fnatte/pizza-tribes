@@ -59,7 +59,7 @@ func (a *AuthService) Authorize(r *http.Request) error {
 	// Now parse the token
 	parsedToken, err := jwt.ParseWithClaims(token, &jwt.StandardClaims{}, getJwtSigningKeyFunc)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to parse claims: %w", err)
 	}
 
 	alg := parsedToken.Header["alg"]
