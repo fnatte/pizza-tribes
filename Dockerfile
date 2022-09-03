@@ -24,7 +24,7 @@ RUN make build
 #
 # Web App Builder
 #
-FROM node:15 AS webapp-builder
+FROM node:17 AS webapp-builder
 WORKDIR /usr/src/app
 COPY webapp/package.json webapp/package-lock.json ./
 RUN npm ci
