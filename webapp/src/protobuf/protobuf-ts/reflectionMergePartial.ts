@@ -21,7 +21,7 @@
  *
  * Modifications to the original file:
  * - Format with prettier
- * - Apply patch from https://github.com/timostamm/protobuf-ts/pull/335 by jcready.
+ * - Handle maps with messages that have undefined values
  */
 
 import type {
@@ -34,16 +34,24 @@ import type {
 /**
  * Copy partial data into the target message.
  *
- * Replaces fields in the target with the fields from the
- * (partial) source.
+ * If a singular scalar or enum field is present in the source, it
+ * replaces the field in the target.
  *
- * Omitted fields are not replaced.
- * Copies all values.
- * A default value in the source will replace a value in the target.
+ * If a singular message field is present in the source, it is merged
+ * with the target field by calling mergePartial() of the responsible
+ * message type.
  *
- * Message fields are recursively merged (by calling `mergePartial()`
- * of the responsible message handler). Map and repeated fields
- * are simply overwritten, not appended or merged.
+ * If a repeated field is present in the source, its values replace
+ * all values in the target array, removing extraneous values.
+ * Repeated message fields are copied, not merged.
+ *
+ * If a map field is present in the source, entries are added to the
+ * target map, replacing entries with the same key. Entries that only
+ * exist in the target remain. Entries with message values are copied,
+ * not merged.
+ *
+ * Note that this function differs from protobuf merge semantics,
+ * which appends repeated fields.
  */
 export function reflectionMergePartial<T extends object>(
   info: MessageInfo,
@@ -108,7 +116,7 @@ export function reflectionMergePartial<T extends object>(
         switch (field.V.kind) {
           case "scalar":
           case "enum":
-            Object.assign(output[name], fieldValue); // elements are not reference types
+            Object.assign(output[name] as any, fieldValue); // elements are not reference types
             break;
           case "message":
             let T = field.V.T();
