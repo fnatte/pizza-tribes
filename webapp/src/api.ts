@@ -1,21 +1,21 @@
 import { API_BASE_URL, platform } from "./config";
-import { Storage } from "@capacitor/storage";
+import { Preferences } from "@capacitor/preferences";
 
 let _accessToken: null | string = null;
 
 export const initApi = async () => {
-  const result = await Storage.get({ key: "accessToken" });
+  const result = await Preferences.get({ key: "accessToken" });
   _accessToken = result.value;
 };
 
 export const setAccessToken = (accessToken: string) => {
   _accessToken = accessToken;
-  Storage.set({ key: "accessToken", value: _accessToken });
+  Preferences.set({ key: "accessToken", value: _accessToken });
 };
 
 export const removeAccessToken = () => {
   _accessToken = null;
-  Storage.remove({ key: "accessToken" });
+  Preferences.remove({ key: "accessToken" });
 };
 
 export const getAccessToken = () => _accessToken;
