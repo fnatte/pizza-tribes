@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import classnames from "classnames";
 import { useStore } from "../../../store";
 import {
@@ -60,10 +60,13 @@ export function LevelInfoTable({
 }) {
   const gameData = useStore((state) => state.gameData);
 
-  const data =
-    gameData?.buildings[building]?.levelInfos
-      .map((levelInfo, i) => ({ ...levelInfo, level: i + 1 }))
-      .filter((row) => row.cost > 0 || row.constructionTime > 0) ?? [];
+  const data = useMemo(
+    () =>
+      gameData?.buildings[building]?.levelInfos
+        .map((levelInfo, i) => ({ ...levelInfo, level: i + 1 }))
+        .filter((row) => row.cost > 0 || row.constructionTime > 0) ?? [],
+    [gameData]
+  );
 
   const table = useReactTable({
     data,
