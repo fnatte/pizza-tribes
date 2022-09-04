@@ -1,9 +1,11 @@
 import React, { ReactNode, useCallback } from "react";
 import classnames from "classnames";
 import { useStore } from "../store";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { MouseEditor } from "./components/MouseEditor";
 import { MouseAppearance } from "../generated/appearance";
+import { useGameNavigate } from "./useGameNavigate";
+import { GameLink } from "./GameLink";
 
 function Container({ children }: { children?: ReactNode | undefined }) {
   return (
@@ -24,6 +26,7 @@ function Container({ children }: { children?: ReactNode | undefined }) {
 export default function MouseAppearanceView() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const gameNavigate = useGameNavigate();
 
   const mouse = useStore(
     useCallback(
@@ -52,15 +55,15 @@ export default function MouseAppearanceView() {
 
   const onSave = (appearance: MouseAppearance) => {
     saveMouseAppearance(id, appearance);
-    navigate(`/mouse/${id}`);
+    gameNavigate("mouse", id);
     window.scrollTo(0, 0);
   };
 
   return (
     <Container>
-      <Link to={`/mouse/${id}`}>
+      <GameLink to={`mouse/${id}`}>
         <h2 className="text-center my-4">Mouse: {name}</h2>
-      </Link>
+      </GameLink>
       <div className="flex gap-2">
         <MouseEditor
           className="w-full"

@@ -8,7 +8,9 @@ import { centralApiFetch } from "./api";
 import { partition } from "lodash";
 
 async function joinGame(gameId: string): Promise<void> {
-  const response = await centralApiFetch(`/games/${gameId}/join`, { method: "POST" });
+  const response = await centralApiFetch(`/games/${gameId}/join`, {
+    method: "POST",
+  });
   if (!response.ok) {
     throw new Error("Failed to join game");
   }
@@ -21,11 +23,11 @@ function GamesPage() {
 
   const handleJoinNewGame = async (gameId: string) => {
     await joinGame(gameId);
-    navigate("/");
+    navigate(`/game/${gameId}`);
   };
 
   const handleContinueGame = async (gameId: string) => {
-    navigate("/");
+    navigate(`/game/${gameId}`);
   };
 
   const [joinedGames, unjoinedGames] = partition(games, (game) => game.joined);
@@ -65,7 +67,7 @@ function GamesPage() {
       {unjoinedGames.length > 0 ? (
         <ul className="mt-4 w-3/4 max-w-xs">
           {unjoinedGames.map((game) => (
-              <li key={game.id} className="mb-4">
+            <li key={game.id} className="mb-4">
               <button
                 className="bg-green-600 w-full text-white fill-white font-bold p-4 flex items-center"
                 onClick={() => handleJoinNewGame(game.id)}
@@ -77,7 +79,9 @@ function GamesPage() {
           ))}
         </ul>
       ) : (
-        <div className="mt-2 mx-4 text-gray-700">There are no ongoing games that you can join.</div>
+        <div className="mt-2 mx-4 text-gray-700">
+          There are no ongoing games that you can join.
+        </div>
       )}
     </div>
   );

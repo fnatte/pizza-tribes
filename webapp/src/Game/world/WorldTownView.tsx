@@ -15,6 +15,7 @@ import { useEducationCount } from "../useEducationCount";
 import { Education } from "../../generated/education";
 import { ApiUserResponse } from "../../generated/responses";
 import { MouseImage } from "../components/MouseImage";
+import { useGameNavigate } from "../useGameNavigate";
 
 type Props = {
   town: WorldEntry_Town;
@@ -62,11 +63,11 @@ const WorldTownView: React.FC<Props> = ({ x, y, town }) => {
     formState: { errors, isSubmitting },
   } = useForm<FormFields>({ resolver: yupResolver(schema2) });
 
-  const navigate = useNavigate();
+  const navigate = useGameNavigate();
 
   const onSubmit = async (data: FormFields) => {
     steal(x, y, data.count);
-    navigate("/");
+    navigate("town");
   };
 
   if (user.loading || !user.value) {

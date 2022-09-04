@@ -3,13 +3,13 @@ import classnames from "classnames";
 import { ReactComponent as SvgTownCentre } from "../../../images/town-centre.svg";
 import { Lot, useStore } from "../../store";
 import PopulationTable from "../PopulationTable";
-import { Link } from "react-router-dom";
 import { smallPrimaryButton } from "../../styles";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { RemoveIndex } from "../../utils";
 import { UpgradeSection } from "../town/UpgradeSection";
+import { GameLink } from "../GameLink";
 
 function MouseTable({ className }: { className?: string }) {
   const mice = useStore((state) => state.gameState.mice);
@@ -54,7 +54,7 @@ function MouseTable({ className }: { className?: string }) {
                   : educations[mouse.education].title}
               </td>
               <td className="p-2">
-                <Link
+                <GameLink
                   to={`/mouse/${id}`}
                   onClick={() => {
                     window.scrollTo(0, 0);
@@ -63,7 +63,7 @@ function MouseTable({ className }: { className?: string }) {
                   <button className={classnames(smallPrimaryButton)}>
                     Visit
                   </button>
-                </Link>
+                </GameLink>
               </td>
             </tr>
           );

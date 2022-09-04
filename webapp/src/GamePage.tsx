@@ -5,7 +5,6 @@ import Town from "./Game/Town";
 import TownLot from "./Game/TownLot";
 import { useStore } from "./store";
 import styles from "./styles";
-import { ReactComponent as HeartsSvg } from "../images/hearts.svg";
 import { ConnectionState } from "./connect";
 import StatsView from "./Game/StatsView";
 import MapView from "./Game/map/MapView";
@@ -24,6 +23,7 @@ import MouseView from "./Game/MouseView";
 import QuestsView from "./Game/quests/QuestsView";
 import { useActivity } from "./useActivity";
 import MouseAppearanceView from "./Game/MouseAppearanceView";
+import { Loading } from "./Loading";
 
 type ClockState = {
   formatted: string;
@@ -116,7 +116,8 @@ function Navigation() {
 
   const tapBadgeCount = useStore((store) =>
     Object.values(store.gameState.lots).reduce(
-      (count, lot) => count + (getTapInfo(lot, discoveries, now).tapsRemaining > 0 ? 1 : 0),
+      (count, lot) =>
+        count + (getTapInfo(lot, discoveries, now).tapsRemaining > 0 ? 1 : 0),
       0
     )
   );
@@ -147,12 +148,12 @@ function Navigation() {
       className={classnames("flex", "justify-center", "items-center")}
       data-cy="main-nav"
     >
-      <Link to="/map">
+      <Link to="map">
         <button className={classnames(styles.primaryButton, "mr-2")}>
           Map
         </button>
       </Link>
-      <Link to="/town">
+      <Link to="town">
         <button
           className={classnames(styles.primaryButton, "mr-2", "relative")}
         >
@@ -160,7 +161,7 @@ function Navigation() {
           Town
         </button>
       </Link>
-      <Link to="/quests">
+      <Link to="quests">
         <button
           className={classnames(styles.primaryButton, "mr-2", "relative")}
         >
@@ -169,14 +170,14 @@ function Navigation() {
         </button>
       </Link>
       {isMinMd && (
-        <Link to="/stats">
+        <Link to="stats">
           <button className={classnames(styles.primaryButton, "mr-2")}>
             Stats
           </button>
         </Link>
       )}
       {isMinLg && (
-        <Link to="/reports">
+        <Link to="reports">
           <button
             className={classnames(styles.primaryButton, "mr-2", "relative")}
           >
@@ -187,12 +188,12 @@ function Navigation() {
       )}
       {isMinXl && (
         <>
-          <Link to="/leaderboard">
+          <Link to="leaderboard">
             <button className={classnames(styles.primaryButton, "mr-2")}>
               Leaderboard
             </button>
           </Link>
-          <Link to="/help">
+          <Link to="help">
             <button className={classnames(styles.primaryButton, "mr-2")}>
               Help
             </button>
@@ -237,14 +238,14 @@ function Navigation() {
               )}
             >
               {!isMinMd && (
-                <Link to="/stats" onClick={() => setMenuExpaded(false)}>
+                <Link to="stats" onClick={() => setMenuExpaded(false)}>
                   <button className={classnames(styles.primaryButton, "mr-2")}>
                     Stats
                   </button>
                 </Link>
               )}
               {!isMinLg && (
-                <Link to="/reports" onClick={() => setMenuExpaded(false)}>
+                <Link to="reports" onClick={() => setMenuExpaded(false)}>
                   <button
                     className={classnames(
                       styles.primaryButton,
@@ -257,12 +258,12 @@ function Navigation() {
                   </button>
                 </Link>
               )}
-              <Link to="/leaderboard" onClick={() => setMenuExpaded(false)}>
+              <Link to="leaderboard" onClick={() => setMenuExpaded(false)}>
                 <button className={classnames(styles.primaryButton, "mr-2")}>
                   Leaderboard
                 </button>
               </Link>
-              <Link to="/help" onClick={() => setMenuExpaded(false)}>
+              <Link to="help" onClick={() => setMenuExpaded(false)}>
                 <button className={classnames(styles.primaryButton, "mr-2")}>
                   Help
                 </button>
@@ -451,22 +452,6 @@ const ConnectionPopup: React.VFC<{ connectionState: ConnectionState }> = ({
   );
 };
 
-function Loading() {
-  return (
-    <div
-      className={classnames(
-        "fixed",
-        "left-1/2",
-        "top-1/2",
-        "-translate-y-1/2",
-        "-translate-x-1/2"
-      )}
-    >
-      <HeartsSvg />
-    </div>
-  );
-}
-
 function GamePage(): JSX.Element {
   const connectionState = useStore((state) => state.connectionState);
   const user = useStore((state) => state.user);
@@ -476,16 +461,17 @@ function GamePage(): JSX.Element {
   const reportActivity = useStore((state) => state.reportActivity);
   const start = useStore((state) => state.start);
 
+  const needToConnect =
+    !connectionState ||
+    (!connectionState.connected &&
+      !connectionState.connecting &&
+      !connectionState.error);
+
   useEffect(() => {
-    if (
-      !connectionState ||
-      (!connectionState.connected &&
-        !connectionState.connecting &&
-        !connectionState.error)
-    ) {
+    if (needToConnect) {
       start();
     }
-  }, [connectionState]);
+  }, [needToConnect]);
 
   const { isLoading, data, error, refetch } = useWorldState();
 
@@ -564,7 +550,7 @@ function GamePage(): JSX.Element {
         <Route path="mouse/:id/appearance" element={<MouseAppearanceView />} />
         <Route path="mouse/:id" element={<MouseView />} />
         <Route path="help/*" element={<HelpView />} />
-        <Route path="/" element={<Navigate to="/town" replace />} />
+        <Route path="/" element={<Navigate to="town" replace />} />
       </Routes>
       {showConnectionPopup && (
         <div

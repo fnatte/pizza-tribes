@@ -71,6 +71,10 @@ const connect = (
       return;
     }
 
+    if (state.connecting) {
+      return
+    }
+
     if (pendingReconnectAttempt !== null) {
       window.clearTimeout(pendingReconnectAttempt);
       pendingReconnectAttempt = null;
@@ -113,7 +117,6 @@ const connect = (
     conn?.close();
     conn = new WebSocket(WS_URL, protocols);
     conn.onclose = (e) => {
-      console.log("websocket error", e.code);
       handleClose(e.code);
     };
 
@@ -124,7 +127,6 @@ const connect = (
           const code =
             typeof json.control.code === "number" ? json.control.code : -1;
           conn?.close();
-          console.log("custom control message", code);
           handleClose(code);
         }
         return;

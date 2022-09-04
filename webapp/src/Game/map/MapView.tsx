@@ -8,6 +8,7 @@ import { useStore } from "../../store";
 import { useNavigate } from "react-router-dom";
 import styles from "../../styles";
 import { apiFetch } from "../../api";
+import { useGameNavigate } from "../useGameNavigate";
 
 function unique<T extends unknown>(arr: T[]): T[] {
   return [...new Set(arr)];
@@ -21,7 +22,7 @@ function MapView() {
   const townY = useStore((state) => state.gameState.townY);
   const [{ x, y }, setXY] = useState({ x: townX, y: townY });
   const [size, setSize] = useState(isMinLg ? 9 : 5);
-  const navigate = useNavigate();
+  const navigate = useGameNavigate();
 
   useEffect(() => {
     setXY({ x: townX, y: townY });
@@ -141,7 +142,7 @@ function MapView() {
 
   const onClickVisit = () => {
     if (selectedEntry) {
-      navigate(`/world/entry?x=${selectedEntry.x}&y=${selectedEntry.y}`);
+      navigate("world-entry", selectedEntry.x, selectedEntry.y);
     }
   };
 

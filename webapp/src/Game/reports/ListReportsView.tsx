@@ -1,9 +1,9 @@
 import { formatISO9075 } from "date-fns";
 import React from "react";
-import { Link } from "react-router-dom";
 import classnames from "classnames";
 import { useStore } from "../../store";
 import { parseDateNano } from "../../utils";
+import { GameLink } from "../GameLink";
 
 function ListReportsView() {
   const reports = useStore((state) => state.reports);
@@ -48,9 +48,9 @@ function ListReportsView() {
                   underline: true,
                 })}
               >
-                <Link to={`/reports/${report.id}`} data-cy="report-link">
+                <GameLink to={`/reports/${report.id}`} data-cy="report-link">
                   {report.title}
-                </Link>
+                </GameLink>
               </td>
             </tr>
           ))}

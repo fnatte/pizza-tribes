@@ -73,7 +73,7 @@ export type State = {
 };
 
 const resetQueryDataState = () => {
-  queryClient.setQueriesData({}, () => undefined);
+  queryClient.clear();
 };
 
 const initialGameState: GameState = {

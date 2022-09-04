@@ -20,7 +20,7 @@ function Town() {
   );
 
   const onLotClick = (lotId: string) => {
-    navigate(`/town/${lotId.replace("lot", "")}`);
+    navigate(lotId);
   };
 
   const isMinLg = useMedia("(min-width: 1024px)", false);
@@ -73,7 +73,7 @@ function Town() {
     const handler = (e: Event) => {
       e.preventDefault();
       if (e.currentTarget instanceof SVGElement) {
-        onLotClick(e.currentTarget.id);
+        onLotClick(e.currentTarget.id.replace("lot", ""));
       }
     };
     lots.forEach((lot) => {

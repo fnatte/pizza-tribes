@@ -19,6 +19,7 @@ import { ReactComponent as SvgMarketingHQ } from "../../images/marketing-hq.svg"
 import { ReactComponent as SvgResearchInstitute } from "../../images/research-institute.svg";
 import { ReactComponent as SvgTownCentre } from "../../images/town-centre.svg";
 import { Nbsp } from "./Nbsp";
+import { useGameNavigate } from "./useGameNavigate";
 
 const title = classnames("text-lg", "md:text-xl", "mb-2");
 const label = classnames("text-xs", "md:text-sm", "mr-1", "whitespace-nowrap");
@@ -60,7 +61,7 @@ const ConstructBuilding = ({ lotId }: Props) => {
   const constructionQueue = useStore(
     (state) => state.gameState.constructionQueue
   );
-  const navigate = useNavigate();
+  const navigate = useGameNavigate();
 
   const buildingCounts = countBuildings(lots);
   const buildingConstrCounts = countBuildingsUnderConstruction(
@@ -70,7 +71,7 @@ const ConstructBuilding = ({ lotId }: Props) => {
   const onSelectClick = (e: React.MouseEvent, building: Building) => {
     e.preventDefault();
     constructBuilding(lotId, building);
-    navigate("/town");
+    navigate("town");
   };
 
   return (

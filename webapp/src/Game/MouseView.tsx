@@ -2,7 +2,7 @@ import React, { ReactNode, useCallback } from "react";
 import classnames from "classnames";
 import * as yup from "yup";
 import { useStore } from "../store";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { button } from "../styles";
 import { useForm } from "react-hook-form";
 import { RemoveIndex } from "../utils";
@@ -15,6 +15,8 @@ import { ReactComponent as ThiefSvg } from "../../images/thief.svg";
 import { ReactComponent as PublicistSvg } from "../../images/publicist.svg";
 import { ReactComponent as UneducatedSvg } from "../../images/uneducated.svg";
 import { MouseImage } from "./components/MouseImage";
+import { useGameNavigate } from "./useGameNavigate";
+import { GameLink } from "./GameLink";
 
 const svgs: Record<number, React.VFC | undefined> = {
   [Education.CHEF]: ChefSvg,
@@ -94,7 +96,7 @@ function RenameForm({ mouseId }: { mouseId: string }) {
 
 export default function MouseView() {
   const { id } = useParams();
-  const navigate = useNavigate();
+  const navigate = useGameNavigate();
 
   const mouse = useStore(
     useCallback(
@@ -115,7 +117,7 @@ export default function MouseView() {
     id,
   ]);
   const onClickReschool = useCallback(() => id && reschool(id), [id]);
-  const onClickChangeAppearance = () => navigate(`/mouse/${id}/appearance`);
+  const onClickChangeAppearance = () => navigate("mouse-appearance", id ?? "");
 
   if (!gameData) {
     return null;
@@ -138,7 +140,7 @@ export default function MouseView() {
       <h2 className="mb-4">Mouse: {name}</h2>
       <div className="flex gap-2">
         {
-          <Link
+          <GameLink
             to={`/mouse/${id}/appearance`}
             title="Change Appearance"
             className="grow max-w-[250px]"
@@ -156,7 +158,7 @@ export default function MouseView() {
                 className="translate-x-4 xs:translate-x-16 h-[400px] w-full"
               />
             )}
-          </Link>
+          </GameLink>
         }
         <div className="flex flex-col justify-center">
           <section className="my-6">{name} is a happy house.</section>
