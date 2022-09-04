@@ -1,5 +1,5 @@
-import React from "react";
-import ReactDOM from "react-dom";
+import React, { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import { platform } from "./config";
@@ -13,11 +13,17 @@ import("./push-notifications");
 document.body.classList.add(`platform-${platform}`);
 
 const render = () => {
-  ReactDOM.render(
-    <React.StrictMode>
+  const element = document.getElementById("root");
+  if (!element) {
+    console.warn("Could not find target root element");
+    return;
+  }
+
+  const root = createRoot(element);
+  root.render(
+    <StrictMode>
       <App />
-    </React.StrictMode>,
-    document.getElementById("root")
+    </StrictMode>
   );
 };
 

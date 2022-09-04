@@ -19,7 +19,7 @@ import { confetti } from "../confetti";
 import classes from "./town-lot.module.css";
 import classNames from "classnames";
 import TapStreak from "./TapStreak";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import { Coin, Pizza } from "../icons";
 import { TownCentre } from "./buildings/TownCentre";
 import { CountDown } from "./CountDown";
@@ -31,10 +31,10 @@ const label = classnames("text-xs", "md:text-sm", "mr-1");
 const value = classnames("text-sm", "md:text-lg", "ml-1");
 
 const pizzaElement = document.createElement("div");
-ReactDOM.render(<Pizza className={classnames("w-12 h-12")} />, pizzaElement);
+createRoot(pizzaElement).render(<Pizza className={classnames("w-12 h-12")} />);
 
 const coinElement = document.createElement("div");
-ReactDOM.render(<Coin className={classnames("w-12 h-12")} />, coinElement);
+createRoot(coinElement).render(<Coin className={classnames("w-12 h-12")} />);
 
 function getTapBonusFactor(discoveries: ResearchDiscovery[]): number {
   let tapBonusFactor = 1.0;
