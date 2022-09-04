@@ -102,7 +102,10 @@ const ConstructBuilding = ({ lotId }: Props) => {
 
           const { maxCount } = buildings[id];
 
-          if (maxCount !== undefined && buildingCounts[id] >= maxCount.value) {
+          if (
+            maxCount !== undefined &&
+            buildingCounts[id] + buildingConstrCounts[id] >= maxCount.value
+          ) {
             return null;
           }
 
