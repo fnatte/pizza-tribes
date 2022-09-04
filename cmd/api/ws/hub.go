@@ -18,19 +18,11 @@ type Hub struct {
 
 func NewHub() *Hub {
 	return &Hub{
-		messages:    make(chan *Message),
+		messages:   make(chan *Message),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
 		clients:    make(map[*Client]bool),
 	}
-}
-
-func (h *Hub) userIds() map[string]bool {
-	var accIds = map[string]bool{}
-	for client := range h.clients {
-		accIds[client.userId] = true
-	}
-	return accIds
 }
 
 // Sends bytes to a recipient (user id) by putting a message on the messages

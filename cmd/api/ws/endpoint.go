@@ -96,6 +96,10 @@ func (e *WsEndpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		send:   make(chan []byte, 512),
 	}
 	client.hub.register <- client
+	ws.SetCloseHandler(func(code int, text string) error {
+		client.hub.unregister <- client
+		return nil
+	})
 
 	err = e.handler.HandleInit(r.Context(), client)
 	if err != nil {
@@ -108,8 +112,8 @@ func (e *WsEndpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			websocket.FormatCloseMessage(5001, "failed to initialize web socket"),
 			time.Time{},
 		)
-
 		ws.Close()
+		client.hub.unregister <- client
 		return
 	}
 
