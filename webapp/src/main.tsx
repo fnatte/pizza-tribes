@@ -2,7 +2,7 @@ import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App";
-import { platform } from "./config";
+import { API_BASE_URL, platform, WS_URL } from "./config";
 import { initApi } from "./api";
 import {
   initializePushNotifications,
@@ -28,6 +28,8 @@ const render = () => {
 };
 
 const run = async () => {
+  console.log({ platform, API_BASE_URL, WS_URL });
+
   await initApi();
   if (isPushNotificationsSupported()) {
     initializePushNotifications();

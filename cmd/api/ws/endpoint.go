@@ -51,6 +51,26 @@ func NewEndpoint(authFunc AuthFunc, hub *Hub, handler WsHandler, origins []strin
 	}
 }
 
+func closeWs(ws *websocket.Conn, code int, message string) {
+	ws.WriteJSON(map[string]interface{}{
+		"type": "control",
+		"control": map[string]interface{}{
+			"type":    "close",
+			"code":    code,
+			"message": message,
+		},
+	})
+
+	err := ws.WriteControl(
+		websocket.CloseMessage,
+		websocket.FormatCloseMessage(code, message),
+		time.Time{},
+	)
+	if err != nil && err != websocket.ErrCloseSent {
+		ws.Close()
+	}
+}
+
 func (e *WsEndpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Debug().Msg("WS Request Started")
 
@@ -72,20 +92,15 @@ func (e *WsEndpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	err = e.authFunc(r)
 	if err != nil {
 		log.Info().Err(err).Msg("Closing websocket: unauthorized")
-		ws.WriteControl(
-			websocket.CloseMessage,
-			websocket.FormatCloseMessage(4010, "Unauthorized"),
-			time.Time{},
-		)
-		ws.Close()
+		closeWs(ws, 4010, "unauthorized")
 		return
 	}
 
 	// Read user id from request context
 	userId, ok := game.GetUserIdFromContext(r.Context())
 	if !ok {
-		log.Warn().Msg("Failed to get account id")
-		ws.Close()
+		log.Warn().Msg("Closing websocket: failed to get account id")
+		closeWs(ws, 5001, "failed to get account id")
 		return
 	}
 
@@ -105,15 +120,11 @@ func (e *WsEndpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Err(err).
 			Str("userId", userId).
-			Msg("Failed to initialize websocket")
+			Msg("Closing websocket: failed to initialize websocket")
 
-		ws.WriteControl(
-			websocket.CloseMessage,
-			websocket.FormatCloseMessage(5001, "failed to initialize web socket"),
-			time.Time{},
-		)
-		ws.Close()
+		closeWs(ws, 5001, "failed to initialize")
 		client.hub.unregister <- client
+
 		return
 	}
 

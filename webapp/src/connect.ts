@@ -91,11 +91,9 @@ const connect = (
       ? ["pizzatribes", `accessToken.${accessToken}`]
       : "pizzatribes";
 
-    conn?.close();
-    conn = new WebSocket(WS_URL, protocols);
-    conn.onclose = (e) => {
-      const initializationError = e.code === 5001;
-      const unauthorized = e.code === 4010;
+    const handleClose = (code: number) => {
+      const initializationError = code === 5001;
+      const unauthorized = code === 4010;
       if (unauthorized || initializationError) {
         targetState = "disconnected";
         setState({
@@ -112,8 +110,26 @@ const connect = (
       }
     };
 
+    conn?.close();
+    conn = new WebSocket(WS_URL, protocols);
+    conn.onclose = (e) => {
+      console.log("websocket error", e.code);
+      handleClose(e.code);
+    };
+
     conn.onmessage = (e) => {
-      const message = ServerMessage.fromJson(JSON.parse(e.data));
+      const json = JSON.parse(e.data);
+      if (json.type === "control" && typeof json.control === "object") {
+        if (json.control.type === "close") {
+          const code =
+            typeof json.control.code === "number" ? json.control.code : -1;
+          conn?.close();
+          console.log("custom control message", code);
+          handleClose(code);
+        }
+        return;
+      }
+      const message = ServerMessage.fromJson(json);
       onMessage(message);
     };
 
