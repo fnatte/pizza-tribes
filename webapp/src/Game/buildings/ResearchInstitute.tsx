@@ -14,7 +14,6 @@ import { ReactComponent as SvgResearchInstitute } from "../../../images/research
 import { uniq } from "lodash";
 import { Coin, GeniusFlash, Pizza } from "../../icons";
 import ReactMarkdown from "react-markdown";
-import { GameLink } from "../GameLink";
 
 function getAreaName(area: ResearchTree): string {
   switch (area) {
@@ -349,14 +348,14 @@ function MainSection() {
       >
         <GeniusFlash className={"h-[3em] w-[3em]"} />
         <span className="text-2xl">{geniusFlashes}</span>
-        <GameLink to="genius-flashes">
+        <Link to="genius-flashes">
           <button
             className={classnames(primaryButton, "ml-8")}
             data-cy="get-more-button"
           >
             Get more
           </button>
-        </GameLink>
+        </Link>
       </section>
 
       <h3>Areas</h3>
@@ -364,7 +363,7 @@ function MainSection() {
         {areas.map((area) => {
           const trackCounts = getTrackCounts(area, research, discoveries);
           return (
-            <GameLink to={`research/${area}`} key={area}>
+            <Link to={`research/${area}`} key={area}>
               <button
                 className={classnames(
                   "bg-green-400",
@@ -388,7 +387,7 @@ function MainSection() {
                   <SvgArrowRight className="ml-auto" />
                 </div>
               </button>
-            </GameLink>
+            </Link>
           );
         })}
       </div>
