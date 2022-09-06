@@ -42,8 +42,6 @@ function GamesPage() {
       )}
     >
       <Header />
-      <div className={classnames("text-2xl", "mt-5")}>🍕🍕🍕🍕</div>
-
       {joinedGames.length > 0 && (
         <>
           <h2 className="mt-12">Continue:</h2>
