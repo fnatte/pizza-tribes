@@ -145,7 +145,13 @@ function Navigation() {
 
   return (
     <nav
-      className={classnames("flex", "justify-center", "items-center")}
+      className={classnames(
+        "flex",
+        "justify-center",
+        "items-center",
+        "mt-2",
+        "xs:mt-0"
+      )}
       data-cy="main-nav"
     >
       <Link to="map">
@@ -298,7 +304,15 @@ function Navigation() {
 
 function GameTitle() {
   return (
-    <div className={classnames("flex", "justify-center", "text-xl", "mt-2")}>
+    <div
+      className={classnames(
+        "justify-center",
+        "text-xl",
+        "mt-2",
+        "hidden",
+        "xs:flex"
+      )}
+    >
       Pizza Tribes
     </div>
   );
