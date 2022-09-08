@@ -119,9 +119,11 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
           spread: 35,
           duration: 2000,
           createElement: () => {
-            return (tapResource === "pizzas"
-              ? pizzaElement.cloneNode(true)
-              : coinElement.cloneNode(true)) as HTMLElement;
+            return (
+              tapResource === "pizzas"
+                ? pizzaElement.cloneNode(true)
+                : coinElement.cloneNode(true)
+            ) as HTMLElement;
           },
         });
       }
@@ -137,7 +139,8 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
         "bg-green-200",
         "flex",
         "items-center",
-        "flex-col"
+        "flex-col",
+        "select-none"
       )}
       data-cy="tap-section"
     >

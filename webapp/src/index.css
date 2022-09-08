@@ -36,8 +36,27 @@
   input[type="number"] {
     -moz-appearance: textfield; /* Firefox number buttons are buggy */
   }
+}
 
-  body.platform-ios #root {
-    @apply fixed top-4 h-screen w-screen overflow-scroll pb-4;
+@layer utilities {
+  .safe-top {
+    padding-top: constant(safe-area-inset-top);
+    padding-top: env(safe-area-inset-top);
   }
+  .safe-left {
+    padding-left: constant(safe-area-inset-left);
+    padding-left: env(safe-area-inset-left);
+  }
+  .safe-right {
+    padding-right: constant(safe-area-inset-right);
+    padding-right: env(safe-area-inset-right);
+  }
+  .safe-bottom {
+    padding-bottom: constant(safe-area-inset-bottom);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+body.platform-ios #root {
+  @apply select-none;
 }
