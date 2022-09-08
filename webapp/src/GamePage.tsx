@@ -239,7 +239,13 @@ function Navigation() {
             >
               {!isMinMd && (
                 <Link to="stats" onClick={() => setMenuExpaded(false)}>
-                  <button className={classnames(styles.primaryButton, "mr-2")}>
+                  <button
+                    className={classnames(
+                      styles.primaryButton,
+                      "mr-2",
+                      "w-full"
+                    )}
+                  >
                     Stats
                   </button>
                 </Link>
@@ -250,6 +256,7 @@ function Navigation() {
                     className={classnames(
                       styles.primaryButton,
                       "mr-2",
+                      "w-full",
                       "relative"
                     )}
                   >
@@ -259,17 +266,21 @@ function Navigation() {
                 </Link>
               )}
               <Link to="leaderboard" onClick={() => setMenuExpaded(false)}>
-                <button className={classnames(styles.primaryButton, "mr-2")}>
+                <button
+                  className={classnames(styles.primaryButton, "mr-2", "w-full")}
+                >
                   Leaderboard
                 </button>
               </Link>
               <Link to="help" onClick={() => setMenuExpaded(false)}>
-                <button className={classnames(styles.primaryButton, "mr-2")}>
+                <button
+                  className={classnames(styles.primaryButton, "mr-2", "w-full")}
+                >
                   Help
                 </button>
               </Link>
               <button
-                className={classnames(styles.primaryButton, "mr-2")}
+                className={classnames(styles.primaryButton, "mr-2", "w-full")}
                 onClick={() => {
                   setMenuExpaded(false);
                   onClickLogout();
