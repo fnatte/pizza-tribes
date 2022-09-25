@@ -4,16 +4,10 @@ import classnames from "classnames";
 import { Building } from "../generated/building";
 import { Lot, useStore } from "../store";
 import ConstructBuilding from "./ConstructBuilding";
-import School from "./School";
-import { ReactComponent as SvgKitchen } from "../../images/kitchen.svg";
-import { ReactComponent as SvgShop } from "../../images/shop.svg";
-import { ReactComponent as SvgHouse } from "../../images/house.svg";
-import { ReactComponent as SvgMarketingHQ } from "../../images/marketing-hq.svg";
 import styles from "../styles";
 import { formatDistanceToNow } from "date-fns";
 import { formatDurationShort, formatNumber, getTapInfo } from "../utils";
 import { Education } from "../generated/education";
-import ResearchInstitute from "./buildings/ResearchInstitute";
 import { useTimeoutFn } from "react-use";
 import { confetti } from "../confetti";
 import classes from "./town-lot.module.css";
@@ -21,11 +15,14 @@ import classNames from "classnames";
 import TapStreak from "./TapStreak";
 import { createRoot } from "react-dom/client";
 import { Coin, Pizza } from "../icons";
+import ResearchInstitute from "./buildings/ResearchInstitute";
 import { TownCentre } from "./buildings/TownCentre";
+import School from "./buildings/School";
 import { CountDown } from "./CountDown";
 import { useEducationCount } from "./useEducationCount";
 import { UpgradeSection } from "./town/UpgradeSection";
 import { ResearchDiscovery } from "../generated/research";
+import BuildingImage from "./components/BuildingImage";
 
 const label = classnames("text-xs", "md:text-sm", "mr-1");
 const value = classnames("text-sm", "md:text-lg", "ml-1");
@@ -54,7 +51,7 @@ function getTapBonusFactor(discoveries: ResearchDiscovery[]): number {
   return tapBonusFactor;
 }
 
-const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
+const TapSection: React.FC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
   const [now, setNow] = useState(new Date());
   const [tapBackoff, setTapBackoff] = useState(false);
   const buttonConfettiRef = useRef<HTMLDivElement>(null);
@@ -184,7 +181,7 @@ const TapSection: React.VFC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
   );
 };
 
-const RazeSection: React.VFC<{ lotId: string; lot: Lot }> = ({
+const RazeSection: React.FC<{ lotId: string; lot: Lot }> = ({
   lot,
   lotId,
 }) => {
@@ -331,7 +328,7 @@ function TownLot() {
       {lot?.building === Building.KITCHEN && (
         <>
           <h2>Kitchen (level {lot.level + 1})</h2>
-          <SvgKitchen width={100} height={100} />
+          <BuildingImage building={lot.building} width={182} height={182} />
           <p className={classnames("my-4", "text-gray-700")}>
             Wow! It's hot in here. This is were you chefs are making pizza.
           </p>
@@ -358,7 +355,7 @@ function TownLot() {
       {lot?.building === Building.HOUSE && (
         <>
           <h2>House (level {lot.level + 1})</h2>
-          <SvgHouse height={50} width={50} />
+          <BuildingImage building={lot.building} width={182} height={182} />
           <p className={classnames("my-4", "text-gray-700")}>
             Up to{" "}
             {gameData?.buildings[Building.HOUSE].levelInfos[lot.level].residence
@@ -375,7 +372,7 @@ function TownLot() {
       {lot?.building === Building.SHOP && (
         <>
           <h2>Shop (level {lot.level + 1})</h2>
-          <SvgShop height={100} width={100} />
+          <BuildingImage building={lot.building} width={182} height={182} />
           <p className={classnames("my-4", "text-gray-700")}>
             This is were your salesmice work to sell pizzas.
           </p>
@@ -402,7 +399,7 @@ function TownLot() {
       {lot?.building === Building.MARKETINGHQ && (
         <>
           <h2>Marketing HQ</h2>
-          <SvgMarketingHQ height={100} width={100} />
+          <BuildingImage building={lot.building} width={182} height={182} />
           <p className={classnames("my-4", "text-gray-700")}>
             This is were your marketing personel work.
           </p>

@@ -5,6 +5,11 @@ import (
 	"math/rand"
 )
 
+type Point struct {
+	X int
+	Y int
+}
+
 const m = 3
 
 func randomOffset(v Vec2) Vec2 {
@@ -17,7 +22,7 @@ var firstThree = []Vec2{
 	{X: m, Y: m},
 }
 
-func findFirstThree(existing []Vec2) (x, y int) {
+func findFirstThree(existing []Vec2) Point {
 	available := make([]Vec2, len(firstThree))
 	copy(available, firstThree)
 	for i := len(available) - 1; i >= 0; i-- {
@@ -30,14 +35,10 @@ func findFirstThree(existing []Vec2) (x, y int) {
 		}
 	}
 
-	return int(available[0].X), int(available[0].Y)
+	return Point{ X: int(available[0].X), Y: int(available[0].Y)}
 }
 
-func FindSpotForNewTown(existing []Vec2) (x, y int) {
-	if len(existing) < 3 {
-		return findFirstThree(existing)
-	}
-
+func findNextFromHull(existing []Vec2) Point {
 	hull := convexHull(existing)
 	hull = append(hull, hull[0])
 	var p Vec2
@@ -55,5 +56,35 @@ func FindSpotForNewTown(existing []Vec2) (x, y int) {
 		}
 	}
 
-	return int(p.X), int(p.Y)
+	return Point{ X: int(p.X), Y: int(p.Y) }
 }
+
+func FindSpotForNewTown(existing []Vec2, blocked []Point) Point {
+	if len(existing) < 3 {
+		return findFirstThree(existing)
+	}
+
+	v2s := make([]Vec2, len(existing))
+	copy(v2s, existing)
+
+	for i := 0; i < 10_000_000; i++ {
+		p := findNextFromHull(v2s)
+
+		isBlocked := false
+		for _, p2 := range blocked {
+			if p.X == p2.X && p.Y == p2.Y {
+				isBlocked = true
+				break
+			}
+		}
+
+		if !isBlocked {
+			return p
+		}
+
+		v2s = append(v2s, Vec2{ X: float64(p.X), Y: float64(p.Y) })
+	}
+
+	panic("ended up in infinte loop when finding spot for new town")
+}
+

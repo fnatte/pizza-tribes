@@ -3,30 +3,31 @@ import JSBI from "jsbi";
 import React, { useState } from "react";
 import { useInterval } from "react-use";
 import classnames from "classnames";
-import { Education } from "../generated/education";
-import { useStore } from "../store";
-import styles from "../styles";
-import PlaceholderImage from "./PlaceholderImage";
-import { ReactComponent as ChefSvg } from "../../images/chef.svg";
-import { ReactComponent as SalesmouseSvg } from "../../images/salesmouse.svg";
-import { ReactComponent as SecuritySvg } from "../../images/security.svg";
-import { ReactComponent as ThiefSvg } from "../../images/thief.svg";
-import { ReactComponent as PublicistSvg } from "../../images/publicist.svg";
-import { ReactComponent as SvgSchool } from "../../images/school.svg";
-import { formatDurationShort } from "../utils";
+import { Education } from "../../generated/education";
+import { useStore } from "../../store";
+import styles from "../../styles";
+import PlaceholderImage from "../PlaceholderImage";
+import { ReactComponent as ChefSvg } from "images/chef.svg";
+import { ReactComponent as SalesmouseSvg } from "images/salesmouse.svg";
+import { ReactComponent as SecuritySvg } from "images/security.svg";
+import { ReactComponent as ThiefSvg } from "images/thief.svg";
+import { ReactComponent as PublicistSvg } from "images/publicist.svg";
+import { formatDurationShort } from "../../utils";
 import { useForm } from "react-hook-form";
-import { EducationInfo } from "../generated/game_data";
+import { EducationInfo } from "../../generated/game_data";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { RemoveIndex } from "../utils";
-import { useUneducatedCount } from "./useUneducatedCount";
+import { RemoveIndex } from "../../utils";
+import { useUneducatedCount } from "./../useUneducatedCount";
+import BuildingImage from "../components/BuildingImage";
+import { Building } from "../../generated/building";
 
 const title = classnames("text-lg", "md:text-xl", "mb-2");
 const label = classnames("text-xs", "md:text-sm");
 const value = classnames("text-sm");
 const descriptionStyle = classnames("text-sm", "text-gray-600");
 
-const svgs: Record<number, React.VFC | undefined> = {
+const svgs: Record<number, React.FC | undefined> = {
   [Education.CHEF]: ChefSvg,
   [Education.SALESMOUSE]: SalesmouseSvg,
   [Education.GUARD]: SecuritySvg,
@@ -34,7 +35,7 @@ const svgs: Record<number, React.VFC | undefined> = {
   [Education.PUBLICIST]: PublicistSvg,
 };
 
-const descriptions: Record<number, React.VFC | undefined> = {
+const descriptions: Record<number, React.FC | undefined> = {
   [Education.CHEF]: () => (
     <p className={descriptionStyle}>Chefs work in kitchens to make pizzas.</p>
   ),
@@ -71,7 +72,7 @@ const schema = yup.object().shape({
 
 type FormFields = RemoveIndex<yup.Asserts<typeof schema>>;
 
-const SchoolEducation: React.VFC<{
+const SchoolEducation: React.FC<{
   education: Education;
   educationInfo: EducationInfo;
 }> = ({ education, educationInfo }) => {
@@ -193,7 +194,7 @@ function School() {
   return (
     <div className={classnames("max-w-full", "px-2")}>
       <h2>School</h2>
-      <SvgSchool height={100} width={100} />
+      <BuildingImage building={Building.SCHOOL} height={100} width={100} />
       <p className={classnames("my-4", "text-gray-700")}>
         Educate your mice so that they can start contributing to your town.
       </p>

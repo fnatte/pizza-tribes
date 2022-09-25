@@ -7,7 +7,7 @@ describe("quests", () => {
   beforeEach(() => {
     cy.adminTestSetup();
 
-    cy.visit("/quests");
+    cy.gameVisit("/quests");
   });
 
   afterEach(() => {
@@ -88,11 +88,11 @@ describe("quests", () => {
 
     // Open menu and navigate to help page
     cy.get('[data-cy="menu-expand-button"]').click();
-    cy.get('[data-cy="main-nav"] a[href="/help"]').click();
+    cy.get('[data-cy="main-nav"] a[href$="/help"]').click();
     cy.get('[data-cy="game-help"]').should("be.visible");
 
     // Go back to quests and claim the reward
-    cy.get('[data-cy="main-nav"] a[href="/quests"]').click();
+    cy.get('[data-cy="main-nav"] a[href$="/quests"]').click();
     cy.get('[data-cy="quest-item-claim-reward-button"]').click();
 
     // Assert
@@ -129,7 +129,7 @@ describe("quests", () => {
     cy.get('[data-cy="stats-quest-form"]').should("exist");
 
     // Goto stats page to find the answer
-    cy.get('[data-cy="main-nav"] [href="/stats"]').click();
+    cy.get('[data-cy="main-nav"] [href$="/stats"]').click();
     cy.get('[data-cy="stats-row"]')
       .contains("Pizzas produced")
       .parents('[data-cy="stats-row"]')
@@ -138,7 +138,7 @@ describe("quests", () => {
       .as("answer");
 
     // Go back to quests page and fill in answer
-    cy.get('[data-cy="main-nav"] [href="/quests"]').click();
+    cy.get('[data-cy="main-nav"] [href$="/quests"]').click();
     cy.get('[data-cy="quest-item-title"]').contains("Statistics").expand();
     cy.get('[data-cy="quest-item-claim-reward-button"]').should("not.exist");
 

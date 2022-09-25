@@ -41,7 +41,7 @@ describe("education", () => {
 
   it("can train 1 chef", () => {
     // Train
-    cy.get('[data-cy="main-nav"] a[href="/town"]').click();
+    cy.get('[data-cy="main-nav"] a[href$="/town"]').click();
     cy.get('[data-cy="lot1"]').click();
     cy.get('[data-cy="school-education-title"]')
       .contains("Chef")
@@ -64,7 +64,7 @@ describe("education", () => {
 
     // Assert
     cy.get('[data-cy="training-queue-table-row"]').should("not.exist");
-    cy.get('[data-cy="main-nav"] [href="/town"]').click();
+    cy.get('[data-cy="main-nav"] [href$="/town"]').click();
     cy.get('[data-cy="population-table-toggle-button"]').expand();
     cy.get('[data-cy="population-table-row"]')
       .contains('[data-cy="population-table-row"]', "Chef")
@@ -73,7 +73,7 @@ describe("education", () => {
 
   it("can train 3 salesmice", () => {
     // Train
-    cy.get('[data-cy="main-nav"] a[href="/town"]').click();
+    cy.get('[data-cy="main-nav"] a[href$="/town"]').click();
     cy.get('[data-cy="lot1"]').click();
     cy.get('[data-cy="school-education-title"]')
       .contains("Salesmouse")
@@ -102,7 +102,7 @@ describe("education", () => {
 
     // Assert
     cy.get('[data-cy="training-queue-table-row"]').should("not.exist");
-    cy.get('[data-cy="main-nav"] [href="/town"]').click();
+    cy.get('[data-cy="main-nav"] [href$="/town"]').click();
     cy.get('[data-cy="population-table-toggle-button"]').expand();
     cy.get('[data-cy="population-table-row"]')
       .contains('[data-cy="population-table-row"]', "Salesmice")
@@ -111,7 +111,7 @@ describe("education", () => {
 
   it("can't train more chefs than available uneducated", () => {
     // Train
-    cy.get('[data-cy="main-nav"] a[href="/town"]').click();
+    cy.get('[data-cy="main-nav"] a[href$="/town"]').click();
     cy.get('[data-cy="lot1"]').click();
     cy.get('[data-cy="school-education-title"]')
       .contains("Chef")
@@ -135,7 +135,7 @@ describe("education", () => {
 
   it("can train 1 chef and 1 salesmouse at the same time", () => {
     // Train
-    cy.get('[data-cy="main-nav"] a[href="/town"]').click();
+    cy.get('[data-cy="main-nav"] a[href$="/town"]').click();
     cy.get('[data-cy="lot1"]').click();
     cy.get('[data-cy="school-education-title"]')
       .contains("Chef")
@@ -175,7 +175,7 @@ describe("education", () => {
 
     // Assert
     cy.get('[data-cy="training-queue-table-row"]').should("not.exist");
-    cy.get('[data-cy="main-nav"] [href="/town"]').click();
+    cy.get('[data-cy="main-nav"] [href$="/town"]').click();
     cy.get('[data-cy="population-table-toggle-button"]').expand();
     cy.get('[data-cy="population-table-row"]')
       .contains('[data-cy="population-table-row"]', "Chef")

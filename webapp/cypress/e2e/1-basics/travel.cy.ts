@@ -41,7 +41,7 @@ describe("travel", () => {
     );
 
     cy.get<GameState>("@targetGameState").then((gameState) => {
-      cy.visit(`/world/entry?x=${gameState.townX}&y=${gameState.townY}`);
+      cy.gameVisit(`/world/entry?x=${gameState.townX}&y=${gameState.townY}`);
     });
   });
 
@@ -65,7 +65,7 @@ describe("travel", () => {
 
     // Check report
     cy.get('[data-cy="menu-expand-button"]').click();
-    cy.get('[data-cy="main-nav"] a[href="/reports"]').click();
+    cy.get('[data-cy="main-nav"] a[href$="/reports"]').click();
     cy.get('[data-cy="report-row"]').should("have.length", 1);
     cy.get('[data-cy="report-link"]').should("have.length", 1).click();
     cy.get('[data-cy="report-title"]')
@@ -77,7 +77,7 @@ describe("travel", () => {
       .should("match", /no thieves were caught/i);
 
     // Check travel queue
-    cy.get('[data-cy="main-nav"] a[href="/town"]').click();
+    cy.get('[data-cy="main-nav"] a[href$="/town"]').click();
     cy.get('[data-cy="travel-queue-toggle-button"]').click();
     cy.get('[data-cy="travel-queue-row"]').should(
       "contain.text",
@@ -144,7 +144,7 @@ describe("travel", () => {
 
     // Check report
     cy.get('[data-cy="menu-expand-button"]').click();
-    cy.get('[data-cy="main-nav"] a[href="/reports"]').click();
+    cy.get('[data-cy="main-nav"] a[href$="/reports"]').click();
     cy.get('[data-cy="report-row"]').should("have.length", 1);
     cy.get('[data-cy="report-link"]').should("have.length", 1).click();
     cy.get('[data-cy="report-title"]')
@@ -156,7 +156,7 @@ describe("travel", () => {
       .should("match", /no thieves were caught/i);
 
     // Returning
-    cy.get('[data-cy="main-nav"] a[href="/town"]').click();
+    cy.get('[data-cy="main-nav"] a[href$="/town"]').click();
     cy.get('[data-cy="travel-queue-toggle-button"]').click();
     cy.get('[data-cy="travel-queue-row"]').should(
       "contain.text",
@@ -199,7 +199,7 @@ describe("travel", () => {
 
     // Check report
     cy.get('[data-cy="menu-expand-button"]').click();
-    cy.get('[data-cy="main-nav"] a[href="/reports"]').click();
+    cy.get('[data-cy="main-nav"] a[href$="/reports"]').click();
     cy.get('[data-cy="report-row"]').should("have.length", 1);
     cy.get('[data-cy="report-link"]').should("have.length", 1).click();
     cy.get('[data-cy="report-title"]')
@@ -209,7 +209,7 @@ describe("travel", () => {
       .should("contain.text", "3 thieves got caught");
 
     // Returning
-    cy.get('[data-cy="main-nav"] a[href="/town"]').click();
+    cy.get('[data-cy="main-nav"] a[href$="/town"]').click();
     cy.get('[data-cy="travel-queue-toggle-button"]').should('not.exist');
     cy.get('[data-cy="population-table-toggle-button"]').click();
     cy.get('[data-cy="population-table-uneducated-count"]').should("have.text", "3");

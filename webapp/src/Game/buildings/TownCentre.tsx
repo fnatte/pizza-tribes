@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect } from "react";
 import classnames from "classnames";
-import { ReactComponent as SvgTownCentre } from "../../../images/town-centre.svg";
 import { Lot, useStore } from "../../store";
 import PopulationTable from "../PopulationTable";
 import { smallPrimaryButton } from "../../styles";
@@ -10,6 +9,7 @@ import * as yup from "yup";
 import { RemoveIndex } from "../../utils";
 import { UpgradeSection } from "../town/UpgradeSection";
 import { GameLink } from "../GameLink";
+import BuildingImage from "../components/BuildingImage";
 
 function MouseTable({ className }: { className?: string }) {
   const mice = useStore((state) => state.gameState.mice);
@@ -197,7 +197,7 @@ export function TownCentre({ lot, lotId }: { lot: Lot; lotId: string }) {
     <div className={classnames("container", "px-2", "max-w-2xl", "mb-8")}>
       <h2>Town Centre</h2>
       <div className="flex gap-6 items-center">
-        <SvgTownCentre height={100} width={100} />
+        <BuildingImage building={lot.building} width={182} height={182} />
         <div className="prose my-6 text-gray-700">
           <p>
             This is where tribesmice go to decide on important tribe issues.

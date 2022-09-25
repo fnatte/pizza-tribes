@@ -16,7 +16,7 @@ func NewGameState() *GameState {
 	return &GameState{
 		Resources:  &GameState_Resources{},
 		Lots: map[string]*GameState_Lot{
-			"2": {
+			"4": {
 				Building: Building_TOWN_CENTRE,
 			},
 		},

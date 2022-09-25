@@ -26,6 +26,7 @@ declare global {
 
       login(username?: string, password?: string): Chainable<void>;
       expand(): Chainable<Element>;
+      gameVisit(url: string): Chainable<AUTWindow>;
     }
   }
 }
@@ -68,11 +69,10 @@ Cypress.Commands.add("adminCompleteQueues", (username = defaultUsername) => {
 });
 
 Cypress.Commands.add("adminGetGameState", (username = defaultUsername) => {
-  return cy
-    .request<string[]>(
-      "GET",
-      `http://localhost:8081/users?username=${username}`
-    )
+  cy.request<string[]>(
+    "GET",
+    `http://localhost:8081/users?username=${username}`
+  )
     .its("body")
     .then((users) => {
       if (users.length === 0) {
@@ -125,7 +125,9 @@ Cypress.Commands.add("adminBatchDeleteUser", (usernames) => {
   ).then((x) => {
     expect(x.status).to.eq(207);
     x.body.users.forEach((user) => {
-      expect(user.status).to.be.satisfy(status => (status >= 200 && status < 300) || status === 404);
+      expect(user.status).to.be.satisfy(
+        (status: number) => (status >= 200 && status < 300) || status === 404
+      );
     });
   });
 });
@@ -179,6 +181,8 @@ Cypress.Commands.add("adminTestSetup", (username = defaultUsername) => {
   })
     .as("testSetup")
     .then((resp) => {
+      cy.wrap(resp.body.gameId).as("gameId");
+
       window.localStorage.setItem(
         "CapacitorStorage.accessToken",
         resp.body.accessToken
@@ -187,7 +191,7 @@ Cypress.Commands.add("adminTestSetup", (username = defaultUsername) => {
 });
 
 Cypress.Commands.add("adminTestTeardown", (username = defaultUsername) => {
-  cy.adminBatchDeleteUser([username])
+  cy.adminBatchDeleteUser([username]);
 });
 
 Cypress.Commands.add(
@@ -207,6 +211,12 @@ Cypress.Commands.add("expand", { prevSubject: true }, (subject) => {
     if ($el.parents('[aria-expanded="true"]').length === 0) {
       cy.wrap($el).click();
     }
+  });
+});
+
+Cypress.Commands.add("gameVisit", (url: string) => {
+  cy.get<string>("@gameId").then((gameId) => {
+    cy.visit(`/game/${gameId}${url}`);
   });
 });
 

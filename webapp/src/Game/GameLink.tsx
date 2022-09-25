@@ -4,7 +4,6 @@ import { Link, LinkProps, useParams } from "react-router-dom";
 
 export function GameLink({ to, ...props }: LinkProps) {
   const { gameId } = useParams();
-  console.log(to)
   return (
     <Link
       {...props}

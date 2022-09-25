@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useAsync, useMedia } from "react-use";
+import { useAsync } from "react-use";
 import classnames from "classnames";
 import { EntriesResponse, WorldEntry } from "../../generated/world";
-import HexGrid from "./HexGrid";
+import HexGridCanvas from "./HexGridCanvas";
 import { ReactComponent as HeartsSvg } from "../../../images/hearts.svg";
 import { useStore } from "../../store";
-import { useNavigate } from "react-router-dom";
 import styles from "../../styles";
 import { apiFetch } from "../../api";
 import { useGameNavigate } from "../useGameNavigate";
@@ -17,22 +16,20 @@ function unique<T extends unknown>(arr: T[]): T[] {
 const getMapKey = (x: number, y: number) => `${x}:${y}`;
 
 function MapView() {
-  const isMinLg = useMedia("(min-width: 1024px)", false);
   const townX = useStore((state) => state.gameState.townX);
   const townY = useStore((state) => state.gameState.townY);
   const [{ x, y }, setXY] = useState({ x: townX, y: townY });
-  const [size, setSize] = useState(isMinLg ? 9 : 5);
+  const [{ x: loadX, y: loadY }, setLoadXY] = useState({ x: townX, y: townY });
+  const [zoom, setZoom] = useState(1);
   const navigate = useGameNavigate();
 
   useEffect(() => {
     setXY({ x: townX, y: townY });
+    setLoadXY({ x: townX, y: townY });
   }, [townX, townY]);
 
-  useEffect(() => {
-    setSize(isMinLg ? 9 : 5);
-  }, [isMinLg]);
-
   const [map, setMap] = useState(new Map<string, WorldEntry | null>());
+  const [selectedXY, setSelectedXY] = useState<{ x: number; y: number }>();
 
   const [selectedEntry, setSelectedEntry] = useState<{
     entry: WorldEntry;
@@ -70,8 +67,10 @@ function MapView() {
   }, [selectedEntry]);
 
   useAsync(async () => {
-    const fetchSize = size * 2;
-    const cornerDistance = Math.floor(size * 1.2);
+    const x = loadX;
+    const y = loadY;
+    const fetchSize = Math.floor((1 / zoom) * 20);
+    const cornerDistance = Math.floor(fetchSize / 2);
     const missingCorners = unique(
       [
         [x - cornerDistance, y - cornerDistance],
@@ -125,13 +124,10 @@ function MapView() {
 
       setMap((m) => new Map([...m, ...newMap]));
     }
-  }, [x, y, size]);
-
-  const onNavigate = (x: number, y: number) => {
-    setXY((p) => ({ x: p.x + x, y: p.y + y }));
-  };
+  }, [loadX, loadY, zoom]);
 
   const onClick = (x: number, y: number) => {
+    setSelectedXY({ x, y });
     const entry = map.get(getMapKey(x, y));
     if (entry?.object?.oneofKind === "town") {
       setSelectedEntry({ entry, x, y, myTown: x === townX && y === townY });
@@ -146,9 +142,13 @@ function MapView() {
     }
   };
 
+  const onOffsetChange = (x: number, y: number) => {
+    setLoadXY({ x, y });
+  };
+
   return (
     <div className={classnames("flex", "items-center", "flex-col", "mt-2")}>
-      <h2>Map</h2>
+      <h2 className="hidden lg:block">Map</h2>
       {map.size === 0 && (
         <div className={classnames("flex", "items-center")}>
           <HeartsSvg />
@@ -156,25 +156,32 @@ function MapView() {
       )}
       {map.size > 0 && (
         <div
-          className={classnames("relative", "flex", "flex-col", "items-center")}
+          className={classnames(
+            "relative",
+            "flex",
+            "flex-col",
+            "items-center",
+            "w-full",
+            "max-w-screen-lg"
+          )}
         >
           <div
             className={classnames(
               "flex",
               "justify-center",
-              "lg:flex-col",
               "gap-1",
-              "lg:absolute",
-              "-top-5",
-              "-right-1/4",
-              "lg:bg-green-200",
-              "lg:p-4"
+              "2xl:absolute",
+              "2xl:-top-5",
+              "2xl:-right-1/4",
+              "2xl:flex-col",
+              "2xl:bg-green-200",
+              "2xl:p-4"
             )}
           >
             <button
               className={styles.primaryButton}
               onClick={() =>
-                setSize((size) => Math.min(Math.max(size - 1, 4), 12))
+                setZoom((zoom) => Math.min((zoom * 6) / 5, Math.pow(6 / 5, 3)))
               }
             >
               Zoom In
@@ -182,19 +189,22 @@ function MapView() {
             <button
               className={styles.primaryButton}
               onClick={() =>
-                setSize((size) => Math.min(Math.max(size + 1, 4), 12))
+                setZoom((zoom) => Math.max((zoom * 5) / 6, Math.pow(5 / 6, 4)))
               }
             >
               Zoom Out
             </button>
           </div>
-          <HexGrid
+
+          <HexGridCanvas
             x={x}
             y={y}
-            size={size}
+            zoom={zoom}
             data={map}
-            onNavigate={onNavigate}
             onClick={onClick}
+            onOffsetChange={onOffsetChange}
+            className="container h-[500px] max-h-[48vh] xxs:max-h-[60vh] my-3 xl:my-10 border-4 border-green-700"
+            selection={selectedXY}
           />
           {selected.value && (
             <div
@@ -206,14 +216,7 @@ function MapView() {
                 "flex",
                 "justify-between",
                 "items-center",
-                "sm:-mt-5",
-                "lg:absolute",
-                "lg:-top-5",
-                "lg:-left-1/4",
-                "lg:max-w-none",
-                "lg:w-auto",
-                "lg:p-4",
-                "lg:mt-0"
+                "sm:-mt-5"
               )}
             >
               {selected.value?.myTown && "Your town"}

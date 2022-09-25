@@ -259,9 +259,12 @@ func completeSteal(ctx context.Context, userId string, gs *models.GameState, tx 
 	tx.InitUser(town.UserId, gsTarget)
 	tx.Users[town.UserId].IncrCoins(-int32(outcome.Loot))
 
-	if outcome.SleepingGuards > 0 {
-		for n := 0; n < int(outcome.SleepingGuards); n++ {
-			tx.Users[town.UserId].RemoveMouseByEducation(true, models.Education_GUARD)
+	for n := int32(0); n < outcome.SleepingGuards; n++ {
+		for k, m := range tx.Users[town.UserId].Gs.Mice {
+			if m.IsEducated && m.Education == models.Education_GUARD {
+				tx.Users[town.UserId].SetMouseUneducated(k)
+				break
+			}
 		}
 	}
 

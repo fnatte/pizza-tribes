@@ -31,7 +31,7 @@ describe("tap", () => {
 
   it("can tap 1 shop time", () => {
     // Tap
-    cy.get('[data-cy="main-nav"] a[href="/town"]').click();
+    cy.get('[data-cy="main-nav"] a[href$="/town"]').click();
     cy.get('[data-cy="lot1"]').click();
     cy.get('[data-cy="tap-section"] button').click();
 
@@ -45,7 +45,7 @@ describe("tap", () => {
 
   it("can tap 10 shop times", () => {
     // Tap
-    cy.get('[data-cy="main-nav"] a[href="/town"]').click();
+    cy.get('[data-cy="main-nav"] a[href$="/town"]').click();
     cy.get('[data-cy="lot1"]').click();
     for (let n = 0; n < 10; n++) {
       cy.get('[data-cy="tap-section"] button').click();
@@ -60,7 +60,7 @@ describe("tap", () => {
 
   it("can tap 1 kitchen time", () => {
     // Tap
-    cy.get('[data-cy="main-nav"] a[href="/town"]').click();
+    cy.get('[data-cy="main-nav"] a[href$="/town"]').click();
     cy.get('[data-cy="lot3"]').click();
     cy.get('[data-cy="tap-section"] button').click();
 
@@ -74,7 +74,7 @@ describe("tap", () => {
 
   it("can tap 10 kitchen times", () => {
     // Tap
-    cy.get('[data-cy="main-nav"] a[href="/town"]').click();
+    cy.get('[data-cy="main-nav"] a[href$="/town"]').click();
     cy.get('[data-cy="lot3"]').click();
     for (let n = 0; n < 10; n++) {
       cy.get('[data-cy="tap-section"] button').click();

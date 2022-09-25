@@ -34,7 +34,7 @@ describe("research", () => {
         },
       })
     );
-    cy.visit("/town/1");
+    cy.gameVisit("/town/1");
 
     cy.get('[data-cy="ongoing-research-row"]').should("not.exist");
 
@@ -69,7 +69,7 @@ describe("research", () => {
         },
       })
     );
-    cy.visit("/town/1");
+    cy.gameVisit("/town/1");
 
     cy.contains('[data-cy="research-area"]', "Demand").click();
     cy.contains('[data-cy="research-node"]', "Double Zero Flour").click();
@@ -89,7 +89,7 @@ describe("research", () => {
         },
       })
     );
-    cy.visit("/town/1");
+    cy.gameVisit("/town/1");
 
     cy.contains('[data-cy="research-area"]', "Demand").click();
     cy.contains('[data-cy="research-node"]', "Double Zero Flour").click();
@@ -101,7 +101,7 @@ describe("research", () => {
   });
 
   it("can not research if has no genius flashes", () => {
-    cy.visit("/town/1");
+    cy.gameVisit("/town/1");
 
     cy.contains('[data-cy="research-area"]', "Demand").click();
     cy.contains('[data-cy="research-node"]', "Durum Wheat").click();
@@ -119,7 +119,7 @@ describe("research", () => {
       })
     );
 
-    cy.visit("/town/1");
+    cy.gameVisit("/town/1");
 
     cy.get('[data-cy="get-more-button"]').click();
     cy.get('[data-cy="available-genius-flashes"]').should("have.text", "0");
@@ -139,7 +139,7 @@ describe("research", () => {
       })
     );
 
-    cy.visit("/town/1");
+    cy.gameVisit("/town/1");
 
     cy.get('[data-cy="get-more-button"]').click();
     cy.get('[data-cy="available-genius-flashes"]').should("have.text", "0");

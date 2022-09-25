@@ -23,6 +23,8 @@ message WorldState {
 message WorldEntry {
   enum LandType {
     GRASS = 0;
+    FOREST = 1;
+    MOUNTAIN = 2;
   }
 
   message Town {

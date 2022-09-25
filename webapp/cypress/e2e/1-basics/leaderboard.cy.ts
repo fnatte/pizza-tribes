@@ -53,7 +53,7 @@ describe("leaderboard", () => {
   });
 
   it("can see leaderboard", () => {
-    cy.visit("/leaderboard");
+    cy.gameVisit("/leaderboard");
     cy.get('[data-cy="leaderboard-row"]')
       .contains("cypress_test_user")
       .closest('[data-cy="leaderboard-row"]')

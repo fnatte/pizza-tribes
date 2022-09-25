@@ -1,23 +1,17 @@
 import React, { useState } from "react";
 import { useEffect, useRef } from "react";
-import {  useNavigate } from "react-router-dom";
-import {  useMedia } from "react-use";
+import { useNavigate } from "react-router-dom";
+import { useMedia } from "react-use";
 import classnames from "classnames";
-import { useStore } from "../store";
 import ConstructionQueue from "./ConstructionQueue";
 import Population from "./Population";
-import classes from "./town.module.css";
 import TownExpandMenu from "./TownExpandMenu";
-import TownSvg from "./TownSvg";
+import Town from "./town/Town";
 import TravelQueue from "./TravelQueue";
 
-function Town() {
+function TownView() {
   const ref = useRef<SVGSVGElement>(null);
   const navigate = useNavigate();
-  const lots = useStore((state) => state.gameState.lots);
-  const constructionQueue = useStore(
-    (state) => state.gameState.constructionQueue
-  );
 
   const onLotClick = (lotId: string) => {
     navigate(lotId);
@@ -95,21 +89,18 @@ function Town() {
         "mt-2"
       )}
     >
-      <h2>Town</h2>
+      <h2 className="hidden lg:block">Town</h2>
       <div
         className={classnames(
+          "mt-2",
           "relative",
           "lg:w-9/12",
-          "w-11/12",
+          "md:w-11/12",
+          "w-[98%]",
           "max-w-screen-lg"
         )}
       >
-        <TownSvg
-          ref={ref}
-          className={classnames("w-full", "h-auto", classes.svg)}
-          lots={lots}
-          constructionQueue={constructionQueue}
-        />
+        <Town />
         <div
           className={classnames(
             "absolute",
@@ -149,4 +140,4 @@ function Town() {
   );
 }
 
-export default Town;
+export default TownView;

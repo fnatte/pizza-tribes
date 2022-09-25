@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Link, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import classnames from "classnames";
-import Town from "./Game/Town";
+import TownView from "./Game/TownView";
 import TownLot from "./Game/TownLot";
 import { useStore } from "./store";
 import styles from "./styles";
@@ -565,7 +565,7 @@ function GamePage(): JSX.Element {
       <Routes>
         <Route path="map" element={<MapView />} />
         <Route path="town/:id/*" element={<TownLot />} />
-        <Route path="town" element={<Town />} />
+        <Route path="town" element={<TownView />} />
         <Route path="quests" element={<QuestsView />} />
         <Route path="stats" element={<StatsView />} />
         <Route path="world/entry" element={<WorldEntryView />} />

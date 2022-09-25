@@ -3,6 +3,7 @@ package game
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"strconv"
 	"strings"
 	"time"
@@ -10,24 +11,12 @@ import (
 	"github.com/fnatte/pizza-tribes/internal/game/models"
 	. "github.com/fnatte/pizza-tribes/internal/game/models"
 	"github.com/fnatte/pizza-tribes/internal/game/protojson"
-	"github.com/fnatte/pizza-tribes/internal/game/spot_finder"
 	"github.com/fnatte/pizza-tribes/internal/game/redis"
+	"github.com/fnatte/pizza-tribes/internal/game/spot_finder"
+	"github.com/rs/zerolog/log"
 )
 
 const WORLD_SIZE = 110
-
-type xy struct{ x, y int }
-
-var xyOffsets []xy = []xy{
-	{x: 1, y: -1},
-	{x: 1, y: 0},
-	{x: 1, y: 1},
-	{x: 0, y: 1},
-	{x: -1, y: 1},
-	{x: -1, y: 0},
-	{x: -1, y: -1},
-	{x: 0, y: -1},
-}
 
 type WorldService struct {
 	r redis.RedisClient
@@ -193,15 +182,25 @@ func (s *WorldService) AcquireTown(ctx context.Context, userId string) (x, y int
 	if err != nil {
 		return 0, 0, err
 	}
-	v2s := make([]spot_finder.Vec2, 0, len(entries))
-	for k := range entries {
+	v2s := []spot_finder.Vec2{}
+	blocked := []spot_finder.Point{}
+	for k, e := range entries {
 		ex, ey, err := parseWorldKey(k)
 		if err != nil {
 			return 0, 0, err
 		}
-		v2s = append(v2s, spot_finder.NewVec2(float64(ex), float64(ey)))
+
+		if e.GetTown() != nil {
+			v := spot_finder.NewVec2(float64(ex), float64(ey))
+			v2s = append(v2s, v)
+		} else if e.LandType == WorldEntry_MOUNTAIN || e.LandType == WorldEntry_FOREST {
+			p := spot_finder.Point{ X: ex, Y: ey }
+			blocked = append(blocked, p)
+		}
 	}
-	x, y = spot_finder.FindSpotForNewTown(v2s)
+	p := spot_finder.FindSpotForNewTown(v2s, blocked)
+	x = p.X
+	y = p.Y
 
 	// Verify that the spot is empty
 	if entries[getWorldKey(x, y)] != nil {
@@ -232,13 +231,38 @@ func (s *WorldService) AcquireTown(ctx context.Context, userId string) (x, y int
 		return 0, 0, err
 	}
 
+	log.Info().Msgf("Acquired town %d, %d for user %s", x, y, userId)
+
 	return
+}
+
+func createWorld() map[string]*models.WorldEntry {
+	w := map[string]*models.WorldEntry{}
+	for y := -WORLD_SIZE / 2; y < WORLD_SIZE/2; y++ {
+		for x := -WORLD_SIZE / 2; x < WORLD_SIZE/2; x++ {
+			if (x == 3 && y == 0) || (x == 0 && y == 3) || (x == 3 && y == 3) {
+				continue
+			}
+			p := rand.Float64()
+			if p < 0.075 {
+				w[getWorldKey(x, y)] = &models.WorldEntry{
+					LandType: models.WorldEntry_MOUNTAIN,
+				}
+			} else if p < 0.2 {
+				w[getWorldKey(x, y)] = &models.WorldEntry{
+					LandType: models.WorldEntry_FOREST,
+				}
+			}
+		}
+	}
+
+	return w
 }
 
 func (s *WorldService) Initialize(ctx context.Context) error {
 	if s.r.Exists(ctx, "world").Val() == 0 {
 		world := models.World{
-			Entries: map[string]*models.WorldEntry{},
+			Entries: createWorld(),
 			State: &models.WorldState{
 				Type:      &WorldState_Starting_{},
 				StartTime: time.Now().Truncate(24 * time.Hour).Add(36 * time.Hour).Unix(),

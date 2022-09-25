@@ -50,7 +50,7 @@ func TestCalculateHeist(t *testing.T) {
 			want: HeistOutcome{
 				SuccessfulThieves: 7,
 				CaughtThieves:     3,
-				SleepingGuards:    1,
+				SleepingGuards:    0,
 			},
 		},
 		"1 thief on 20 guards": {
@@ -61,7 +61,7 @@ func TestCalculateHeist(t *testing.T) {
 			want: HeistOutcome{
 				SuccessfulThieves: 0,
 				CaughtThieves:     1,
-				SleepingGuards:    1,
+				SleepingGuards:    0,
 			},
 		},
 	}

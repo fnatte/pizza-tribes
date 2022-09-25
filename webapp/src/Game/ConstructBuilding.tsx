@@ -1,5 +1,4 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
 import classnames from "classnames";
 import { Building } from "../generated/building";
 import { useStore } from "../store";
@@ -11,32 +10,13 @@ import {
   isNotNull,
 } from "../utils";
 import PlaceholderImage from "./PlaceholderImage";
-import { ReactComponent as SvgKitchen } from "../../images/kitchen.svg";
-import { ReactComponent as SvgShop } from "../../images/shop.svg";
-import { ReactComponent as SvgHouse } from "../../images/house.svg";
-import { ReactComponent as SvgSchool } from "../../images/school.svg";
-import { ReactComponent as SvgMarketingHQ } from "../../images/marketing-hq.svg";
-import { ReactComponent as SvgResearchInstitute } from "../../images/research-institute.svg";
-import { ReactComponent as SvgTownCentre } from "../../images/town-centre.svg";
 import { Nbsp } from "./Nbsp";
 import { useGameNavigate } from "./useGameNavigate";
+import BuildingImage from "./components/BuildingImage";
 
 const title = classnames("text-lg", "md:text-xl", "mb-2");
 const label = classnames("text-xs", "md:text-sm", "mr-1", "whitespace-nowrap");
 const value = classnames("text-sm", "md:text-lg", "ml-1", "whitespace-nowrap");
-
-const svgs: Record<
-  Building,
-  React.VFC<React.SVGProps<SVGSVGElement>> | undefined
-> = {
-  [Building.KITCHEN]: SvgKitchen,
-  [Building.SHOP]: SvgShop,
-  [Building.HOUSE]: SvgHouse,
-  [Building.SCHOOL]: SvgSchool,
-  [Building.MARKETINGHQ]: SvgMarketingHQ,
-  [Building.RESEARCH_INSTITUTE]: SvgResearchInstitute,
-  [Building.TOWN_CENTRE]: SvgTownCentre,
-};
 
 type Props = {
   lotId: string;
@@ -79,7 +59,7 @@ const ConstructBuilding = ({ lotId }: Props) => {
       className={classnames("container", "mx-auto", "mt-4", "px-1", "max-w-xl")}
       data-cy="construct-buildings"
     >
-      <h2>Construct Building</h2>
+      <h2 className="text-center">Construct Building</h2>
       {Object.keys(buildings)
         .map(toBuildingId)
         .filter(isNotNull)
@@ -113,16 +93,14 @@ const ConstructBuilding = ({ lotId }: Props) => {
           const canAfford =
             coins >= (discountCost ?? buildings[id].levelInfos[0].cost);
 
-          const SvgImage = svgs[id] || PlaceholderImage;
-
           return (
             <div
               className={classnames("flex", "gap-4", "mb-8")}
               data-cy="construct-building"
               key={id}
             >
-              <div className={classnames("w-40", "h-28", "md:w-60", "md:h-40")}>
-                <SvgImage className="w-full h-full" />
+              <div className={classnames("w-40", "h-40", "md:w-60", "md:h-50")}>
+                <BuildingImage building={id} className="w-full h-full object-contain" />
               </div>
               <div className={classnames("ml-4")}>
                 <div className={title} data-cy="construct-building-title">

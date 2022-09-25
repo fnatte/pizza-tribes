@@ -11,12 +11,15 @@ import (
 	"github.com/fnatte/pizza-tribes/internal/game/persist"
 	sqlrepo "github.com/fnatte/pizza-tribes/internal/game/persist/sql"
 	"github.com/fnatte/pizza-tribes/internal/game/redis"
+	"github.com/fnatte/pizza-tribes/internal/gamelet"
+	"github.com/fnatte/pizza-tribes/internal/mama"
 	"github.com/gorilla/mux"
 )
 
 type setupTestResponse struct {
 	AccessToken string `json:"accessToken"`
 	User        *user  `json:"user"`
+	GameId      string `json:"gameId"`
 }
 
 type setupTestRequest struct {
@@ -25,15 +28,15 @@ type setupTestRequest struct {
 }
 
 type testController struct {
-	rc redis.RedisClient
-	sqldb *sql.DB
+	rc          redis.RedisClient
+	sqldb       *sql.DB
 	userDeleter services.UserDeleter
 }
 
 func NewTestController(r redis.RedisClient, sqldb *sql.DB, userDeleter services.UserDeleter) *testController {
 	return &testController{
-		rc: r,
-		sqldb: sqldb,
+		rc:          r,
+		sqldb:       sqldb,
 		userDeleter: userDeleter,
 	}
 }
@@ -49,12 +52,7 @@ func (c *testController) HandleSetupTest(w http.ResponseWriter, r *http.Request)
 	ctx := r.Context()
 
 	userRepo := sqlrepo.NewUserRepo(c.sqldb)
-	gameUserRepo := persist.NewGameUserRepository(c.rc)
-	gsRepo := persist.NewGameStateRepository(c.rc)
-	world := game.NewWorldService(c.rc)
 	users := game.NewUserService(userRepo)
-	leaderboard := game.NewLeaderboardService(c.rc)
-	gameCtrl := game.NewGameCtrl(gsRepo, gameUserRepo, world, leaderboard)
 
 	// Delete previous user
 	u, err := userRepo.GetUserByUsername(ctx, req.Username)
@@ -74,9 +72,26 @@ func (c *testController) HandleSetupTest(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = gameCtrl.JoinGame(ctx, usr.Id, usr.Username, []string{})
+	games, err := mama.GetAllGames(ctx, c.sqldb)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if len(games) == 0 {
+		http.Error(w, "There are no games to join", http.StatusInternalServerError)
+		return
+	}
+
+	err = mama.JoinGame(ctx, c.sqldb, usr.Id, games[0].Id)
+	if err != nil {
+		w.WriteHeader(500)
+		return
+	}
+
+	gcClient := gamelet.NewGameletClient(games[0].Host)
+	err = gcClient.JoinGame(usr.Id, usr.Username, []string{})
+	if err != nil {
+		w.WriteHeader(500)
 		return
 	}
 
@@ -92,7 +107,9 @@ func (c *testController) HandleSetupTest(w http.ResponseWriter, r *http.Request)
 		User: &user{
 			Id:       usr.Id,
 			Username: usr.Username,
-		}})
+		},
+		GameId: games[0].Id,
+	})
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return

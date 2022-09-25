@@ -37,7 +37,7 @@ describe("raze building", () => {
     );
 
     // Raze
-    cy.get('[data-cy="main-nav"] a[href="/town"]').click();
+    cy.get('[data-cy="main-nav"] a[href$="/town"]').click();
     cy.get('[data-cy="lot1"]').click();
     cy.get('[data-cy="raze-building-button"]').click();
 
@@ -45,14 +45,14 @@ describe("raze building", () => {
 
     // Assert
     cy.get('[data-cy="cancel-raze-building-button"]').should("exist");
-    cy.get('[data-cy="main-nav"] a[href="/town"]').click();
-    cy.get('[data-cy="lot1"] svg').should("not.exist");
+    cy.get('[data-cy="main-nav"] a[href$="/town"]').click();
+    cy.get('[data-cy="lot1"]').should("be.empty");
     cy.get('[data-cy="lot1"]').click();
     cy.get('[data-cy="construct-buildings"]').should("exist");
   });
 
   it("cannot raze if insufficient coins", () => {
-    cy.get('[data-cy="main-nav"] a[href="/town"]').click();
+    cy.get('[data-cy="main-nav"] a[href$="/town"]').click();
     cy.get('[data-cy="lot1"]').click();
     cy.get('[data-cy="raze-building-button"]').should("be.disabled");
   });
@@ -68,7 +68,7 @@ describe("raze building", () => {
     );
 
     // Raze
-    cy.get('[data-cy="main-nav"] a[href="/town"]').click();
+    cy.get('[data-cy="main-nav"] a[href$="/town"]').click();
     cy.get('[data-cy="lot1"]').click();
     cy.get('[data-cy="raze-building-button"]').click();
     cy.get('[data-cy="cancel-raze-building-button"]').click();
@@ -77,8 +77,9 @@ describe("raze building", () => {
 
     // Assert
     cy.get('[data-cy="cancel-raze-building-button"]').should("not.exist");
-    cy.get('[data-cy="main-nav"] a[href="/town"]').click();
-    cy.get('[data-cy="lot1"] svg').should("exist");
+    cy.get('[data-cy="main-nav"] a[href$="/town"]').click();
+    cy.get('[data-cy="lot1"]').should("not.be.empty");
+    cy.get('[data-cy="lot1"]').should("have.attr", "title", "Shop");
     cy.get('[data-cy="lot1"]').click();
     cy.get('[data-cy="raze-building-button"]').should("exist");
   });

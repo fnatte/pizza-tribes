@@ -140,7 +140,7 @@ export default function QuestsView() {
 
   return (
     <Container>
-      <h2>Quests</h2>
+      <h2 className="hidden lg:block text-center">Quests</h2>
 
       <section className="my-6">
         <ul>

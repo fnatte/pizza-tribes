@@ -15,7 +15,7 @@ describe("change appearance", () => {
       })
     );
 
-    cy.visit("/mouse/1/appearance");
+    cy.gameVisit("/mouse/1/appearance");
   });
 
   afterEach(() => {
@@ -29,7 +29,7 @@ describe("change appearance", () => {
     cy.get('[data-cy="gallery-section-item"]').first().click();
 
     cy.get('[data-cy="mouse-editor-save-button"]').click();
-    cy.location("pathname").should("eq", "/mouse/1");
+    cy.location("pathname").should("match", /\/mouse\/1$/);
 
     cy.adminGetGameState().as("gameState")
     cy.get("@gameState")

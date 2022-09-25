@@ -89,3 +89,4 @@ func GetJoinedGames(ctx context.Context, db *sql.DB, userId string) ([]string, e
 
 	return ids, nil
 }
+

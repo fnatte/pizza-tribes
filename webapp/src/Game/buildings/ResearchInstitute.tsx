@@ -10,10 +10,11 @@ import {
   ResearchInfo,
   ResearchTree,
 } from "../../generated/research";
-import { ReactComponent as SvgResearchInstitute } from "../../../images/research-institute.svg";
 import { uniq } from "lodash";
 import { Coin, GeniusFlash, Pizza } from "../../icons";
 import ReactMarkdown from "react-markdown";
+import { Building } from "../../generated/building";
+import BuildingImage from "../components/BuildingImage";
 
 function getAreaName(area: ResearchTree): string {
   switch (area) {
@@ -400,7 +401,7 @@ function ResearchInstitute() {
     <div className={classnames("px-2", "w-full", "max-w-2xl", "mb-8")}>
       <h2>Research Institute</h2>
       <Link to="">
-        <SvgResearchInstitute height={100} width={100} />
+        <BuildingImage building={Building.RESEARCH_INSTITUTE} width={182} height={182} />
       </Link>
       <p className={classnames("my-4", "text-gray-700")}>
         Looking for the next big thing? Spend some coins on research!
