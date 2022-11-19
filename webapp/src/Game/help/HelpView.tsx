@@ -20,6 +20,7 @@ import { Guard } from "./educations/Guard";
 import { Thief } from "./educations/Thief";
 import { Publicist } from "./educations/Publicist";
 import { Demand } from "./concepts/Demand";
+import { Quality } from "./concepts/Quality";
 import { Concepts } from "./concepts/Index";
 import { RushHour } from "./concepts/RushHour";
 
@@ -105,6 +106,7 @@ const HelpView: React.VFC<{}> = () => {
             <Route path="concepts">
               <Route index element={<Concepts />} />
               <Route path="demand" element={<Demand />} />
+              <Route path="quality" element={<Quality />} />
               <Route path="rush-hour" element={<RushHour />} />
             </Route>
           </Routes>

@@ -153,6 +153,11 @@ export function HelpMenu({
                     </Link>
                   </li>
                   <li>
+                    <Link {...linkProps} to="concepts/quality">
+                      Quality
+                    </Link>
+                  </li>
+                  <li>
                     <Link {...linkProps} to="concepts/rush-hour">
                       Rush Hour
                     </Link>
