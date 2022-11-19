@@ -73,6 +73,8 @@ function QuestRewardSection({
                   })}
                   onClick={() => setSelectedReward(item)}
                   disabled={!canClaimReward}
+                  data-selected={selectedReward === item}
+                  data-cy="quest-item-oneof-item"
                 >
                   <MouseImagePart id={item} />
                 </button>
@@ -88,7 +90,7 @@ function QuestRewardSection({
         <div className="mt-4">
           <button
             className={primaryButton}
-            onClick={() => claimQuestReward(quest.id)}
+            onClick={() => claimQuestReward(quest.id, hasOneOfItems ? selectedReward : undefined)}
             disabled={hasOneOfItems && !selectedReward}
             data-cy="quest-item-claim-reward-button"
           >

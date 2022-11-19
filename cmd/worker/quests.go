@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math/rand"
 
 	"github.com/fnatte/pizza-tribes/internal/game"
 	"github.com/fnatte/pizza-tribes/internal/game/gamestate"
@@ -73,6 +72,7 @@ func (h *handler) handleClaimQuestReward(ctx context.Context, userId string, m *
 	log.Info().
 		Str("userId", userId).
 		Str("questId", m.QuestId).
+		Str("selectedItem", m.SelectedOneOfItem).
 		Msg("Received claim quest reward message")
 
 	var q *models.Quest
@@ -84,6 +84,26 @@ func (h *handler) handleClaimQuestReward(ctx context.Context, userId string, m *
 	}
 	if q == nil {
 		return errors.New("could not find quest")
+	}
+
+	itemIndex := 0
+
+	if len(q.Reward.OneOfItems) > 0 {
+		if m.SelectedOneOfItem == "" {
+			return errors.New("must select item")
+		}
+
+		validItem := false
+		for i, item := range q.Reward.OneOfItems {
+			if item == m.SelectedOneOfItem {
+				validItem = true
+				itemIndex = i
+				break
+			}
+		}
+		if !validItem {
+			return errors.New("selected item was not one of the available ones")
+		}
 	}
 
 	tx, err := h.updater.PerformUpdate(ctx, userId, func(gs *models.GameState, tx *gamestate.GameTx) error {
@@ -100,7 +120,7 @@ func (h *handler) handleClaimQuestReward(ctx context.Context, userId string, m *
 			txu.IncrPizzas(q.Reward.Pizzas)
 		}
 		if len(q.Reward.OneOfItems) > 0 {
-			item := q.Reward.OneOfItems[rand.Intn(len(q.Reward.OneOfItems))]
+			item := q.Reward.OneOfItems[itemIndex]
 			txu.AppendAppearancePart(item)
 		}
 

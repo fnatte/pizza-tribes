@@ -220,4 +220,36 @@ describe("quests", () => {
     cy.get('[data-cy="quest-item-claim-reward-button"]').should("not.exist");
     cy.get('[data-cy="quest-item"]').should("contain.text", "claimed");
   });
+
+  it.only("can claim item reward", () => {
+    // Make quest 4 completed but not yet rewarded
+    cy.adminPatchGameState(
+      GameStatePatch.create({
+        gameState: {
+          quests: {
+            "4": {
+              opened: true,
+              completed: true,
+              claimedReward: false,
+            },
+          },
+        },
+        patchMask: {
+          paths: ["quests"],
+        },
+      })
+    );
+
+    cy.adminGetGameState().its('appearanceParts').should('be.empty');
+
+    // Claim reward
+    cy.get('[data-cy="quest-item"]').contains('Claim reward').expand();
+    cy.get('[data-cy="quest-item-oneof-item"]:nth-child(2)').click();
+    cy.get('[data-cy="quest-item-oneof-item"]:nth-child(2)').should('have.attr', 'data-selected', 'true');
+    cy.get('[data-cy="quest-item-claim-reward-button"]').click();
+    cy.get('[data-cy="quest-item-claim-reward-button"]').should("not.exist");
+    cy.get('[data-cy="quest-item"]').should("contain.text", "claimed");
+
+    cy.adminGetGameState().its('appearanceParts').should('contain', 'cap1');
+  });
 });
