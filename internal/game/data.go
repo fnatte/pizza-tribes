@@ -373,8 +373,8 @@ var ResearchMap = map[int32]*ResearchInfo{
 		X:            200,
 		Y:            289,
 	},
-	int32(ResearchDiscovery_STRESS_HANDLING): {
-		Title:       "Stress Handling",
+	int32(ResearchDiscovery_STRESS_MANAGEMENT): {
+		Title:       "Stress Manage­ment",
 		Description: "It can get quite hectic in the pizza business. Further, it seems like mice make more mistakes when stressed -- how can we thrive in this chaotic environment?",
 		Rewards: []*models.ResearchInfo_Reward{{
 			Attribute: "Production",

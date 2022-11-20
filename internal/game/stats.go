@@ -18,7 +18,7 @@ func calculateSalesBonus(gs *GameState) float64 {
 	if gs.HasDiscovery(ResearchDiscovery_WHITEBOARD) {
 		bonus = bonus + 0.5
 	}
-	if gs.HasDiscovery(ResearchDiscovery_STRESS_HANDLING) {
+	if gs.HasDiscovery(ResearchDiscovery_STRESS_MANAGEMENT) {
 		bonus = bonus + 0.20
 	}
 
@@ -41,7 +41,7 @@ func calculateBakeBonus(gs *GameState) float64 {
 	if gs.HasDiscovery(ResearchDiscovery_KITCHEN_STRATEGY) {
 		bonus = bonus + 0.15
 	}
-	if gs.HasDiscovery(ResearchDiscovery_STRESS_HANDLING) {
+	if gs.HasDiscovery(ResearchDiscovery_STRESS_MANAGEMENT) {
 		bonus = bonus + 0.20
 	}
 
