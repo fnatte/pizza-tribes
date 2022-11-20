@@ -4,8 +4,8 @@ import (
 	. "github.com/fnatte/pizza-tribes/internal/game/models"
 )
 
-const CHEF_PIZZAS_PER_SECOND = 0.2
-const SALESMICE_SELLS_PER_SECOND = 0.5
+const CHEF_PIZZAS_PER_SECOND = 0.45
+const SALESMICE_SELLS_PER_SECOND = 0.35
 const DEMAND_BASE = 1
 const DEMAND_RUSH_HOUR_BONUS = 1.5
 
