@@ -94,14 +94,15 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *models.Client
 		// Determine what resource to increase and how much
 		var incrType string
 		var incrAmount int32
-		factor := math.Sqrt(float64(lot.Level+1) * float64(lot.Streak+1)) * getTapBonusFactor(gs)
 		switch lot.Building {
 		case models.Building_KITCHEN:
+			f := 70.0 + 12.0 * math.Pow(float64(lot.Level) + 1, 1.35) * math.Sqrt(float64(lot.Streak)+1) * getTapBonusFactor(gs)
 			incrType = "pizzas"
-			incrAmount = int32(math.Round(80*factor/5) * 5)
+			incrAmount = int32(math.Round(f/5) * 5)
 		case models.Building_SHOP:
+			f := 35.0 + 4.0 * math.Pow(float64(lot.Level) + 1, 1.75) * math.Sqrt(float64(lot.Streak)+1) * getTapBonusFactor(gs)
 			incrType = "coins"
-			incrAmount = int32(math.Round(35*factor/5) * 5)
+			incrAmount = int32(math.Round(f/5) * 5)
 		default:
 			return fmt.Errorf("this building cannot be tapped")
 		}

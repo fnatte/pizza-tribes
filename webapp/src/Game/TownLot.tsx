@@ -87,16 +87,16 @@ const TapSection: React.FC<{ lotId: string; lot: Lot }> = ({ lot, lotId }) => {
 
   let tapResource: "pizzas" | "coins";
   let tapGains;
-  const factor =
-    Math.sqrt((lot.level + 1) * (streak + 1)) * getTapBonusFactor(discoveries);
   switch (lot.building) {
     case Building.KITCHEN:
       tapResource = "pizzas";
-      tapGains = Math.round((80 * factor) / 5) * 5;
+      tapGains = 70 + 12 * Math.pow((lot.level + 1), 1.35) * Math.sqrt(streak+1) * getTapBonusFactor(discoveries);
+      tapGains = Math.round(tapGains / 5) * 5;
       break;
     case Building.SHOP:
       tapResource = "coins";
-      tapGains = Math.round((35 * factor) / 5) * 5;
+      tapGains = 35 + 4 * Math.pow((lot.level + 1), 1.75) * Math.sqrt(streak+1) * getTapBonusFactor(discoveries);
+      tapGains = Math.round(tapGains / 5) * 5;
       break;
     default:
       return null;
