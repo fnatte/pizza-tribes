@@ -3,7 +3,11 @@ import classnames from "classnames";
 import { Link, Route, Routes, useNavigate, useParams } from "react-router-dom";
 import { useStore } from "../../store";
 import { button, primaryButton } from "../../styles";
-import { formatNanoTimestampToNowShort, formatNumber } from "../../utils";
+import {
+  formatDurationShort,
+  formatNanoTimestampToNowShort,
+  formatNumber,
+} from "../../utils";
 import { ReactComponent as SvgArrowRight } from "images/icons/arrow-right.svg";
 import {
   ResearchDiscovery,
@@ -220,6 +224,9 @@ function ResearchSection() {
           </svg>
           {nodes.map((r) => {
             const isResearched = discoveries.includes(r.discovery);
+            const hasRequirements = Boolean(
+              r && r.requirements.every((x) => discoveries.includes(x))
+            );
 
             return (
               <button
@@ -239,7 +246,8 @@ function ResearchSection() {
                   "p-2",
                   {
                     "ring-4 ring-offset-4 ring-green-600": r === selected,
-                    "bg-green-50 text-black border-gray-400": !isResearched,
+                    "bg-green-50 text-black border-gray-600": !isResearched && hasRequirements,
+                    "bg-gray-50 text-gray-600 border-gray-200": !isResearched && !hasRequirements,
                     "bg-green-600 text-white font-bold border-green-600": isResearched,
                   }
                 )}
@@ -254,24 +262,36 @@ function ResearchSection() {
       </div>
       {selected !== null && (
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-green-50 shadow-[0_0_16px_0_rgba(0,0,0,0.3)]">
-          <h4>{selected.title}</h4>
-          <ReactMarkdown className={"prose text-black text-sm md:text-lg"}>
-            {selected.description}
-          </ReactMarkdown>
-          <div className="flex justify-center mt-4 gap-8">
-            {selected.rewards.map((reward) => (
-              <div className="text-black text-center" key={reward.attribute}>
-                <div className="text-md text-gray-800">{reward.attribute}</div>
-                <div className="text-3xl">{reward.value}</div>
-              </div>
-            ))}
+          <div className="container mx-auto">
+            <h4 className="text-center">{selected.title}</h4>
+            <ReactMarkdown
+              className={"prose mx-auto text-black text-sm md:text-lg"}
+            >
+              {selected.description}
+            </ReactMarkdown>
+            <div className="flex flex-row justify-center items-center mt-2 gap-2">
+              <span className="text-sm">Research time: </span>
+              <span className="text-bold text-black">
+                {formatDurationShort(selected.researchTime)}
+              </span>
+            </div>
+            <div className="flex justify-center mt-2 gap-8">
+              {selected.rewards.map((reward) => (
+                <div className="text-black text-center" key={reward.attribute}>
+                  <div className="text-md text-gray-800">
+                    {reward.attribute}
+                  </div>
+                  <div className="text-3xl">{reward.value}</div>
+                </div>
+              ))}
+            </div>
           </div>
           <div className="flex mt-4 gap-8 justify-center items-center">
             <button
               className={classnames(...button, "bg-cyan-600")}
               onClick={() => setSelected(null)}
             >
-              Cancel
+              Back
             </button>
             {hasResearchedSelected ? (
               <span>Already researched</span>
@@ -293,6 +313,7 @@ function ResearchSection() {
                 data-cy="start-research-button"
               >
                 Research
+                <GeniusFlash className="ml-1 inline-block h-[1em] w-[1em]" />
               </button>
             )}
           </div>
@@ -401,10 +422,14 @@ function ResearchInstitute() {
     <div className={classnames("px-2", "w-full", "max-w-2xl", "mb-8")}>
       <h2>Research Institute</h2>
       <Link to="">
-        <BuildingImage building={Building.RESEARCH_INSTITUTE} width={182} height={182} />
+        <BuildingImage
+          building={Building.RESEARCH_INSTITUTE}
+          width={182}
+          height={182}
+        />
       </Link>
       <p className={classnames("my-4", "text-gray-700")}>
-        Looking for the next big thing? Spend some coins on research!
+        Looking for the next big thing? Do the research!
       </p>
 
       <Routes>
