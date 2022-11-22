@@ -20,7 +20,7 @@ enum ResearchDiscovery {
 
   WHITEBOARD = 11;
   KITCHEN_STRATEGY = 12;
-  STRESS_HANDLING = 13;
+  STRESS_MANAGEMENT = 13;
 
   SLAM = 14;
   HIT_IT = 15;

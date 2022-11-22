@@ -64,6 +64,9 @@ func main() {
 	pushNotificationsController := &PushNotificationsController{
 		auth: auth,
 		r:    rc}
+	demandLeaderboardController := &DemandLeaderboardController{
+		auth:        auth,
+		marketRepo: marketRepo}
 
 	r := mux.NewRouter()
 	r.Handle("/ws", wsEndpoint)
@@ -72,6 +75,7 @@ func main() {
 	registerSubrouter(r, "/world", worldController.Handler())
 	registerSubrouter(r, "/user", userController.Handler())
 	registerSubrouter(r, "/leaderboard", leaderboardController.Handler())
+	registerSubrouter(r, "/demand_leaderboard", demandLeaderboardController.Handler())
 	registerSubrouter(r, "/push_notifications", pushNotificationsController.Handler())
 
 	// Start web socket loop

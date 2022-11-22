@@ -16,3 +16,17 @@ message Leaderboard {
   repeated Row rows = 2;
 }
 
+message DemandLeaderboard {
+  message Row {
+    string userId = 1;
+    string username = 2;
+    double demand = 3;
+    double marketShare = 4;
+  }
+
+  // Defines how many leader rows have been skipped in this leaderboard result
+  int32 skip = 1; 
+
+  repeated Row rows = 2;
+}
+

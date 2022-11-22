@@ -416,7 +416,7 @@ func main() {
 	notifyRepo := persist.NewNotifyRepository(rc)
 	worldRepo := persist.NewWorldRepository(rc)
 	marketRepo := persist.NewMarketRepository(rc)
-	u2 := gamestate.NewUpdater(gsRepo, reportsRepo, userRepo, notifyRepo, worldRepo)
+	u2 := gamestate.NewUpdater(gsRepo, reportsRepo, userRepo, notifyRepo, marketRepo, worldRepo)
 	u := updater{
 		r: rc, world: world, leaderboard: leaderboard, gsRepo: gsRepo,
 		reportsRepo: reportsRepo, worldRepo: worldRepo, marketRepo: marketRepo,

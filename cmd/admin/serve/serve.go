@@ -44,10 +44,10 @@ func Serve() {
 	notifyRepo := persist.NewNotifyRepository(rc)
 	worldRepo := persist.NewWorldRepository(rc)
 	gameUserRepo := persist.NewGameUserRepository(rc)
-	// marketRepo := persist.NewMarketRepository(rc)
+	marketRepo := persist.NewMarketRepository(rc)
 	world := game.NewWorldService(rc)
 	userRepo := persistsql.NewUserRepo(sqldb)
-	updater := gamestate.NewUpdater(gsRepo, reportsRepo, gameUserRepo, notifyRepo, worldRepo)
+	updater := gamestate.NewUpdater(gsRepo, reportsRepo, gameUserRepo, notifyRepo, marketRepo, worldRepo)
 
 	userDeleter := services.NewUserDeleter(gameUserRepo, gsRepo, world, userRepo)
 

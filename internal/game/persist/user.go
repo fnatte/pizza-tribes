@@ -53,11 +53,6 @@ func (r *userRepo) GetAllUsers(ctx context.Context) ([]string, error) {
 func (r *userRepo) DeleteUser(ctx context.Context, userId string) error {
 	key := fmt.Sprintf("user:%s", userId)
 
-	u, err := r.GetUser(ctx, userId)
-	if err != nil {
-		return err
-	}
-
 	pipe := r.rdb.Pipeline()
 	pipe.Del(ctx, fmt.Sprintf("%s:latest_activity", key))
 	pipe.Del(ctx, fmt.Sprintf("%s:reports", key))
@@ -67,12 +62,17 @@ func (r *userRepo) DeleteUser(ctx context.Context, userId string) error {
 	pipe.Del(ctx, fmt.Sprintf("%s:ts_pizzas", key))
 	pipe.Del(ctx, fmt.Sprintf("%s:ts_coins", key))
 	pipe.Del(ctx, key)
-	pipe.Del(ctx, fmt.Sprintf("username:%s", u.Username))
 	pipe.SRem(ctx, "users", userId)
 	pipe.ZRem(ctx, "user_updates", userId)
 	pipe.ZRem(ctx, "leaderboard", userId)
+	pipe.ZRem(ctx, "demands", userId)
 
-	_, err = pipe.Exec(ctx)
+	if u, _ := r.GetUser(ctx, userId); u != nil {
+		pipe.Del(ctx, fmt.Sprintf("username:%s", u.Username))
+	}
+
+	_, err := pipe.Exec(ctx)
+
 	return err
 }
 

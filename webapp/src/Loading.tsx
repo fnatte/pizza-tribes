@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import classnames from "classnames";
 import { Hearts } from "./icons";
 
@@ -13,7 +13,7 @@ export function Loading() {
         "-translate-x-1/2"
       )}
     >
-      <Hearts />
+      <Hearts className="fill-green-600" />
     </div>
   );
 }

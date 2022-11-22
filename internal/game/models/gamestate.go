@@ -54,3 +54,20 @@ func (gs *GameState) GetValidPizzaPrice() int32 {
 	return p
 }
 
+func (gs *GameState) CountTownPopulationEducations() map[Education]int32 {
+	res := map[Education]int32{}
+	for _, m := range gs.Mice {
+		if m.IsEducated {
+			res[m.Education] = res[m.Education] + 1
+		}
+	}
+
+	for _, t := range gs.TravelQueue {
+		if t.Thieves > 0 {
+			res[Education_THIEF] = res[Education_THIEF] - t.Thieves
+		}
+	}
+
+	return res
+}
+

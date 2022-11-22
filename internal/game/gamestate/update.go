@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/fnatte/pizza-tribes/internal/game/market"
 	"github.com/fnatte/pizza-tribes/internal/game/models"
 	"github.com/fnatte/pizza-tribes/internal/game/persist"
 )
@@ -16,6 +17,7 @@ type updater struct {
 	reportsRepo persist.ReportsRepository
 	userRepo    persist.GameUserRepository
 	notifyRepo  persist.NotifyRepository
+	marketRepo  persist.MarketRepository
 	worldRepo  persist.WorldRepository
 }
 
@@ -27,12 +29,14 @@ func NewUpdater(gsRepo persist.GameStateRepository,
 	reportsRepo persist.ReportsRepository,
 	userRepo persist.GameUserRepository,
 	notifyRepo persist.NotifyRepository,
+	marketRepo persist.MarketRepository,
 	worldRepo persist.WorldRepository) *updater {
 	return &updater{
 		gsRepo:      gsRepo,
 		userRepo:    userRepo,
 		reportsRepo: reportsRepo,
 		notifyRepo:  notifyRepo,
+		marketRepo: marketRepo,
 		worldRepo:   worldRepo,
 	}
 }
@@ -82,6 +86,14 @@ func (u *updater) persistTx(ctx context.Context, tx *GameTx) error {
 				if err = u.reportsRepo.Save(ctx, userId, report); err != nil {
 					return fmt.Errorf("failed to save report: %w", err)
 				}
+			}
+		}
+
+		if txu.StatsInvalidated {
+			// Update user demand score
+			demandScore := market.CalculateDemandScore(txu.Gs)
+			if err = u.marketRepo.SetUserDemandScore(ctx, userId, demandScore); err != nil {
+				return fmt.Errorf("failed to set user demand score: %w", err)
 			}
 		}
 

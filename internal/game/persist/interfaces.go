@@ -65,6 +65,8 @@ type NotifyRepository interface {
 type MarketRepository interface {
 	GetGlobalDemandScore(ctx context.Context) (float64, error)
 	SetUserDemandScore(ctx context.Context, userId string, demand float64) error
+	GetDemandRankByUserId(ctx context.Context, userId string) (int64, error)
+	GetDemandLeaderboard(ctx context.Context, skip int) (*models.DemandLeaderboard, error)
 }
 
 type WorldRepository interface {

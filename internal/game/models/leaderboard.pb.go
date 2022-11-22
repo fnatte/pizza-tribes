@@ -81,6 +81,62 @@ func (x *Leaderboard) GetRows() []*Leaderboard_Row {
 	return nil
 }
 
+type DemandLeaderboard struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Defines how many leader rows have been skipped in this leaderboard result
+	Skip int32                    `protobuf:"varint,1,opt,name=skip,proto3" json:"skip,omitempty"`
+	Rows []*DemandLeaderboard_Row `protobuf:"bytes,2,rep,name=rows,proto3" json:"rows,omitempty"`
+}
+
+func (x *DemandLeaderboard) Reset() {
+	*x = DemandLeaderboard{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_leaderboard_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *DemandLeaderboard) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DemandLeaderboard) ProtoMessage() {}
+
+func (x *DemandLeaderboard) ProtoReflect() protoreflect.Message {
+	mi := &file_leaderboard_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DemandLeaderboard.ProtoReflect.Descriptor instead.
+func (*DemandLeaderboard) Descriptor() ([]byte, []int) {
+	return file_leaderboard_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *DemandLeaderboard) GetSkip() int32 {
+	if x != nil {
+		return x.Skip
+	}
+	return 0
+}
+
+func (x *DemandLeaderboard) GetRows() []*DemandLeaderboard_Row {
+	if x != nil {
+		return x.Rows
+	}
+	return nil
+}
+
 type Leaderboard_Row struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -94,7 +150,7 @@ type Leaderboard_Row struct {
 func (x *Leaderboard_Row) Reset() {
 	*x = Leaderboard_Row{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_leaderboard_proto_msgTypes[1]
+		mi := &file_leaderboard_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -107,7 +163,7 @@ func (x *Leaderboard_Row) String() string {
 func (*Leaderboard_Row) ProtoMessage() {}
 
 func (x *Leaderboard_Row) ProtoReflect() protoreflect.Message {
-	mi := &file_leaderboard_proto_msgTypes[1]
+	mi := &file_leaderboard_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -144,6 +200,77 @@ func (x *Leaderboard_Row) GetCoins() int64 {
 	return 0
 }
 
+type DemandLeaderboard_Row struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	UserId      string  `protobuf:"bytes,1,opt,name=userId,proto3" json:"userId,omitempty"`
+	Username    string  `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
+	Demand      float64 `protobuf:"fixed64,3,opt,name=demand,proto3" json:"demand,omitempty"`
+	MarketShare float64 `protobuf:"fixed64,4,opt,name=marketShare,proto3" json:"marketShare,omitempty"`
+}
+
+func (x *DemandLeaderboard_Row) Reset() {
+	*x = DemandLeaderboard_Row{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_leaderboard_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *DemandLeaderboard_Row) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DemandLeaderboard_Row) ProtoMessage() {}
+
+func (x *DemandLeaderboard_Row) ProtoReflect() protoreflect.Message {
+	mi := &file_leaderboard_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DemandLeaderboard_Row.ProtoReflect.Descriptor instead.
+func (*DemandLeaderboard_Row) Descriptor() ([]byte, []int) {
+	return file_leaderboard_proto_rawDescGZIP(), []int{1, 0}
+}
+
+func (x *DemandLeaderboard_Row) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *DemandLeaderboard_Row) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+func (x *DemandLeaderboard_Row) GetDemand() float64 {
+	if x != nil {
+		return x.Demand
+	}
+	return 0
+}
+
+func (x *DemandLeaderboard_Row) GetMarketShare() float64 {
+	if x != nil {
+		return x.MarketShare
+	}
+	return 0
+}
+
 var File_leaderboard_proto protoreflect.FileDescriptor
 
 var file_leaderboard_proto_rawDesc = []byte{
@@ -159,11 +286,24 @@ var file_leaderboard_proto_rawDesc = []byte{
 	0x73, 0x65, 0x72, 0x49, 0x64, 0x12, 0x1a, 0x0a, 0x08, 0x75, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d,
 	0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x75, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d,
 	0x65, 0x12, 0x14, 0x0a, 0x05, 0x63, 0x6f, 0x69, 0x6e, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03,
-	0x52, 0x05, 0x63, 0x6f, 0x69, 0x6e, 0x73, 0x42, 0x35, 0x5a, 0x33, 0x67, 0x69, 0x74, 0x68, 0x75,
-	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x66, 0x6e, 0x61, 0x74, 0x74, 0x65, 0x2f, 0x70, 0x69, 0x7a,
-	0x7a, 0x61, 0x2d, 0x74, 0x72, 0x69, 0x62, 0x65, 0x73, 0x2f, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6e,
-	0x61, 0x6c, 0x2f, 0x67, 0x61, 0x6d, 0x65, 0x2f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x62, 0x06,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x52, 0x05, 0x63, 0x6f, 0x69, 0x6e, 0x73, 0x22, 0xd4, 0x01, 0x0a, 0x11, 0x44, 0x65, 0x6d, 0x61,
+	0x6e, 0x64, 0x4c, 0x65, 0x61, 0x64, 0x65, 0x72, 0x62, 0x6f, 0x61, 0x72, 0x64, 0x12, 0x12, 0x0a,
+	0x04, 0x73, 0x6b, 0x69, 0x70, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x04, 0x73, 0x6b, 0x69,
+	0x70, 0x12, 0x36, 0x0a, 0x04, 0x72, 0x6f, 0x77, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32,
+	0x22, 0x2e, 0x70, 0x69, 0x7a, 0x7a, 0x61, 0x74, 0x72, 0x69, 0x62, 0x65, 0x73, 0x2e, 0x44, 0x65,
+	0x6d, 0x61, 0x6e, 0x64, 0x4c, 0x65, 0x61, 0x64, 0x65, 0x72, 0x62, 0x6f, 0x61, 0x72, 0x64, 0x2e,
+	0x52, 0x6f, 0x77, 0x52, 0x04, 0x72, 0x6f, 0x77, 0x73, 0x1a, 0x73, 0x0a, 0x03, 0x52, 0x6f, 0x77,
+	0x12, 0x16, 0x0a, 0x06, 0x75, 0x73, 0x65, 0x72, 0x49, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x06, 0x75, 0x73, 0x65, 0x72, 0x49, 0x64, 0x12, 0x1a, 0x0a, 0x08, 0x75, 0x73, 0x65, 0x72,
+	0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x75, 0x73, 0x65, 0x72,
+	0x6e, 0x61, 0x6d, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x64, 0x65, 0x6d, 0x61, 0x6e, 0x64, 0x18, 0x03,
+	0x20, 0x01, 0x28, 0x01, 0x52, 0x06, 0x64, 0x65, 0x6d, 0x61, 0x6e, 0x64, 0x12, 0x20, 0x0a, 0x0b,
+	0x6d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x53, 0x68, 0x61, 0x72, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28,
+	0x01, 0x52, 0x0b, 0x6d, 0x61, 0x72, 0x6b, 0x65, 0x74, 0x53, 0x68, 0x61, 0x72, 0x65, 0x42, 0x35,
+	0x5a, 0x33, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x66, 0x6e, 0x61,
+	0x74, 0x74, 0x65, 0x2f, 0x70, 0x69, 0x7a, 0x7a, 0x61, 0x2d, 0x74, 0x72, 0x69, 0x62, 0x65, 0x73,
+	0x2f, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x2f, 0x67, 0x61, 0x6d, 0x65, 0x2f, 0x6d,
+	0x6f, 0x64, 0x65, 0x6c, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -178,18 +318,21 @@ func file_leaderboard_proto_rawDescGZIP() []byte {
 	return file_leaderboard_proto_rawDescData
 }
 
-var file_leaderboard_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_leaderboard_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_leaderboard_proto_goTypes = []interface{}{
-	(*Leaderboard)(nil),     // 0: pizzatribes.Leaderboard
-	(*Leaderboard_Row)(nil), // 1: pizzatribes.Leaderboard.Row
+	(*Leaderboard)(nil),           // 0: pizzatribes.Leaderboard
+	(*DemandLeaderboard)(nil),     // 1: pizzatribes.DemandLeaderboard
+	(*Leaderboard_Row)(nil),       // 2: pizzatribes.Leaderboard.Row
+	(*DemandLeaderboard_Row)(nil), // 3: pizzatribes.DemandLeaderboard.Row
 }
 var file_leaderboard_proto_depIdxs = []int32{
-	1, // 0: pizzatribes.Leaderboard.rows:type_name -> pizzatribes.Leaderboard.Row
-	1, // [1:1] is the sub-list for method output_type
-	1, // [1:1] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	2, // 0: pizzatribes.Leaderboard.rows:type_name -> pizzatribes.Leaderboard.Row
+	3, // 1: pizzatribes.DemandLeaderboard.rows:type_name -> pizzatribes.DemandLeaderboard.Row
+	2, // [2:2] is the sub-list for method output_type
+	2, // [2:2] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_leaderboard_proto_init() }
@@ -211,7 +354,31 @@ func file_leaderboard_proto_init() {
 			}
 		}
 		file_leaderboard_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DemandLeaderboard); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_leaderboard_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Leaderboard_Row); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_leaderboard_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DemandLeaderboard_Row); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -229,7 +396,7 @@ func file_leaderboard_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_leaderboard_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
