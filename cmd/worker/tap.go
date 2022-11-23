@@ -71,7 +71,7 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *models.Client
 
 		// Set reset time to the beginning of the next hour after TappedAt,
 		// and streak time to the hour after that.
-		resetTime := time.Unix(0, lot.TappedAt).Add(1 * time.Hour).Truncate(1 * time.Hour)
+		resetTime := time.Unix(0, lot.TappedAt).Add(1 * time.Hour / time.Duration(h.speed)).Truncate(1 * time.Hour / time.Duration(h.speed))
 		resetStreakTime := resetTime.Add(getTapResetStreakTime(gs))
 
 		// Reset streak if we are past the reset streak time
@@ -96,11 +96,11 @@ func (h *handler) handleTap(ctx context.Context, userId string, m *models.Client
 		var incrAmount int32
 		switch lot.Building {
 		case models.Building_KITCHEN:
-			f := 70.0 + 12.0 * math.Pow(float64(lot.Level) + 1, 1.35) * math.Sqrt(float64(lot.Streak)+1) * getTapBonusFactor(gs)
+			f := 70.0 + 12.0 * math.Pow(float64(lot.Level) + 1, 1.35) * math.Sqrt(float64(lot.Streak)+1) * getTapBonusFactor(gs) * h.speed
 			incrType = "pizzas"
 			incrAmount = int32(math.Round(f/5) * 5)
 		case models.Building_SHOP:
-			f := 35.0 + 4.0 * math.Pow(float64(lot.Level) + 1, 1.75) * math.Sqrt(float64(lot.Streak)+1) * getTapBonusFactor(gs)
+			f := 35.0 + 4.0 * math.Pow(float64(lot.Level) + 1, 1.75) * math.Sqrt(float64(lot.Streak)+1) * getTapBonusFactor(gs) * h.speed
 			incrType = "coins"
 			incrAmount = int32(math.Round(f/5) * 5)
 		default:

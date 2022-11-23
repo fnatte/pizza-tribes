@@ -45,5 +45,6 @@ message EntriesResponse {
 message World {
   map<string, WorldEntry> entries = 1;
   WorldState state = 2;
+  double speed = 3;
 }
 

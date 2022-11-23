@@ -127,6 +127,41 @@ var setGameStartTimeCmd = &cobra.Command{
 	},
 }
 
+var setGameSpeedCmd = &cobra.Command{
+	Use:   "speed",
+	Short: "Get or set the game speed",
+	Args:  cobra.MaximumNArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		ctx := cmd.Context()
+		rc := db.NewRedisClient()
+		world := game.NewWorldService(rc)
+
+		// Get start time
+		if len(args) == 0 {
+			speed, err := world.GetSpeed(ctx)
+			if err != nil {
+				return err
+			}
+
+			fmt.Println(speed)
+			return nil
+		}
+
+		speed, err := strconv.ParseFloat(args[0], 64)
+		if err != nil {
+			return err
+		}
+
+		err = world.SetSpeed(ctx, speed)
+		if err != nil {
+			return err
+		}
+
+		fmt.Printf("Speed set to %f\n", speed)
+
+		return nil
+	},
+}
 
 
 func init() {
@@ -140,4 +175,5 @@ func init() {
 	gamesCmd.AddCommand(listGamesCmd)
 	gamesCmd.AddCommand(newGameCmd)
 	gamesCmd.AddCommand(setGameStartTimeCmd)
+	gamesCmd.AddCommand(setGameSpeedCmd)
 }

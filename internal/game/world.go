@@ -69,6 +69,14 @@ func (s *WorldService) SetStartTime(ctx context.Context, startTime int64) error 
 	return s.r.JsonSet(ctx, "world", ".state.startTime", startTime).Err()
 }
 
+func (s *WorldService) SetSpeed(ctx context.Context, speed float64) error {
+	return s.r.JsonSet(ctx, "world", ".speed", speed).Err()
+}
+
+func (s *WorldService) GetSpeed(ctx context.Context) (float64, error) {
+	return s.r.JsonGet(ctx, "world", ".speed").Float64()
+}
+
 func (s *WorldService) End(ctx context.Context, winnerUserId string) (*WorldState, error) {
 	state, err := s.GetState(ctx)
 	if err != nil {
@@ -267,6 +275,7 @@ func (s *WorldService) Initialize(ctx context.Context) error {
 				Type:      &WorldState_Starting_{},
 				StartTime: time.Now().Truncate(24 * time.Hour).Add(36 * time.Hour).Unix(),
 			},
+			Speed: 1,
 		}
 
 		b, err := protojson.MarshalWithUnpopulated(&world)

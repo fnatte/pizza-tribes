@@ -28,6 +28,8 @@ func envOrDefault(key string, defaultVal string) string {
 func main() {
 	log.Info().Msg("Starting worker")
 
+	ctx := context.Background()
+
 	debug := envOrDefault("DEBUG", "0") == "1"
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	if debug {
@@ -50,10 +52,16 @@ func main() {
 	marketRepo := persist.NewMarketRepository(rc)
 	updater := gamestate.NewUpdater(gsRepo, reportsRepo, userRepo, notifyRepo, marketRepo, worldRepo)
 
-	h := &handler{rdb: rc, world: world, gsRepo: gsRepo, reportsRepo: reportsRepo,
-		userRepo: userRepo, updater: updater, marketRepo: marketRepo}
+	speed, err := world.GetSpeed(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get game speed")
+		return
+	}
 
-	ctx := context.Background()
+	game.AlterGameDataForSpeed(speed)
+
+	h := &handler{rdb: rc, world: world, gsRepo: gsRepo, reportsRepo: reportsRepo,
+		userRepo: userRepo, updater: updater, marketRepo: marketRepo, speed: speed}
 
 	useFirebase := envOrDefault("FEATURE_FIREBASE", "0") == "1"
 	usePushNotifications := envOrDefault("FEATURE_PUSH_NOTIFICATIONS", "0") == "1"

@@ -71,10 +71,6 @@ const connect = (
       return;
     }
 
-    if (state.connecting) {
-      return
-    }
-
     if (pendingReconnectAttempt !== null) {
       window.clearTimeout(pendingReconnectAttempt);
       pendingReconnectAttempt = null;

@@ -46,6 +46,7 @@ type updater struct {
 	marketRepo  persist.MarketRepository
 	userRepo    persist.GameUserRepository
 	updater     gamestate.Updater
+	speed       float64
 }
 
 // Update the game state for the specified user
@@ -83,7 +84,7 @@ func (u *updater) update(ctx context.Context, userId string) {
 	 */
 
 	tx, err := u.updater.PerformUpdate(ctx, userId, func(gs *models.GameState, tx *gamestate.GameTx) error {
-		if err := extrapolate(userId, gs, tx, worldState, globalDemandScore, userCount); err != nil {
+		if err := extrapolate(userId, gs, tx, worldState, globalDemandScore, userCount, u.speed); err != nil {
 			return err
 		}
 		if err := completedConstructions(userId, gs, tx); err != nil {
@@ -92,7 +93,7 @@ func (u *updater) update(ctx context.Context, userId string) {
 		if err := completeTrainings(userId, gs, tx); err != nil {
 			return err
 		}
-		if err := completeTravels(ctx, userId, gs, tx, u.r, u.world); err != nil {
+		if err := completeTravels(ctx, userId, gs, tx, u.r, u.world, u.speed); err != nil {
 			return err
 		}
 		if err := completeResearchs(userId, gs, tx); err != nil {
@@ -391,6 +392,8 @@ func init() {
 func main() {
 	log.Info().Msg("Starting updater")
 
+	ctx := context.Background()
+
 	debug := envOrDefault("DEBUG", "0") == "1"
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	if debug {
@@ -417,12 +420,19 @@ func main() {
 	worldRepo := persist.NewWorldRepository(rc)
 	marketRepo := persist.NewMarketRepository(rc)
 	u2 := gamestate.NewUpdater(gsRepo, reportsRepo, userRepo, notifyRepo, marketRepo, worldRepo)
+
+	speed, err := world.GetSpeed(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get world speed")
+		return
+	}
+
+	game.AlterGameDataForSpeed(speed)
+
 	u := updater{
 		r: rc, world: world, leaderboard: leaderboard, gsRepo: gsRepo,
 		reportsRepo: reportsRepo, worldRepo: worldRepo, marketRepo: marketRepo,
-		userRepo: userRepo, updater: u2}
-
-	ctx := context.Background()
+		userRepo: userRepo, updater: u2, speed: speed}
 
 	for {
 		worldState, err := world.GetState(ctx)

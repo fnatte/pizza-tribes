@@ -16,13 +16,14 @@ import (
 )
 
 type handler struct {
-	rdb   redis.RedisClient
-	world *game.WorldService
-	gsRepo persist.GameStateRepository
+	rdb         redis.RedisClient
+	world       *game.WorldService
+	gsRepo      persist.GameStateRepository
 	reportsRepo persist.ReportsRepository
-	userRepo persist.GameUserRepository
-	marketRepo persist.MarketRepository
-	updater gamestate.Updater
+	userRepo    persist.GameUserRepository
+	marketRepo  persist.MarketRepository
+	updater     gamestate.Updater
+	speed       float64
 }
 
 func (h *handler) Handle(ctx context.Context, senderId string, m *models.ClientMessage) {
@@ -37,7 +38,7 @@ func (h *handler) Handle(ctx context.Context, senderId string, m *models.ClientM
 	if _, ok := state.Type.(*models.WorldState_Started_); !ok {
 		log.Info().Msg("Announcing world state.")
 		h.send(ctx, senderId, &models.ServerMessage{
-			Id:      xid.New().String(),
+			Id: xid.New().String(),
 			Payload: &models.ServerMessage_WorldState{
 				WorldState: state,
 			},
@@ -202,7 +203,7 @@ func (h *handler) sendGameTx(ctx context.Context, tx *gamestate.GameTx) error {
 	if len(errs) > 0 {
 		if len(errs) == 1 {
 			return fmt.Errorf("error when sending game tx: %w", errs[0])
-		} 
+		}
 		return fmt.Errorf("errors when sending game tx")
 	}
 

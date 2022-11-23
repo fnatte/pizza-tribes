@@ -68,6 +68,15 @@ func main() {
 		auth:        auth,
 		marketRepo: marketRepo}
 
+	speed, err := world.GetSpeed(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get game speed")
+		os.Exit(1)
+		return
+	}
+
+	game.AlterGameDataForSpeed(speed)
+
 	r := mux.NewRouter()
 	r.Handle("/ws", wsEndpoint)
 	r.HandleFunc("/gamedata", GameDataHandler)

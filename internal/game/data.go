@@ -1110,6 +1110,25 @@ var FullGameData = GameData{
 	GeniusFlashCosts: []*models.GeniusFlashCost{},
 }
 
+func AlterGameDataForSpeed(speed float64) {
+	for _, b := range FullGameData.Buildings {
+		for _, bl := range b.LevelInfos {
+			bl.ConstructionTime = int32(float64(bl.ConstructionTime) / speed)
+			if bl.FirstConstructionTime != nil {
+				bl.FirstConstructionTime.Value = int32(float64(bl.FirstConstructionTime.Value) / speed) 
+			}
+		}
+	}
+
+	for _, r := range FullGameData.Research {
+		r.ResearchTime = int32(float64(r.ResearchTime) / speed)
+	}
+
+	for _, e := range FullGameData.Educations {
+		e.TrainTime = int32(float64(e.TrainTime) / speed)
+	}
+}
+
 func polynomial1(x float64, a ...float64) float64 {
 	v := 0.0
 	for i := 0; i < len(a); i++ {
@@ -1148,3 +1167,4 @@ func init() {
 		FullGameData.GeniusFlashCosts = append(FullGameData.GeniusFlashCosts, cost)
 	}
 }
+

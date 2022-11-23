@@ -18,8 +18,8 @@ func CalculateArrivalTime(fromX, fromY, toX, toY int32, speed time.Duration) int
 	return time.Now().UnixNano() + int64(travelTime*1e9)
 }
 
-func GetThiefSpeed(gs *models.GameState) time.Duration {
-	nsec := float64(int64(ThiefSpeed))
+func GetThiefSpeed(gs *models.GameState, gameSpeed float64) time.Duration {
+	nsec := float64(int64(ThiefSpeed)) / gameSpeed
 
 	if gs.HasDiscovery(models.ResearchDiscovery_BOOTS_OF_HASTE) {
 		nsec *= 1.25
