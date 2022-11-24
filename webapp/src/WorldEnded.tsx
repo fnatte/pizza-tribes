@@ -9,6 +9,7 @@ import styles from "./styles";
 import { ReactComponent as HeartsSvg } from "../images/hearts.svg";
 import { useTimeoutFn } from "react-use";
 import LeaderboardView from "./Game/LeaderboardView";
+import { Link } from "react-router-dom";
 
 const InlineLoader: React.FC = () => {
   return (
@@ -30,10 +31,10 @@ export const WorldEnded: React.FC<{ state: WorldState }> = ({ state }) => {
     return null;
   }
 
-  const [enabled, setEnabled] = useState(false);
-  useTimeoutFn(() => setEnabled(true), 3000);
+  const [revealWinner, setRevealWinner] = useState(false);
+  useTimeoutFn(() => setRevealWinner(true), 3000);
 
-  const { data } = useUser(state.type.ended.winnerUserId, { enabled });
+  const { data } = useUser(state.type.ended.winnerUserId);
 
   return (
     <div
@@ -46,6 +47,19 @@ export const WorldEnded: React.FC<{ state: WorldState }> = ({ state }) => {
       )}
     >
       <Header />
+      <div className={classnames("mt-4")}>
+        <Link to="/games">
+          <button className={classnames(styles.primaryButton, "mr-2")}>
+            Games
+          </button>
+        </Link>
+        <button
+          className={classnames(styles.primaryButton, "mr-2")}
+          onClick={() => onClickLogout()}
+        >
+          Logout
+        </button>{" "}
+      </div>
       <div
         className={classnames(
           "container",
@@ -54,50 +68,45 @@ export const WorldEnded: React.FC<{ state: WorldState }> = ({ state }) => {
           "bg-green-200",
           "flex",
           "flex-col",
-          "items-center"
+          "items-center",
+          "mt-4"
         )}
       >
         <h3 className={classnames("mt-2", "mb-0")}>And the winner is...</h3>
         <h2 className={classnames("flex", "items-center", "h-16", "mt-0")}>
-          {data ? data.username : <InlineLoader />}
+          {revealWinner && data ? data.username : <InlineLoader />}
         </h2>
       </div>
-      {data ? (
-        <article
-          className={classnames(
-            "text-black",
-            "p-4",
-            "container",
-            "mx-auto",
-            "mt-4",
-            "px-4",
-            "max-w-md",
-            "bg-green-50",
-            "prose" as any
-          )}
-        >
-          <p>Hi,</p>
-          <p>
-            This game round has ended. Congratulations to {data.username} for
-            reaching 10,000,000 coins fastest.
-          </p>
-          <p>Thanks for playing, hope to see you next round.</p>
-          <p>
-            Yours truly,
-            <br />
-            Jerry
-          </p>
-        </article>
+      {revealWinner && data ? (
+        <>
+          <article
+            className={classnames(
+              "text-black",
+              "p-4",
+              "container",
+              "mx-auto",
+              "my-4",
+              "px-4",
+              "max-w-md",
+              "bg-green-50",
+              "prose" as any
+            )}
+          >
+            <p>Hi,</p>
+            <p>
+              This game round has ended. Congratulations to {data.username} for
+              reaching 10,000,000 coins fastest.
+            </p>
+            <p>Thanks for playing, hope to see you next round.</p>
+            <p>
+              Yours truly,
+              <br />
+              Jerry
+            </p>
+          </article>
+          <LeaderboardView />
+        </>
       ) : null}
-      <LeaderboardView />
-      <div className={classnames("mt-10")}>
-        <button
-          className={classnames(styles.primaryButton, "mr-2")}
-          onClick={() => onClickLogout()}
-        >
-          Logout
-        </button>{" "}
-      </div>
     </div>
   );
 };

@@ -7,7 +7,7 @@ type User = { username: string };
 
 export const useUser = (
   userId: string,
-  options: UseQueryOptions<User, unknown, User, string[]>
+  options?: UseQueryOptions<User, unknown, User, string[]>
 ) => {
   const queryResult = useQuery(
     ["user", userId],
