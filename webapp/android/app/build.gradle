@@ -1,6 +1,8 @@
 apply plugin: 'com.android.application'
 
 android {
+
+    namespace 'dev.teus.pizzatribes'
     compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
         applicationId "dev.teus.pizzatribes"
