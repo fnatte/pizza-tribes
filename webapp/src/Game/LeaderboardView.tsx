@@ -11,7 +11,11 @@ function useQuery() {
   return new URLSearchParams(useLocation().search);
 }
 
-export function TopThree({ rows }: { rows: { username: string; coins: string }[] }) {
+export function TopThree({
+  rows,
+}: {
+  rows: { username: string; coins: string }[];
+}) {
   return (
     <div className={classnames("max-w-lg", "w-full")}>
       <p className={classnames("text-gray-700", "text-center", "mb-2")}>
@@ -78,7 +82,11 @@ export function TopThree({ rows }: { rows: { username: string; coins: string }[]
   );
 }
 
-export function LeaderboardTable({ leaderboard }: { leaderboard: Leaderboard }) {
+export function LeaderboardTable({
+  leaderboard,
+}: {
+  leaderboard: Leaderboard;
+}) {
   return (
     <table
       data-cy="coins-leaderboard-table"
@@ -113,7 +121,7 @@ export function LeaderboardTable({ leaderboard }: { leaderboard: Leaderboard }) 
             </td>
             <td className={classnames("p-1", "pl-8")}>{row.username}</td>
             <td className={classnames("text-right", "p-1")}>
-              {formatNumber(Number(row.coins))}
+              {formatNumber(Math.min(Number(row.coins), 10_000_000))}
             </td>
             <td className={classnames("text-right", "p-1")}>
               {new Intl.NumberFormat(undefined, {
