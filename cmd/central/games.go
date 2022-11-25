@@ -184,13 +184,6 @@ func (c *GamesController) JoinGame(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = mama.JoinGame(ctx, c.sqldb, userId, gameId)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to join game")
-		w.WriteHeader(500)
-		return
-	}
-
 	user, err := c.userRepo.GetUser(ctx, userId)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get user")
@@ -212,6 +205,14 @@ func (c *GamesController) JoinGame(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(500)
 		return
 	}
+
+	err = mama.JoinGame(ctx, c.sqldb, userId, gameId)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to join game")
+		w.WriteHeader(500)
+		return
+	}
+
 
 	w.WriteHeader(204)
 }
