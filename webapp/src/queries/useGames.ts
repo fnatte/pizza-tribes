@@ -17,7 +17,7 @@ export const useGames = (options?: UseQueryOptions<Game[], unknown>) => {
     {
       ...options,
       retry,
-      staleTime: 10 * 60 * 1000,
+      staleTime: 1 * 60 * 1000,
     }
   );
 
