@@ -3,6 +3,7 @@ package mama
 import (
 	"context"
 	"database/sql"
+	"errors"
 )
 
 type Game struct {
@@ -15,6 +16,8 @@ type Game struct {
 type gameCreator struct {
 	db *sql.DB
 }
+
+var ErrGameNotFound = errors.New("game: not found")
 
 func NewGameCreator(db *sql.DB) *gameCreator {
 	return &gameCreator{db: db}
@@ -36,6 +39,9 @@ func GetGame(ctx context.Context, db *sql.DB, gameId string) (*Game, error) {
 	game := &Game{}
 	err := row.Scan(&game.Id, &game.Title, &game.Host, &game.Status)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrGameNotFound
+		}
 		return nil, err
 	}
 	return game, nil
