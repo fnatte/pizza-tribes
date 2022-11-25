@@ -7,8 +7,10 @@ import (
 	"time"
 
 	"github.com/fnatte/pizza-tribes/cmd/admin/db"
+	"github.com/fnatte/pizza-tribes/cmd/admin/services"
 	"github.com/fnatte/pizza-tribes/internal/game"
 	"github.com/fnatte/pizza-tribes/internal/game/models"
+	"github.com/fnatte/pizza-tribes/internal/gamelet"
 	"github.com/fnatte/pizza-tribes/internal/mama"
 	"github.com/spf13/cobra"
 )
@@ -163,6 +165,35 @@ var setGameSpeedCmd = &cobra.Command{
 	},
 }
 
+var archiveGameCmd = &cobra.Command{
+	Use:   "archive [gameId]",
+	Short: "Archive a game",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		ctx := cmd.Context()
+		gameId := args[0]
+
+		sqldb := db.NewSqlClient()
+
+		g, err := mama.GetGame(ctx, sqldb, gameId)
+		if err != nil {
+			return err
+		}
+
+		glc := gamelet.NewGameletClient(g.Host)
+		ga := services.NewGameArchiver(sqldb, glc)
+
+		fmt.Printf("Archiving game \"%s\" (%s) at host %s\n", g.Title, g.Id, g.Host)
+
+		if err := ga.ArchiveGame(ctx, gameId); err != nil {
+			return err
+		}
+
+		fmt.Println("Done.")
+
+		return nil
+	},
+}
 
 func init() {
 	newGameCmd.PersistentFlags().StringVar(&title, "title", "", "game title")
@@ -176,4 +207,5 @@ func init() {
 	gamesCmd.AddCommand(newGameCmd)
 	gamesCmd.AddCommand(setGameStartTimeCmd)
 	gamesCmd.AddCommand(setGameSpeedCmd)
+	gamesCmd.AddCommand(archiveGameCmd)
 }

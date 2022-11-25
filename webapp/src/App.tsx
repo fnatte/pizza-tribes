@@ -1,6 +1,7 @@
 import React from "react";
 import { QueryClientProvider } from "react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import ArchivedGamePage from "./ArchivedGamePage";
 import CreateAccountPage from "./CreateAccountPage";
 import GamePage from "./GamePage";
 import GamesPage from "./GamesPage";
@@ -39,6 +40,7 @@ function AuthorizedPages() {
 
       <Route path="/games" element={<GamesPage />} />
       <Route path="/game/:gameId/*" element={<GamePage />} />
+      <Route path="/archived-game/:gameId/*" element={<ArchivedGamePage />} />
     </Routes>
   );
 }

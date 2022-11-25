@@ -50,12 +50,7 @@ func JoinGame(ctx context.Context, db *sql.DB, userId string, gameId string) err
 	return nil
 }
 
-func GetAllGames(ctx context.Context, db *sql.DB) ([]*Game, error) {
-	rows, err := db.QueryContext(ctx, `SELECT id, title, host, status FROM game`)
-	if err != nil {
-		return nil, err
-	}
-
+func scanGames(rows *sql.Rows) ([]*Game, error) {
 	games := []*Game{}
 
 	for rows.Next() {
@@ -68,6 +63,36 @@ func GetAllGames(ctx context.Context, db *sql.DB) ([]*Game, error) {
 	}
 
 	return games, nil
+}
+
+func GetAllGames(ctx context.Context, db *sql.DB) ([]*Game, error) {
+	rows, err := db.QueryContext(ctx, `SELECT id, title, host, status FROM game WHERE status != "archived"`)
+	if err != nil {
+		return nil, err
+	}
+
+	return scanGames(rows)
+}
+
+func GetActiveGames(ctx context.Context, db *sql.DB) ([]*Game, error) {
+	rows, err := db.QueryContext(ctx, `SELECT id, title, host, status FROM game WHERE status != "archived"`)
+	if err != nil {
+		return nil, err
+	}
+
+	return scanGames(rows)
+}
+
+func GetArchivedGamesWithUser(ctx context.Context, db *sql.DB, userId string) ([]*Game, error) {
+	rows, err := db.QueryContext(ctx, `
+		SELECT id, title, host, status FROM game
+		INNER JOIN user_game ON user_game.game_id = game.id
+		WHERE status = "archived" AND user_game.user_id = ?`, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	return scanGames(rows)
 }
 
 func GetJoinedGames(ctx context.Context, db *sql.DB, userId string) ([]string, error) {
@@ -90,3 +115,14 @@ func GetJoinedGames(ctx context.Context, db *sql.DB, userId string) ([]string, e
 	return ids, nil
 }
 
+func HasJoinedGame(ctx context.Context, db *sql.DB, userId string, gameId string) (bool, error) {
+	err := db.QueryRowContext(ctx, `SELECT game_id FROM user_game WHERE user_id = ? AND game_id = ?`, userId, gameId).Scan()
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
+		return false, err
+	}
+
+	return true, nil
+}

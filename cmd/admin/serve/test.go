@@ -72,7 +72,7 @@ func (c *testController) HandleSetupTest(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	games, err := mama.GetAllGames(ctx, c.sqldb)
+	games, err := mama.GetActiveGames(ctx, c.sqldb)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

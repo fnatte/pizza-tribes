@@ -50,9 +50,11 @@ func main() {
 	gameCtrl := game.NewGameCtrl(gsRepo, gameUserRepo, world, leaderboard)
 
 	gc := NewJoinController(gameCtrl)
+	lc := NewLeaderboardController(leaderboard)
 
 	r := mux.NewRouter()
 	r.HandleFunc("/join", gc.JoinGame).Methods("POST")
+	r.HandleFunc("/leaderboard", lc.GetLeaderboard).Methods("GET")
 
 	h := handlers.CORS(
 		handlers.AllowedOrigins(origins),

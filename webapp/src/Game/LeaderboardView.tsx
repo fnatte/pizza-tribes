@@ -3,7 +3,7 @@ import classnames from "classnames";
 import { useLocation } from "react-router-dom";
 import { ReactComponent as HeartsSvg } from "../../images/hearts.svg";
 import { DemandLeaderboard, Leaderboard } from "../generated/leaderboard";
-import { formatNumber, formatNumberCompact } from "../utils";
+import { formatNumber } from "../utils";
 import { useCoinsLeaderboard } from "../queries/useCoinsLeaderboard";
 import { useDemandLeaderboard } from "../queries/useDemandLeaderboard";
 
@@ -11,7 +11,7 @@ function useQuery() {
   return new URLSearchParams(useLocation().search);
 }
 
-function TopThree({ rows }: { rows: { username: string; coins: string }[] }) {
+export function TopThree({ rows }: { rows: { username: string; coins: string }[] }) {
   return (
     <div className={classnames("max-w-lg", "w-full")}>
       <p className={classnames("text-gray-700", "text-center", "mb-2")}>
@@ -78,7 +78,7 @@ function TopThree({ rows }: { rows: { username: string; coins: string }[] }) {
   );
 }
 
-function LeaderboardTable({ leaderboard }: { leaderboard: Leaderboard }) {
+export function LeaderboardTable({ leaderboard }: { leaderboard: Leaderboard }) {
   return (
     <table
       data-cy="coins-leaderboard-table"
@@ -119,7 +119,7 @@ function LeaderboardTable({ leaderboard }: { leaderboard: Leaderboard }) {
               {new Intl.NumberFormat(undefined, {
                 style: "percent",
                 maximumFractionDigits: 1,
-              }).format(Number(row.coins) / 10_000_000)}
+              }).format(Math.min(Number(row.coins) / 10_000_000, 1))}
             </td>
           </tr>
         ))}
