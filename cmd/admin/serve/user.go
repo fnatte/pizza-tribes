@@ -191,7 +191,7 @@ func (c *userController) HandleCreateUser(w http.ResponseWriter, r *http.Request
 	gsRepo := persist.NewGameStateRepository(c.rc)
 	world := game.NewWorldService(c.rc)
 	leaderboard := game.NewLeaderboardService(c.rc)
-	gameCtrl := game.NewGameCtrl(gsRepo, gameUserRepo, world, leaderboard)
+	gameCtrl := game.NewGameCtrl(gsRepo, gameUserRepo, world, leaderboard, c.rc)
 
 	u, err := users.CreateUser(ctx, req.Username, req.Password)
 	if err != nil {
@@ -235,7 +235,7 @@ func (c *userController) HandleBatchCreateUser(w http.ResponseWriter, r *http.Re
 	gsRepo := persist.NewGameStateRepository(c.rc)
 	world := game.NewWorldService(c.rc)
 	leaderboard := game.NewLeaderboardService(c.rc)
-	gameCtrl := game.NewGameCtrl(gsRepo, gameUserRepo, world, leaderboard)
+	gameCtrl := game.NewGameCtrl(gsRepo, gameUserRepo, world, leaderboard, c.rc)
 
 	resp := batchCreateUserResponse{
 		Users: []*batchCreateUserResponseItem{},

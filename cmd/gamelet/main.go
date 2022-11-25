@@ -47,7 +47,7 @@ func main() {
 	leaderboard := game.NewLeaderboardService(rc)
 	gameUserRepo := persist.NewGameUserRepository(rc)
 	gsRepo := persist.NewGameStateRepository(rc)
-	gameCtrl := game.NewGameCtrl(gsRepo, gameUserRepo, world, leaderboard)
+	gameCtrl := game.NewGameCtrl(gsRepo, gameUserRepo, world, leaderboard, rc)
 
 	gc := NewJoinController(gameCtrl)
 	lc := NewLeaderboardController(leaderboard)

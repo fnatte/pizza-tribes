@@ -6,6 +6,7 @@ import (
 
 	"github.com/fnatte/pizza-tribes/internal/game/models"
 	"github.com/fnatte/pizza-tribes/internal/game/persist"
+	"github.com/fnatte/pizza-tribes/internal/game/redis"
 )
 
 type GameCtrl struct {
@@ -13,6 +14,7 @@ type GameCtrl struct {
 	gameUserRepo persist.GameUserRepository
 	world *WorldService
 	leaderboard *LeaderboardService
+	rc redis.RedisClient
 }
 
 func NewGameCtrl(
@@ -20,12 +22,14 @@ func NewGameCtrl(
 	gameUserRepo persist.GameUserRepository,
 	world *WorldService,
 	leaderboard *LeaderboardService,
+	rc redis.RedisClient,
 ) *GameCtrl {
 	return &GameCtrl{
 		gsRepo: gsRepo,
 		gameUserRepo: gameUserRepo,
 		world: world,
 		leaderboard: leaderboard,
+		rc: rc,
 	}
 }
 
@@ -64,6 +68,10 @@ func (g *GameCtrl) JoinGame(ctx context.Context, userId string, username string,
 	coins := int64(gs.Resources.Coins)
 	if err = g.leaderboard.UpdateUser(ctx, userId, coins); err != nil {
 		return fmt.Errorf("failed to update leaderboard: %w", err)
+	}
+
+	if err = EnsureTimeseries(ctx, g.rc, userId); err != nil {
+		return fmt.Errorf("failed to ensure timeseries: %w", err)
 	}
 
 	return nil
