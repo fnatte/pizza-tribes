@@ -707,7 +707,7 @@ var FullGameData = GameData{
 					},
 				},
 				{
-					Cost:             4_250,
+					Cost:             4_000,
 					ConstructionTime: 1 * 1200,
 					Employer: &Employer{
 						MaxWorkforce: 5,
@@ -972,7 +972,7 @@ var FullGameData = GameData{
 			Title:       "Workforce",
 			Description: "We mice to move to our town. Let's build:\n- A *House*\n- A *School*",
 			Reward: &models.Quest_Reward{
-				Coins:  325,
+				Coins:  350,
 				Pizzas: 0,
 			},
 			Order: 2,
@@ -1001,7 +1001,7 @@ var FullGameData = GameData{
 			Title:       "Upgrades",
 			Description: "While we could build another house, in most cases it's more efficient to upgrade your current ones.\n\nFind your house and upgrade it to level 2.",
 			Reward: &models.Quest_Reward{
-				Coins:  500,
+				Coins:  650,
 				Pizzas: 0,
 			},
 			Order: 8,
@@ -1021,8 +1021,8 @@ var FullGameData = GameData{
 			Title:       "Scale up!",
 			Description: "We need to ramp up our production. Let's upgrade:\n- Kitchen to level 2\n- Shop to level 2",
 			Reward: &models.Quest_Reward{
-				Coins:  500,
-				Pizzas: 500,
+				Coins:  800,
+				Pizzas: 300,
 			},
 			Order: 10,
 		},
