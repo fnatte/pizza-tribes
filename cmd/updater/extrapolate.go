@@ -40,11 +40,11 @@ func calculateExtrapolateChanges(gs *models.GameState, worldState *models.WorldS
 		then = now.Unix()
 	}
 
-	dt := float64(now.Unix() - then) * speed
+	dt := float64(now.Unix() - then)
 
 	rush, offpeak := mtime.GetRush(then, now.Unix())
 
-	stats := game.CalculateStats(gs, globalDemandScore, worldState, userCount)
+	stats := game.CalculateStats(gs, globalDemandScore, worldState, userCount, speed)
 
 	demand := int32(stats.DemandOffpeak*float64(offpeak) +
 		stats.DemandRushHour*float64(rush))

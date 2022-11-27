@@ -157,7 +157,13 @@ func (h *handler) sendStats(ctx context.Context, userId string, gs *models.GameS
 		return fmt.Errorf("failed to send full state update: %w", err)
 	}
 
-	msg := game.CalculateStats(gs, globalDemandScore, worldState, userCount).ToServerMessage()
+	speed, err := h.world.GetSpeed(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get game speed")
+		return err
+	}
+
+	msg := game.CalculateStats(gs, globalDemandScore, worldState, userCount, speed).ToServerMessage()
 	err = h.send(ctx, userId, msg)
 	if err != nil {
 		return fmt.Errorf("failed to send full state update: %w", err)

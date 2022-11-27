@@ -105,6 +105,12 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 		return err
 	}
 
+	speed, err := h.world.GetSpeed(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get game speed")
+		return err
+	}
+
 	go (func() {
 		msg := &models.ServerMessage{
 			Id: xid.New().String(),
@@ -134,7 +140,7 @@ func (h *wsHandler) HandleInit(ctx context.Context, c *ws.Client) error {
 
 		c.Send(b)
 
-		msg = game.CalculateStats(gs, globalDemandScore, worldState, userCount).ToServerMessage()
+		msg = game.CalculateStats(gs, globalDemandScore, worldState, userCount, speed).ToServerMessage()
 		b, err = protojson.Marshal(msg)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to send init stats")

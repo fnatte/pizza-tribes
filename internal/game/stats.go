@@ -48,7 +48,7 @@ func calculateBakeBonus(gs *GameState) float64 {
 	return bonus
 }
 
-func CalculateStats(gs *GameState, globalDemandScore float64, worldState *WorldState, userCount int64) *Stats {
+func CalculateStats(gs *GameState, globalDemandScore float64, worldState *WorldState, userCount int64, speed float64) *Stats {
 	// No changes if there are no population
 	if CountTownPopulation(gs) == 0 {
 		return &Stats{}
@@ -66,8 +66,8 @@ func CalculateStats(gs *GameState, globalDemandScore float64, worldState *WorldS
 	marketDemandOffpeak := marketDemandBase
 	marketDemandRushHour := marketDemandBase * 2
 
-	baseDemandOffpeak := DEMAND_BASE * demandScore
-	baseDemandRushHour := (DEMAND_BASE + DEMAND_RUSH_HOUR_BONUS) * demandScore
+	baseDemandOffpeak := DEMAND_BASE * demandScore * speed
+	baseDemandRushHour := (DEMAND_BASE + DEMAND_RUSH_HOUR_BONUS) * demandScore * speed
 
 	demandOffpeak := baseDemandOffpeak + marketDemandOffpeak
 	demandRushHour := baseDemandRushHour + marketDemandRushHour
@@ -77,11 +77,13 @@ func CalculateStats(gs *GameState, globalDemandScore float64, worldState *WorldS
 	employedChefs := MinInt32(e[Education_CHEF], maxEmployed[int32(Building_KITCHEN)])
 	pizzasProducedPerSecond := float64(employedChefs) *
 		CHEF_PIZZAS_PER_SECOND *
+		speed *
 		calculateBakeBonus(gs)
 
 	employedSalesmice := MinInt32(e[Education_SALESMOUSE], maxEmployed[int32(Building_SHOP)])
 	maxSellsByMicePerSecond := float64(employedSalesmice) *
 		SALESMICE_SELLS_PER_SECOND *
+		speed *
 		calculateSalesBonus(gs)
 
 	return &Stats{

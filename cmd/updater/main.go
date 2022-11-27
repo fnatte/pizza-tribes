@@ -278,7 +278,12 @@ func (u *updater) getStats(ctx context.Context, userId string) (*models.Stats, e
 		return nil, fmt.Errorf("failed to send full state update: %w", err)
 	}
 
-	return game.CalculateStats(gs, globalDemandScore, worldState, userCount), nil
+	speed, err := u.world.GetSpeed(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get game speed: %w", err)
+	}
+
+	return game.CalculateStats(gs, globalDemandScore, worldState, userCount, speed), nil
 }
 
 func (u *updater) next(ctx context.Context) (string, error) {
