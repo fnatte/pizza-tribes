@@ -101,10 +101,11 @@ export function LeaderboardTable({
     >
       <thead>
         <tr>
-          <th className={classnames("p-1", "text-left", "w-1")}>Position</th>
-          <th className={classnames("p-1", "pl-8", "text-left")}>User</th>
-          <th className={classnames("p-1", "text-right")}>Coins</th>
-          <th className={classnames("p-1", "text-right")}>Win %</th>
+          <th className="p-1 text-left w-1 sm:hidden">#</th>
+          <th className="p-1 text-left w-1 sm:table-cell hidden">Position</th>
+          <th className="p-1 pl-8 text-left">User</th>
+          <th className="p-1 text-right">Coins</th>
+          <th className="p-1 text-right">Win %</th>
         </tr>
       </thead>
       <tbody>
@@ -155,10 +156,11 @@ function DemandLeaderboardTable({
     >
       <thead>
         <tr>
-          <th className={classnames("p-1", "text-left", "w-1")}>Position</th>
-          <th className={classnames("p-1", "pl-8", "text-left")}>User</th>
-          <th className={classnames("p-1", "text-right")}>Demand</th>
-          <th className={classnames("p-1", "text-right")}>Market Share</th>
+          <th className="p-1 text-left w-1 sm:hidden">#</th>
+          <th className="p-1 text-left w-1 sm:table-cell hidden">Position</th>
+          <th className="p-1 pl-8 text-left">User</th>
+          <th className="p-1 text-right">Demand</th>
+          <th className="p-1 text-right">Market Share</th>
         </tr>
       </thead>
       <tbody>

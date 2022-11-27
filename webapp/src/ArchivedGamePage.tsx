@@ -64,10 +64,12 @@ function ArchivedGamePage() {
       {data && (
         <>
           <WinnerDisplay username={data.rows[0].username} />
-          <h3 className={classnames("mt-8", "text-center")}>Top 3 Tribes</h3>
-          <TopThree rows={data.rows.slice(0, 3)} />
-          <h3 className={classnames("mt-8", "text-center")}>Leaderboard</h3>
-          <LeaderboardTable leaderboard={data} />
+          <div className="flex flex-col justify-center items-center w-full px-2">
+            <h3 className={classnames("mt-8", "text-center")}>Top 3 Tribes</h3>
+            <TopThree rows={data.rows.slice(0, 3)} />
+            <h3 className={classnames("mt-8", "text-center")}>Leaderboard</h3>
+            <LeaderboardTable leaderboard={data} />
+          </div>
         </>
       )}
     </div>
