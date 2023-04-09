@@ -1,38 +1,34 @@
 # Pizza Tribes
 
-<img src="https://github.com/fnatte/pizza-tribes/raw/main/webapp/images/logo-wide.png" width="400" />
+> **Warning**
+>
+> The updates to this public repository have been discontinued. The project is now undergoing closed-source development. We may release the most recent code at a later date.
 
-**Play at: https://pizzatribes.teus.dev**
+<a href="https://www.pizzatribes.com">
+    <img src="https://raw.githubusercontent.com/fnatte/pizza-tribes-extra/main/gh-banner.png" width="600" />
+</a>
 
-This project is aimed to be registered for [RedisConf 2021
-Hackathon](https://hackathons.redislabs.com/hackathons/build-on-redis-hackathon).
+**Play at: https://www.pizzatribes.com**
 
+Welcome to *Pizza Tribes*, a captivating multiplayer clicker real-time strategy game!
 
-*Pizza Tribes* is a multiplayer persistent browser-based clicker real-time
-strategy game. The gameplay is a combination of a [clicker
-game](https://en.wikipedia.org/wiki/Incremental_game) and a [real-time
-strategy
-game](https://en.wikipedia.org/wiki/Massively_multiplayer_online_real-time_strategy_game).
+Manage your town, construct buildings, and assign roles to your mouse inhabitants.
+Build your pizza empire, earn coins, and race to be the first to reach 10 million
+coins to claim victory! Defend your profits by training security guards, and outwit
+rivals by deploying thieves against them.
 
-As a player, you are in charge of building and expanding your town by
-building and assigning roles to your mice population. Your pizza empire
-will earn coins by selling pizzas. The player with the most coins is
-proclaimed as the winner.
+Dive into the thrilling world of *Pizza Tribes* now!
 
-To keep your profits intact, you must train part of your population as
-security guards to protect yourself from being robbed by other players.
-And maybe, you join the dirty game yourself and send thieves on your
-competitors!
+<a href="https://www.pizzatribes.com">
+    <img alt="screenshot of Pizza Tribes" src="https://raw.githubusercontent.com/fnatte/pizza-tribes-extra/main/gh-town.png" width="600" />
+</a>
 
-<figure>
-	<img alt="screenshot of Pizza Tribes" src="https://github.com/fnatte/pizza-tribes/raw/main/docs/screenshot.png" width="500" />
-	<figcaption>Screenshot of Pizza Tribes</figcaption>
-</figure>
-
+This project was initially created for [RedisConf 2021 Hackathon](https://redis.com/blog/build-on-redis-hackathon-winners/) but has since then been developed much further.
 
 ## Table of Contents
 
 * [Pizza Tribes](#pizza-tribes)
+   * [Repository Status](#repository-status)
    * [Tech Stack](#tech-stack)
    * [Game Elements](#game-elements)
       * [Buildings](#buildings)
@@ -56,6 +52,11 @@ competitors!
       * [Check Origin](#check-origin)
       * [Can't login after flushing db](#cant-login-after-flushing-db)
 
+## Repository Status
+
+> **Warning**
+>
+> The updates to this public repository have been discontinued. The project is now undergoing closed-source development. We may release the most recent code at a later date.
 
 ## Tech Stack
 
