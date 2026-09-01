@@ -1,3 +1,5 @@
+
+
 # Pizza Tribes
 
 > **Warning**
@@ -81,6 +83,7 @@ See [go.mod](go.mod) and [package.json](webapp/package.json) for a list used lib
 - [x] Salesmouse
 - [x] Guard
 - [x] Thief
+- [x] Publicist
 
 ### Resources
 
@@ -245,10 +248,10 @@ The following is not the exact definitions, they are here to describe on a highe
 ```
 .
 ├── cmd (golang source files for each command/process)
-│   ├── api
-│   ├── migrator
-│   ├── updater
-│   └── worker
+│   ├── api
+│   ├── migrator
+│   ├── updater
+│   └── worker
 ├── docs
 ├── internal (shared golang source files)
 ├── protos (protobuf files used by both backend and frontend)
@@ -329,4 +332,3 @@ ORIGIN=http://localhost:3000
 ### Can't login after flushing db
 
 You are probably still authenticated (and have a valid JWT) to a user that no longer exists. Either clean your cookies, or remove the `token` cookie, or navigate to `http://localhost:8080/api/auth/logout`.
-
